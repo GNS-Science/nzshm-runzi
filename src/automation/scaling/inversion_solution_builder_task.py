@@ -114,11 +114,14 @@ class BuilderTask():
                     float(ta['mfd_transition_mag']))
 
         inversion_runner\
-            .setInversionSeconds(int(ta['max_inversion_time'] * 60))\
+            .setInversionSeconds(10)\
             .setEnergyChangeCompletionCriteria(float(0), float(ta['completion_energy']), float(1))\
             .setNumThreads(int(job_arguments["java_threads"]))\
             .setSyncInterval(30)\
             .setRuptureSetFile(str(PurePath(job_arguments['working_path'], ta['rupture_set'])))
+
+
+        #int(ta['max_inversion_time'] * 60))\
 
         print("Starting inversion of up to %s minutes" % ta['max_inversion_time'])
         print("======================================")
@@ -187,8 +190,6 @@ class BuilderTask():
             #WIP CBC
             #upload the task output
             self._ruptgen_api.upload_task_file(task_id, output_file, 'WRITE', meta=task_arguments)
-
-
 
         else:
             print(metrics)
