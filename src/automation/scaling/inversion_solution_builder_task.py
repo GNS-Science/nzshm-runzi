@@ -114,12 +114,11 @@ class BuilderTask():
                     float(ta['mfd_transition_mag']))
 
         inversion_runner\
-            .setInversionSeconds(10)\
+            .setInversionSeconds(int(ta['max_inversion_time'] * 60))\
             .setEnergyChangeCompletionCriteria(float(0), float(ta['completion_energy']), float(1))\
             .setNumThreads(int(job_arguments["java_threads"]))\
             .setSyncInterval(30)\
             .setRuptureSetFile(str(PurePath(job_arguments['working_path'], ta['rupture_set'])))
-
 
         #int(ta['max_inversion_time'] * 60))\
 
