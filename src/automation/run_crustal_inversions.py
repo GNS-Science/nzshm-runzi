@@ -105,7 +105,7 @@ if __name__ == "__main__":
     WORKER_POOL_SIZE = 1
     JVM_HEAP_MAX = 30
     JAVA_THREADS = 4
-    USE_API = False
+    #USE_API = False
 
     INITIAL_GATEWAY_PORT = 26933 #set this to ensure that concurrent scheduled tasks won't clash
 
@@ -142,8 +142,8 @@ if __name__ == "__main__":
 
     file_id = "RmlsZTozMDMuMEJCOVVY" #PROD D90 Coulomb
     file_id = "RmlsZTo4NTkuMDM2Z2Rw" #PROD 2010_Coulomb
-    #file_id = "RmlsZTo2LjB2NHVOVA==" # DEV LOCAL
-    #file_id = "RmlsZToxMzY1LjBzZzRDeA==" #TEST (Subduction)
+    file_id = "RmlsZTo2LjB2NHVOVA==" # DEV LOCAL
+    file_id = "RmlsZToxMzY1LjBzZzRDeA==" #TEST (Subduction)
 
     """
     CHOOSE ONE OF:
@@ -169,7 +169,7 @@ if __name__ == "__main__":
 
     rounds = range(1)
     completion_energies = [0.0,] # 0.005]
-    max_inversion_times = [10, ] #8*60,] #3*60,]  #units are minutes
+    max_inversion_times = [0.25, ] #8*60,] #3*60,]  #units are minutes
     #max_inversion_times.reverse()
 
     seismogenic_min_mags  = [6.8, 7.0]

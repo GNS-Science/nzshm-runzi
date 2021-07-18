@@ -1,6 +1,16 @@
 from datetime import datetime as dt
-from nshm_toshi_client.toshi_client_base import ToshiClientBase
+from hashlib import md5
+from pathlib import PurePath
+
+import base64
 import copy
+import json
+import requests
+
+from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
+from nshm_toshi_client.toshi_file import ToshiFile
+from nshm_toshi_client.toshi_task_file import ToshiTaskFile
+
 
 class ToshiApi(ToshiClientBase):
 
@@ -8,60 +18,12 @@ class ToshiApi(ToshiClientBase):
         super(ToshiApi, self).__init__(url, auth_token, with_schema_validation, headers)
         self._s3_url = s3_url
 
-    def OLD_get_general_task_subtask_files(self, id):
-        raise("Don't use this, its too slow, use ")
-        qry = '''
-            query one_general ($id:ID!)  {
-              node(id: $id) {
-                __typename
-                ... on GeneralTask {
-                  title
-                  description
-                  created
-                  children {
-                    total_count
-                    edges {
-                      node {
-                        child {
-                          __typename
-                          ... on Node {
-                            id
-                          }
-                          ... on RuptureGenerationTask {
-                            created
-                            state
+        self.file = ToshiFile(url, s3_url, auth_token, with_schema_validation, headers)
+        self.task_file = ToshiTaskFile(url, auth_token, with_schema_validation, headers)
 
-                            result
-                            arguments {k v}
-                            files {
-                              total_count
-                              edges {
-                                node {
-                                  role
-                                  file {
-                                    ... on File {
-                                      id
-                                      file_name
-                                      file_size
-                                      meta {k v}
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }'''
+        #set up the handler for inversion_solution operations
+        self.inversion_solution = InversionSolution(self)
 
-        # print(qry)
-        input_variables = dict(id=id)
-        executed = self.run_query(qry, input_variables)
-        return executed
 
     def get_general_task_subtask_files(self, id):
         return self.get_subtask_files(id)
@@ -237,59 +199,61 @@ class InversionSolution(object):
     def __init__(self, api):
         self.api = api
 
-    def _upload_file(self, filepath, meta=None):
+    def upload_inversion_solution(self, task_id, filepath, mfd_table, meta=None,  metrics=None):
         filepath = PurePath(filepath)
-        file_id, post_url = self.file_api.create_file(filepath, meta)
-        self.file_api.upload_content(post_url, filepath)
-        return file_id
+        file_id, post_url = self._create_inversion_solution(filepath, task_id, mfd_table, meta, metrics)
+        self.upload_content(post_url, filepath)
 
-    def link_task_file(self, task_id, file_id, task_role):
-        return self.api.task_file_api.create_task_file(task_id, file_id, task_role)
-
-    def upload_inversion_solution(self, task_id, filepath, task_role, meta=None):
-        filepath = PurePath(filepath)
-        file_id = self.upload_file(filepath, meta)
         #link file to task in role
-        return self.link_task_file(task_id, file_id, task_role)
+        return self.api.task_file.create_task_file(task_id, file_id, 'WRITE')
 
-    def create_inversion_solution(self):
-        CREATE_QRY = '''
+    def upload_content(self, post_url, filepath):
+        print('upload_content **** POST DATA %s' % post_url )
+        filedata = open(filepath, 'rb')
+        files = {'file': filedata}
+        url = self.api._s3_url
+        print('url', url)
+
+        response = requests.post(
+            url=url,
+            data=post_url,
+            files=files)
+        print("REQUEST RESPONSE",  response)
+
+
+    # def _upload_file(self, filepath, produced_by, mfd_table, meta=None):
+    #     filepath = PurePath(filepath)
+    #     file_id, post_url = self._create_inversion_solution(filepath, produced_by, mfd_table, meta)
+    #     self.api.file.upload_content(post_url, filepath)
+    #     return file_id
+
+    def _create_inversion_solution(self, filepath, produced_by, mfd_table, meta=None, metrics=None):
+        qry = '''
             mutation ($created: DateTime!, $digest: String!, $file_name: String!, $file_size: Int!, $produced_by: ID!, $mfd_table: ID!) {
               create_inversion_solution(input: {
                   created: $created
                   md5_digest: $digest
                   file_name: $file_name
                   file_size: $file_size
-                  produced_by: $produced_by
-                  mfd_table: $mfd_table
-                  }
-              ) {
-              inversion_solution { id }
-              }
-            }
-        '''
-        result = self.client.execute(CREATE_QRY,
-            variable_values=dict(digest="ABC", file_name='MyInversion.zip', file_size=1000, produced_by="PRODUCER_ID", mfd_table="TABLE_ID"))
-        print(result)
-
-        ## >>>>>>>>>>>>>>>
-        qry = '''
-            mutation ($digest: String!, $file_name: String!, $file_size: Int!) {
-              create_file(
-                  md5_digest: $digest
-                  file_name: $file_name
-                  file_size: $file_size
+                  produced_by_id: $produced_by
+                  mfd_table_id: $mfd_table
 
                   ##META##
 
+                  ##METRICS##
+
+                  }
               ) {
-                  ok
-                  file_result { id, file_name, file_size, md5_digest, post_url, meta {k v}}
+              inversion_solution { id, post_url }
               }
-            }'''
+            }
+        '''
 
         if meta:
             qry = qry.replace("##META##", kvl_to_graphql('meta', meta))
+        if metrics:
+            qry = qry.replace("##METRICS##", kvl_to_graphql('metrics', metrics))
+
 
         print(qry)
 
@@ -301,18 +265,15 @@ class InversionSolution(object):
         size = len(filedata.read())
         filedata.close()
 
-        variables = dict(digest=digest, file_name=filepath.parts[-1], file_size=size)
-        executed = self.run_query(qry, variables)
+        created = dt.utcnow().isoformat() + 'Z'
+        variables = dict(digest=digest, file_name=filepath.parts[-1], file_size=size,
+          produced_by=produced_by, mfd_table=mfd_table, created=created)
 
+        #result = self.api.client.execute(qry, variable_values = variables)
+        #print(result)
+        executed = self.api.run_query(qry, variables)
         print("executed", executed)
-        post_url = json.loads(executed['create_file']['file_result']['post_url'])
-        return (executed['create_file']['file_result']['id'], post_url)
+        post_url = json.loads(executed['create_inversion_solution']['inversion_solution']['post_url'])
 
-    def upload_content(self, post_url, filepath):
-        print('upload_content **** POST DATA %s' % post_url )
-        filedata = open(filepath, 'rb')
-        files = {'file': filedata}
-        response = requests.post(
-            url=self._s3_url,
-            data=post_url,
-            files=files)
+        return (executed['create_inversion_solution']['inversion_solution']['id'], post_url)
+
