@@ -134,7 +134,7 @@ if __name__ == "__main__":
     #file_id = "RmlsZToxNDkzLjBmbkh4eA=="
     file_id = "RmlsZToxNTMwLjBxVU5iaQ==" #TEST
     file_id = "RmlsZTo0NDYxLjBEVTRicA=="
-    file_id = "RmlsZToxNTUzLjBia0xDRw==" #test new subdction
+    file_id = "RmlsZToxNTU5LjByWmtXYw==" #test new subdction
 
     """
     CHOOSE ONE OF:
@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
     rounds = range(2)
     completion_energies = [0.0,]
-    max_inversion_times = [0.4, ]
+    max_inversion_times = [0.5, ]
     mfd_mag_gt_5s = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200 ]
     mfd_b_values = [0.95, 1.0, 1.05 ]
     mfd_transition_mags = [9.15, ]

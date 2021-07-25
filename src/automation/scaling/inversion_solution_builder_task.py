@@ -170,25 +170,23 @@ class BuilderTask():
 
             # # now get the MFDS...
             mfd_table_id = None
-            if ta['config_type'] == 'crustal':
-                table_rows = inversion_runner.getTabularSolutionMfds()
-                rows = []
-                for row in table_rows:
-                    rows.append([x for x in row])
+            table_rows = inversion_runner.getTabularSolutionMfds()
+            rows = []
+            for row in table_rows:
+                rows.append([x for x in row])
 
-                column_headers = ["series", "series_name", "X", "Y"]
-                column_types = ["integer","string","double","double"]
-                # print(table_rows)
+            column_headers = ["series", "series_name", "X", "Y"]
+            column_types = ["integer","string","double","double"]
+            # print(table_rows)
 
-                result = self._toshi_api.create_table(rows, column_headers, column_types,
-                    object_id=task_id,
-                    table_name="Inversion Solution MFD table")
-                mfd_table_id = result['id']
-                print("created table: ", result['id'])
+            result = self._toshi_api.create_table(rows, column_headers, column_types,
+                object_id=task_id,
+                table_name="Inversion Solution MFD table")
+            mfd_table_id = result['id']
+            print("created table: ", result['id'])
 
             #WIP CBC
             #upload the task output
-
             # self._ruptgen_api.upload_task_file(task_id, output_file, 'WRITE', meta=task_arguments)
             self._toshi_api.inversion_solution.upload_inversion_solution(task_id, filepath=output_file, mfd_table=mfd_table_id,
                 meta=task_arguments, metrics=metrics)
