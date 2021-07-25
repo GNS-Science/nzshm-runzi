@@ -1,8 +1,7 @@
 #build_rupture_set_index
 
 """
-Simple script to creawte valid URLs to the rupture sets built
-
+Simple script to create valid URLs
 only to be used until we have automated rupture reporting
 
 """
@@ -28,7 +27,6 @@ class GeneralTaskBuilder():
     def __init__(self, path, date_path ):
         self._dir_name = path
         self._date_path = date_path
-
 
 
     def get_template(self, info, mfd_dirs):
@@ -152,7 +150,7 @@ def inv_template(rgt, display_keys=None):
             named_faults_link = f'<a href="{UPLOAD_FOLDER}/{fid}/named_fault_mfds/mfd_index.html">Named fault MFDs</a>'
         return f'''<li>
             <a href="{TUI}RuptureGenerationTask/{rid}">{rid}</a> result: {result} &nbsp;
-            <a href="{TUI}FileDetail/{fid}">File detail</a> &nbsp;
+            <a href="{TUI}InversionSolution/{fid}">Inversion Solution detail</a> &nbsp;
             <a href="{UPLOAD_FOLDER}/{fid}/mag_rates/MAG_rates_log_fixed_yscale.png">Mag Rate overall</a>
             {named_faults_link}
             <br />
@@ -178,8 +176,10 @@ if __name__ == "__main__":
     GID = "R2VuZXJhbFRhc2s6MTk0NTJNS2dN"
     GID = "R2VuZXJhbFRhc2s6MjAwNU1veHM5"
     GID = "R2VuZXJhbFRhc2s6NzA4Q3RieTg=" #TEST API example
+    GID = "R2VuZXJhbFRhc2s6NzIybjVvc0I=" #TEST RUPT SET
+    GID = "R2VuZXJhbFRhc2s6NzI2ejQ4SlQ=" #TEST INVERSION
 
-    UPLOAD_FOLDER = "DATA24"
+    UPLOAD_FOLDER = "DATA25"
 
     TUI = "http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com/"
     WORK_FOLDER = "/home/chrisbc/DEV/GNS/opensha-new/AWS_S3_DATA"
