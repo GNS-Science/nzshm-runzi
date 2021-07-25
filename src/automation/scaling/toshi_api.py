@@ -90,8 +90,10 @@ class ToshiApi(ToshiClientBase):
                         ... on FileRelation {
                           role
                           file {
-                            ... on File {
+                            ... on Node {
                               id
+                            }
+                            ... on FileInterface {
                               file_name
                               file_size
                               meta {k v}
@@ -116,8 +118,10 @@ class ToshiApi(ToshiClientBase):
         query file ($id:ID!) {
                 node(id: $id) {
             __typename
-            ... on File {
+            ... on Node {
               id
+            }
+            ... on FileInterface {
               file_name
               file_size
               meta {k v}
@@ -136,8 +140,10 @@ class ToshiApi(ToshiClientBase):
         query download_file ($id:ID!) {
                 node(id: $id) {
             __typename
-            ... on File {
+            ... on Node {
               id
+            }
+            ... on FileInterface {
               file_name
               file_size
               file_url
