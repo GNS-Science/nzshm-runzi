@@ -75,6 +75,7 @@ class ToshiApi(ToshiClientBase):
         executed = self.run_query(qry, input_variables)
         return executed['node']
 
+
     def get_rgt_files(self, id):
 
         qry = '''
@@ -108,6 +109,24 @@ class ToshiApi(ToshiClientBase):
             }
         '''
 
+        # print(qry)
+        input_variables = dict(id=id)
+        executed = self.run_query(qry, input_variables)
+        return executed['node']
+
+
+    def get_rgt_task(self, id):
+        qry = '''
+            query one_rupt ($id:ID!)  {
+              node(id: $id) {
+                __typename
+                ... on RuptureGenerationTask {
+                  id
+                  created
+                  arguments {k v}
+                }
+              }
+            }'''
         # print(qry)
         input_variables = dict(id=id)
         executed = self.run_query(qry, input_variables)
@@ -214,17 +233,17 @@ class InversionSolution(object):
         return self.api.task_file.create_task_file(task_id, file_id, 'WRITE')
 
     def upload_content(self, post_url, filepath):
-        print('upload_content **** POST DATA %s' % post_url )
+        #print('upload_content **** POST DATA %s' % post_url )
         filedata = open(filepath, 'rb')
         files = {'file': filedata}
         url = self.api._s3_url
-        print('url', url)
+        #print('url', url)
 
         response = requests.post(
             url=url,
             data=post_url,
             files=files)
-        print("REQUEST RESPONSE",  response)
+        print("upload_content POST RESPONSE", response, filepath)
 
 
     # def _upload_file(self, filepath, produced_by, mfd_table, meta=None):
@@ -235,14 +254,14 @@ class InversionSolution(object):
 
     def _create_inversion_solution(self, filepath, produced_by, mfd_table, meta=None, metrics=None):
         qry = '''
-            mutation ($created: DateTime!, $digest: String!, $file_name: String!, $file_size: Int!, $produced_by: ID!, $mfd_table: ID!) {
+            mutation ($created: DateTime!, $digest: String!, $file_name: String!, $file_size: Int!, $produced_by: ID!) {
               create_inversion_solution(input: {
                   created: $created
                   md5_digest: $digest
                   file_name: $file_name
                   file_size: $file_size
                   produced_by_id: $produced_by
-                  mfd_table_id: $mfd_table
+                  ##MFD_TABLE##
 
                   ##META##
 
@@ -259,9 +278,10 @@ class InversionSolution(object):
             qry = qry.replace("##META##", kvl_to_graphql('meta', meta))
         if metrics:
             qry = qry.replace("##METRICS##", kvl_to_graphql('metrics', metrics))
+        if mfd_table:
+            qry = qry.replace("##MFD_TABLE##", f"mfd_table_id: {mfd_table}")
 
-
-        print(qry)
+        #print(qry)
 
         filedata = open(filepath, 'rb')
         digest = base64.b64encode(md5(filedata.read()).digest()).decode()
@@ -278,7 +298,7 @@ class InversionSolution(object):
         #result = self.api.client.execute(qry, variable_values = variables)
         #print(result)
         executed = self.api.run_query(qry, variables)
-        print("executed", executed)
+        #print("executed", executed)
         post_url = json.loads(executed['create_inversion_solution']['inversion_solution']['post_url'])
 
         return (executed['create_inversion_solution']['inversion_solution']['id'], post_url)

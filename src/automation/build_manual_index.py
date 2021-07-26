@@ -178,6 +178,8 @@ if __name__ == "__main__":
     GID = "R2VuZXJhbFRhc2s6NzA4Q3RieTg=" #TEST API example
     GID = "R2VuZXJhbFRhc2s6NzIybjVvc0I=" #TEST RUPT SET
     GID = "R2VuZXJhbFRhc2s6NzI2ejQ4SlQ=" #TEST INVERSION
+    GID = "R2VuZXJhbFRhc2s6MjA2N2d5ZnB2"
+    GID = "R2VuZXJhbFRhc2s6MjE0NjRDc3Mz"
 
     UPLOAD_FOLDER = "DATA25"
 
@@ -194,9 +196,9 @@ if __name__ == "__main__":
          'slip_rate_unnormalized_weight' ] # 'round', 'max_inversion_time', 'mfd_transition_mag',
     #info_keys = ['fault_model', 'min_fill_ratio',] #'growth_size_epsilon'] # for ruptget on subduction
     #info_keys = ['round',]
-    info_keys = ['mfd_equality_weight', 'mfd_inequality_weight','slip_rate_unnormalized_weight' ] # 'round', 'max_inversion_time'
-    #info_keys = ['min_fill_ratio', 'growth_size_epsilon'] # for ruptget on subduction
-    info_keys = ['round', 'mfd_mag_gt_5',] #] 'mfd_b_value']
+    #info_keys = ['mfd_equality_weight', 'mfd_inequality_weight','slip_rate_unnormalized_weight' ] # 'round', 'max_inversion_time'
+    #info_keys = ['min_fill_ratio',]# 'growth_size_epsilon'] # for ruptget on subduction
+    #info_keys = ['round', 'mfd_mag_gt_5', 'mfd_b_value']
     #info_keys = []
 
     #Write Section info

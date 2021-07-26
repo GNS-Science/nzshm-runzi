@@ -100,14 +100,17 @@ if __name__ == "__main__":
     #USE_API = False
 
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "Build Hikurangi/Louisville ruptsets with new Fault model SBD_0_2_HKR_LR_30"
+    TASK_TITLE = "Build Hikurangi/Louisville ruptsets with new Fault model SBD_0_2A_HKR_LR_30"
 
     TASK_DESCRIPTION = """
-     - models = [SBD_0_2_HKR_LR_30]
+
+    Sweeping min_fill_ratio - there may be some changes with the new 30km tiles.
+
+     - models = [SBD_0_2A_HKR_LR_30]
      - min_aspect_ratio = 2.0
      - max_aspect_ratio = 5.0
      - aspect_depth_threshold = 5
-     - min_fill_ratios = [0.5]
+     - min_fill_ratios = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
      - growth_position_epsilons = [0.0]
      - growth_size_epsilons = [0.0]
      - scaling_relationships = [TMG_SUB_2017]
@@ -130,12 +133,12 @@ if __name__ == "__main__":
         print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
 
     ##Test parameters
-    models = ["SBD_0_2_HKR_LR_30", ] #"SBD_0_1_HKR_KRM_10"]
+    models = ["SBD_0_2A_HKR_LR_30", ] #"SBD_0_1_HKR_KRM_10"]
 
     min_aspect_ratios = [2.0,]
     max_aspect_ratios = [5.0,]
     aspect_depth_thresholds = [5,]
-    min_fill_ratios = [0.5]
+    min_fill_ratios = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
     growth_position_epsilons = [0.0] #0.02, 0.01]
     growth_size_epsilons =  [0.0] #0.02, 0.01]
     scaling_relationships = ["TMG_SUB_2017"]
