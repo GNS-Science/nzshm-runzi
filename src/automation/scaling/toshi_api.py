@@ -279,7 +279,7 @@ class InversionSolution(object):
         if metrics:
             qry = qry.replace("##METRICS##", kvl_to_graphql('metrics', metrics))
         if mfd_table:
-            qry = qry.replace("##MFD_TABLE##", f"mfd_table_id: {mfd_table}")
+            qry = qry.replace("##MFD_TABLE##", f'mfd_table_id: "{mfd_table}"')
 
         #print(qry)
 

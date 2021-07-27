@@ -179,9 +179,9 @@ if __name__ == "__main__":
     GID = "R2VuZXJhbFRhc2s6NzIybjVvc0I=" #TEST RUPT SET
     GID = "R2VuZXJhbFRhc2s6NzI2ejQ4SlQ=" #TEST INVERSION
     GID = "R2VuZXJhbFRhc2s6MjA2N2d5ZnB2"
-    GID = "R2VuZXJhbFRhc2s6MjE0NjRDc3Mz"
+    GID = "R2VuZXJhbFRhc2s6MjM3MHlHVW04"
 
-    UPLOAD_FOLDER = "DATA25"
+    UPLOAD_FOLDER = "DATA26"
 
     TUI = "http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com/"
     WORK_FOLDER = "/home/chrisbc/DEV/GNS/opensha-new/AWS_S3_DATA"
@@ -198,7 +198,7 @@ if __name__ == "__main__":
     #info_keys = ['round',]
     #info_keys = ['mfd_equality_weight', 'mfd_inequality_weight','slip_rate_unnormalized_weight' ] # 'round', 'max_inversion_time'
     #info_keys = ['min_fill_ratio',]# 'growth_size_epsilon'] # for ruptget on subduction
-    #info_keys = ['round', 'mfd_mag_gt_5', 'mfd_b_value']
+    info_keys = ['round', 'mfd_mag_gt_5', 'mfd_b_value']
     #info_keys = []
 
     #Write Section info

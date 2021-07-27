@@ -27,6 +27,7 @@ from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
 def build_crustal_tasks(general_task_id, rupture_sets, rounds, completion_energies, max_inversion_times,
         mfd_equality_weights, mfd_inequality_weights, slip_rate_weighting_types,
         slip_rate_weights, slip_uncertainty_scaling_factors, slip_rate_normalized_weights, slip_rate_unnormalized_weights,
+        mfd_mag_gt_5s, mfd_b_values_sans, mfd_b_values_tvz, mfd_transition_mags,
         seismogenic_min_mags):
     task_count = 0
     task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, scaling.inversion_solution_builder_task,
@@ -41,12 +42,14 @@ def build_crustal_tasks(general_task_id, rupture_sets, rounds, completion_energi
                 mfd_equality_weight, mfd_inequality_weight, slip_rate_weighting_type,
                 slip_rate_weight, slip_uncertainty_scaling_factor,
                 slip_rate_normalized_weight, slip_rate_unnormalized_weight,
+                mfd_mag_gt_5, mfd_b_value_sans, mfd_b_value_tvz, mfd_transition_mag,
                 seismogenic_min_mag)\
             in itertools.product(
                 rounds, completion_energies, max_inversion_times,
                 mfd_equality_weights, mfd_inequality_weights, slip_rate_weighting_types,
                 slip_rate_weights, slip_uncertainty_scaling_factors,
                 slip_rate_normalized_weights, slip_rate_unnormalized_weights,
+                mfd_mag_gt_5s, mfd_b_values_sans, mfd_b_values_tvz, mfd_transition_mags,
                 seismogenic_min_mags):
 
             task_count +=1
@@ -65,7 +68,12 @@ def build_crustal_tasks(general_task_id, rupture_sets, rounds, completion_energi
                 slip_uncertainty_scaling_factor=slip_uncertainty_scaling_factor,
                 slip_rate_normalized_weight=slip_rate_normalized_weight,
                 slip_rate_unnormalized_weight=slip_rate_unnormalized_weight,
-                seismogenic_min_mag=seismogenic_min_mag
+                seismogenic_min_mag=seismogenic_min_mag,
+                mfd_mag_gt_5_sans=mfd_mag_gt_5,
+                mfd_mag_gt_5_tvz=mfd_mag_gt_5/10,
+                mfd_b_value_sans=mfd_b_value_sans,
+                mfd_b_value_tvz=mfd_b_value_tvz,
+                mfd_transition_mag=mfd_transition_mag
                 )
 
             job_arguments = dict(
@@ -107,25 +115,27 @@ if __name__ == "__main__":
     JAVA_THREADS = 4
     #USE_API = False
 
-    INITIAL_GATEWAY_PORT = 26933 #set this to ensure that concurrent scheduled tasks won't clash
-
-    INITIAL_GATEWAY_PORT = 26933 #set this to ensure that concurrent scheduled tasks won't clash
-
+    INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "Inversions: Coulomb D90 with new minimum magnitudes "
+    TASK_TITLE = "Inversions: Coulomb D90 with target_min_mag = 7.0"
     TASK_DESCRIPTION = """
-
-    IN U3 then min_mag on seismogenic ruptures was 6.0, but here we test higher values (6.8. 7.0).
 
      - completion_energies = [0.0,]
      - max_inversion_times = [8*60,]
+
+
+     - mfd_mag_gt_5s = [3.6 ]
+     - mfd_b_values_sans = [1.05 ]
+     - mfd_b_values_tvz = [1.25]
+     - mfd_transition_mags = [7.85, ]
+
      - mfd_equality_weights = [1e2, 1e3, 1e4]
      - mfd_inequality_weights = [1e2, 1e3, 1e4]
      - slip_rate_weighting_types = ['BOTH',]
      - slip_rate_normalized_weights = [1e2, 1e3, 1e4]
      - slip_rate_unnormalized_weights = [1e2, 1e3, 1e4]
-     - seismogenic_min_mags  = [6.8, 7.0]
+     - seismogenic_min_mags  = [ 7.0]
     """
     GENERAL_TASK_ID = None
 
@@ -141,10 +151,10 @@ if __name__ == "__main__":
 
 
     file_id = "RmlsZTozMDMuMEJCOVVY" #PROD D90 Coulomb
-    file_id = "RmlsZTo4NTkuMDM2Z2Rw" #PROD 2010_Coulomb
-    file_id = "RmlsZTo2LjB2NHVOVA==" # DEV LOCAL
-    file_id = "RmlsZToxMzY1LjBzZzRDeA==" #TEST (Subduction)
-
+    # file_id = "RmlsZTo4NTkuMDM2Z2Rw" #PROD 2010_Coulomb
+    # file_id = "RmlsZTo2LjB2NHVOVA==" # DEV LOCAL
+    # file_id = "RmlsZToxMzY1LjBzZzRDeA==" #TEST (Subduction)
+    file_id = "RmlsZTozODEuMFJxVTI2" #TEST D90
     """
     CHOOSE ONE OF:
 
@@ -169,10 +179,16 @@ if __name__ == "__main__":
 
     rounds = range(1)
     completion_energies = [0.0,] # 0.005]
-    max_inversion_times = [0.25, ] #8*60,] #3*60,]  #units are minutes
+    max_inversion_times = [0.5, ] #8*60,] #3*60,]  #units are minutes
     #max_inversion_times.reverse()
 
-    seismogenic_min_mags  = [6.8, 7.0]
+    #mfd_mag_gt_5s = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200 ]
+    mfd_mag_gt_5s = [3.6 ]
+    mfd_b_values_sans = [1.05 ]
+    mfd_b_values_tvz = [1.25]
+    mfd_transition_mags = [7.85, ]
+
+    seismogenic_min_mags  = [7.0]
 
     mfd_equality_weights = [1e2, 1e3, 1e4]
     mfd_inequality_weights = [1e2, 1e3, 1e4]
@@ -195,6 +211,7 @@ if __name__ == "__main__":
         mfd_equality_weights, mfd_inequality_weights, slip_rate_weighting_types,
         slip_rate_weights, slip_uncertainty_scaling_factors,
         slip_rate_normalized_weights, slip_rate_unnormalized_weights,
+        mfd_mag_gt_5s, mfd_b_values_sans, mfd_b_values_tvz, mfd_transition_mags,
         seismogenic_min_mags
         ):
         # print('scheduling: ', script_file)
