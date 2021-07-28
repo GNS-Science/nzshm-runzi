@@ -83,16 +83,15 @@ def run_tasks(general_task_id, solutions):
 
         yield str(script_file_path)
 
-
 if __name__ == "__main__":
 
     t0 = dt.datetime.utcnow()
 
     GENERAL_TASK_ID = None
     # If you wish to override something in the main config, do so here ..
-    WORKER_POOL_SIZE = 3
+    WORKER_POOL_SIZE = 4
     JVM_HEAP_MAX = 12
-    JAVA_THREADS = 4
+    JAVA_THREADS = 3
     # USE_API = True #to read the ruptset form the API
 
 
@@ -114,7 +113,7 @@ if __name__ == "__main__":
 
 
     pool = Pool(WORKER_POOL_SIZE)
-    for inversion_task_id in ["R2VuZXJhbFRhc2s6MjI4OFREQmNB","R2VuZXJhbFRhc2s6MjM3MHlHVW04"]: #    R2VuZXJhbFRhc2s6NzI0azhwNHA="
+    for inversion_task_id in ["R2VuZXJhbFRhc2s6MjUyMTJjRzV3"]: #    R2VuZXJhbFRhc2s6NzI0azhwNHA="
         #get input files from API
         file_generator = get_output_file_ids(file_api, inversion_task_id) #
         solutions = download_files(file_api, file_generator, str(WORK_PATH), overwrite=False)

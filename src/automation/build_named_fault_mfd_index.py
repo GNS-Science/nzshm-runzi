@@ -196,7 +196,7 @@ class NamedFaultIndexBuilder():
 
 def main():
 
-    meta_builder = NamedFaultIndexBuilder(path = WORK_PATH)
+    meta_builder = NamedFaultIndexBuilder(path = WORK_PATH )
 
     solution_infos = meta_builder.build()
     for info in solution_infos:

@@ -104,6 +104,7 @@ def download_files(file_api, file_generator, dest_folder, id_suffix=False, overw
 
         if os.path.isfile(file_path):
             if not overwrite:
+                print(f"Skip DL for existing file: {file_path}")
                 continue
 
         # here we pull the file
