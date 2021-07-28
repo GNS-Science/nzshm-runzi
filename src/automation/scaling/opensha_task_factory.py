@@ -94,7 +94,7 @@ kill -9 $!
 #PBS -l walltime={self._pbs_wall_hours}:00:00
 #PBS -l mem={self._jvm_heap_max_gb +2}gb
 
-source {self._root_path}/nshm-nz-opensha/src/python/automation/bin/activate
+source {self._root_path}/nzshm-runzi/bin/activate
 
 export http_proxy=http://beavan:8899/
 export https_proxy=${{http_proxy}}

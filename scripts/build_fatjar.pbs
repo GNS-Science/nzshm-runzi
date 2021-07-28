@@ -1,6 +1,6 @@
 #PBS -l nodes=1:ppn=30
-#PBS -l walltime=00:02:00
+#PBS -l walltime=00:05:00
 
 export PATH=/opt/sw/java/jdk-11.0.2/bin:$PATH
-cd ~/NSHM/opensha-new/nshm-nz-opensha
-gradlew fatJar
+cd ~/NSHM/opensha-new/nzshm-opensha
+gradlew local integ fatJar
