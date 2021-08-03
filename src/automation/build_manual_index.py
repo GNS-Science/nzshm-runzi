@@ -116,6 +116,20 @@ def rgt_template(rgt, display_keys=None):
         '''
 
 
+def haz_plots_div(fid):
+    def generate_links(fid):
+        haz_folder = Path(WORK_FOLDER, UPLOAD_FOLDER, fid)
+        pattern = f'{fid}_??_hazard_plot_50yr.png'
+        for root, dirs, files in os.walk(haz_folder):
+            files = sorted(files)
+            for filename in fnmatch.filter(files, pattern):
+                offset = len(fid)
+                code = filename[offset+1: offset+3]
+                yield f'<a href="{UPLOAD_FOLDER}/{fid}/{filename}">{code}</a>'
+            break
+    return f'''Hazard: {'&nbsp;'.join(generate_links(fid))}'''
+
+
 def inv_template(rgt, display_keys=None):
 
     rid = rgt['id']
@@ -148,11 +162,16 @@ def inv_template(rgt, display_keys=None):
         #only link named_faults if they're there
         if Path(f'{WORK_FOLDER}/{UPLOAD_FOLDER}/{fid}/named_fault_mfds/mfd_index.html').exists():
             named_faults_link = f'<a href="{UPLOAD_FOLDER}/{fid}/named_fault_mfds/mfd_index.html">Named fault MFDs</a>'
+
+        #only add hazrad if they're then
+        hazard_plots = haz_plots_div(fid) or ''
+
         return f'''<li>
-            <a href="{TUI}RuptureGenerationTask/{rid}">{rid}</a> result: {result} &nbsp;
-            <a href="{TUI}InversionSolution/{fid}">Inversion Solution detail</a> &nbsp;
-            <a href="{UPLOAD_FOLDER}/{fid}/mag_rates/MAG_rates_log_fixed_yscale.png">Mag Rate overall</a>
-            {named_faults_link}
+            <a href="{TUI}RuptureGenerationTask/{rid}">{rid}</a> result: {result}&nbsp;
+            <a href="{TUI}InversionSolution/{fid}">Inversion Solution detail</a>&nbsp;
+            <a href="{UPLOAD_FOLDER}/{fid}/mag_rates/MAG_rates_log_fixed_yscale.png">Mag Rate overall</a>&nbsp;
+            {named_faults_link}&nbsp;
+            {hazard_plots}
             <br />
             <div class="display_info">{display_info}</div>
             <br />
@@ -175,9 +194,9 @@ if __name__ == "__main__":
     GID = "R2VuZXJhbFRhc2s6NzA4Q3RieTg=" #TEST API example
     GID = "R2VuZXJhbFRhc2s6NzIybjVvc0I=" #TEST RUPT SET
     GID = "R2VuZXJhbFRhc2s6NzI2ejQ4SlQ=" #TEST INVERSION
-    GID = "R2VuZXJhbFRhc2s6MjUyMTJjRzV3"
+    GID = "R2VuZXJhbFRhc2s6MjY2NHpONWtl"
 
-    UPLOAD_FOLDER = "DATA28"
+    UPLOAD_FOLDER = "DATA33"
 
     TUI = "http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com/"
     WORK_FOLDER = "/home/chrisbc/DEV/GNS/opensha-new/AWS_S3_DATA"
@@ -195,7 +214,7 @@ if __name__ == "__main__":
     #info_keys = ['mfd_equality_weight', 'mfd_inequality_weight','slip_rate_unnormalized_weight' ] # 'round', 'max_inversion_time'
     #info_keys = ['min_fill_ratio',]# 'growth_size_epsilon'] # for ruptget on subduction
     #info_keys = ['round', 'mfd_mag_gt_5', 'mfd_b_value']
-    info_keys = ['mfd_mag_gt_5_sans', 'mfd_mag_gt_5_tvz']
+    #info_keys = ['mfd_mag_gt_5_sans', 'mfd_mag_gt_5_tvz']
     #info_keys = []
 
     #Write Section info
