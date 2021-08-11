@@ -48,20 +48,36 @@ class BuilderTask():
         gridCalc.setSpacing(0.5);
         gridCalc.createGeoJson(0, "/tmp/gridded-hazard.json");
 
-        # List<List<String>> result = gridCalc.getTabularGridHazards();
-        table_rows = []
-        for row in gridCalc.getTabularGridHazards():
-            table_rows.append([x for x in row])
-        # print (table_rows)
-
         if self.use_api:
+            table_rows = []
+            for row in gridCalc.getTabularGridHazards():
+                table_rows.append([x for x in row])
+
             column_headers = table_rows[0]
             column_types = ["double" for x in table_rows[0]]
             result = self._toshi_api.create_table(table_rows[1:], column_headers, column_types,
                 object_id=ta['file_id'] ,
-                table_name="Inversion Solution Gridded Hazard table")
+                table_name="Inversion Solution Gridded Hazard",
+                table_type="HAZARD_GRIDDED",
+                dimensions=[
+                    {"k": "grid_spacing", "v": ["0.5"]},
+                    {"k": "region", "v": ["NZ_TEST_GRIDDED"]},
+                    {"k": "iml_period", "v": ["1.0"]},
+                    ]
+                )
+
             mfd_table_id = result['id']
             print("created table: ", result['id'])
+
+            result = self._toshi_api.inversion_solution.append_hazard_table(ta['file_id'], mfd_table_id,
+                label= "Inversion Solution Gridded Hazard",
+                table_type="HAZARD_GRIDDED",
+                dimensions=[
+                    {"k": "grid_spacing", "v": ["0.5"]},
+                    {"k": "region", "v": ["NZ_TEST_GRIDDED"]},
+                    {"k": "iml_period", "v": ["1.0"]},
+                    ])
+            print("append_hazard_table result", result)
 
         ####
         #Hazard plots

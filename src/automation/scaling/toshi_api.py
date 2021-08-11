@@ -177,9 +177,10 @@ class ToshiApi(ToshiClientBase):
 
 
 
-    def create_table(self, rows, column_headers, column_types, object_id, table_name, created=None):
+    def create_table(self, rows, column_headers, column_types, object_id, table_name, table_type, dimensions, created=None):
 
         created = created or dt.utcnow().isoformat() + 'Z'
+        dimensions = dimensions or []
 
         rowlen = len(column_headers)
         assert len(column_types) == rowlen
@@ -195,14 +196,18 @@ class ToshiApi(ToshiClientBase):
           "rows": rows,
           "column_types": column_types,
           "table_name": table_name,
-          "created": created
+          "created": created,
+          "table_type": table_type,
+          "dimensions": dimensions
         }
 
         qry = '''
-        mutation create_table ($rows: [[String]]!, $object_id: ID!, $table_name: String!, $headers: [String]!, $column_types: [RowItemType]!, $created: DateTime!) {
+        mutation create_table ($rows: [[String]]!, $object_id: ID!, $table_name: String!, $headers: [String]!, $column_types: [RowItemType]!, $created: DateTime!, $table_type: TableType!, $dimensions: [KeyValueListPairInput]!) {
           create_table(input: {
             name: $table_name
             created: $created
+            table_type: $table_type
+            dimensions: $dimensions
             object_id: $object_id
             column_headers: $headers
             column_types: $column_types
@@ -303,3 +308,25 @@ class InversionSolution(object):
 
         return (executed['create_inversion_solution']['inversion_solution']['id'], post_url)
 
+
+    def append_hazard_table(self, inversion_solution_id, mfd_table_id, label, table_type, dimensions):
+        qry = '''
+            mutation ($input: AppendInversionSolutionTablesInput!) {
+              append_inversion_solution_tables(input: $input)
+               {
+               ok
+               inversion_solution {
+                  id,
+                  tables {
+                    identity
+                    table_id
+                    table {
+                     id
+                    }
+                  }
+                }
+              }
+            }
+        '''
+        input_args = dict(id=inversion_solution_id, tables=[dict(label=label, table_id=mfd_table_id, table_type=table_type, dimensions=dimensions)])
+        return self.api.run_query(qry, dict(input=input_args))

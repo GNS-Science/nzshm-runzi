@@ -103,7 +103,7 @@ if __name__ == "__main__":
     for inversion_task_id in ["R2VuZXJhbFRhc2s6NTQ5ZWttekY="]: # R2VuZXJhbFRhc2s6NjMyUzRDZGM="]: #TEST Inversion
 
         file_generator = get_output_file_ids(toshi_api, inversion_task_id) #
-        #file_generator = get_output_file_id(toshi_api, "RmlsZToxOTA=") #for file by file ID
+        #file_generator = get_output_file_id(toshi_api, "RmlsZTozMDkuMHB3U0dn") #for file by file ID
 
         solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 

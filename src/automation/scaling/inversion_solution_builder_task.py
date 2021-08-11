@@ -183,7 +183,7 @@ class BuilderTask():
 
             column_headers = ["series", "series_name", "X", "Y"]
             column_types = ["integer","string","double","double"]
-            # print(table_rows)
+            print(table_rows)
 
             result = self._toshi_api.create_table(rows, column_headers, column_types,
                 object_id=task_id,
