@@ -93,7 +93,6 @@ def build_subduction_tasks(general_task_id,
             os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
             yield str(script_file_path)
-            return
 
 if __name__ == "__main__":
 
@@ -101,28 +100,26 @@ if __name__ == "__main__":
 
     # If you wish to override something in the main config, do so here ..
     # WORKER_POOL_SIZE = 3
-    WORKER_POOL_SIZE = 2
-    JVM_HEAP_MAX = 10
+    WORKER_POOL_SIZE = 1
+    JVM_HEAP_MAX = 12
     JAVA_THREADS = 4
     #USE_API = False
 
     #If using API give this task a descriptive setting...
     TASK_TITLE = "Inversions on 30km Subduction with new Fault model SBD_0_2_HKR_LR_30"
     TASK_DESCRIPTION = """
-    Testing a wide range of mfd_mag_gt_5s with modified model from ruptset
+    One off run for TAG
 
-
-     - rounds = range(2)
-     - completion_energies = [0.0,]
-     - max_inversion_times = [4*60, ]
-     - mfd_mag_gt_5s = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200 ]
-     - mfd_b_values = [0.95, 1.0, 1.05 ]
-     - mfd_transition_mags = [7.85, ]
-     - mfd_equality_weights = [1e3]
-     - mfd_inequality_weights = [1e3]
-     - slip_rate_weighting_types = ['BOTH']
-     - slip_rate_normalized_weights = [1e3 ]
-     - slip_rate_unnormalized_weights = [1e3]
+    - rounds = range(1)
+    - completion_energies = [0.0,]
+    - max_inversion_times = [60, ]
+    - mfd_mag_gt_5s = [29]
+    - mfd_b_values = [1.05 ]
+    - mfd_transition_mags = [9.15, ]
+    - mfd_equality_weights = [1e3]
+    - mfd_inequality_weights = [1e4]
+    - slip_rate_normalized_weights = [1e3 ]
+    - slip_rate_unnormalized_weights = [1e4]
     """
     GENERAL_TASK_ID = None
 
@@ -135,6 +132,7 @@ if __name__ == "__main__":
     file_id = "RmlsZToxNTMwLjBxVU5iaQ==" #TEST
     file_id = "RmlsZTo0NDYxLjBEVTRicA=="
     file_id = "RmlsZToxNTU5LjByWmtXYw==" #test new subdction
+    file_id = "RmlsZTo1MzcwLjA5andhYw=="
 
     """
     CHOOSE ONE OF:
@@ -163,21 +161,19 @@ if __name__ == "__main__":
     max_inversion_times = [4*60, ] #8*60,] #3*60,]  #units are minutes
     #max_inversion_times.reverse()
 
-
-    rounds = range(2)
+    rounds = range(1)
     completion_energies = [0.0,]
-    max_inversion_times = [0.5, ]
-    mfd_mag_gt_5s = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200 ]
-    mfd_b_values = [0.95, 1.0, 1.05 ]
+    max_inversion_times = [60, ]
+    mfd_mag_gt_5s = [29]
+    mfd_b_values = [1.05 ]
     mfd_transition_mags = [9.15, ]
     mfd_equality_weights = [1e3]
-    mfd_inequality_weights = [1e3]
+    mfd_inequality_weights = [1e4]
     slip_rate_weighting_types = ['BOTH',] #UNCERTAINTY_ADJUSTED',]
 
     #these are used for BOTH, NORMALIZED and UNNORMALIZED
     slip_rate_normalized_weights = [1e3 ]
-    slip_rate_unnormalized_weights = [1e3]
-
+    slip_rate_unnormalized_weights = [1e4]
 
     pool = Pool(WORKER_POOL_SIZE)
 

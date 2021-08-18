@@ -7,12 +7,8 @@ from subprocess import check_call
 from multiprocessing.dummy import Pool
 
 import datetime as dt
-from dateutil.tz import tzutc
 
-from nshm_toshi_client.general_task import GeneralTask
-from nshm_toshi_client.toshi_file import ToshiFile
-from scaling.toshi_api import ToshiApi
-
+from scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
 from scaling.opensha_task_factory import OpenshaTaskFactory
 from scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
 
@@ -24,11 +20,7 @@ from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     API_KEY, API_URL, S3_URL, CLUSTER_MODE)
 
 
-def build_crustal_tasks(general_task_id, rupture_sets, rounds, completion_energies, max_inversion_times,
-        mfd_equality_weights, mfd_inequality_weights, slip_rate_weighting_types,
-        slip_rate_weights, slip_uncertainty_scaling_factors, slip_rate_normalized_weights, slip_rate_unnormalized_weights,
-        mfd_mag_gt_5s, mfd_b_values_sans, mfd_b_values_tvz, mfd_transition_mags,
-        seismogenic_min_mags):
+def build_crustal_tasks(general_task_id, rupture_sets, args):
     task_count = 0
     task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, scaling.inversion_solution_builder_task,
         initial_gateway_port=INITIAL_GATEWAY_PORT,
@@ -42,15 +34,17 @@ def build_crustal_tasks(general_task_id, rupture_sets, rounds, completion_energi
                 mfd_equality_weight, mfd_inequality_weight, slip_rate_weighting_type,
                 slip_rate_weight, slip_uncertainty_scaling_factor,
                 slip_rate_normalized_weight, slip_rate_unnormalized_weight,
-                mfd_mag_gt_5, mfd_b_value_sans, mfd_b_value_tvz, mfd_transition_mag,
+                mfd_mag_gt_5_sans, mfd_mag_gt_5_tvz,
+                mfd_b_value_sans, mfd_b_value_tvz, mfd_transition_mag,
                 seismogenic_min_mag)\
             in itertools.product(
-                rounds, completion_energies, max_inversion_times,
-                mfd_equality_weights, mfd_inequality_weights, slip_rate_weighting_types,
-                slip_rate_weights, slip_uncertainty_scaling_factors,
-                slip_rate_normalized_weights, slip_rate_unnormalized_weights,
-                mfd_mag_gt_5s, mfd_b_values_sans, mfd_b_values_tvz, mfd_transition_mags,
-                seismogenic_min_mags):
+                args['rounds'], args['completion_energies'],  args['max_inversion_times'],
+                args['mfd_equality_weights'],  args['mfd_inequality_weights'],  args['slip_rate_weighting_types'],
+                args['slip_rate_weights'],  args['slip_uncertainty_scaling_factors'],
+                args['slip_rate_normalized_weights'],  args['slip_rate_unnormalized_weights'],
+                args['mfd_mag_gt_5_sans'],  args['mfd_mag_gt_5_tvz'],
+                args['mfd_b_values_sans'],  args['mfd_b_values_tvz'],  args['mfd_transition_mags'],
+                args['seismogenic_min_mags']):
 
             task_count +=1
 
@@ -70,7 +64,7 @@ def build_crustal_tasks(general_task_id, rupture_sets, rounds, completion_energi
                 slip_rate_unnormalized_weight=slip_rate_unnormalized_weight,
                 seismogenic_min_mag=seismogenic_min_mag,
                 mfd_mag_gt_5_sans=mfd_mag_gt_5,
-                mfd_mag_gt_5_tvz=mfd_mag_gt_5/10,
+                mfd_mag_gt_5_tvz=str(float(mfd_mag_gt_5)/10),
                 mfd_b_value_sans=mfd_b_value_sans,
                 mfd_b_value_tvz=mfd_b_value_tvz,
                 mfd_transition_mag=mfd_transition_mag
@@ -120,29 +114,15 @@ if __name__ == "__main__":
     #If using API give this task a descriptive setting...
     TASK_TITLE = "Inversions: Coulomb D90 with target_min_mag = 7.0"
     TASK_DESCRIPTION = """
-
-     - completion_energies = [0.0,]
-     - max_inversion_times = [8*60,]
-
-
-     - mfd_mag_gt_5s = [3.6 ]
-     - mfd_b_values_sans = [1.05 ]
-     - mfd_b_values_tvz = [1.25]
-     - mfd_transition_mags = [7.85, ]
-
-     - mfd_equality_weights = [1e2, 1e3, 1e4]
-     - mfd_inequality_weights = [1e2, 1e3, 1e4]
-     - slip_rate_weighting_types = ['BOTH',]
-     - slip_rate_normalized_weights = [1e2, 1e3, 1e4]
-     - slip_rate_unnormalized_weights = [1e2, 1e3, 1e4]
-     - seismogenic_min_mags  = [ 7.0]
+    A brief description is needed now that we have all the arguments!
     """
+
     GENERAL_TASK_ID = None
 
     headers={"x-api-key":API_KEY}
-    general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-    # file_api = ToshiFile(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-    file_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+    #general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+    # toshi_api = ToshiFile(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+    toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     #get input files from API
     #upstream_task_id = "R2VuZXJhbFRhc2s6Mjk2MmlTNEs=" #Azimuthal
@@ -155,66 +135,71 @@ if __name__ == "__main__":
     # file_id = "RmlsZTo2LjB2NHVOVA==" # DEV LOCAL
     # file_id = "RmlsZToxMzY1LjBzZzRDeA==" #TEST (Subduction)
     file_id = "RmlsZTozODEuMFJxVTI2" #TEST D90
+    #file_id = "RmlsZTozMDkuMHB3U0dn" #TEST D90 azimu
+    file_id = "RmlsZToxNTg3LjBuVm9GdA==" #TEST D90 full coulomb
     """
     CHOOSE ONE OF:
 
-     - file_generator = get_output_file_id(file_api, file_id)
+     - file_generator = get_output_file_id(toshi_api, file_id)
      - file_generator = get_output_file_ids(general_api, upstream_task_id)
     """
     #for a single rupture set, pass a valid FileID
-    file_generator = get_output_file_id(file_api, file_id) #for file by file ID
+    file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
 
-    rupture_sets = download_files(file_api, file_generator, str(WORK_PATH), overwrite=False)
+    rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+
+    args = dict(
+        rounds = [str(x) for x in range(1)],
+        completion_energies = ['0.0'], # 0.005]
+        max_inversion_times = ['10'], #8*60,] #3*60,]  #units are minutes
+        #max_inversion_times.reverse()
+
+        #mfd_mag_gt_5s = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200 ]
+        mfd_mag_gt_5_sans = ['3.6'],
+        mfd_mag_gt_5_tvz = ['0.36'],
+        mfd_b_values_sans = ['1.05'],
+        mfd_b_values_tvz = ['1.25'],
+        mfd_transition_mags = ['7.85'],
+
+        seismogenic_min_mags  = ['7.0'],
+        mfd_equality_weights = ['1e3', '1e4'],
+        mfd_inequality_weights = ['1e3', '1e4'],
+
+        slip_rate_weighting_types = ['BOTH'], #NORMALIZED_BY_SLIP_RATE', UNCERTAINTY_ADJUSTED',]
+
+        #these are used for UNCERTAINTY_ADJUSTED
+        slip_rate_weights = ['', ],# 1e5, 1e4, 1e3, 1e2]
+        slip_uncertainty_scaling_factors = ['', ],#2,]
+
+        #these are used for BOTH, NORMALIZED and UNNORMALIZED
+        slip_rate_normalized_weights = ['1e3', '1e4'],
+        slip_rate_unnormalized_weights = ['1e3', '1e4']
+    )
+    args_list = []
+    for key, value in args.items():
+        args_list.append(dict(k=key, v=value))
+
 
     if USE_API:
         #create new task in toshi_api
-        GENERAL_TASK_ID = general_api.create_task(
-            created=dt.datetime.now(tzutc()).isoformat(),
+        gt_args = CreateGeneralTaskArgs(
             agent_name=pwd.getpwuid(os.getuid()).pw_name,
             title=TASK_TITLE,
             description=TASK_DESCRIPTION
-        )
+            )\
+            .set_argument_list(args_list)\
+            .set_subtask_type('INVERSIONS')\
+            .set_model_type('CRUSTAL')
+
+
+        GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
 
     print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
-
-    rounds = range(1)
-    completion_energies = [0.0,] # 0.005]
-    max_inversion_times = [0.5, ] #8*60,] #3*60,]  #units are minutes
-    #max_inversion_times.reverse()
-
-    #mfd_mag_gt_5s = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200 ]
-    mfd_mag_gt_5s = [3.6 ]
-    mfd_b_values_sans = [1.05 ]
-    mfd_b_values_tvz = [1.25]
-    mfd_transition_mags = [7.85, ]
-
-    seismogenic_min_mags  = [7.0]
-
-    mfd_equality_weights = [1e2, 1e3, 1e4]
-    mfd_inequality_weights = [1e2, 1e3, 1e4]
-
-    slip_rate_weighting_types = ['BOTH'] #NORMALIZED_BY_SLIP_RATE', UNCERTAINTY_ADJUSTED',]
-
-    #these are used for UNCERTAINTY_ADJUSTED
-    slip_rate_weights = [None, ] # 1e5, 1e4, 1e3, 1e2]
-    slip_uncertainty_scaling_factors = [None, ] #2,]
-
-    #these are used for BOTH, NORMALIZED and UNNORMALIZED
-    slip_rate_normalized_weights = [1e2, 1e3, 1e4]
-    slip_rate_unnormalized_weights = [1e2, 1e3, 1e4]
 
     pool = Pool(WORKER_POOL_SIZE)
 
     scripts = []
-    for script_file in build_crustal_tasks(GENERAL_TASK_ID,
-        rupture_sets, rounds, completion_energies, max_inversion_times,
-        mfd_equality_weights, mfd_inequality_weights, slip_rate_weighting_types,
-        slip_rate_weights, slip_uncertainty_scaling_factors,
-        slip_rate_normalized_weights, slip_rate_unnormalized_weights,
-        mfd_mag_gt_5s, mfd_b_values_sans, mfd_b_values_tvz, mfd_transition_mags,
-        seismogenic_min_mags
-        ):
-        # print('scheduling: ', script_file)
+    for script_file in build_crustal_tasks(GENERAL_TASK_ID, rupture_sets, args):
         scripts.append(script_file)
 
     def call_script(script_name):

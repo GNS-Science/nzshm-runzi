@@ -35,9 +35,8 @@ class RuptureSetBuilderTask():
         app = gateway.entry_point
         self._builder = app.getCoulombRuptureSetBuilder()
 
-        repos = ["opensha", "nshm-nz-opensha"]
+        repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
         self._output_folder = PurePath(job_args.get('working_path')) #.joinpath('tmp').joinpath(dt.datetime.utcnow().isoformat().replace(':','-'))
-
 
         #setup the csv (backup) task recorder
         self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
@@ -65,9 +64,10 @@ class RuptureSetBuilderTask():
         environment = {
             "host": platform.node(),
             "gitref_opensha":self._repoheads['opensha'],
-            "gitref_nshm-nz-opensha":self._repoheads['nshm-nz-opensha'],
+            "gitref_nzshm-opensha":self._repoheads['nzshm-opensha'],
+            "gitref_nzshm-runzi":self._repoheads['nzshm-runzi'],
             "java_threads": job_arguments["java_threads"],
-            "proc_count": job_arguments["PROC_COUNT"], 
+            "proc_count": job_arguments["PROC_COUNT"],
             "jvm_heap_max": job_arguments["JVM_HEAP_MAX"] }
 
         if self.use_api:

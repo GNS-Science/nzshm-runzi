@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
 
     pool = Pool(WORKER_POOL_SIZE)
-    for inversion_task_id in ["R2VuZXJhbFRhc2s6MjUyMTJjRzV3"]: #    R2VuZXJhbFRhc2s6NzI0azhwNHA="
+    for inversion_task_id in ["R2VuZXJhbFRhc2s6MjY2NHpONWtl"]: #    R2VuZXJhbFRhc2s6NzI0azhwNHA="
         #get input files from API
         file_generator = get_output_file_ids(file_api, inversion_task_id) #
         solutions = download_files(file_api, file_generator, str(WORK_PATH), overwrite=False)
