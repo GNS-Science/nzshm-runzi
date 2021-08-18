@@ -11,6 +11,8 @@ from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 from nshm_toshi_client.toshi_file import ToshiFile
 from nshm_toshi_client.toshi_task_file import ToshiTaskFile
 
+from .inversion_solution import InversionSolution
+from .general_task import GeneralTask, CreateGeneralTaskArgs
 
 class ToshiApi(ToshiClientBase):
 
@@ -23,6 +25,7 @@ class ToshiApi(ToshiClientBase):
 
         #set up the handler for inversion_solution operations
         self.inversion_solution = InversionSolution(self)
+        self.general_task = GeneralTask(self)
 
 
     def get_general_task_subtask_files(self, id):
@@ -229,13 +232,14 @@ class InversionSolution(object):
     def __init__(self, api):
         self.api = api
 
-    def upload_inversion_solution(self, task_id, filepath, mfd_table, meta=None,  metrics=None):
+    def upload_inversion_solution(self, task_id, filepath, mfd_table=None, meta=None,  metrics=None):
         filepath = PurePath(filepath)
         file_id, post_url = self._create_inversion_solution(filepath, task_id, mfd_table, meta, metrics)
         self.upload_content(post_url, filepath)
 
         #link file to task in role
-        return self.api.task_file.create_task_file(task_id, file_id, 'WRITE')
+        self.api.task_file.create_task_file(task_id, file_id, 'WRITE')
+        return file_id
 
     def upload_content(self, post_url, filepath):
         #print('upload_content **** POST DATA %s' % post_url )
@@ -257,7 +261,7 @@ class InversionSolution(object):
     #     self.api.file.upload_content(post_url, filepath)
     #     return file_id
 
-    def _create_inversion_solution(self, filepath, produced_by, mfd_table, meta=None, metrics=None):
+    def _create_inversion_solution(self, filepath, produced_by, mfd_table=None, meta=None, metrics=None):
         qry = '''
             mutation ($created: DateTime!, $digest: String!, $file_name: String!, $file_size: Int!, $produced_by: ID!) {
               create_inversion_solution(input: {
