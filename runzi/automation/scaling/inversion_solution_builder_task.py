@@ -16,7 +16,7 @@ from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.general_task import GeneralTask
 from nshm_toshi_client.task_relation import TaskRelation
 
-from src.automation.scaling.toshi_api import ToshiApi
+from runzi.automation.scaling.toshi_api import ToshiApi
 
 
 API_URL  = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
