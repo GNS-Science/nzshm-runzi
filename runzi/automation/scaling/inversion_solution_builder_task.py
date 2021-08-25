@@ -122,15 +122,20 @@ class BuilderTask():
         inversion_runner\
             .setInversionSeconds(int(float(ta['max_inversion_time']) * 60))\
             .setEnergyChangeCompletionCriteria(float(0), float(ta['completion_energy']), float(1))\
-            .setNumThreads(int(job_arguments["java_threads"]))\
-            .setSyncInterval(30)\
+            .setSelectionInterval(int(ta["selection_interval_secs"]))\
+            .setNumThreadsPerSelector(int(ta["threads_per_selector"]))\
             .setRuptureSetFile(str(PurePath(job_arguments['working_path'], ta['rupture_set'])))
+
+        if ta.get("averaging_threads"):
+            inversion_runner.setInversionAveraging(
+                int(ta["averaging_threads"]),
+                int(ta["averaging_interval_secs"]))
 
         #int(ta['max_inversion_time'] * 60))\
 
         print("Starting inversion of up to %s minutes" % ta['max_inversion_time'])
         print("======================================")
-        inversion_runner.configure().runInversion()
+        inversion_runner.runInversion()
 
         output_file = str(PurePath(job_arguments['working_path'], f"NZSHM22_InversionSolution-{task_id}.zip"))
         #name the output file
@@ -139,7 +144,6 @@ class BuilderTask():
 
         # output_file = str(PurePath(job_arguments['output_file']))
         inversion_runner.writeSolution(output_file)
-
 
         t1 = dt.datetime.utcnow()
         print("Inversion took %s secs" % (t1-t0).total_seconds())
@@ -156,6 +160,8 @@ class BuilderTask():
         # metrics['moment_rate'] = inversion_runner.momentAndRateMetrics()
         # metrics['by_fault_name'] = inversion_runner.byFaultNameMetrics()
         # metrics['parent_fault_moment_rates'] = inversion_runner.parentFaultMomentRates()
+
+        table_rows = inversion_runner.getTabularSolutionMfds()
 
         if self.use_api:
             #record the completed task
@@ -180,7 +186,6 @@ class BuilderTask():
 
             # # now get the MFDS...
             mfd_table_id = None
-            table_rows = inversion_runner.getTabularSolutionMfds()
 
             mfd_table_data = []
             for row in table_rows:
@@ -201,7 +206,6 @@ class BuilderTask():
                 table_type="MFD_CURVES",
                 dimensions=None,
             )
-
             print("created & linked table: ", mfd_table_id)
 
         else:
