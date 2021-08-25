@@ -30,7 +30,7 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
         pbs_script=CLUSTER_MODE)
 
     for (rid, rupture_set_info) in rupture_sets.items():
-        for (round, completion_energy, max_inversion_time,
+        for (_round, completion_energy, max_inversion_time,
                 mfd_equality_weight, mfd_inequality_weight, slip_rate_weighting_type,
                 slip_rate_weight, slip_uncertainty_scaling_factor,
                 slip_rate_normalized_weight, slip_rate_unnormalized_weight,
@@ -38,18 +38,18 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 mfd_b_value_sans, mfd_b_value_tvz, mfd_transition_mag,
                 seismogenic_min_mag)\
             in itertools.product(
-                args['rounds'], args['completion_energies'],  args['max_inversion_times'],
-                args['mfd_equality_weights'],  args['mfd_inequality_weights'],  args['slip_rate_weighting_types'],
-                args['slip_rate_weights'],  args['slip_uncertainty_scaling_factors'],
+                args['rounds'], args['completion_energies'], args['max_inversion_times'],
+                args['mfd_equality_weights'], args['mfd_inequality_weights'], args['slip_rate_weighting_types'],
+                args['slip_rate_weights'], args['slip_uncertainty_scaling_factors'],
                 args['slip_rate_normalized_weights'],  args['slip_rate_unnormalized_weights'],
-                args['mfd_mag_gt_5_sans'],  args['mfd_mag_gt_5_tvz'],
-                args['mfd_b_values_sans'],  args['mfd_b_values_tvz'],  args['mfd_transition_mags'],
+                args['mfd_mag_gt_5_sans'], args['mfd_mag_gt_5_tvz'],
+                args['mfd_b_values_sans'], args['mfd_b_values_tvz'], args['mfd_transition_mags'],
                 args['seismogenic_min_mags']):
 
             task_count +=1
 
             task_arguments = dict(
-                round = round,
+                round = _round,
                 config_type = 'crustal',
                 rupture_set_file_id=rupture_set_info['id'],
                 rupture_set=rupture_set_info['filepath'],
@@ -63,16 +63,21 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 slip_rate_normalized_weight=slip_rate_normalized_weight,
                 slip_rate_unnormalized_weight=slip_rate_unnormalized_weight,
                 seismogenic_min_mag=seismogenic_min_mag,
-                mfd_mag_gt_5_sans=mfd_mag_gt_5,
-                mfd_mag_gt_5_tvz=str(float(mfd_mag_gt_5)/10),
+                mfd_mag_gt_5_sans=mfd_mag_gt_5_sans,
+                mfd_mag_gt_5_tvz=mfd_mag_gt_5_tvz,
                 mfd_b_value_sans=mfd_b_value_sans,
                 mfd_b_value_tvz=mfd_b_value_tvz,
-                mfd_transition_mag=mfd_transition_mag
+                mfd_transition_mag=mfd_transition_mag,
+                #New config arguments for Simulated Annealing ...
+                selection_interval_secs=5,
+                threads_per_selector=2,
+                averaging_threads=2,
+                averaging_interval_secs=15
                 )
 
             job_arguments = dict(
                 task_id = task_count,
-                round = round,
+                round = _round,
                 java_threads=JAVA_THREADS,
                 jvm_heap_max = JVM_HEAP_MAX,
                 java_gateway_port=task_factory.get_next_port(),
@@ -113,29 +118,17 @@ if __name__ == "__main__":
 
     #If using API give this task a descriptive setting...
     TASK_TITLE = "Inversions: Coulomb D90 with target_min_mag = 7.0"
-    TASK_DESCRIPTION = """
-    A brief description is needed now that we have all the arguments!
-    """
+    TASK_DESCRIPTION = """A brief description is needed now that we have all the args"""
 
     GENERAL_TASK_ID = None
 
     headers={"x-api-key":API_KEY}
-    #general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-    # toshi_api = ToshiFile(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     #get input files from API
-    #upstream_task_id = "R2VuZXJhbFRhc2s6Mjk2MmlTNEs=" #Azimuthal
-    #upstream_task_id = "R2VuZXJhbFRhc2s6OTMyNDRibg==" #COulomb NZ CFM 0.3 & 0.9 with current UCERF4 defaults
-    #upstream_task_id = "R2VuZXJhbFRhc2s6MjUzQjdjOU4=" #TEST API
-
-
-    file_id = "RmlsZTozMDMuMEJCOVVY" #PROD D90 Coulomb
+    # file_id = "RmlsZTozMDMuMEJCOVVY" #PROD D90 Coulomb
     # file_id = "RmlsZTo4NTkuMDM2Z2Rw" #PROD 2010_Coulomb
-    # file_id = "RmlsZTo2LjB2NHVOVA==" # DEV LOCAL
-    # file_id = "RmlsZToxMzY1LjBzZzRDeA==" #TEST (Subduction)
-    file_id = "RmlsZTozODEuMFJxVTI2" #TEST D90
-    #file_id = "RmlsZTozMDkuMHB3U0dn" #TEST D90 azimu
+    # file_id = "RmlsZTozODEuMFJxVTI2" #TEST D90
     file_id = "RmlsZToxNTg3LjBuVm9GdA==" #TEST D90 full coulomb
     """
     CHOOSE ONE OF:
@@ -151,7 +144,7 @@ if __name__ == "__main__":
     args = dict(
         rounds = [str(x) for x in range(1)],
         completion_energies = ['0.0'], # 0.005]
-        max_inversion_times = ['10'], #8*60,] #3*60,]  #units are minutes
+        max_inversion_times = ['1'], #8*60,] #3*60,]  #units are minutes
         #max_inversion_times.reverse()
 
         #mfd_mag_gt_5s = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200 ]
@@ -191,12 +184,9 @@ if __name__ == "__main__":
             .set_subtask_type('INVERSIONS')\
             .set_model_type('CRUSTAL')
 
-
         GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
 
     print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
-
-    pool = Pool(WORKER_POOL_SIZE)
 
     scripts = []
     for script_file in build_crustal_tasks(GENERAL_TASK_ID, rupture_sets, args):
@@ -212,6 +202,7 @@ if __name__ == "__main__":
     print('task count: ', len(scripts))
     print('worker count: ', WORKER_POOL_SIZE)
 
+    pool = Pool(WORKER_POOL_SIZE)
     pool.map(call_script, scripts)
     pool.close()
     pool.join()

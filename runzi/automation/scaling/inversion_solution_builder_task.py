@@ -84,12 +84,13 @@ class BuilderTask():
         ## TODO new runner for subduction needed
         if ta['config_type'] == 'crustal':
             inversion_runner = self._gateway.entry_point.getCrustalInversionRunner()
-            inversion_runner.setGutenbergRichterMFD(
-                    float(ta['mfd_mag_gt_5_sans']),
-                    float(ta['mfd_mag_gt_5_tvz']),
-                    float(ta['mfd_b_value_sans']),
-                    float(ta['mfd_b_value_tvz']),
-                    float(ta['mfd_transition_mag']))
+            # TODO: this is API method is temporarily missing in nzshm-opensha/modular
+            # inversion_runner.setGutenbergRichterMFD(
+            #         float(ta['mfd_mag_gt_5_sans']),
+            #         float(ta['mfd_mag_gt_5_tvz']),
+            #         float(ta['mfd_b_value_sans']),
+            #         float(ta['mfd_b_value_tvz']),
+            #         float(ta['mfd_transition_mag']))
             inversion_runner.setGutenbergRichterMFDWeights(
                     float(ta['mfd_equality_weight']),
                     float(ta['mfd_inequality_weight']))
