@@ -13,6 +13,7 @@ from nshm_toshi_client.toshi_task_file import ToshiTaskFile
 
 from .inversion_solution import InversionSolution
 from .general_task import GeneralTask, CreateGeneralTaskArgs
+from .automation_task import AutomationTask
 
 class ToshiApi(ToshiClientBase):
 
@@ -26,7 +27,7 @@ class ToshiApi(ToshiClientBase):
         #set up the handler for inversion_solution operations
         self.inversion_solution = InversionSolution(self)
         self.general_task = GeneralTask(self)
-
+        self.automation_task = AutomationTask(self)
 
     def get_general_task_subtask_files(self, id):
         return self.get_subtask_files(id)

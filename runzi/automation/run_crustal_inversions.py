@@ -181,7 +181,7 @@ if __name__ == "__main__":
             description=TASK_DESCRIPTION
             )\
             .set_argument_list(args_list)\
-            .set_subtask_type('INVERSIONS')\
+            .set_subtask_type('INVERSION')\
             .set_model_type('CRUSTAL')
 
         GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)

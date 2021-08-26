@@ -40,7 +40,7 @@ class CreateGeneralTaskArgs(object):
         return self
 
     def set_subtask_type(self, subtask_type):
-        assert subtask_type in ['RUPTURE_SETS', 'INVERSIONS', 'HAZARD']
+        assert subtask_type in ['RUPTURE_SET', 'INVERSION', 'HAZARD', 'REPORT']
         self._arguments['subtask_type'] = subtask_type
         return self
 

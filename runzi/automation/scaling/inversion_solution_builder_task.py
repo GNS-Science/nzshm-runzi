@@ -39,11 +39,10 @@ class BuilderTask():
 
         if self.use_api:
             headers={"x-api-key":API_KEY}
-            self._ruptgen_api = RuptureGenerationTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+            # self._ruptgen_api = RuptureGenerationTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
             self._general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
             self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
             self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-
 
     def run(self, task_arguments, job_arguments):
 
@@ -61,8 +60,11 @@ class BuilderTask():
 
         if self.use_api:
             #create new task in toshi_api
-            task_id = self._ruptgen_api.create_task(
-                dict(created=dt.datetime.now(tzutc()).isoformat()),
+            task_id = self._toshi_api.automation_task.create_task(
+                dict(
+                    created=dt.datetime.now(tzutc()).isoformat(),
+                    task_type="INVERSION"
+                    ),
                 arguments=task_arguments,
                 environment=environment
                 )
@@ -73,7 +75,7 @@ class BuilderTask():
             # #link task to the input datafile
             input_file_id = task_arguments.get('rupture_set_file_id')
             if input_file_id:
-                self._ruptgen_api.link_task_file(task_id, input_file_id, 'READ')
+                self._toshi_api.automation_task.link_task_file(task_id, input_file_id, 'READ')
 
         else:
             task_id = str(uuid.uuid4())
@@ -172,13 +174,13 @@ class BuilderTask():
              'result':"SUCCESS",
              'state':"DONE",
             }
-            self._ruptgen_api.complete_task(done_args, metrics)
+            self._toshi_api.automation_task.complete_task(done_args, metrics)
 
             #and the log files, why not
             java_log_file = self._output_folder.joinpath(f"java_app.{job_arguments['java_gateway_port']}.log")
-            self._ruptgen_api.upload_task_file(task_id, java_log_file, 'WRITE')
+            self._toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
             pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
-            self._ruptgen_api.upload_task_file(task_id, pyth_log_file, 'WRITE')
+            self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
             #upload the task output
             inversion_id = self._toshi_api.inversion_solution.upload_inversion_solution(task_id, filepath=output_file,
