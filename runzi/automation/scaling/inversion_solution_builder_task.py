@@ -194,7 +194,7 @@ class BuilderTask():
             for row in table_rows:
                 mfd_table_data.append([x for x in row])
 
-            result = self._toshi_api.create_table(
+            result = self._toshi_api.table.create_table(
                 mfd_table_data,
                 column_headers = ["series", "series_name", "X", "Y"],
                 column_types = ["integer","string","double","double"],

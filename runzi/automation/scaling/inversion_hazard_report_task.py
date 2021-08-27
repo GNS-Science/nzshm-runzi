@@ -7,11 +7,11 @@ import itertools
 import copy
 from pathlib import PurePath, Path
 from py4j.java_gateway import JavaGateway, GatewayParameters
-from src.automation.scaling.toshi_api import ToshiApi
+from runzi.automation.scaling.toshi_api import ToshiApi
 
 # Set up local config, from environment variables, with some some defaults
-from src.automation.scaling.local_config import (API_KEY, API_URL, S3_URL)
-from src.automation.hazPlot import plotHazardCurve
+from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL)
+from runzi.automation.hazPlot import plotHazardCurve
 
 class BuilderTask():
     """
@@ -73,7 +73,7 @@ class BuilderTask():
 
         #SAVE TO API Gridded
         if self.use_api and grid_table_data:
-            result = self._toshi_api.create_table(
+            result = self._toshi_api.table.create_table(
                 grid_table_data,
                 column_headers = ["forecast_timespan", "bg_seismicity", "iml_period", "gmpe", "lat", "lon", "PofET 0.02", "PofET 0.1"],
                 column_types = ["double", "string", "double", "string", "double", "double", "double", "double"],
@@ -93,7 +93,7 @@ class BuilderTask():
 
         #SAVE TO API sites
         if self.use_api and sites_table_data:
-            result = self._toshi_api.create_table(
+            result = self._toshi_api.table.create_table(
                 sites_table_data,
                 column_headers = ["forecast_timespan", "bg_seismicity", "iml_period", "gmpe", "location", "lat", "lon", "x", "y"],
                 column_types = ["double", "string", "double", "string", "string", "double", "double", "double", "double"],
@@ -182,7 +182,7 @@ class BuilderTask():
     def save_table(self, ta, table_rows):
         column_headers = table_rows[0]
         column_types = ["double" for x in table_rows[0]]
-        result = self._toshi_api.create_table(table_rows[1:], column_headers, column_types,
+        result = self._toshi_api.table.create_table(table_rows[1:], column_headers, column_types,
             object_id=ta['file_id'] ,
             table_name="Inversion Solution Gridded Hazard",
             table_type="HAZARD_GRIDDED",

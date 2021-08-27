@@ -85,7 +85,7 @@ if __name__ == "__main__":
     WORKER_POOL_SIZE = 1
     JVM_HEAP_MAX = 42
     JAVA_THREADS = 12
-    USE_API = True #to read the ruptset form the API
+    #USE_API = False #True #to read the ruptset form the API
 
     #If using API give this task a descriptive setting...
     TASK_TITLE = "Inversion diags"
@@ -143,7 +143,7 @@ if __name__ == "__main__":
         #create new task in toshi_api
         gt_args = CreateGeneralTaskArgs(
             agent_name=pwd.getpwuid(os.getuid()).pw_name,
-            title="THe first Hazard analysis GT",
+            title="Hazard on Modular with a legacy inversion solution",
             description="run hazard analyis on the given upstream GT, producing "
             )\
             .set_argument_list(args_list)\

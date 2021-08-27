@@ -28,6 +28,7 @@ class ToshiApi(ToshiClientBase):
         self.inversion_solution = InversionSolution(self)
         self.general_task = GeneralTask(self)
         self.automation_task = AutomationTask(self)
+        self.table = Table(self)
 
     def get_general_task_subtask_files(self, id):
         return self.get_subtask_files(id)
@@ -60,7 +61,7 @@ class ToshiApi(ToshiClientBase):
                           ... on Node {
                             id
                           }
-                          ... on RuptureGenerationTask {
+                          ... on AutomationTaskInterface {
                             created
                             state
                             result
@@ -83,34 +84,45 @@ class ToshiApi(ToshiClientBase):
     def get_rgt_files(self, id):
 
         qry = '''
-            query ($id:ID!) {
-              node(id: $id) {
-                __typename
-                ... on RuptureGenerationTask {
-                  id
-                  files {
-                    total_count
-                    edges {
-                      node {
-                        ... on FileRelation {
-                          role
-                          file {
-                            ... on Node {
-                              id
-                            }
-                            ... on FileInterface {
-                              file_name
-                              file_size
-                              meta {k v}
-                            }
-                          }
-                        }
-                      }
+          fragment task_files on FileRelationConnection {
+            total_count
+            edges {
+              node {
+                ... on FileRelation {
+                  role
+                  file {
+                    ... on Node {
+                      id
+                    }
+                    ... on FileInterface {
+                      file_name
+                      file_size
+                      meta {k v}
                     }
                   }
                 }
               }
             }
+          }
+
+          query ($id:ID!) {
+              node(id: $id) {
+              __typename
+              ... on Node {
+                id
+              }
+              ... on AutomationTask {
+                files {
+                  ...task_files
+                }
+              }
+              ... on RuptureGenerationTask {
+                files {
+                  ...task_files
+                }
+              }
+            }
+          }
         '''
 
         # print(qry)
@@ -181,6 +193,12 @@ class ToshiApi(ToshiClientBase):
 
 
 
+
+class Table(object):
+
+    def __init__(self, api):
+        self.api = api
+
     def create_table(self, rows, column_headers, column_types, object_id, table_name, table_type, dimensions, created=None):
 
         created = created or dt.utcnow().isoformat() + 'Z'
@@ -225,113 +243,32 @@ class ToshiApi(ToshiClientBase):
         }'''
 
         #print(qry)
-        executed = self.run_query(qry, input_variables)
+        executed = self.api.run_query(qry, input_variables)
         return executed['create_table']['table']
 
-class InversionSolution(object):
+    def get_table(self, table_id):
 
-    def __init__(self, api):
-        self.api = api
-
-    def upload_inversion_solution(self, task_id, filepath, mfd_table=None, meta=None,  metrics=None):
-        filepath = PurePath(filepath)
-        file_id, post_url = self._create_inversion_solution(filepath, task_id, mfd_table, meta, metrics)
-        self.upload_content(post_url, filepath)
-
-        #link file to task in role
-        self.api.task_file.create_task_file(task_id, file_id, 'WRITE')
-        return file_id
-
-    def upload_content(self, post_url, filepath):
-        #print('upload_content **** POST DATA %s' % post_url )
-        filedata = open(filepath, 'rb')
-        files = {'file': filedata}
-        url = self.api._s3_url
-        #print('url', url)
-
-        response = requests.post(
-            url=url,
-            data=post_url,
-            files=files)
-        print("upload_content POST RESPONSE", response, filepath)
-
-
-    # def _upload_file(self, filepath, produced_by, mfd_table, meta=None):
-    #     filepath = PurePath(filepath)
-    #     file_id, post_url = self._create_inversion_solution(filepath, produced_by, mfd_table, meta)
-    #     self.api.file.upload_content(post_url, filepath)
-    #     return file_id
-
-    def _create_inversion_solution(self, filepath, produced_by, mfd_table=None, meta=None, metrics=None):
         qry = '''
-            mutation ($created: DateTime!, $digest: String!, $file_name: String!, $file_size: Int!, $produced_by: ID!) {
-              create_inversion_solution(input: {
-                  created: $created
-                  md5_digest: $digest
-                  file_name: $file_name
-                  file_size: $file_size
-                  produced_by_id: $produced_by
-                  ##MFD_TABLE##
-
-                  ##META##
-
-                  ##METRICS##
-
-                  }
-              ) {
-              inversion_solution { id, post_url }
-              }
+        query get_table($table_id:ID!) {
+          node(id: $table_id) {
+            ... on Table {
+              id
+              name
+              created
+              table_type
+              object_id
+              column_headers
+              column_types
+              rows
+              dimensions{k v}
             }
-        '''
+          }
+        }'''
 
-        if meta:
-            qry = qry.replace("##META##", kvl_to_graphql('meta', meta))
-        if metrics:
-            qry = qry.replace("##METRICS##", kvl_to_graphql('metrics', metrics))
-        if mfd_table:
-            qry = qry.replace("##MFD_TABLE##", f'mfd_table_id: "{mfd_table}"')
+        input_variables = {
+          "table_id": table_id,
+        }
 
         #print(qry)
-
-        filedata = open(filepath, 'rb')
-        digest = base64.b64encode(md5(filedata.read()).digest()).decode()
-        # print('DIGEST:', digest)
-
-        filedata.seek(0) #important!
-        size = len(filedata.read())
-        filedata.close()
-
-        created = dt.utcnow().isoformat() + 'Z'
-        variables = dict(digest=digest, file_name=filepath.parts[-1], file_size=size,
-          produced_by=produced_by, mfd_table=mfd_table, created=created)
-
-        #result = self.api.client.execute(qry, variable_values = variables)
-        #print(result)
-        executed = self.api.run_query(qry, variables)
-        #print("executed", executed)
-        post_url = json.loads(executed['create_inversion_solution']['inversion_solution']['post_url'])
-
-        return (executed['create_inversion_solution']['inversion_solution']['id'], post_url)
-
-
-    def append_hazard_table(self, inversion_solution_id, mfd_table_id, label, table_type, dimensions):
-        qry = '''
-            mutation ($input: AppendInversionSolutionTablesInput!) {
-              append_inversion_solution_tables(input: $input)
-               {
-               ok
-               inversion_solution {
-                  id,
-                  tables {
-                    identity
-                    table_id
-                    table {
-                     id
-                    }
-                  }
-                }
-              }
-            }
-        '''
-        input_args = dict(id=inversion_solution_id, tables=[dict(label=label, table_id=mfd_table_id, table_type=table_type, dimensions=dimensions)])
-        return self.api.run_query(qry, dict(input=input_args))
+        executed = self.api.run_query(qry, input_variables)
+        return executed['node']
