@@ -112,7 +112,7 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
             os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
             yield str(script_file_path)
-            #return
+            return
 
 if __name__ == "__main__":
 
@@ -128,12 +128,12 @@ if __name__ == "__main__":
     INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "Modeular Inversions: Coulomb D90 with target_min_mag = 7.0"
-    TASK_DESCRIPTION = """A reproduction of the run in PROD R2VuZXJhbFRhc2s6MjU2NVV2eERL using modular
+    TASK_TITLE = "Modular Inversions: Coulomb D90 with target_min_mag = 7.0"
+    TASK_DESCRIPTION = """A reproduction of PROD R2VuZXJhbFRhc2s6MjU2NVV2eERL using modular
 
-     - setting averaging threads = 1, and selector threads (4) should be simlar to pre-modular setup.
-     - wiht averagin threads = 4 we see 4 times as much CPU required and averaing in effect.
-     - NB the selection interval at 1 sec is much more often than the pre-modular which used 30 secs.
+     - setting averaging threads = 1, and selector threads  = 4 should be simlar to pre-modular setup.
+     - wiht averagin threads = 4 we see 4 times as much CPU required.
+     - NB the selection interval at 1 sec is much more frequent than the pre-modular which used 30 secs.
        This is not expected to have much effect.
 
     """
