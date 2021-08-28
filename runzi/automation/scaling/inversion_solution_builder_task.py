@@ -127,6 +127,8 @@ class BuilderTask():
             .setEnergyChangeCompletionCriteria(float(0), float(ta['completion_energy']), float(1))\
             .setSelectionInterval(int(ta["selection_interval_secs"]))\
             .setNumThreadsPerSelector(int(ta["threads_per_selector"]))\
+            .setNonnegativityConstraintType(ta['non_negativity_function'])\
+            .setPerturbationFunction(ta['perturbation_function'])\
             .setRuptureSetFile(str(PurePath(job_arguments['working_path'], ta['rupture_set'])))
 
         if ta.get("averaging_threads"):

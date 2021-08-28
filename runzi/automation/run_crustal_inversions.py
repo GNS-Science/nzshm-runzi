@@ -22,11 +22,14 @@ from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
 
 def build_crustal_tasks(general_task_id, rupture_sets, args):
     task_count = 0
+
+    # java_threads = int(args['threads_per_selector']) * int(args['averaging_threads'])
+
     task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, scaling.inversion_solution_builder_task,
         initial_gateway_port=INITIAL_GATEWAY_PORT,
         jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
         task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START,
-        pbs_ppn=JAVA_THREADS,
+        pbs_ppn=None,
         pbs_script=CLUSTER_MODE)
 
     for (rid, rupture_set_info) in rupture_sets.items():
@@ -36,7 +39,10 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 slip_rate_normalized_weight, slip_rate_unnormalized_weight,
                 mfd_mag_gt_5_sans, mfd_mag_gt_5_tvz,
                 mfd_b_value_sans, mfd_b_value_tvz, mfd_transition_mag,
-                seismogenic_min_mag)\
+                seismogenic_min_mag,
+                selection_interval_secs, threads_per_selector, averaging_threads, averaging_interval_secs,
+                non_negativity_function, perturbation_function,
+                )\
             in itertools.product(
                 args['rounds'], args['completion_energies'], args['max_inversion_times'],
                 args['mfd_equality_weights'], args['mfd_inequality_weights'], args['slip_rate_weighting_types'],
@@ -44,7 +50,10 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 args['slip_rate_normalized_weights'],  args['slip_rate_unnormalized_weights'],
                 args['mfd_mag_gt_5_sans'], args['mfd_mag_gt_5_tvz'],
                 args['mfd_b_values_sans'], args['mfd_b_values_tvz'], args['mfd_transition_mags'],
-                args['seismogenic_min_mags']):
+                args['seismogenic_min_mags'],
+                args['selection_interval_secs'], args['threads_per_selector'], args['averaging_threads'], args['averaging_interval_secs'],
+                args['non_negativity_function'], args['perturbation_function'],
+                ):
 
             task_count +=1
 
@@ -69,16 +78,18 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 mfd_b_value_tvz=mfd_b_value_tvz,
                 mfd_transition_mag=mfd_transition_mag,
                 #New config arguments for Simulated Annealing ...
-                selection_interval_secs=5,
-                threads_per_selector=2,
-                averaging_threads=2,
-                averaging_interval_secs=15
+                selection_interval_secs=selection_interval_secs,
+                threads_per_selector=threads_per_selector,
+                averaging_threads=averaging_threads,
+                averaging_interval_secs=averaging_interval_secs,
+                non_negativity_function=non_negativity_function,
+                perturbation_function=perturbation_function,
                 )
 
             job_arguments = dict(
                 task_id = task_count,
                 round = _round,
-                java_threads=JAVA_THREADS,
+                java_threads = int(threads_per_selector) * int(averaging_threads), # JAVA_THREADS,
                 jvm_heap_max = JVM_HEAP_MAX,
                 java_gateway_port=task_factory.get_next_port(),
                 working_path=str(WORK_PATH),
@@ -101,7 +112,7 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
             os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
             yield str(script_file_path)
-            return
+            #return
 
 if __name__ == "__main__":
 
@@ -109,7 +120,7 @@ if __name__ == "__main__":
 
     # If you wish to override something in the main config, do so here ..
     # WORKER_POOL_SIZE = 3
-    WORKER_POOL_SIZE = 1
+    WORKER_POOL_SIZE = 2
     JVM_HEAP_MAX = 30
     JAVA_THREADS = 4
     #USE_API = False
@@ -117,8 +128,15 @@ if __name__ == "__main__":
     INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "Inversions: Coulomb D90 with target_min_mag = 7.0"
-    TASK_DESCRIPTION = """A brief description is needed now that we have all the args"""
+    TASK_TITLE = "Modeular Inversions: Coulomb D90 with target_min_mag = 7.0"
+    TASK_DESCRIPTION = """A reproduction of the run in PROD R2VuZXJhbFRhc2s6MjU2NVV2eERL using modular
+
+     - setting averaging threads = 1, and selector threads (4) should be simlar to pre-modular setup.
+     - wiht averagin threads = 4 we see 4 times as much CPU required and averaing in effect.
+     - NB the selection interval at 1 sec is much more often than the pre-modular which used 30 secs.
+       This is not expected to have much effect.
+
+    """
 
     GENERAL_TASK_ID = None
 
@@ -155,10 +173,10 @@ if __name__ == "__main__":
         mfd_transition_mags = ['7.85'],
 
         seismogenic_min_mags  = ['7.0'],
-        mfd_equality_weights = ['1e3', '1e4'],
-        mfd_inequality_weights = ['1e3', '1e4'],
+        mfd_equality_weights = ['1e2', '1e3', '1e4'],
+        mfd_inequality_weights = ['1e2', '1e3', '1e4'],
 
-        slip_rate_weighting_types = ['BOTH'], #NORMALIZED_BY_SLIP_RATE', UNCERTAINTY_ADJUSTED',]
+        slip_rate_weighting_types = ['BOTH'], #NORMALIZED_BY_SLIP_RATE', UNCERTAINTY_ADJUSTED', BOTH
 
         #these are used for UNCERTAINTY_ADJUSTED
         slip_rate_weights = ['', ],# 1e5, 1e4, 1e3, 1e2]
@@ -166,7 +184,15 @@ if __name__ == "__main__":
 
         #these are used for BOTH, NORMALIZED and UNNORMALIZED
         slip_rate_normalized_weights = ['1e3', '1e4'],
-        slip_rate_unnormalized_weights = ['1e3', '1e4']
+        slip_rate_unnormalized_weights = ['1e3', '1e4'],
+
+        #New modular inversion configurations
+        selection_interval_secs = ['1'],
+        threads_per_selector = ['4'],
+        averaging_threads = ['1', '4'],
+        averaging_interval_secs = ['30'],
+        non_negativity_function = ['LIMIT_ZERO_RATES'], # TRY_ZERO_RATES_OFTEN,  LIMIT_ZERO_RATES, PREVENT_ZERO_RATES
+        perturbation_function = ['UNIFORM_NO_TEMP_DEPENDENCE'], # UNIFORM_NO_TEMP_DEPENDENCE, EXPONENTIAL_SCALE;
     )
     args_list = []
     for key, value in args.items():

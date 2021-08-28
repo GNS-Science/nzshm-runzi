@@ -53,6 +53,9 @@ class OpenshaTaskFactory():
         fname = f"{self._config_path}/config.{self._next_port}.json"
         if task_arguments.get('max_inversion_time'):
             self._pbs_wall_hours = int(float(task_arguments.get('max_inversion_time'))/60) + 1
+        if task_arguments.get('java_threads'):
+            self._pbs_ppn = int(task_arguments.get('java_threads'))
+
         with open(fname, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
