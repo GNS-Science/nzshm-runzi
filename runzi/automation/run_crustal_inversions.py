@@ -131,8 +131,8 @@ if __name__ == "__main__":
     TASK_TITLE = "Modular Inversions: Coulomb D90 with target_min_mag = 7.0"
     TASK_DESCRIPTION = """A reproduction of PROD R2VuZXJhbFRhc2s6MjU2NVV2eERL using modular
 
-     - setting averaging threads = 1, and selector threads  = 4 should be simlar to pre-modular setup.
-     - wiht averagin threads = 4 we see 4 times as much CPU required.
+     - setting averaging threads = 1, and selector threads  = 4 should be similar to pre-modular setup.
+     - with averaging threads = 4 we see 4 times as much CPU required.
      - NB the selection interval at 1 sec is much more frequent than the pre-modular which used 30 secs.
        This is not expected to have much effect.
 
