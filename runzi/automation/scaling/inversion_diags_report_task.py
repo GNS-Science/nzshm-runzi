@@ -27,23 +27,47 @@ class BuilderTask():
         #setup the java gateway binding
         self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=job_args['java_gateway_port']))
         self._report_builder = self._gateway.entry_point.getInversionDiagnosticsReportBuilder()
+        self._page_gen = self._gateway.entry_point.getReportPageGen()
         self._output_folder = PurePath(job_args.get('working_path'))
 
     def run(self, task_arguments, job_arguments):
-
-        t0 = dt.datetime.utcnow()
-
         # Run the task....
         ta, ja = task_arguments, job_arguments
-
-        self._report_builder\
-            .setRuptureSetName(ta['file_path'])
 
         meta_folder = Path(self._output_folder, ta['file_id'])
         meta_folder.mkdir(parents=True, exist_ok=True)
         #dump the job metadata
         with open(Path(meta_folder, "metadata.json"), "w") as write_file:
             json.dump(dict(job_arguments=ja, task_arguments=ta), write_file, indent=4)
+
+        if ja.get('build_mfd_plots'):
+            self.build_mfd_plots(task_arguments, job_arguments)
+
+        if ja.get('build_report_level'):
+            self.build_opensha_report(task_arguments, job_arguments)
+
+    def build_opensha_report(self, task_arguments, job_arguments):
+        t0 = dt.datetime.utcnow()
+        ta, ja = task_arguments, job_arguments
+        # build the MagRate Curve
+        solution_report_folder = Path(self._output_folder, ta['file_id'], 'solution_report')
+        solution_report_folder.mkdir(parents=True, exist_ok=True)
+
+        self._page_gen\
+            .setName(f"Solution Diagnostics: {ta['file_id']}")\
+            .setSolution(ta['file_path'])\
+            .setOutputPath(str(solution_report_folder))\
+            .setPlotLevel(job_arguments['build_report_level'])\
+            .generatePage()
+
+        t1 = dt.datetime.utcnow()
+        print("Report took %s secs" % (t1-t0).total_seconds())
+
+    def build_mfd_plots(self, task_arguments, job_arguments):
+        t0 = dt.datetime.utcnow()
+        ta, ja = task_arguments, job_arguments
+        self._report_builder\
+            .setRuptureSetName(ta['file_path'])
 
         # build the MagRate Curve
         mag_rates_folder = Path(self._output_folder, ta['file_id'], 'mag_rates')
@@ -70,7 +94,7 @@ class BuilderTask():
             plot_builder.plot()
 
         t1 = dt.datetime.utcnow()
-        print("Report took %s secs" % (t1-t0).total_seconds())
+        print("MFD plots took %s secs" % (t1-t0).total_seconds())
 
 
 def get_repo_heads(rootdir, repos):

@@ -41,6 +41,7 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
                 mfd_mag_gt_5, mfd_b_value, mfd_transition_mag,
                 selection_interval_secs, threads_per_selector, averaging_threads, averaging_interval_secs,
                 non_negativity_function, perturbation_function,
+                mfd_uncertainty_weight, mfd_uncertainty_power
                 )\
             in itertools.product(
                 args['rounds'], args['completion_energies'], args['max_inversion_times'],
@@ -49,6 +50,7 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
                 args['mfd_mag_gt_5s'], args['mfd_b_values'], args['mfd_transition_mags'],
                 args['selection_interval_secs'], args['threads_per_selector'], args['averaging_threads'], args['averaging_interval_secs'],
                 args['non_negativity_function'], args['perturbation_function'],
+                args['mfd_uncertainty_weights'], args['mfd_uncertainty_powers']
                 ):
 
             task_count +=1
@@ -68,6 +70,9 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
                 mfd_mag_gt_5=mfd_mag_gt_5,
                 mfd_b_value=mfd_b_value,
                 mfd_transition_mag=mfd_transition_mag,
+
+                mfd_uncertainty_weight=mfd_uncertainty_weight,
+                mfd_uncertainty_power=mfd_uncertainty_power,
 
                 #New config arguments for Simulated Annealing ...
                 selection_interval_secs=selection_interval_secs,
@@ -104,6 +109,7 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
             os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
             yield str(script_file_path)
+            #return
 
 if __name__ == "__main__":
 
@@ -113,18 +119,14 @@ if __name__ == "__main__":
     # WORKER_POOL_SIZE = 3
     WORKER_POOL_SIZE = 1
     JVM_HEAP_MAX = 12
-    JAVA_THREADS = 4
+    JAVA_THREADS = 0
     #USE_API = False
 
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "Inversions on 30km Subduction with new Fault model SBD_0_2_HKR_LR_30"
-    TASK_DESCRIPTION = """A reproduction of PROD R2VuZXJhbFRhc2s6MjY0MXE0NWY0 using modular
-
+    TASK_TITLE = "Inversions on MFD Uncertainty Weighted SBD_0_2_HKR_LR_30"
+    TASK_DESCRIPTION = """First experiments on MFD Uncertainty Weighted COnstraint
+     - we use a small MFD ineq weight (0.1) here to workaround an Annealing issue.
      - setting averaging threads = 1, and selector threads  = 4 should be similar to pre-modular setup.
-     - with averaging threads = 4 we see 4 times as much CPU required.
-     - NB the selection interval at 1 sec is much more frequent than the pre-modular which used 30 secs.
-       This is not expected to have much effect.
-
     """
 
     GENERAL_TASK_ID = None
@@ -144,25 +146,29 @@ if __name__ == "__main__":
     args = dict(
         rounds = [str(x) for x in range(1)],
         completion_energies = ["0.0"], # 0.005]
-        max_inversion_times = ["1"], #8*60,] #3*60,]  #units are minutes
+        max_inversion_times = ["15"], #8*60,] #3*60,]  #units are minutes
         #max_inversion_times.reverse()
         mfd_mag_gt_5s = ["29"],
         mfd_b_values = ["1.05"],
         mfd_transition_mags = ["9.15"],
-        mfd_equality_weights = ["1e3", "1e4"],
-        mfd_inequality_weights = ["1e3", "1e4"],
+        mfd_equality_weights = ["0"],
+        mfd_inequality_weights = ["0.1"],
+
+        mfd_uncertainty_weights = ["1e1", "1e3", "1e5"],
+        mfd_uncertainty_powers = ["0.5"],
+
         slip_rate_weighting_types = ["BOTH"], # UNCERTAINTY_ADJUSTED,BOTH, NORMALIZED and UNNORMALIZED]
         #these are used for BOTH, NORMALIZED and UNNORMALIZED
-        slip_rate_normalized_weights = ["1e3", "1e4"],
-        slip_rate_unnormalized_weights = ["1e3", "1e4"],
+        slip_rate_normalized_weights = ["1e3"],
+        slip_rate_unnormalized_weights = ["1e4"],
 
         #New modular inversion configurations
         selection_interval_secs = ['1'],
         threads_per_selector = ['4'],
-        averaging_threads = ['1', '4'],
+        averaging_threads = ['4'],
         averaging_interval_secs = ['30'],
         non_negativity_function = ['LIMIT_ZERO_RATES'], # TRY_ZERO_RATES_OFTEN,  LIMIT_ZERO_RATES, PREVENT_ZERO_RATES
-        perturbation_function = ['UNIFORM_NO_TEMP_DEPENDENCE'], # UNIFORM_NO_TEMP_DEPENDENCE, EXPONENTIAL_SCALE;
+        perturbation_function = ['UNIFORM_NO_TEMP_DEPENDENCE','EXPONENTIAL_SCALE'], # UNIFORM_NO_TEMP_DEPENDENCE, EXPONENTIAL_SCALE;
     )
 
     args_list = []

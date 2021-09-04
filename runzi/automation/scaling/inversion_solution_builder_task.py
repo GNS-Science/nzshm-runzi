@@ -120,7 +120,10 @@ class BuilderTask():
                 .setGutenbergRichterMFD(
                     float(ta['mfd_mag_gt_5']),
                     float(ta['mfd_b_value']),
-                    float(ta['mfd_transition_mag']))
+                    float(ta['mfd_transition_mag']))\
+                .setUncertaintyWeightedMFDWeights(
+                    float(ta['mfd_uncertainty_weight']),
+                    float(ta['mfd_uncertainty_power']))
 
         inversion_runner\
             .setInversionSeconds(int(float(ta['max_inversion_time']) * 60))\
