@@ -92,10 +92,10 @@ class RuptureSetBuilderTask():
         print('Got RuptureSetBuilder: ', self._builder)
 
         self._builder \
-            .setDownDipAspectRatio(ta['min_aspect_ratio'], ta['max_aspect_ratio'], ta['aspect_depth_threshold'])\
-            .setDownDipMinFill(ta['min_fill_ratio'])\
-            .setDownDipPositionCoarseness(ta['growth_position_epsilon'])\
-            .setDownDipSizeCoarseness(ta['growth_size_epsilon'])\
+            .setDownDipAspectRatio(float(ta['min_aspect_ratio']), float(ta['max_aspect_ratio']), int(ta['aspect_depth_threshold']))\
+            .setDownDipMinFill(float(ta['min_fill_ratio']))\
+            .setDownDipPositionCoarseness(float(ta['growth_position_epsilon']))\
+            .setDownDipSizeCoarseness(float(ta['growth_size_epsilon']))\
             .setScalingRelationship(ta['scaling_relationship'])\
             .setSlipAlongRuptureModel(ta['slip_along_rupture_model'])\
             .setFaultModel(ta['fault_model'])
