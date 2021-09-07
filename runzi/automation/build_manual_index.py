@@ -205,8 +205,9 @@ if __name__ == "__main__":
     GID = "R2VuZXJhbFRhc2s6NzI2ejQ4SlQ=" #TEST INVERSION
     GID = "R2VuZXJhbFRhc2s6MjY4M1FGajVh"
     GID = "R2VuZXJhbFRhc2s6MjcxNkdIVTUy"
+    GID = "R2VuZXJhbFRhc2s6Mjg5OTllb3VZ"
 
-    UPLOAD_FOLDER = "DATA35"
+    UPLOAD_FOLDER = "DATA38"
 
     TUI = "http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com/"
     WORK_FOLDER = "/home/chrisbc/DEV/GNS/opensha-new/AWS_S3_DATA"
@@ -215,10 +216,10 @@ if __name__ == "__main__":
     # print(gentask)
     node = gentask
 
-    info_keys = ['mfd_equality_weight',
-         'mfd_inequality_weight',
-         'slip_rate_normalized_weight',
-         'slip_rate_unnormalized_weight' ] # 'round', 'max_inversion_time', 'mfd_transition_mag',
+    # info_keys = ['mfd_equality_weight',
+    #      'mfd_inequality_weight',
+    #      'slip_rate_normalized_weight',
+    #      'slip_rate_unnormalized_weight' ] # 'round', 'max_inversion_time', 'mfd_transition_mag',
     #info_keys = ['fault_model', 'min_fill_ratio',] #'growth_size_epsilon'] # for ruptget on subduction
     #info_keys = ['round',]
     #info_keys = ['mfd_equality_weight', 'mfd_inequality_weight','slip_rate_unnormalized_weight' ] # 'round', 'max_inversion_time'
@@ -226,6 +227,7 @@ if __name__ == "__main__":
     #info_keys = ['round', 'mfd_mag_gt_5', 'mfd_b_value']
     #info_keys = ['mfd_mag_gt_5_sans', 'mfd_mag_gt_5_tvz']
     #info_keys = []
+    info_keys = ["mfd_uncertainty_weight", "mfd_uncertainty_power", "perturbation_function"]
 
     #Write Section info
     print(gt_template(node))

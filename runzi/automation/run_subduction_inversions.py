@@ -109,7 +109,7 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
             os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
             yield str(script_file_path)
-            return
+            #return
 
 if __name__ == "__main__":
 
@@ -117,7 +117,7 @@ if __name__ == "__main__":
 
     # If you wish to override something in the main config, do so here ..
     # WORKER_POOL_SIZE = 3
-    WORKER_POOL_SIZE = 1
+    WORKER_POOL_SIZE = 2
     JVM_HEAP_MAX = 12
     JAVA_THREADS = 0
     USE_API = False
@@ -143,21 +143,21 @@ if __name__ == "__main__":
     file_id = "RmlsZTo0NDYxLjBEVTRicA=="
     file_id = "RmlsZToxNTU5LjByWmtXYw==" #test new subdction
     file_id = "RmlsZToyMjk1LjB2WGhMeg==" #SBD_0_3_HKR_LR_30 TEST
-    file_id = "RmlsZTo3MTQ3LjVramh3Rg==" #SBD_0_3_HKR_LR_30 PROD
+    #file_id = "RmlsZTo3MTQ3LjVramh3Rg==" #SBD_0_3_HKR_LR_30 PROD
 
     args = dict(
         rounds = [str(x) for x in range(1)],
         completion_energies = ["0.0"], # 0.005]
-        max_inversion_times = ["2"], #8*60,] #3*60,]  #units are minutes
+        max_inversion_times = ["5"], #8*60,] #3*60,]  #units are minutes
         #max_inversion_times.reverse()
         mfd_mag_gt_5s = ["29"],
         mfd_b_values = ["1.05"],
         mfd_transition_mags = ["9.15"],
         mfd_equality_weights = ["0"],
-        mfd_inequality_weights = ["0.1"],
+        mfd_inequality_weights = ["0"],
 
-        mfd_uncertainty_weights = ["1e1", "1e2", "1e3", "1e4", "1e5"],
-        mfd_uncertainty_powers = ["0.0", "0.1", "0.25", "0.5"],
+        mfd_uncertainty_weights = ["1e1", "1e2", ],#"1e3", "1e4", "1e5"],
+        mfd_uncertainty_powers = ["0.0", "0.1",], # "0.25", "0.5"],
 
         slip_rate_weighting_types = ["BOTH"], # UNCERTAINTY_ADJUSTED,BOTH, NORMALIZED and UNNORMALIZED]
         #these are used for BOTH, NORMALIZED and UNNORMALIZED

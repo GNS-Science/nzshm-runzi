@@ -77,7 +77,7 @@ def get_download_info(file_api, file_infos):
         yield dict(dict(file_url=api_result['file_url']), **itm) #merge the discts
 
 
-def download_files(file_api, file_generator, dest_folder, id_suffix=False, overwrite=False):
+def download_files(file_api, file_generator, dest_folder, id_suffix=False, overwrite=False, skip_existing=False):
     """
     file_generator = get_output_file_ids(general_api, upstream_task_id) # for files by upstream task ID)
 
@@ -99,13 +99,15 @@ def download_files(file_api, file_generator, dest_folder, id_suffix=False, overw
             file_path = str(file_path).replace('.zip', f"_{info['id']}.zip")
 
         #shortname = info['short_name'] or info['id']
+        if skip_existing and os.path.isfile(file_path):
+            print(f"Don't reprocess existing file: {file_path}")
+            continue
 
         downloads[info['id']] = dict(id=info['id'], filepath = str(file_path), info = info)
 
-        if os.path.isfile(file_path):
-            if not overwrite:
-                print(f"Skip DL for existing file: {file_path}")
-                continue
+        if not overwrite and os.path.isfile(file_path):
+            print(f"Skip DL for existing file: {file_path}")
+            continue
 
         # here we pull the file
         # print(info['file_url'])
