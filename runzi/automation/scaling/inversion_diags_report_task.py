@@ -58,6 +58,7 @@ class BuilderTask():
             .setSolution(ta['file_path'])\
             .setOutputPath(str(solution_report_folder))\
             .setPlotLevel(job_arguments['build_report_level'])\
+            .setFillSurfaces(True)\
             .generatePage()
 
         t1 = dt.datetime.utcnow()
