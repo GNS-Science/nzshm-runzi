@@ -18,10 +18,10 @@ from nshm_toshi_client.task_relation import TaskRelation
 
 from runzi.automation.scaling.toshi_api import ToshiApi
 
-
 API_URL  = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
 API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
 S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL',"http://localhost:4569")
+
 
 class BuilderTask():
     """
@@ -85,13 +85,13 @@ class BuilderTask():
         if ta['config_type'] == 'crustal':
             inversion_runner = self._gateway.entry_point.getCrustalInversionRunner()
 
-            # TODO: this is API method is temporarily missing in nzshm-opensha/modular
-            # inversion_runner.setGutenbergRichterMFD(
-            #         float(ta['mfd_mag_gt_5_sans']),
-            #         float(ta['mfd_mag_gt_5_tvz']),
-            #         float(ta['mfd_b_value_sans']),
-            #         float(ta['mfd_b_value_tvz']),
-            #         float(ta['mfd_transition_mag']))
+            inversion_runner.setDeformationModel(ta['deformation_model'])
+            inversion_runner.setGutenbergRichterMFD(
+                    float(ta['mfd_mag_gt_5_sans']),
+                    float(ta['mfd_mag_gt_5_tvz']),
+                    float(ta['mfd_b_value_sans']),
+                    float(ta['mfd_b_value_tvz']),
+                    float(ta['mfd_transition_mag']))
             inversion_runner.setGutenbergRichterMFDWeights(
                     float(ta['mfd_equality_weight']),
                     float(ta['mfd_inequality_weight']))
@@ -245,9 +245,7 @@ if __name__ == "__main__":
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(5)
+    task = BuilderTask(config['job_arguments'])
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(config['job_arguments']['task_id'] * 0.666 * 2 * 4)
-
-    # print(config)
-    task = BuilderTask(config['job_arguments'])
     task.run(**config)
