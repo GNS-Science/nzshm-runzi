@@ -131,8 +131,13 @@ if __name__ == "__main__":
     INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "Modular Inversions: Coulomb D90 DEMO"
-    TASK_DESCRIPTION = """DEMO
+    TASK_TITLE = "Modular Inversions: Coulomb D90 Geodetic vs Geologic"
+    TASK_DESCRIPTION = """
+
+    The D90 Coulomb Rutpure set, some mid-range b & N values, ball-park weight sweeps and both:
+     - the geologic slip rates from the fault model (CFM)
+     - the geodetic no-prior model with uniform std-dev
+     -
     """
 
     GENERAL_TASK_ID = None
