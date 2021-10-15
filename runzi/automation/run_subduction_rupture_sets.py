@@ -89,7 +89,7 @@ def build_tasks(general_task_id, args):
         yield str(script_file_path)
 
         #testing
-        return
+        #return
 
 
 if __name__ == "__main__":
@@ -102,17 +102,13 @@ if __name__ == "__main__":
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "Build Hikurangi/Louisville ruptsets with new trench-locked fault model"
+    TASK_TITLE = "Build Hikurangi/Louisville rupture set with Kermits Revenge SBD_0_4_HKR_LR_30 fault model"
 
     TASK_DESCRIPTION = """
-
-    No sweeps, since all our previous subduction inversions used **RmlsZTo1MzcwLjA5andhYw==** so this is
-    identical except for the new fault model.
-
     """
     ##Test parameters
     args = dict(
-        models = ["SBD_0_3_HKR_LR_30", ], #"SBD_0_1_HKR_KRM_10"]
+        models = ["SBD_0_4_HKR_LR_30", ], #"SBD_0_1_HKR_KRM_10"]
         min_aspect_ratios = ["2.0",],
         max_aspect_ratios = ["5.0",],
         aspect_depth_thresholds = ["5",],

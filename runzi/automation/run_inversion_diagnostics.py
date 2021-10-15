@@ -114,10 +114,10 @@ if __name__ == "__main__":
     file_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     BUILD_PLOTS = True
-    REPORT_LEVEL = 'LIGHT' # None, 'LIGHT', 'DEFAULT', 'FULL'
+    REPORT_LEVEL = 'DEFAULT' # None, 'LIGHT', 'DEFAULT', 'FULL'
 
     pool = Pool(WORKER_POOL_SIZE)
-    for inversion_task_id in ["R2VuZXJhbFRhc2s6Mjg5OTllb3VZ"]: #"R2VuZXJhbFRhc2s6MjcxNkdIVTUy"]: #"R2VuZXJhbFRhc2s6Mjc4OXphVmN2"]: #, "R2VuZXJhbFRhc2s6MjY4M1FGajVh"]:
+    for inversion_task_id in ["R2VuZXJhbFRhc2s6NDI1NndRVUVv"]: #"R2VuZXJhbFRhc2s6Mjc4OXphVmN2"]: #, "R2VuZXJhbFRhc2s6MjY4M1FGajVh"]:
         #get input files from API
         file_generator = get_output_file_ids(file_api, inversion_task_id) #
         solutions = download_files(file_api, file_generator, str(WORK_PATH), overwrite=False, skip_existing=True)

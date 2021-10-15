@@ -178,7 +178,7 @@ if __name__ == "__main__":
         perturbation_functions = ['EXPONENTIAL_SCALE'], #,'EXPONENTIAL_SCALE'], # UNIFORM_NO_TEMP_DEPENDENCE, EXPONENTIAL_SCALE;
 
         #Scaling Relationships
-        scaling_relationships=['SMPL_NZ_INT_LW', 'SMPL_NZ_INT_UP'],
+        scaling_relationships=['SMPL_NZ_INT_MN'], #'SMPL_NZ_INT_LW', 'SMPL_NZ_INT_UP'],
         scaling_recalc_mags=['True']
     )
 
