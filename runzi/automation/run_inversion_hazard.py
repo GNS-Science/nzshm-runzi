@@ -118,7 +118,7 @@ if __name__ == "__main__":
     #"R2VuZXJhbFRhc2s6NTk2SmJXZUI="
     #"R2VuZXJhbFRhc2s6NzU0cGp4c1c="
     #"R2VuZXJhbFRhc2s6NzU2andXeTc=",
-    for inversion_task_id in ["R2VuZXJhbFRhc2s6NzY1VDdQU3o="]: # R2VuZXJhbFRhc2s6NjMyUzRDZGM="]: #TEST Inversion
+    for inversion_task_id in ["R2VuZXJhbFRhc2s6MTE5NG1yRnM5"]: # R2VuZXJhbFRhc2s6NjMyUzRDZGM="]: #TEST Inversion
 
         file_generator = get_output_file_ids(toshi_api, inversion_task_id) #
         #file_generator = get_output_file_id(toshi_api, "RmlsZTozMDkuMHB3U0dn") #for file by file ID
@@ -143,7 +143,7 @@ if __name__ == "__main__":
         #create new task in toshi_api
         gt_args = CreateGeneralTaskArgs(
             agent_name=pwd.getpwuid(os.getuid()).pw_name,
-            title="Hazard on Modular with a legacy inversion solution",
+            title="Hazard on Modular with a modular inversion solution",
             description="run hazard analyis on the given upstream GT, producing "
             )\
             .set_argument_list(args_list)\

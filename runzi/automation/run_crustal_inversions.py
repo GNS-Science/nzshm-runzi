@@ -132,7 +132,7 @@ if __name__ == "__main__":
     WORKER_POOL_SIZE = 1
     JVM_HEAP_MAX = 30
     JAVA_THREADS = 4
-    USE_API = False
+    #USE_API = False
 
     INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     file_id = "RmlsZTozMDMuMEJCOVVY" #PROD D90 Coulomb
     # file_id = "RmlsZTo4NTkuMDM2Z2Rw" #PROD 2010_Coulomb
     # file_id = "RmlsZTozODEuMFJxVTI2" #TEST D90
-    # file_id = "RmlsZToxNTg3LjBuVm9GdA==" #TEST D90 full coulomb
+    file_id = "RmlsZToxNTg3LjBuVm9GdA==" #TEST D90 full coulomb
     """
     CHOOSE ONE OF:
 
@@ -168,18 +168,18 @@ if __name__ == "__main__":
     args = dict(
         rounds = [str(x) for x in range(1)],
         completion_energies = ['0.0'], # 0.005]
-        max_inversion_times = ['240'], #8*60,] #3*60,]  #units are minutes
+        max_inversion_times = ['1'], #8*60,] #3*60,]  #units are minutes
         #max_inversion_times.reverse()
 
-        deformation_models = ['GEOD_NO_PRIOR_UNISTD_D90_RmlsZTozMDMuMEJCOVVY', 'FAULT_MODEL',], # GEOD_NO_PRIOR_UNISTD_2010_RmlsZTo4NTkuMDM2Z2Rw
+        deformation_models = ['FAULT_MODEL',], # GEOD_NO_PRIOR_UNISTD_2010_RmlsZTo4NTkuMDM2Z2Rw, 'GEOD_NO_PRIOR_UNISTD_D90_RmlsZTozMDMuMEJCOVVY',
         mfd_mag_gt_5_sans = ['2.0', '5.6'],
         mfd_mag_gt_5_tvz = ['0.21'],
-        mfd_b_values_sans = ['0.86', '0.97', '1.08'],
-        mfd_b_values_tvz = ['1.18'],
+        mfd_b_values_sans = ['0.86',  '1.08'],
+        mfd_b_values_tvz = ['1.18', '1.08'],
         mfd_transition_mags = ['7.85'],
 
         seismogenic_min_mags  = ['7.0'],
-        mfd_equality_weights = ['1e4', '1e5'],
+        mfd_equality_weights = ['1e4'],
         mfd_inequality_weights = ['0'],
 
         slip_rate_weighting_types = ['BOTH'], #NORMALIZED_BY_SLIP_RATE', UNCERTAINTY_ADJUSTED', BOTH
@@ -190,7 +190,7 @@ if __name__ == "__main__":
 
         #these are used for BOTH, NORMALIZED and UNNORMALIZED
         slip_rate_normalized_weights = ['1e4'],
-        slip_rate_unnormalized_weights = ['1e3', '1e4'],
+        slip_rate_unnormalized_weights = ['1e3',],
 
         #New modular inversion configurations
         selection_interval_secs = ['1'],
@@ -201,7 +201,7 @@ if __name__ == "__main__":
         perturbation_function = ['EXPONENTIAL_SCALE'], # UNIFORM_NO_TEMP_DEPENDENCE, EXPONENTIAL_SCALE;
 
         #Scaling Relationships
-        scaling_relationships=['SMPL_NZ_CRU_MN', 'TMG_CRU_2017'], #'SMPL_NZ_INT_LW', 'SMPL_NZ_INT_UP'],
+        scaling_relationships=['SMPL_NZ_CRU_MN'], #'SMPL_NZ_INT_LW', 'SMPL_NZ_INT_UP'],
         scaling_recalc_mags=['True']
 
     )

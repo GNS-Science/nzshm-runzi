@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     GENERAL_TASK_ID = None
     # If you wish to override something in the main config, do so here ..
-    WORKER_POOL_SIZE = 4
+    WORKER_POOL_SIZE = 3
     JVM_HEAP_MAX = 12
     JAVA_THREADS = 3
     # USE_API = True #to read the ruptset form the API
@@ -117,7 +117,7 @@ if __name__ == "__main__":
     REPORT_LEVEL = 'DEFAULT' # None, 'LIGHT', 'DEFAULT', 'FULL'
 
     pool = Pool(WORKER_POOL_SIZE)
-    for inversion_task_id in ["R2VuZXJhbFRhc2s6NDI1NndRVUVv"]: #"R2VuZXJhbFRhc2s6Mjc4OXphVmN2"]: #, "R2VuZXJhbFRhc2s6MjY4M1FGajVh"]:
+    for inversion_task_id in ["R2VuZXJhbFRhc2s6NDQzMzhyWVo4"]: #"R2VuZXJhbFRhc2s6Mjc4OXphVmN2"]: #, "R2VuZXJhbFRhc2s6MjY4M1FGajVh"]:
         #get input files from API
         file_generator = get_output_file_ids(file_api, inversion_task_id) #
         solutions = download_files(file_api, file_generator, str(WORK_PATH), overwrite=False, skip_existing=True)

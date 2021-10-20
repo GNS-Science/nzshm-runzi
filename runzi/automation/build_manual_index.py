@@ -204,9 +204,9 @@ if __name__ == "__main__":
     GID = "R2VuZXJhbFRhc2s6NzIybjVvc0I=" #TEST RUPT SET
     GID = "R2VuZXJhbFRhc2s6NzI2ejQ4SlQ=" #TEST INVERSION
 
-    GID = "R2VuZXJhbFRhc2s6NDI1NndRVUVv"
+    GID = "R2VuZXJhbFRhc2s6NDQzMzhyWVo4"
 
-    UPLOAD_FOLDER = "DATA65"
+    UPLOAD_FOLDER = "DATA67"
 
     TUI = "http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com/"
     WORK_FOLDER = "/home/chrisbc/DEV/GNS/AWS_S3_DATA"
@@ -225,8 +225,9 @@ if __name__ == "__main__":
     #info_keys = ['min_fill_ratio',]# 'growth_size_epsilon'] # for ruptget on subduction
     #info_keys = ['round', 'mfd_mag_gt_5', 'mfd_b_value']
     #info_keys = ['mfd_mag_gt_5_sans', 'mfd_mag_gt_5_tvz']
-    info_keys = []
-    info_keys = ["mfd_equality_weight", "mfd_equality_weight", "slip_rate_normalized_weight", "slip_rate_unnormalized_weight", "deformation_model"]
+    info_keys = ["deformation_model", "slip_rate_unnormalized_weight"]
+    # info_keys = ["mfd_equality_weight", "slip_rate_unnormalized_weight", "mfd_mag_gt_5_sans", "mfd_b_value_sans", "deformation_model", "scaling_relationship"]
+
 
     #Write Section info
     print(gt_template(node))
