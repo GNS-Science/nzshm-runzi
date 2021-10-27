@@ -25,17 +25,19 @@ class Config:
     def to_json(self, overwrite):
 
         json_dict = to_json_format(self.__dict__)
-        # formatted_json = json_dict
-        path = Path(__file__).resolve().parent / 'saved_configs' / self._subtask_type /self._model_type
+        path = Path(__file__).resolve().parent / 'saved_configs' / self._subtask_type / self._model_type
         if overwrite == True:
-            for file in os.listdir(path):
-                if self._unique_id in file:
-                    jsonpath = path / file
-                    print(f'Saved your config to JSON as {file}')
-                    jsonpath.write_text(json.dumps(json_dict, indent=2))
+            for root, dirs, files in os.walk(path):
+                for file in files:
+                    if self._unique_id in file:
+                        with open(path / file, "w") as myfile:
+                            print('')
+                            myfile.write(json.dumps(json_dict, indent=2))
+                        return
                 else:
+                    print('No file to overwrite - saving to new file')
                     self.save_as_new()
-        elif overwrite == False:
+        if overwrite == False:
             self.save_as_new()
 
     def save_as_new(self):

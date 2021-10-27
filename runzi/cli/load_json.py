@@ -41,7 +41,7 @@ def parse_config(config):
     inv_setup.global_config.from_json(formatted_json)
 
 def parse_config_locally_and_display(config):
-    #Displays config without making it the global_configa
+    #Displays config without making it the global_config
     formatted_json = from_json_format(config)
     local_config = Config()
     local_config.from_json(formatted_json)
