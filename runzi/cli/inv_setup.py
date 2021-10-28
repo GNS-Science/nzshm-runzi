@@ -108,13 +108,15 @@ def crustal_run(*args):
 
 def change_values(value_callback):
     arg_list = value_callback()
-    arg_list = [k[1:] for k, _ in arg_list.items()]
+    #removes underscore from start of args and adds on the values
+    arg_list = [f'{k[1:]}: {v}' for k, v in arg_list.items()]
     arg_list.append('Exit')
     arg_type_tips = ['List - Separate values with commas!',
     'Integer - Put a number!', 'Boolean - yes or no!', 'String - text would be good!']
 
     arg = inquirer.list_input(message="Choose a value to edit", choices=arg_list)
-    
+    arg = arg.split(':')[0]#removes values from argument after displaying
+
     if arg == "Exit":
         return
 
