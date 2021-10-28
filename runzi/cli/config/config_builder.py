@@ -31,7 +31,7 @@ class Config:
                 for file in files:
                     if self._unique_id in file:
                         with open(path / file, "w") as myfile:
-                            print('')
+                            print(f'Saved as {file}')
                             myfile.write(json.dumps(json_dict, indent=2))
                         return
                 else:

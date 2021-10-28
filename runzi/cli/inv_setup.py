@@ -157,7 +157,7 @@ def change_values(value_callback):
         save_to_json()
 
 def save_to_json(*args):
-    answers = ['Save this config', 'Save as new config', 'Don\'t save']
+    answers = ['Overwrite config', 'Save as new config', 'Continue without saving']
     display(global_config)
     save_query = inquirer.list_input('Would you like to save this config to JSON?', 
     choices=answers)
