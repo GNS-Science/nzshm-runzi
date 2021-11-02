@@ -114,7 +114,6 @@ class MenuHandler():
                 if not (hasattr(fn, '__self__') and isinstance(fn.__self__, MenuHandler)):
                     None
                     # print(res)
-                    # print('This is where the problem is lmao')
                     # print(fn.__self__)?
                 continue
         if not matched:

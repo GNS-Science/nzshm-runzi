@@ -18,6 +18,7 @@ def main():
         'task': change_task_values,
         'general': change_general_values,
         'add': add_task_arg,
+        'delete': delete_task_arg
     })
 
     subduction_edit_menu = MenuHandler(context + '/inversions/subduction/edit', {
@@ -25,6 +26,7 @@ def main():
         'task': change_task_values,
         'general': change_general_values,
         'add': add_task_arg,
+        'delete': delete_task_arg
     })
 
     crustal_menu = MenuHandler(context + '/inversions/crustal', {

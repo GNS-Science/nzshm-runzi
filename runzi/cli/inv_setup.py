@@ -108,13 +108,15 @@ def crustal_run(*args):
 
 def change_values(value_callback):
     arg_list = value_callback()
-    arg_list = [k[1:] for k, _ in arg_list.items()]
+    #removes underscore from start of args and adds on the values
+    arg_list = [f'{k[1:]}: {v}' for k, v in arg_list.items()]
     arg_list.append('Exit')
     arg_type_tips = ['List - Separate values with commas!',
     'Integer - Put a number!', 'Boolean - yes or no!', 'String - text would be good!']
 
     arg = inquirer.list_input(message="Choose a value to edit", choices=arg_list)
-    
+    arg = arg.split(':')[0]#removes values from argument after displaying
+
     if arg == "Exit":
         return
 
@@ -157,7 +159,7 @@ def change_values(value_callback):
         save_to_json()
 
 def save_to_json(*args):
-    answers = ['Save this config', 'Save as new config', 'Don\'t save']
+    answers = ['Overwrite config', 'Save as new config', 'Continue without saving']
     display(global_config)
     save_query = inquirer.list_input('Would you like to save this config to JSON?', 
     choices=answers)
@@ -183,6 +185,23 @@ def add_task_arg(*args):
         cprint(f'New task argument - {key}: {value}')
     else: 
         return
+
+def delete_task_arg(*args):
+    arg_list = global_config.get_task_args()
+    arg_list = [k[1:] for k, _ in arg_list.items()]
+    arg_list.append("Exit")
+    deleted_arg = inquirer.list_input('Argument to delete: ', choices=arg_list)
+    if deleted_arg == "Exit":
+        return
+    else:
+        try:
+            confirm = inquirer.confirm(f"Are you sure you would like to delete {deleted_arg}?")
+            if confirm == True:
+                global_config.__deleteitem__('_' + deleted_arg)
+            else:
+                return
+        except AttributeError:
+            print(f'No such argument as {deleted_arg}!')
 
 
 
