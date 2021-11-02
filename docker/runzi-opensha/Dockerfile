@@ -10,7 +10,9 @@ WORKDIR /app
 RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
-RUN git checkout feature/AWS_containerised_inversion_task
+RUN git fetch
+RUN git checkout origin/feature/AWS_containerised_inversion_task
+
 RUN pip3 install -e .
 
 CMD [""]

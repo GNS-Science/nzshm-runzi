@@ -8,11 +8,11 @@ from multiprocessing.dummy import Pool
 
 import datetime as dt
 
-from .scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
-from .scaling.opensha_task_factory import OpenshaTaskFactory
-from .scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
+from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
+from runzi.automation.scaling.opensha_task_factory import OpenshaTaskFactory
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
 
-from .scaling import inversion_solution_builder_task
+from runzi.automation.scaling import inversion_solution_builder_task
 
 # Set up your local config, from environment variables, with some sone defaults
 from .scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
@@ -123,7 +123,7 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
             os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
             yield str(script_file_path)
-            #return
+            return
 
 if __name__ == "__main__":
 
