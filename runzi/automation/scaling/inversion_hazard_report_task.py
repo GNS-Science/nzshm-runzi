@@ -53,6 +53,7 @@ class BuilderTask():
         sites_table_data = []
         grid_table_data = []
 
+
         for argument_set in itertools.product(*argument_vals):
             named_args = dict()
             for ik in range(len(argument_names)):
@@ -64,32 +65,33 @@ class BuilderTask():
             calculator = self._hazard_builder.build()
 
             sites_table_data += [row for row in self.run_sites(ta, calculator, **named_args)]
+
             t2 = dt.datetime.utcnow()
             print("Site calcs ran in %s secs" % (t2-t1).total_seconds())
 
-            grid_table_data += [row for row in self.run_gridded(ta, calculator, **named_args)]
-            t3 = dt.datetime.utcnow()
-            print("Grid calcs ran in %s secs" % (t3-t2).total_seconds())
+        #     grid_table_data += [row for row in self.run_gridded(ta, calculator, **named_args)]
+        #     t3 = dt.datetime.utcnow()
+        #     print("Grid calcs ran in %s secs" % (t3-t2).total_seconds())
 
-        #SAVE TO API Gridded
-        if self.use_api and grid_table_data:
-            result = self._toshi_api.table.create_table(
-                grid_table_data,
-                column_headers = ["forecast_timespan", "bg_seismicity", "iml_period", "gmpe", "lat", "lon", "PofET 0.02", "PofET 0.1"],
-                column_types = ["double", "string", "double", "string", "double", "double", "double", "double"],
-                object_id=ta['file_id'],
-                table_name="Inversion Solution Gridded Hazard",
-                table_type="HAZARD_GRIDDED",
-                dimensions=grid_dimensions
-            )
-            grid_table_id = result['id']
+        # #SAVE TO API Gridded
+        # if self.use_api and grid_table_data:
+        #     result = self._toshi_api.table.create_table(
+        #         grid_table_data,
+        #         column_headers = ["forecast_timespan", "bg_seismicity", "iml_period", "gmpe", "lat", "lon", "PofET 0.02", "PofET 0.1"],
+        #         column_types = ["double", "string", "double", "string", "double", "double", "double", "double"],
+        #         object_id=ta['file_id'],
+        #         table_name="Inversion Solution Gridded Hazard",
+        #         table_type="HAZARD_GRIDDED",
+        #         dimensions=grid_dimensions
+        #     )
+        #     grid_table_id = result['id']
 
-            result = self._toshi_api.inversion_solution.append_hazard_table(ta['file_id'], grid_table_id,
-                label= "Inversion Solution Gridded Hazard",
-                table_type="HAZARD_GRIDDED",
-                dimensions=grid_dimensions
-            )
-            print("created & linked gridded table: ", grid_table_id)
+        #     result = self._toshi_api.inversion_solution.append_hazard_table(ta['file_id'], grid_table_id,
+        #         label= "Inversion Solution Gridded Hazard",
+        #         table_type="HAZARD_GRIDDED",
+        #         dimensions=grid_dimensions
+        #     )
+        #     print("created & linked gridded table: ", grid_table_id)
 
         #SAVE TO API sites
         if self.use_api and sites_table_data:

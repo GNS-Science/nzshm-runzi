@@ -43,9 +43,9 @@ class OpenshaTaskFactory():
         self._root_path = root_path #path containing the git repos
         self._working_path = working_path
 
-        self._jvm_heap_start_gb = jvm_heap_start
-        self._jvm_heap_max_gb = jvm_heap_max
-        self._python = python
+        self._jvm_heap_start_gb = str(jvm_heap_start)
+        self._jvm_heap_max_gb = str(jvm_heap_max)
+        self._python = str(python)
         # self._python_script = python_script or 'rupture_set_builder_task.py'
 
     def write_task_config(self, task_arguments, job_arguments):
@@ -95,7 +95,7 @@ kill -9 $!
         return f"""
 #PBS -l nodes={self._pbs_nodes}:ppn={self._pbs_ppn}
 #PBS -l walltime={self._pbs_wall_hours}:00:00
-#PBS -l mem={self._jvm_heap_max_gb +2}gb
+#PBS -l mem={int(self._jvm_heap_max_gb)+2}gb
 
 source {self._root_path}/nzshm-runzi/bin/activate
 

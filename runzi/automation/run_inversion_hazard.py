@@ -74,7 +74,7 @@ def run_tasks(general_task_id, solutions, subtask_arguments):
         os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
         yield str(script_file_path)
-        return
+        #return
 
 if __name__ == "__main__":
 
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     GENERAL_TASK_ID = None
     # If you wish to override something in the main config, do so here ..
     WORKER_POOL_SIZE = 1
-    JVM_HEAP_MAX = 42
+    JVM_HEAP_MAX = 22
     JAVA_THREADS = 12
     #USE_API = False #True #to read the ruptset form the API
 
@@ -105,10 +105,10 @@ if __name__ == "__main__":
     #[0, 0.01, 0.02, 0.03, 0.05, 0.075, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
     args = dict(
         #iml_periods = "0.0, 0.05, 0.075, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0".split(',').join(),
-        iml_periods = [v.strip() for v in "0.0, 0.25, 5.0, 10.0".split(',')],
-        bg_seismicitys = ["INCLUDE"],
+        iml_periods = [v.strip() for v in "0.0, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0".split(',')],
+        bg_seismicitys = ["INCLUDE", "EXCLUDE"],
         gmpes = ["ASK_2014"],
-        forecast_timespans = ['50',],
+        forecast_timespans = ['50'],
         grid_spacings = ['0.1'],
         regions = ["NZ_TEST_GRIDDED"],
         )
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     #"R2VuZXJhbFRhc2s6NTk2SmJXZUI="
     #"R2VuZXJhbFRhc2s6NzU0cGp4c1c="
     #"R2VuZXJhbFRhc2s6NzU2andXeTc=",
-    for inversion_task_id in ["R2VuZXJhbFRhc2s6MTE5NG1yRnM5"]: # R2VuZXJhbFRhc2s6NjMyUzRDZGM="]: #TEST Inversion
+    for inversion_task_id in ["R2VuZXJhbFRhc2s6MTIzN1NFQWtz"]: # R2VuZXJhbFRhc2s6NjMyUzRDZGM="]: #TEST Inversion
 
         file_generator = get_output_file_ids(toshi_api, inversion_task_id) #
         #file_generator = get_output_file_id(toshi_api, "RmlsZTozMDkuMHB3U0dn") #for file by file ID
