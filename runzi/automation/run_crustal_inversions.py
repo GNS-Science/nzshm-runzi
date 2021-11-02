@@ -15,7 +15,7 @@ from runzi.automation.scaling.file_utils import download_files, get_output_file_
 from runzi.automation.scaling import inversion_solution_builder_task
 
 # Set up your local config, from environment variables, with some sone defaults
-from .scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
+from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
     API_KEY, API_URL, S3_URL, CLUSTER_MODE)
 

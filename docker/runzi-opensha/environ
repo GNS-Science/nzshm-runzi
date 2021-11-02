@@ -5,4 +5,5 @@ NZSHM22_TOSHI_API_ENABLED=1
 NZSHM22_SCRIPT_WORK_PATH=/WORKING
 NZSHM22_TOSHI_API_URL=https://i7gz6msaa2.execute-api.ap-southeast-2.amazonaws.com/test/graphql
 NZSHM22_OPENSHA_JRE=/opt/java/openjdk/bin/java
-NZSHM22_FATJAR=/nzshm-opensha/build/libs/nzshm-opensha-all.jar
+NZSHM22_FATJAR=/app/nzshm-opensha/build/libs/nzshm-opensha-all.jar
+NZSHM22_OPENSHA_ROOT=/app

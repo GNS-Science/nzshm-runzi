@@ -3,7 +3,7 @@ LABEL Chris Chamberlain <chrisbc@artisan.co.nz>
 RUN apk add --no-cache curl tar bash procps \
 	python3 py3-pip git
 
-WORKDIR /nzshm-opensha/build/libs
+WORKDIR /app/nzshm-opensha/build/libs
 COPY nzshm-opensha/build/libs/nzshm-opensha-all.jar .
 
 WORKDIR /app

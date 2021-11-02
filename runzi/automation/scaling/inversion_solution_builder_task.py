@@ -33,8 +33,8 @@ class BuilderTask():
 
         #setup the java gateway binding
         self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=job_args['java_gateway_port']))
-        repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
-        self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
+        #repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
+        #self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
         self._output_folder = PurePath(job_args.get('working_path'))
 
         if self.use_api:
@@ -53,9 +53,9 @@ class BuilderTask():
 
         environment = {
             "host": platform.node(),
-            "gitref_opensha":self._repoheads['opensha'],
-            "gitref_nzshm-opensha":self._repoheads['nzshm-opensha'],
-            "gitref_nzshm-runzi":self._repoheads['nzshm-runzi']
+            #"gitref_opensha":self._repoheads['opensha'],
+            #"gitref_nzshm-opensha":self._repoheads['nzshm-opensha'],
+            #"gitref_nzshm-runzi":self._repoheads['nzshm-runzi']
             }
 
         if self.use_api:
