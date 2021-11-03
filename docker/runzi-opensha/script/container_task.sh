@@ -10,7 +10,7 @@ cd /app/nzshm-runzi
 
 java -Xms4G -Xmx${NZSHM22_SCRIPT_JVM_HEAP_MAX}G -classpath ${JAVA_CLASSPATH} ${CLASSNAME} > ${NZSHM22_SCRIPT_WORK_PATH}/java_app.log &
 
-python3 runzi/automation/scaling/prepare_inversion.py ${TOSHI_RUPTURE_SET_ID}
+python3 ${PYTHON_PREP_MODULE} ${TOSHI_RUPTURE_SET_ID}
 python3 ${PYTHON_TASK_MODULE} ${TASK_CONFIG_JSON_QUOTED} > ${NZSHM22_SCRIPT_WORK_PATH}/python_script.log
 
 #Kill the Java gateway server

@@ -2,17 +2,19 @@ import os
 import pwd
 import itertools
 import stat
+import json
 from pathlib import PurePath
 from subprocess import check_call
 from multiprocessing.dummy import Pool
 
 import datetime as dt
+import urllib.parse
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
 
-from runzi.automation.scaling import inversion_solution_builder_task
+from runzi.automation.scaling import inversion_solution_builder_task, prepare_inversion
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
@@ -111,7 +113,7 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
 
             if CLUSTER_MODE == EnvMode['AWS']:
 
-                config_data =dict(task_arguments=task_arguments, job_arguments=job_arguments)
+                config_data = json.dumps(dict(task_arguments=task_arguments, job_arguments=job_arguments))
 
                 config = urllib.parse.quote(config_data)
 
@@ -119,7 +121,7 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 print()
                 print(inversion_solution_builder_task.__file__)
                 print()
-                print(prepare_inversion_inputs.__file__)
+                print(prepare_inversion.__file__)
 
             else:
                 #write a config

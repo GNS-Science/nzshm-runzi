@@ -81,29 +81,30 @@ kill -9 $!
         self._next_port +=1
         return script
 
-class OpenshaAWSTaskFactory(OpenshaTaskFactory):
 
-    def __init__(self, root_path, working_path,  python_script_module, **kwargs):
+# class OpenshaAWSTaskFactory(OpenshaTaskFactory):
 
-        super().__init__(root_path, working_path,  python_script_module, **kwargs)
+#     def __init__(self, root_path, working_path,  python_script_module, **kwargs):
 
-    def get_task_script(self):
+#         super().__init__(root_path, working_path,  python_script_module, **kwargs)
 
-        fname = f"{self._config_path}/config.{self._next_port}.json"
+#     def get_task_script(self):
 
-        return f"""
-#AWS GENERAL RUN SCRIPT....
+#         fname = f"{self._config_path}/config.{self._next_port}.json"
 
-# expects an env TASK_CONFIG_JSON_QUOTED built like urllib.parse.quote(config_dict)
-export TASK_CONFIG_JSON_QUOTED=
-export PYTHON_TASK_MODULE={self._python_script}
+#         return f"""
+# #AWS GENERAL RUN SCRIPT....
 
-#DO the AWS stuff here to execute this againts the cloud container
+# # expects an env TASK_CONFIG_JSON_QUOTED built like urllib.parse.quote(config_dict)
+# export TASK_CONFIG_JSON_QUOTED=
+# export PYTHON_TASK_MODULE={self._python_script}
 
-./container_task.sh
+# #DO the AWS stuff here to execute this againts the cloud container
 
-#END
-"""
+# ./container_task.sh
+
+# #END
+# """
 
 
 class OpenshaPBSTaskFactory(OpenshaTaskFactory):
