@@ -82,11 +82,10 @@ kill -9 $!
         return script
 
 
-# class OpenshaAWSTaskFactory(OpenshaTaskFactory):
+class OpenshaAWSTaskFactory(OpenshaTaskFactory):
 
-#     def __init__(self, root_path, working_path,  python_script_module, **kwargs):
-
-#         super().__init__(root_path, working_path,  python_script_module, **kwargs)
+    def __init__(self, root_path, working_path,  python_script_module, **kwargs):
+        super().__init__(root_path, working_path,  python_script_module, **kwargs)
 
 #     def get_task_script(self):
 

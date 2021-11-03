@@ -24,6 +24,9 @@ from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPEN
 INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 #JAVA_THREADS = 4
 
+if CLUSTER_MODE == EnvMode['AWS']:
+    WORK_PATH='/WORKING'
+
 def build_crustal_tasks(general_task_id, rupture_sets, args):
     task_count = 0
 
@@ -117,11 +120,14 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
 
                 config = urllib.parse.quote(config_data)
 
+                print(config_data)
+                print()
+
                 print(config)
                 print()
-                print(inversion_solution_builder_task.__file__)
-                print()
-                print(prepare_inversion.__file__)
+                # print(inversion_solution_builder_task.__file__)
+                # print()
+                # print(prepare_inversion.__file__)
 
             else:
                 #write a config
@@ -150,17 +156,13 @@ if __name__ == "__main__":
     WORKER_POOL_SIZE = 1
     JVM_HEAP_MAX = 30
     JAVA_THREADS = 4
-    USE_API = False
+    #USE_API = False
 
     INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 
     #If using API give this task a descriptive setting...
     TASK_TITLE = "Modular Inversions: Coulomb D90 Geodetic vs Geologic; TMG vs Generalised"
-    TASK_DESCRIPTION = """The D90 Coulomb Rupture set, with some more ballpark sweeps:
-     - the geologic slip rates from the fault model (CFM)
-     - the geodetic no-prior model with uniform std-dev
-     - The two new scaling relations: SMPL_NZ_CRU_MN vs TMG_CRU_2017
-    """
+    TASK_DESCRIPTION = """FIRST DOCKER container run"""
 
     GENERAL_TASK_ID = None
 
@@ -179,8 +181,8 @@ if __name__ == "__main__":
      - file_generator = get_output_file_ids(general_api, upstream_task_id)
     """
     #for a single rupture set, pass a valid FileID
-    file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
 
+    file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
     rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
     args = dict(
