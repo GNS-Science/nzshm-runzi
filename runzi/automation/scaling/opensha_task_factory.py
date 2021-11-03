@@ -94,8 +94,8 @@ class OpenshaAWSTaskFactory(OpenshaTaskFactory):
         return f"""
 #AWS RUN ....
 
-JSON_CONFIG="$(<{fname})"
-./container_task.sh ${{JSON_CONFIG}}
+export RUNZI_CONFIG_AS_JSON_B64="$(base64 {fname})"
+./container_task.sh
 
 """
 
