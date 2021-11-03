@@ -6,7 +6,9 @@ RUN apk add --no-cache curl tar bash procps \
 WORKDIR /app/nzshm-opensha/build/libs
 COPY nzshm-opensha/build/libs/nzshm-opensha-all.jar .
 
+WORKDIR /WORKING
 WORKDIR /app
+
 COPY script/container_task.sh .
 RUN chmod +x container_task.sh
 RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
