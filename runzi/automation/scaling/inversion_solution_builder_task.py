@@ -239,9 +239,14 @@ if __name__ == "__main__":
     parser.add_argument("config")
     args = parser.parse_args()
 
-    config_file = args.config
-    f= open(config_file, 'r', encoding='utf-8')
-    config = json.load(f)
+    try:
+        # LOCAL and CLUSTER this is a file
+        config_file = args.config
+        f= open(args.config, 'r', encoding='utf-8')
+        config = json.load(f)
+    except:
+        # AWS this is a string
+        config = json.load(args.config)
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(5)

@@ -9,7 +9,7 @@ from multiprocessing.dummy import Pool
 import datetime as dt
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
-from runzi.automation.scaling.opensha_task_factory import OpenshaTaskFactory
+from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
 
 from runzi.automation.scaling import inversion_solution_builder_task
@@ -17,7 +17,7 @@ from runzi.automation.scaling import inversion_solution_builder_task
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, CLUSTER_MODE)
+    API_KEY, API_URL, S3_URL, CLUSTER_MODE, EnvMode)
 
 INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 #JAVA_THREADS = 4
@@ -27,12 +27,12 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
 
     # java_threads = int(args['threads_per_selector']) * int(args['averaging_threads'])
 
-    task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, inversion_solution_builder_task,
+    factory_class = get_factory(CLUSTER_MODE)
+
+    task_factory = factory_class(OPENSHA_ROOT, WORK_PATH, inversion_solution_builder_task,
         initial_gateway_port=INITIAL_GATEWAY_PORT,
         jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
-        task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START,
-        pbs_ppn=None,
-        pbs_script=CLUSTER_MODE)
+        task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
 
     for (rid, rupture_set_info) in rupture_sets.items():
         for (_round, completion_energy, max_inversion_time,
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     WORKER_POOL_SIZE = 1
     JVM_HEAP_MAX = 30
     JAVA_THREADS = 4
-    #USE_API = False
+    USE_API = False
 
     INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 
@@ -231,11 +231,12 @@ if __name__ == "__main__":
 
     def call_script(script_name):
         print("call_script with:", script_name)
-        if CLUSTER_MODE:
+        if CLUSTER_MODE == EnvMode['CLUSTER']:
             check_call(['qsub', script_name])
+        if CLUSTER_MODE == EnvMode['AWS']:
+            print('AWS_TIME!: ', script_name)
         else:
             check_call(['bash', script_name])
-
 
     print('task count: ', len(scripts))
     print('worker count: ', WORKER_POOL_SIZE)

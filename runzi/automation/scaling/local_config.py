@@ -4,7 +4,13 @@ and is imported  by the various run_xxx.py scripts
 """
 
 import os
+import enum
 from pathlib import PurePath
+
+class EnvMode(enum.IntEnum):
+    LOCAL = 0
+    CLUSTER = 1
+    AWS = 2
 
 #API Setting are needed to sore job details for later reference
 API_URL  = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
@@ -30,4 +36,4 @@ OPENSHA_JRE = os.getenv('NZSHM22_OPENSHA_JRE', "/usr/lib/jvm/java-11-openjdk-amd
 FATJAR = os.getenv('NZSHM22_FATJAR', None) or str(PurePath(OPENSHA_ROOT, "nzshm-opensha/build/libs/nzshm-opensha-all.jar"))
 WORK_PATH = os.getenv('NZSHM22_SCRIPT_WORK_PATH', PurePath(os.getcwd(), "tmp"))
 
-CLUSTER_MODE = os.getenv('NZSHM22_SCRIPT_CLUSTER_MODE', False)
+CLUSTER_MODE = EnvMode[os.getenv('NZSHM22_SCRIPT_CLUSTER_MODE','LOCAL')] #Wase True/False now EnvMode: LOCAL, CLUSTER, AWS

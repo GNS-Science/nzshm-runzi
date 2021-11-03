@@ -18,21 +18,20 @@ import os
 import json
 # import scaling.rupture_set_builder_task
 
+from .local_config import EnvMode
+
+
 class OpenshaTaskFactory():
 
     def __init__(self, root_path, working_path,  python_script_module, jre_path=None, app_jar_path=None, task_config_path=None,
-        pbs_script=False, initial_gateway_port=25333, pbs_ppn=8, pbs_wall_hours=24,
-        python='python',
+        initial_gateway_port=25333,
+        python='python3',
         jvm_heap_start=3, jvm_heap_max=10):
         """
-        pbs_script: boolean is this a PBS job?
         initial_gateway_port: what port to start incrementing from
         """
         self._next_port = initial_gateway_port
-        self._pbs_script = pbs_script
-        self._pbs_ppn = pbs_ppn #define hows many processors the PBS job should 'see'
-        self._pbs_nodes = 1 #always ust one PBS node (and which one we don't know)
-        self._pbs_wall_hours = pbs_wall_hours #defines maximum time the jobs is allocated by PBS
+
 
         self._jre_path = jre_path or "/opt/sw/java/java-11-openjdk-amd64/bin/java"
         self._app_jar_path = app_jar_path or "~/NSHM/opensha/nshm-nz-opensha/build/libs/nshm-nz-opensha-all.jar"
@@ -51,20 +50,12 @@ class OpenshaTaskFactory():
     def write_task_config(self, task_arguments, job_arguments):
         data =dict(task_arguments=task_arguments, job_arguments=job_arguments)
         fname = f"{self._config_path}/config.{self._next_port}.json"
-        if task_arguments.get('max_inversion_time'):
-            self._pbs_wall_hours = int(float(task_arguments.get('max_inversion_time'))/60) + 1
-        if job_arguments.get('java_threads'):
-            self._pbs_ppn = int(job_arguments.get('java_threads'))
-
         with open(fname, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
 
     def get_task_script(self):
-        if not self._pbs_script:
-            return self._get_bash_script()
-        else:
-            return self._get_pbs_script()
+        return self._get_bash_script()
 
     def get_next_port(self):
         return self._next_port
@@ -90,8 +81,49 @@ kill -9 $!
         self._next_port +=1
         return script
 
+class OpenshaAWSTaskFactory(OpenshaTaskFactory):
 
-    def _get_pbs_script(self):
+    def __init__(self, root_path, working_path,  python_script_module, **kwargs):
+
+        super().__init__(root_path, working_path,  python_script_module, **kwargs)
+
+    def get_task_script(self):
+
+        fname = f"{self._config_path}/config.{self._next_port}.json"
+
+        return f"""
+#AWS RUN ....
+
+JSON_CONFIG="$(<{fname})"
+./container_task.sh ${{JSON_CONFIG}}
+
+"""
+
+
+class OpenshaPBSTaskFactory(OpenshaTaskFactory):
+
+    def __init__(self, root_path, working_path,  python_script_module, **kwargs):
+
+        super().__init__(root_path, working_path,  python_script_module, **kwargs)
+
+        self._pbs_ppn = kwargs.get('pbs_ppn', 16) #define hows many processors the PBS job should 'see'
+        self._pbs_nodes = 1 #always ust one PBS node (and which one we don't know)
+        self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1) #defines maximum time the jobs is allocated by PBS
+
+
+    def write_task_config(self, task_arguments, job_arguments):
+        data =dict(task_arguments=task_arguments, job_arguments=job_arguments)
+        fname = f"{self._config_path}/config.{self._next_port}.json"
+        if task_arguments.get('max_inversion_time'):
+            self._pbs_wall_hours = int(float(task_arguments.get('max_inversion_time'))/60) + 1
+        if job_arguments.get('java_threads'):
+            self._pbs_ppn = int(job_arguments.get('java_threads'))
+
+        with open(fname, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+    def get_task_script(self):
         return f"""
 #PBS -l nodes={self._pbs_nodes}:ppn={self._pbs_ppn}
 #PBS -l walltime={self._pbs_wall_hours}:00:00
@@ -111,3 +143,10 @@ export NO_PROXY=${{no_proxy}}
 #END_OF_PBS
 """
 
+def get_factory(environment_mode):
+    if environment_mode == EnvMode['LOCAL']:
+        return OpenshaTaskFactory
+    elif environment_mode == EnvMode['CLUSTER']:
+        return OpenshaPBSTaskFactory
+    elif environment_mode == EnvMode['AWS']:
+        return OpenshaAWSTaskFactory
