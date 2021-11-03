@@ -119,6 +119,7 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 print()
                 print(inversion_solution_builder_task.__file__)
                 print()
+                print(prepare_inversion_inputs.__file__)
 
             else:
                 #write a config
