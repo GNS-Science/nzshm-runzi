@@ -92,11 +92,17 @@ class OpenshaAWSTaskFactory(OpenshaTaskFactory):
         fname = f"{self._config_path}/config.{self._next_port}.json"
 
         return f"""
-#AWS RUN ....
+#AWS GENERAL RUN SCRIPT....
 
-export RUNZI_CONFIG_AS_JSON_B64="$(base64 {fname})"
+# expects an env TASK_CONFIG_JSON_QUOTED built like urllib.parse.quote(config_dict)
+export TASK_CONFIG_JSON_QUOTED=
+export PYTHON_TASK_MODULE={self._python_script}
+
+#DO the AWS stuff here to execute this againts the cloud container
+
 ./container_task.sh
 
+#END
 """
 
 

@@ -109,20 +109,33 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 use_api = USE_API,
                 )
 
-            #write a config
-            task_factory.write_task_config(task_arguments, job_arguments)
+            if CLUSTER_MODE == EnvMode['AWS']:
 
-            script = task_factory.get_task_script()
+                config_data =dict(task_arguments=task_arguments, job_arguments=job_arguments)
 
-            script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
-            with open(script_file_path, 'w') as f:
-                f.write(script)
+                config = urllib.parse.quote(config_data)
 
-            #make file executable
-            st = os.stat(script_file_path)
-            os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
+                print(config)
+                print()
+                print(inversion_solution_builder_task.__file__)
+                print()
 
-            yield str(script_file_path)
+            else:
+                #write a config
+                task_factory.write_task_config(task_arguments, job_arguments)
+
+                script = task_factory.get_task_script()
+
+                script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
+                with open(script_file_path, 'w') as f:
+                    f.write(script)
+
+                #make file executable
+                st = os.stat(script_file_path)
+                os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
+
+                yield str(script_file_path)
+
             return
 
 if __name__ == "__main__":

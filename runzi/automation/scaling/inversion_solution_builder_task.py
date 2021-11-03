@@ -6,8 +6,7 @@ import uuid
 from pathlib import PurePath
 import platform
 import time
-import base64
-
+import urllib.parse
 
 from py4j.java_gateway import JavaGateway, GatewayParameters
 import datetime as dt
@@ -247,10 +246,8 @@ if __name__ == "__main__":
         f= open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
     except:
-        # for AWS this must be a base64 encoded JSON string
-        base64_bytes = args.config.encode('ascii')
-        message_bytes = base64.b64decode(base64_bytes)
-        config = json.load(message_bytes.decode('ascii'))
+        # for AWS this must be a quoted JSON string
+        config = json.loads(urllib.parse.unquote(args.config))
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(5)
