@@ -18,11 +18,19 @@ from nshm_toshi_client.general_task import GeneralTask
 from nshm_toshi_client.task_relation import TaskRelation
 
 from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.util.aws import get_secret
 
 API_URL  = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
-API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
+API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "*****")
 S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL',"http://localhost:4569")
 
+
+#Get API key from AWS secrets manager
+
+if 'TEST' in API_URL.upper():
+    API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_TEST", "us-east-1").get("NZSHM22_TOSHI_API_KEY_TEST")
+elif 'PROD' in API_URL.upper():
+    API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_PROD", "us-east-1")
 
 class BuilderTask():
     """

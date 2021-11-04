@@ -1,10 +1,11 @@
 import argparse
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
+from runzi.util.aws import get_secret
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (WORK_PATH,
-    API_KEY, API_URL, S3_URL, CLUSTER_MODE, EnvMode)
+    API_URL, S3_URL, CLUSTER_MODE, EnvMode)
    
 def prepare_inversion_inputs(rupture_set_file_id):
     """
@@ -30,6 +31,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print(f"Attempt to download: ${args.rupture_set_file_id}")
+
+    #Get API key from AWS secrets manager
+    if 'TEST' in API_URL.upper():
+        API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_TEST", "us-east-1").get("NZSHM22_TOSHI_API_KEY_TEST")
+    elif 'PROD' in API_URL.upper():
+        API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_PROD", "us-east-1")
+
     prepare_inversion_inputs(args.rupture_set_file_id)
 
 
