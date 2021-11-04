@@ -1,0 +1,25 @@
+{
+    "jobName": "remote_launch_001",
+    "jobQueue": "BasicFargate_Q",
+    "jobDefinition": "Fargate-runzi-opensha-JD",
+    "containerOverrides": {
+        "command": [
+            "echo REMOTE",
+            "NADA"
+        ],
+        "resourceRequirements": [
+            {
+                "value": "1024",
+                "type": "MEMORY"
+            },
+            {
+                "value": "0.25",
+                "type": "VCPU"
+            }
+        ]
+    },
+    "propagateTags": true,
+    "timeout": {
+        "attemptDurationSeconds": 60
+    }
+}

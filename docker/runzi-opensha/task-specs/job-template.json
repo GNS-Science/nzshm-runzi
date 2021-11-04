@@ -1,0 +1,83 @@
+{
+    "jobName": "",
+    "jobQueue": "",
+    "arrayProperties": {
+        "size": 0
+    },
+    "dependsOn": [
+        {
+            "jobId": "",
+            "type": "SEQUENTIAL"
+        }
+    ],
+    "jobDefinition": "",
+    "parameters": {
+        "KeyName": ""
+    },
+    "containerOverrides": {
+        "vcpus": 0,
+        "memory": 0,
+        "command": [
+            ""
+        ],
+        "instanceType": "",
+        "environment": [
+            {
+                "name": "",
+                "value": ""
+            }
+        ],
+        "resourceRequirements": [
+            {
+                "value": "",
+                "type": "MEMORY"
+            }
+        ]
+    },
+    "nodeOverrides": {
+        "numNodes": 0,
+        "nodePropertyOverrides": [
+            {
+                "targetNodes": "",
+                "containerOverrides": {
+                    "vcpus": 0,
+                    "memory": 0,
+                    "command": [
+                        ""
+                    ],
+                    "instanceType": "",
+                    "environment": [
+                        {
+                            "name": "",
+                            "value": ""
+                        }
+                    ],
+                    "resourceRequirements": [
+                        {
+                            "value": "",
+                            "type": "VCPU"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "retryStrategy": {
+        "attempts": 0,
+        "evaluateOnExit": [
+            {
+                "onStatusReason": "",
+                "onReason": "",
+                "onExitCode": "",
+                "action": "EXIT"
+            }
+        ]
+    },
+    "propagateTags": true,
+    "timeout": {
+        "attemptDurationSeconds": 0
+    },
+    "tags": {
+        "KeyName": ""
+    }
+}
