@@ -10,7 +10,7 @@ def main(id):
         aws_secret_access_key = AWS_SECRET_KEY,
         region_name = 'us-east-1'
     )
-    publishObject = { "model_id": id }
+    publishObject = { "model_id": id, "bing": "bongbash" }
     response = snsClient.publish(
         TopicArn=topicArn,
         Message=json.dumps(publishObject),
@@ -21,7 +21,7 @@ def main(id):
     
     print(response['ResponseMetadata']['HTTPStatusCode']) 
 
-main()
+main("SW52ZXJzaW9uU29sdXRpb246MjMwNi4wU2lHM1E=")
 
 
  

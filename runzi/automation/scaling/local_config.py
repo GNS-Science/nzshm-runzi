@@ -25,13 +25,13 @@ JVM_HEAP_MAX = os.getenv('NZSHM22_SCRIPT_JVM_HEAP_MAX', 10)  #Maximum JAVA Memor
 
 
 #LOCAL SYSTEM SETTINGS
-OPENSHA_ROOT = os.getenv('NZSHM22_OPENSHA_ROOT', "~/DEV/GNS/opensha-modular")
-OPENSHA_JRE = os.getenv('NZSHM22_OPENSHA_JRE', "/usr/lib/jvm/java-11-openjdk-amd64/bin/java")
-FATJAR = os.getenv('NZSHM22_FATJAR', None) or str(PurePath(OPENSHA_ROOT, "nzshm-opensha/build/libs/nzshm-opensha-all.jar"))
+OPENSHA_ROOT = os.getenv('NZSHM22_OPENSHA_ROOT', "/Users/benchamberlain/gns/nzshm-runzi/")
+OPENSHA_JRE = os.getenv('NZSHM22_OPENSHA_JRE', "/Library/Java/JavaVirtualMachines/jdk-11.0.12.jdk/Contents/Home/bin/java")
+FATJAR = os.getenv('NZSHM22_FATJAR', None) or str(PurePath(OPENSHA_ROOT, "jar/nzshm-opensha-all.jar"))
 WORK_PATH = os.getenv('NZSHM22_SCRIPT_WORK_PATH', PurePath(os.getcwd(), "tmp"))
 
 CLUSTER_MODE = os.getenv('NZSHM22_SCRIPT_CLUSTER_MODE', False)
 
 BUILD_PLOTS = True
 REPORT_LEVEL = 'DEFAULT'
-MOCK_MODE = True
+MOCK_MODE = False

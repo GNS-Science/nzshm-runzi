@@ -14,6 +14,7 @@ from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.opensha_task_factory import OpenshaTaskFactory
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.run_inversion_diagnostics import run_tasks
+from upload import upload_to_bucket
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
@@ -74,5 +75,4 @@ def run_inversion_diags(file_id):
     pool.join()
 
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
-
-run_inversion_diags("SW52ZXJzaW9uU29sdXRpb246MjMwNi4wU2lHM1E=")
+    upload_to_bucket(file_id, 'nzshm-static-reports-test')

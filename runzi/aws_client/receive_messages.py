@@ -1,8 +1,12 @@
+from os import read
 import boto3
 import json
+import time
+import schedule
 from env import AWS_ACCESS_KEY, AWS_SECRET_KEY
+from inversion_diagnostic_runner import run_inversion_diags
 
-def main():
+def read_message_and_run_diagnostics():
     sqs = boto3.client('sqs', 
                         region_name='us-east-1',
                         aws_access_key_id=AWS_ACCESS_KEY,
@@ -19,14 +23,23 @@ def main():
     VisibilityTimeout=100,
     WaitTimeSeconds=0)
 
-    message = response['Messages'][0]
-    receipt_handle = message['ReceiptHandle']
+    try:
+        message = response['Messages'][0]
+        receipt_handle = message['ReceiptHandle']
 
-    sqs.delete_message(
-        QueueUrl=queueUrl,
-        ReceiptHandle=receipt_handle
-    )
-    print('Received and deleted message: %s' % message)
+        sqs.delete_message(
+            QueueUrl=queueUrl,
+            ReceiptHandle=receipt_handle
+        )
+        task_id = json.loads(json.loads(message['Body'])['Message'])['model_id']
+        print('Received and deleted message with id: %s' % task_id)
+        print("Running diagnostics...")
+        run_inversion_diags(task_id)
+    except KeyError:
+        print('No tasks to run - back to sleep!')
 
+schedule.every(1).minutes.do(read_message_and_run_diagnostics)
+while True:
+    schedule.run_pending()
+    time.sleep(1)
 
-main()
