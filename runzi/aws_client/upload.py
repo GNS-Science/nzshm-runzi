@@ -42,4 +42,3 @@ def upload_to_bucket(id, bucket):
     pool.close()
     pool.join()
     print("Done! uploaded %s in %s secs" % (len(file_list), (dt.datetime.utcnow() - t0).total_seconds()))
-upload_to_bucket("SW52ZXJzaW9uU29sdXRpb246MjMwNi4wU2lHM1E=", 'nzshm-static-reports-test')
