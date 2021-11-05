@@ -97,7 +97,7 @@ def get_ecs_job_config(job_name, rupture_set_id, config, toshi_api_url, toshi_s3
                 },
                 {
                     "name": "NZSHM22_SCRIPT_JVM_HEAP_MAX",
-                    "value": str(memory/1000)
+                    "value": str(int(memory/1000))
                 },
                 {
                     "name": "NZSHM22_TOSHI_S3_URL",
