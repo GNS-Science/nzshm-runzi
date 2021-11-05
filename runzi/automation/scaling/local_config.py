@@ -18,6 +18,8 @@ JAVA_THREADS = os.getenv('NZSHM22_SCRIPT_JAVA_THREADS', 4) #each
 
 #How many jobs to run in parallel - keep thread/memory resources in mind
 WORKER_POOL_SIZE = os.getenv('NZSHM22_SCRIPT_WORKER_POOL_SIZE',  2)
+#How many files to upload to S3 in parallel
+AGENT_S3_WORKERS = os.getenv('NZSHM22_SCRIPT_AWS_S3_WORKERS',  50)
 
 #Memory settings, be careful - don't exceed what you have avail, or you'll see swapping!
 JVM_HEAP_START = os.getenv('NZSHM22_SCRIPT_JVM_HEAP_START', 4) #Startup JAVA Memory (per worker)
@@ -32,6 +34,10 @@ WORK_PATH = os.getenv('NZSHM22_SCRIPT_WORK_PATH', PurePath(os.getcwd(), "tmp"))
 
 CLUSTER_MODE = os.getenv('NZSHM22_SCRIPT_CLUSTER_MODE', False)
 
-BUILD_PLOTS = True
-REPORT_LEVEL = 'DEFAULT'
-MOCK_MODE = False
+#Inversion diagnostics settings
+BUILD_PLOTS = os.getenv('NZSHM22_SCRIPT_BUILD_PLOTS', True)
+REPORT_LEVEL = os.getenv('NZSHM22_SCRIPT_REPORT_LEVEL', "DEFAULT")
+
+#Run java scripts or not - MOCK_MODE = True will not run java
+MOCK_MODE = os.getenv('NZSHM22_SCRIPT_MOCK_MODE', False)
+

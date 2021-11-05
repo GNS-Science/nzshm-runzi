@@ -6,6 +6,7 @@ import schedule
 from env import AWS_ACCESS_KEY, AWS_SECRET_KEY
 from inversion_diagnostic_runner import run_inversion_diags
 
+
 def read_message_and_run_diagnostics():
     sqs = boto3.client('sqs', 
                         region_name='us-east-1',
@@ -13,15 +14,17 @@ def read_message_and_run_diagnostics():
                         aws_secret_access_key=AWS_SECRET_KEY)
     queueUrl="https://sqs.us-east-1.amazonaws.com/280294454685/runzi-inversion-diagnostics-queue.fifo"
 
-
-    response = sqs.receive_message(
-    QueueUrl=queueUrl,
-    AttributeNames=[
-        'All'
-    ],
-    MaxNumberOfMessages=1,
-    VisibilityTimeout=100,
-    WaitTimeSeconds=0)
+    try:
+        response = sqs.receive_message(
+        QueueUrl=queueUrl,
+        AttributeNames=[
+            'All'
+        ],
+        MaxNumberOfMessages=1,
+        VisibilityTimeout=100,
+        WaitTimeSeconds=0)
+    except Exception as e:
+        print(e)
 
     try:
         message = response['Messages'][0]
