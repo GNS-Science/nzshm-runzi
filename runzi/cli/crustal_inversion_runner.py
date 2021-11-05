@@ -1,5 +1,6 @@
 import os
 import pwd
+import boto3
 from subprocess import check_call
 from multiprocessing.dummy import Pool
 
@@ -12,7 +13,7 @@ from runzi.automation.scaling.file_utils import download_files, get_output_file_
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, CLUSTER_MODE)
+    API_KEY, API_URL, S3_URL, CLUSTER_MODE, EnvMode)
 
 def run_crustal_inversion(config):
     t0 = dt.datetime.utcnow()
@@ -28,6 +29,9 @@ def run_crustal_inversion(config):
     file_id = config._file_id
     MODEL_TYPE = config._model_type
     SUBTASK_TYPE = config._subtask_type
+
+    if CLUSTER_MODE == EnvMode['AWS']:
+        WORK_PATH='/WORKING'
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
@@ -53,26 +57,40 @@ def run_crustal_inversion(config):
 
         GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
 
+    if CLUSTER_MODE == EnvMode['AWS']:
+        batch_client = boto3.client(
+            service_name='batch',
+            region_name='us-east-1',
+            endpoint_url='https://batch.us-east-1.amazonaws.com')
+
     print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
 
     scripts = []
-    for script_file in build_crustal_tasks(GENERAL_TASK_ID, rupture_sets, args):
-        scripts.append(script_file)
+    for script_file_or_config in build_crustal_tasks(GENERAL_TASK_ID, rupture_sets, args):
+        scripts.append(script_file_or_config)
 
-    def call_script(script_name):
-        print("call_script with:", script_name)
-        if CLUSTER_MODE:
-            check_call(['qsub', script_name])
-        else:
-            check_call(['bash', script_name])
+    if CLUSTER_MODE == EnvMode['LOCAL']:
+        def call_script(script_or_config):
+            print("call_script with:", script_or_config)
+            check_call(['bash', script_or_config])
 
-    print('task count: ', len(scripts))
-    print('worker count: ', WORKER_POOL_SIZE)
+        print('task count: ', len(scripts))
+        print('worker count: ', WORKER_POOL_SIZE)
+        pool = Pool(WORKER_POOL_SIZE)
+        pool.map(call_script, scripts)
+        pool.close()
+        pool.join()
 
-    pool = Pool(WORKER_POOL_SIZE)
-    pool.map(call_script, scripts)
-    pool.close()
-    pool.join()
+    elif CLUSTER_MODE == EnvMode['AWS']:
+        for script_or_config in scripts:
+            #print('AWS_TIME!: ', script_or_config)
+            res = batch_client.submit_job(**script_or_config)
+            print(res)
+
+    elif CLUSTER_MODE == EnvMode['CLUSTER']:
+        for script_or_config in scripts:
+            check_call(['qsub', script_or_config])
 
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+    print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
     
