@@ -19,12 +19,8 @@ RUN git checkout origin/feature/AWS_containerised_inversion_task
 RUN pip3 install -r headless_requirements.txt
 RUN pip3 install -e .
 
-ENV NZSHM22_TOSHI_API_KEY=
-ENV NZSHM22_SCRIPT_JVM_HEAP_MAX=30
-ENV NZSHM22_TOSHI_S3_URL=https://nzshm22-toshi-api-test.s3.amazonaws.com
 ENV NZSHM22_TOSHI_API_ENABLED=1
 ENV NZSHM22_SCRIPT_WORK_PATH=/WORKING
-ENV NZSHM22_TOSHI_API_URL=https://i7gz6msaa2.execute-api.ap-southeast-2.amazonaws.com/test/graphql
 ENV NZSHM22_OPENSHA_JRE=/opt/java/openjdk/bin/java
 ENV NZSHM22_FATJAR=/app/nzshm-opensha/build/libs/nzshm-opensha-all.jar
 ENV NZSHM22_OPENSHA_ROOT=/app

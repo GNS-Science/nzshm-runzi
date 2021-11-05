@@ -9,36 +9,28 @@ from multiprocessing.dummy import Pool
 import datetime as dt
 from dateutil.tz import tzutc
 
-# from scaling.opensha_task_factory import OpenshaTaskFactory
-# from scaling.file_utils import download_files, get_output_file_ids
-
-# from nshm_toshi_client.general_task import GeneralTask
-# from nshm_toshi_client.toshi_file import ToshiFile
-# from scaling.toshi_api import ToshiApi
-
-#from nshm_toshi_client.general_task import GeneralTask
-#from nshm_toshi_client.toshi_file import ToshiFile
 from scaling.toshi_api import ToshiApi
-
-from scaling.opensha_task_factory import OpenshaTaskFactory
 from scaling.file_utils import download_files, get_output_file_ids
-
+from scaling.opensha_task_factory import get_factory
 
 import scaling.inversion_diags_report_task
-# from scaling.toshi_api import ToshiApi
 
 # Set up your local config, from environment variables, with some sone defaults
 from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
     API_KEY, API_URL, S3_URL, CLUSTER_MODE)
 
+INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 
 def run_tasks(general_task_id, solutions):
     task_count = 0
-    task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, scaling.inversion_diags_report_task,
+
+    factory_class = get_factory(CLUSTER_MODE)
+    task_factory = factory_class(OPENSHA_ROOT, WORK_PATH, scaling.inversion_diags_report_task,
+        initial_gateway_port=INITIAL_GATEWAY_PORT,
         jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
-        task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START,
-        pbs_script=CLUSTER_MODE)
+        task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
+
 
     for (sid, rupture_set_info) in solutions.items():
 
@@ -47,9 +39,6 @@ def run_tasks(general_task_id, solutions):
         #get FM name
         fault_model = rupture_set_info['info']['fault_model']
 
-        # idx0 = rupture_set_info['filepath'].index("-CFM")
-        # idx1 = rupture_set_info['filepath'].index("-", idx0 +1)
-        #rupture_set_info['info'] has detail of the Inversion task
         task_arguments = dict(
             file_id = str(rupture_set_info['id']),
             file_path = rupture_set_info['filepath'],
@@ -93,7 +82,7 @@ if __name__ == "__main__":
     GENERAL_TASK_ID = None
     # If you wish to override something in the main config, do so here ..
     WORKER_POOL_SIZE = 3
-    JVM_HEAP_MAX = 15
+    JVM_HEAP_MAX = 12
     JAVA_THREADS = 4
     # USE_API = True #to read the ruptset form the API
 
@@ -117,7 +106,7 @@ if __name__ == "__main__":
     REPORT_LEVEL = 'DEFAULT' # None, 'LIGHT', 'DEFAULT', 'FULL'
 
     pool = Pool(WORKER_POOL_SIZE)
-    for inversion_task_id in ["R2VuZXJhbFRhc2s6NDYzNmpCa3pD"]: #"R2VuZXJhbFRhc2s6Mjc4OXphVmN2"]: #, "R2VuZXJhbFRhc2s6MjY4M1FGajVh"]:
+    for inversion_task_id in ["R2VuZXJhbFRhc2s6MTI4NlBZZmc2"]: #"R2VuZXJhbFRhc2s6Mjc4OXphVmN2"]: #, "R2VuZXJhbFRhc2s6MjY4M1FGajVh"]:
         #get input files from API
         file_generator = get_output_file_ids(file_api, inversion_task_id) #
         solutions = download_files(file_api, file_generator, str(WORK_PATH), overwrite=False, skip_existing=False)

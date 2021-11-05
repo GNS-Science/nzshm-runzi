@@ -55,7 +55,7 @@ def get_secret(secret_name, region_name):
             return base64.b64decode(get_secret_value_response['SecretBinary'])
 
 
-def get_ecs_job_config(job_name, rupture_set_id, config, time_minutes, memory, vcpu):
+def get_ecs_job_config(job_name, rupture_set_id, config, toshi_api_url, toshi_s3_url, time_minutes, memory, vcpu):
 
     assert vcpu in  [0.25, 0.5, 1, 2, 4]
     assert memory in [
@@ -94,7 +94,20 @@ def get_ecs_job_config(job_name, rupture_set_id, config, time_minutes, memory, v
                 {
                     "name": "TOSHI_RUPTURE_SET_ID",
                     "value": rupture_set_id
-                }
+                },
+                {
+                    "name": "NZSHM22_SCRIPT_JVM_HEAP_MAX",
+                    "value": str(memory/1000)
+                },
+                {
+                    "name": "NZSHM22_TOSHI_S3_URL",
+                    "value": toshi_s3_url
+                },
+                {
+                    "name": "NZSHM22_TOSHI_API_URL",
+                    "value": toshi_api_url
+                },
+
             ]
         },
         "propagateTags": True,

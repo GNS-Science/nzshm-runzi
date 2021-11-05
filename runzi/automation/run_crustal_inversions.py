@@ -121,6 +121,7 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
 
                 yield get_ecs_job_config(job_name, rid, config_data,
+                    toshi_api_url=API_URL, toshi_s3_url=S3_URL,
                     time_minutes=int(max_inversion_time), memory=30720, vcpu=4)
 
             else:
@@ -182,7 +183,7 @@ if __name__ == "__main__":
     args = dict(
         rounds = [str(x) for x in range(1)],
         completion_energies = ['0.0'], # 0.005]
-        max_inversion_times = ['60'], #8*60,] #3*60,]  #units are minutes
+        max_inversion_times = ['3'], #8*60,] #3*60,]  #units are minutes
         #max_inversion_times.reverse()
 
         deformation_models = ['FAULT_MODEL',], # GEOD_NO_PRIOR_UNISTD_2010_RmlsZTo4NTkuMDM2Z2Rw, 'GEOD_NO_PRIOR_UNISTD_D90_RmlsZTozMDMuMEJCOVVY',
