@@ -36,7 +36,7 @@ if __name__ == "__main__":
     if 'TEST' in API_URL.upper():
         API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_TEST", "us-east-1").get("NZSHM22_TOSHI_API_KEY_TEST")
     elif 'PROD' in API_URL.upper():
-        API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_PROD", "us-east-1")
+        API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_PROD", "us-east-1").get("NZSHM22_TOSHI_API_KEY_PROD")
 
     prepare_inversion_inputs(args.rupture_set_file_id)
 

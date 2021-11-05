@@ -4,6 +4,7 @@
 
 import boto3
 import base64
+import urllib.parse
 from botocore.exceptions import ClientError
 import json
 
@@ -52,3 +53,54 @@ def get_secret(secret_name, region_name):
             return json.loads(get_secret_value_response['SecretString'])
         else:
             return base64.b64decode(get_secret_value_response['SecretBinary'])
+
+
+def get_ecs_job_config(job_name, rupture_set_id, config, time_minutes, memory, vcpu):
+
+    assert vcpu in  [0.25, 0.5, 1, 2, 4]
+    assert memory in [
+        512, 1024, 2048, #value = 0.25
+        1024, 2048, 3072, 4096, # value = 0.5
+        2048, 3072, 4096, 5120, 6144, 7168,  8192, #value = 1
+        4096, 5120, 6144, 7168, 8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, #value = 2
+        8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, 17408,
+        18432, 19456, 20480, 21504, 22528, 23552, 24576, 25600, 26624, 27648, 28672, 29696, 30720 #value = 4
+    ]
+
+    return {
+        "jobName": job_name,
+        "jobQueue": "BasicFargate_Q",
+        "jobDefinition": "Fargate-runzi-opensha-JD",
+        "containerOverrides": {
+            "command": [
+                "-s",
+                "/app/container_task.sh"
+            ],
+            "resourceRequirements": [
+                {
+                    "value": str(memory),
+                    "type": "MEMORY"
+                },
+                {
+                    "value": str(vcpu),
+                    "type": "VCPU"
+                }
+            ],
+            "environment": [
+                {
+                    "name": "TASK_CONFIG_JSON_QUOTED",
+                    "value": urllib.parse.quote(json.dumps(config))
+                },
+                {
+                    "name": "TOSHI_RUPTURE_SET_ID",
+                    "value": rupture_set_id
+                }
+            ]
+        },
+        "propagateTags": True,
+        "timeout": {
+            "attemptDurationSeconds": (time_minutes * 60) + 300
+        }
+    }
+
+
