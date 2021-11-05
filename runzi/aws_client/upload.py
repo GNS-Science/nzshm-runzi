@@ -2,6 +2,7 @@ import boto3
 import os
 from multiprocessing.pool import ThreadPool
 import datetime as dt
+import shutil
 
 from runzi.automation.scaling.local_config import WORK_PATH, AGENT_S3_WORKERS
 from env import AWS_ACCESS_KEY, AWS_SECRET_KEY
@@ -42,3 +43,10 @@ def upload_to_bucket(id, bucket):
     pool.close()
     pool.join()
     print("Done! uploaded %s in %s secs" % (len(file_list), (dt.datetime.utcnow() - t0).total_seconds()))
+    cleanup(local_directory)
+
+def cleanup(directory):
+    shutil.rmtree(directory)
+    print('Cleaned up %s' % directory)
+
+upload_to_bucket("SW52ZXJzaW9uU29sdXRpb246MjMwNi4wU2lHM1E=", "nzshm-static-reports-test")
