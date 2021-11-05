@@ -46,7 +46,8 @@ def upload_to_bucket(id, bucket):
     cleanup(local_directory)
 
 def cleanup(directory):
-    shutil.rmtree(directory)
-    print('Cleaned up %s' % directory)
-
-upload_to_bucket("SW52ZXJzaW9uU29sdXRpb246MjMwNi4wU2lHM1E=", "nzshm-static-reports-test")
+    try:
+        shutil.rmtree(directory)
+        print('Cleaned up %s' % directory)
+    except Exception as e:
+        print(e)
