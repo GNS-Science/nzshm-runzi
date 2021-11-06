@@ -204,9 +204,9 @@ if __name__ == "__main__":
     GID = "R2VuZXJhbFRhc2s6NzIybjVvc0I=" #TEST RUPT SET
     GID = "R2VuZXJhbFRhc2s6NzI2ejQ4SlQ=" #TEST INVERSION
 
-    GID = "R2VuZXJhbFRhc2s6NDYzNmpCa3pD"
+    GID = "R2VuZXJhbFRhc2s6NDY3OXpEdFRV"
 
-    UPLOAD_FOLDER = "DATA71"
+    UPLOAD_FOLDER = "DATA73"
 
     TUI = "http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com/"
     WORK_FOLDER = "/home/chrisbc/DEV/GNS/AWS_S3_DATA"
