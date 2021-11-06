@@ -112,7 +112,7 @@ def get_ecs_job_config(job_name, rupture_set_id, config, toshi_api_url, toshi_s3
         },
         "propagateTags": True,
         "timeout": {
-            "attemptDurationSeconds": (time_minutes * 60) + 300
+            "attemptDurationSeconds": (time_minutes * 60) + 900
         }
     }
 
