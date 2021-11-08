@@ -265,14 +265,12 @@ if __name__ == "__main__":
 
     elif CLUSTER_MODE == EnvMode['AWS']:
         for script_or_config in scripts:
-            print('AWS_TIME!: ', script_or_config)
-            assert 1 == 0
-            # res = batch_client.submit_job(**script_or_config)
-            # print(res)
+            #print('AWS_TIME!: ', script_or_config)
+            res = batch_client.submit_job(**script_or_config)
+            print(res)
     else:
         for script_or_config in scripts:
             check_call(['qsub', script_or_config])
 
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
     print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
-

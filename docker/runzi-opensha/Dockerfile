@@ -15,8 +15,8 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout origin/feature/standardise_setup
-RUN pip3 install -r requirements.txt
+RUN git checkout origin/feature/AWS_containerised_inversion_task
+RUN pip3 install -r headless_requirements.txt
 RUN pip3 install -e .
 
 ENV NZSHM22_TOSHI_API_ENABLED=1
@@ -28,5 +28,5 @@ ENV NZSHM22_OPENSHA_ROOT=/app
 ENV PYTHON_PREP_MODULE=/app/nzshm-runzi/runzi/automation/scaling/prepare_inversion.py
 ENV PYTHON_TASK_MODULE=/app/nzshm-runzi/runzi/automation/scaling/inversion_solution_builder_task.py
 
-CMD ["python3 /app/nzshm-runzi/runzi/cli/cli.py"]
+CMD [""]
 ENTRYPOINT ["/bin/bash", "-c"]
