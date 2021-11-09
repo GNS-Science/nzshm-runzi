@@ -33,6 +33,12 @@ def run_crustal_inversion(config):
     if CLUSTER_MODE == EnvMode['AWS']:
         WORK_PATH='/WORKING'
 
+    #Get API key from AWS secrets manager
+    if 'TEST' in API_URL.upper():
+        API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_TEST", "us-east-1").get("NZSHM22_TOSHI_API_KEY_TEST")
+    elif 'PROD' in API_URL.upper():
+        API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_PROD", "us-east-1").get("NZSHM22_TOSHI_API_KEY_PROD")
+
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
     
