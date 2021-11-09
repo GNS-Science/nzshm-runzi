@@ -9,6 +9,7 @@ import datetime as dt
 from runzi.automation.run_crustal_inversions import build_crustal_tasks
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
+from runzi.util.aws import get_secret
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
