@@ -25,8 +25,11 @@ from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPEN
 INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 #JAVA_THREADS = 4
 
-if CLUSTER_MODE == EnvMode['AWS']:
-    WORK_PATH='/WORKING'
+"""
+Uncomment this below section when done testing!
+"""
+# if CLUSTER_MODE == EnvMode['AWS']:
+#     WORK_PATH='/WORKING'
 
 def build_crustal_tasks(general_task_id, rupture_sets, args):
     task_count = 0
@@ -118,9 +121,9 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
             if CLUSTER_MODE == EnvMode['AWS']:
 
                 job_name = f"Runzi-automation-crustal_inversions-{task_count}"
-                config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
+                config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments, rupture_set_id=rid, job_type="CRUSTAL")
 
-                yield get_ecs_job_config(job_name, rid, config_data,
+                yield get_ecs_job_config(job_name, config_data,
                     toshi_api_url=API_URL, toshi_s3_url=S3_URL,
                     time_minutes=int(max_inversion_time), memory=30720, vcpu=4)
 
@@ -262,12 +265,14 @@ if __name__ == "__main__":
 
     elif CLUSTER_MODE == EnvMode['AWS']:
         for script_or_config in scripts:
-            #print('AWS_TIME!: ', script_or_config)
-            res = batch_client.submit_job(**script_or_config)
-            print(res)
+            print('AWS_TIME!: ', script_or_config)
+            assert 1 == 0
+            # res = batch_client.submit_job(**script_or_config)
+            # print(res)
     else:
         for script_or_config in scripts:
             check_call(['qsub', script_or_config])
 
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
     print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
+

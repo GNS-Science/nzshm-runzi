@@ -9,7 +9,7 @@ NZSHM22_FATJAR=/app/nzshm-opensha/build/libs/nzshm-opensha-all.jar
 NZSHM22_OPENSHA_ROOT=/app
 
 PYTHON_PREP_MODULE=/app/nzshm-runzi/runzi/automation/scaling/prepare_inversion.py
-PYTHON_TASK_MODULE=/app/nzshm-runzi/runzi/automation/scaling/inversion_solution_builder_task.py
+PYTHON_TASK_MODULE=runzi.automation.scaling.inversion_solution_builder_task
 
 #PER TASK ARGS....
 
