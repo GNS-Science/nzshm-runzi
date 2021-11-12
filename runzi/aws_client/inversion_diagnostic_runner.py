@@ -1,7 +1,5 @@
-import os
-import pwd
-import itertools
-import stat
+import json
+from urllib.parse import unquote
 from pathlib import PurePath
 from subprocess import check_call
 from multiprocessing.dummy import Pool
@@ -22,7 +20,9 @@ from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPEN
     API_KEY, API_URL, S3_URL, CLUSTER_MODE, MOCK_MODE)
 
     
-def run_inversion_diags(file_id):    
+def run_inversion_diags(json_config):    
+    
+    file_id = json.loads(unquote(json_config['containerOverrides']['environment'][0]['value']))['rupture_set_id']
     t0 = dt.datetime.utcnow()
 
     GENERAL_TASK_ID = None
