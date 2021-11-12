@@ -1,3 +1,4 @@
+import argparse
 import json
 from urllib.parse import unquote
 from pathlib import PurePath
@@ -12,7 +13,7 @@ from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.opensha_task_factory import OpenshaTaskFactory
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.run_inversion_diagnostics import run_tasks
-from upload import upload_to_bucket
+from runzi.aws_client.upload import upload_to_bucket
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
@@ -20,9 +21,8 @@ from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPEN
     API_KEY, API_URL, S3_URL, CLUSTER_MODE, MOCK_MODE)
 
     
-def run_inversion_diags(json_config):    
+def run_inversion_diags(file_id):    
     
-    file_id = json.loads(unquote(json_config['containerOverrides']['environment'][0]['value']))['rupture_set_id']
     t0 = dt.datetime.utcnow()
 
     GENERAL_TASK_ID = None
@@ -76,3 +76,11 @@ def run_inversion_diags(json_config):
 
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
     upload_to_bucket(file_id, 'nzshm-static-reports-test')
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config")
+    args = parser.parse_args()
+    file_id = json.loads(unquote(args.config))['rupture_set_id']
+    run_inversion_diags(file_id)

@@ -3,7 +3,7 @@ import boto3
 import json
 import time
 import schedule
-from inversion_diagnostic_runner import run_inversion_diags
+from runzi.aws_client.inversion_diagnostic_runner import run_inversion_diags
 
 
 def read_message_and_run_diagnostics():
