@@ -1,13 +1,11 @@
 import boto3
 import json
-from env import AWS_ACCESS_KEY, AWS_SECRET_KEY
 
 def main(id):
     topicArn = 'arn:aws:sns:us-east-1:280294454685:runzi-inversion-diagnostics.fifo'
     snsClient = boto3.client(
         'sns',
-        aws_access_key_id = AWS_ACCESS_KEY,
-        aws_secret_access_key = AWS_SECRET_KEY,
+        profile_name='runzi-report-bucket',
         region_name = 'us-east-1'
     )
     publishObject = { "model_id": id, "bing": "bongbash" }

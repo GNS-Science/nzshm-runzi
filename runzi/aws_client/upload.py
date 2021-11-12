@@ -5,15 +5,13 @@ import datetime as dt
 import shutil
 
 from runzi.automation.scaling.local_config import WORK_PATH, AGENT_S3_WORKERS
-from env import AWS_ACCESS_KEY, AWS_SECRET_KEY
 
 def upload_to_bucket(id, bucket):
     t0 = dt.datetime.utcnow()
     local_directory = WORK_PATH + '/' + id
     client = boto3.client('s3',
             region_name='us-east-1',
-            aws_access_key_id=AWS_ACCESS_KEY,
-            aws_secret_access_key=AWS_SECRET_KEY)
+            profile_name='runzi-report-bucket')
 
     file_list = []
     for root, dirs, files in os.walk(local_directory):

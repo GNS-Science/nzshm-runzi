@@ -3,15 +3,13 @@ import boto3
 import json
 import time
 import schedule
-from env import AWS_ACCESS_KEY, AWS_SECRET_KEY
 from inversion_diagnostic_runner import run_inversion_diags
 
 
 def read_message_and_run_diagnostics():
     sqs = boto3.client('sqs', 
                         region_name='us-east-1',
-                        aws_access_key_id=AWS_ACCESS_KEY,
-                        aws_secret_access_key=AWS_SECRET_KEY)
+                        profile_name='runzi-report-bucket')
     queueUrl="https://sqs.us-east-1.amazonaws.com/280294454685/runzi-inversion-diagnostics-queue.fifo"
 
     try:
