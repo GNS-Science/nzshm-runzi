@@ -3,6 +3,7 @@
 helpers for upstream file retrieval
 
 """
+import re
 import os
 import requests
 from pathlib import Path, PurePath
@@ -45,12 +46,12 @@ def get_output_file_id(file_api, single_file_id):
 
     api_result = file_api.get_file_detail(single_file_id)
     fault_model = ""
-
     print("FN:", api_result)
     if api_result['file_name'][-3:] == "zip":
         res = dict(id = api_result['id'],
                 file_name = api_result['file_name'],
-                file_size = api_result['file_size']
+                file_size = api_result['file_size'],
+                fault_model = re.search(r"\((.*?)\)", api_result['meta'][3]['v']).group(0)[1:-1]
                 )
         for kv in api_result['meta']:
             if kv.get('k') == 'fault_model':

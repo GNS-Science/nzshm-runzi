@@ -6,5 +6,8 @@ lib/**
 pyvenv.cfg
 share/**
 **.egg-info/**
-**/runzi/cli/config/saved_configs/**
-**/__pycache__/**
+**/saved_configs/**
+__pycache__
+**/env.py
+jar
+shell
