@@ -1,6 +1,6 @@
 FROM adoptopenjdk/openjdk11:alpine-jre
 LABEL Chris Chamberlain <chrisbc@artisan.co.nz>
-RUN apk add --no-cache curl tar bash procps libfreetype6 \
+RUN apk add --no-cache curl tar bash procps \
 	python3 py3-pip git 
 
 WORKDIR /app/nzshm-opensha/build/libs
