@@ -1,4 +1,5 @@
 import boto3
+import boto3.session
 import os
 from multiprocessing.pool import ThreadPool
 import datetime as dt
@@ -9,9 +10,8 @@ from runzi.automation.scaling.local_config import WORK_PATH, AGENT_S3_WORKERS
 def upload_to_bucket(id, bucket):
     t0 = dt.datetime.utcnow()
     local_directory = WORK_PATH + '/' + id
-    client = boto3.client('s3',
-            region_name='us-east-1',
-            profile_name='runzi-report-bucket')
+    session = boto3.session.Session(region_name='us-east-1', profile_name='runzi-report-bucket')
+    client = session.client('s3')
 
     file_list = []
     for root, dirs, files in os.walk(local_directory):

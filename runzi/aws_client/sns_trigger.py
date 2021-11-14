@@ -1,4 +1,5 @@
 import boto3
+import boto3.session
 import json
 
 def main(id):
