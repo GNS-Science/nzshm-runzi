@@ -20,7 +20,7 @@ from dateutil.tz import tzutc
 #from nshm_toshi_client.toshi_file import ToshiFile
 from .scaling.toshi_api import ToshiApi
 
-from .scaling.opensha_task_factory import OpenshaTaskFactory
+from .scaling.opensha_task_factory import get_factory
 from .scaling.file_utils import download_files, get_output_file_ids
 
 
@@ -34,7 +34,9 @@ from .scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
 
 def run_tasks(general_task_id, solutions):
     task_count = 0
-    task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, inversion_diags_report_task,
+    
+    factory_class = get_factory(CLUSTER_MODE)
+    task_factory = factory_class(OPENSHA_ROOT, WORK_PATH, inversion_diags_report_task,
         jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
         task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START,
         pbs_script=CLUSTER_MODE)
