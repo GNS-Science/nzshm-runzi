@@ -1,5 +1,6 @@
 from os import read
 import boto3
+import boto3.session
 import json
 import time
 import schedule
@@ -7,9 +8,8 @@ from runzi.aws_client.inversion_diagnostic_runner import run_inversion_diags
 
 
 def read_message_and_run_diagnostics():
-    sqs = boto3.client('sqs', 
-                        region_name='us-east-1',
-                        profile_name='runzi-report-bucket')
+    session = boto3.session.Session(region_name='us-east-1', profile_name='runzi-report-bucket')
+    sqs = session.client('sqs')
     queueUrl="https://sqs.us-east-1.amazonaws.com/280294454685/runzi-inversion-diagnostics-queue.fifo"
 
     try:
