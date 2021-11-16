@@ -12,8 +12,6 @@ from runzi.automation.scaling.local_config import WORK_PATH, AGENT_S3_WORKERS, S
 def upload_to_bucket(id, bucket):
     t0 = dt.datetime.utcnow()
     local_directory = WORK_PATH + '/' + id
-    session = boto3.session.Session(region_name='us-east-1', profile_name=S3_REPORT_PROFILE)
-    client = session.client('s3')
 
     file_list = []
     for root, dirs, files in os.walk(local_directory):
@@ -26,6 +24,8 @@ def upload_to_bucket(id, bucket):
             file_list.append((local_path, bucket, s3_path))
 
     def upload(args):
+        session = boto3.session.Session(region_name='us-east-1', profile_name=S3_REPORT_PROFILE)
+        client = session.client('s3')
         local_path, bucket, s3_path = args[0], args[1], args[2]
 
         if path_exists(s3_path, bucket):
@@ -41,6 +41,7 @@ def upload_to_bucket(id, bucket):
     
     def path_exists(path, bucket_name):
         """Check to see if an object exists on S3"""
+        session = boto3.session.Session(region_name='us-east-1', profile_name=S3_REPORT_PROFILE)
         s3 = session.resource('s3')
         try:
             s3.ObjectSummary(bucket_name=bucket_name, key=path).load()
