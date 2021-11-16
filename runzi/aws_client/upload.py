@@ -7,12 +7,12 @@ import datetime as dt
 import shutil
 from botocore.retries.standard import ExponentialBackoff
 
-from runzi.automation.scaling.local_config import WORK_PATH, AGENT_S3_WORKERS, S3_PROFILE
+from runzi.automation.scaling.local_config import WORK_PATH, AGENT_S3_WORKERS, S3_REPORT_PROFILE
 
 def upload_to_bucket(id, bucket):
     t0 = dt.datetime.utcnow()
     local_directory = WORK_PATH + '/' + id
-    session = boto3.session.Session(region_name='us-east-1', profile_name='runzi-report-bucket')
+    session = boto3.session.Session(region_name='us-east-1', profile_name=S3_REPORT_PROFILE)
     client = session.client('s3')
 
     file_list = []
@@ -41,7 +41,7 @@ def upload_to_bucket(id, bucket):
     
     def path_exists(path, bucket_name):
         """Check to see if an object exists on S3"""
-        s3 = boto3.resource('s3')
+        s3 = session.resource('s3')
         try:
             s3.ObjectSummary(bucket_name=bucket_name, key=path).load()
         except ClientError as e:
