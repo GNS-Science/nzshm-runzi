@@ -48,3 +48,19 @@ $ docker run -it --rm --env-file environ -v $HOME/.aws/credentials:/root/.aws/cr
 ```
 
 Note this passing in of credentials is done using Job Definition.jobRoleARN in the ECS environment.
+
+
+### NEW running Runzi from the Container
+
+
+This assumes the command is being run from the folder containing `Dockerfile`
+
+```
+docker run -it --rm --env-file environ \
+-v $HOME/.aws/credentials:/root/.aws/credentials:ro \
+-v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
+-e AWS_PROFILE=toshi_batch_devops \
+-e NZSHM22_TOSHI_S3_URL \
+-e NZSHM22_TOSHI_API_URL \
+nzshm22/runzi-opensha-cli
+```

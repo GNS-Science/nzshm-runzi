@@ -8,6 +8,8 @@ NZSHM22_OPENSHA_JRE=/opt/java/openjdk/bin/java
 NZSHM22_FATJAR=/app/nzshm-opensha/build/libs/nzshm-opensha-all.jar
 NZSHM22_OPENSHA_ROOT=/app
 
+NZSHM22_SCRIPT_CLUSTER_MODE=AWS
+
 PYTHON_PREP_MODULE=/app/nzshm-runzi/runzi/automation/scaling/prepare_inversion.py
 PYTHON_TASK_MODULE=/app/nzshm-runzi/runzi/automation/scaling/inversion_solution_builder_task.py
 
