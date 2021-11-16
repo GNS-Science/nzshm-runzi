@@ -40,6 +40,7 @@ def run_crustal_inversion(config):
     elif 'PROD' in API_URL.upper():
         API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_PROD", "us-east-1").get("NZSHM22_TOSHI_API_KEY_PROD")
 
+
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
     
