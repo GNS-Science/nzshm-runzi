@@ -1,11 +1,13 @@
+from botocore.errorfactory import ClientError
 import boto3
 import boto3.session
 import os
 from multiprocessing.pool import ThreadPool
 import datetime as dt
 import shutil
+from botocore.retries.standard import ExponentialBackoff
 
-from runzi.automation.scaling.local_config import WORK_PATH, AGENT_S3_WORKERS
+from runzi.automation.scaling.local_config import WORK_PATH, AGENT_S3_WORKERS, S3_PROFILE
 
 def upload_to_bucket(id, bucket):
     t0 = dt.datetime.utcnow()
@@ -23,20 +25,34 @@ def upload_to_bucket(id, bucket):
 
             file_list.append((local_path, bucket, s3_path))
 
-    def unpack_and_upload(args):
-        upload(args[0], args[1], args[2])
+    def upload(args):
+        local_path, bucket, s3_path = args[0], args[1], args[2]
 
-    def upload(local_path, bucket, s3_path):
-        try:
-            client.head_object(Bucket=bucket, Key=s3_path)
+        if path_exists(s3_path, bucket):
             print("Path found on S3! Skipping %s to %s" % (s3_path, bucket))
 
-        except:
-            print("Uploading %s..." % s3_path)
-            client.upload_file(local_path, bucket, s3_path)
+        else:
+            try:
+                client.upload_file(local_path, bucket, s3_path)
+                print("Uploading %s..." % s3_path)
+
+            except Exception as e:
+                print(e)
+    
+    def path_exists(path, bucket_name):
+        """Check to see if an object exists on S3"""
+        s3 = boto3.resource('s3')
+        try:
+            s3.ObjectSummary(bucket_name=bucket_name, key=path).load()
+        except ClientError as e:
+            if e.response['Error']['Code'] == "404":
+                return False
+            else:
+                raise e
+        return True
         
     pool = ThreadPool(processes=AGENT_S3_WORKERS)
-    pool.map(unpack_and_upload, file_list)
+    pool.map(upload, file_list)
 
     pool.close()
     pool.join()

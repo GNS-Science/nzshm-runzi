@@ -10,7 +10,7 @@ from dateutil.tz import tzutc
 
 from runzi.automation.scaling.toshi_api import ToshiApi
 
-from runzi.automation.scaling.opensha_task_factory import OpenshaTaskFactory
+from runzi.automation.build_named_fault_mfd_index import build_named_fault_mfd_index
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.run_inversion_diagnostics import run_tasks
 from runzi.aws_client.upload import upload_to_bucket
@@ -18,10 +18,10 @@ from runzi.aws_client.upload import upload_to_bucket
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, CLUSTER_MODE, MOCK_MODE)
+    API_KEY, API_URL, S3_URL, CLUSTER_MODE, MOCK_MODE, S3_REPORT_BUCKET)
 
     
-def run_inversion_diags(file_id):    
+def run_inversion_diags(file_id, bucket):    
     
     t0 = dt.datetime.utcnow()
 
@@ -51,6 +51,7 @@ def run_inversion_diags(file_id):
 
     BUILD_PLOTS = True
     REPORT_LEVEL = 'DEFAULT' # None, 'LIGHT', 'DEFAULT', 'FULL'
+    
 
     pool = Pool(WORKER_POOL_SIZE)
     for inversion_task_id in [file_id]: #"R2VuZXJhbFRhc2s6Mjc4OXphVmN2"]: #, "R2VuZXJhbFRhc2s6MjY4M1FGajVh"]:
@@ -74,8 +75,9 @@ def run_inversion_diags(file_id):
     pool.close()
     pool.join()
 
+    build_named_fault_mfd_index()
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
-    upload_to_bucket(file_id, 'nzshm-static-reports-test')
+    upload_to_bucket(file_id, bucket)
 
 if __name__ == "__main__":
 
@@ -83,4 +85,4 @@ if __name__ == "__main__":
     parser.add_argument("config")
     args = parser.parse_args()
     file_id = json.loads(unquote(args.config))['rupture_set_id']
-    run_inversion_diags(file_id)
+    run_inversion_diags(file_id, S3_REPORT_BUCKET)

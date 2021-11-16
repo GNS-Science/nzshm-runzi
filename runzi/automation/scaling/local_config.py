@@ -47,3 +47,7 @@ REPORT_LEVEL = os.getenv('NZSHM22_SCRIPT_REPORT_LEVEL', "DEFAULT")
 #Run java scripts or not - MOCK_MODE = True will not run java
 MOCK_MODE = os.getenv('NZSHM22_SCRIPT_MOCK_MODE', False)
 
+#S3 report bucket name
+S3_REPORT_BUCKET = os.getenv('NZSHM22_S3_REPORT_BUCKET', 'nzshm-static-reports-test')
+S3_PROFILE = os.getenv('NZSHM22_S3_PROFILE', None)
+

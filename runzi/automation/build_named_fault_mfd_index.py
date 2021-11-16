@@ -18,7 +18,7 @@ import json
 import collections
 from copy import copy
 # Set up your local config, from environment variables, with some sone defaults
-from scaling.local_config import WORK_PATH
+from runzi.automation.scaling.local_config import WORK_PATH
 
 TUI = "http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com/"
 
@@ -194,9 +194,9 @@ class NamedFaultIndexBuilder():
 
         return links
 
-def main():
+def build_named_fault_mfd_index():
 
-    meta_builder = NamedFaultIndexBuilder(path = WORK_PATH )
+    meta_builder = NamedFaultIndexBuilder(path = WORK_PATH)
 
     solution_infos = meta_builder.build()
     for info in solution_infos:
@@ -208,4 +208,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    build_named_fault_mfd_index()

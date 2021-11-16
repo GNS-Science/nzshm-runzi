@@ -1,7 +1,7 @@
 FROM adoptopenjdk/openjdk11:alpine-jre
 LABEL Chris Chamberlain <chrisbc@artisan.co.nz>
 RUN apk add --no-cache curl tar bash procps \
-	python3 py3-pip git 
+	python3 py3-pip git ttf-dejavu
 
 WORKDIR /app/nzshm-opensha/build/libs
 COPY nzshm-opensha/build/libs/nzshm-opensha-all.jar .
