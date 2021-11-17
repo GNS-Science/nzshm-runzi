@@ -15,7 +15,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-#RUN git checkout origin/feature/make_runzi_cli_default_container_cmd
+RUN git checkout origin/int/inversion_diag_report
 RUN pip3 install -r requirements.txt
 
 RUN pip3 install -e .
