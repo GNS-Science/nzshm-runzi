@@ -1,7 +1,7 @@
 from runzi.cli.inv_setup import change_job_values, change_task_values, add_task_arg
 from runzi.cli.load_json import load_crustal, load_subduction
 import sys
-from runzi.cli.cli_helpers import MenuHandler, landing_banner
+from runzi.cli.cli_helpers import MenuHandler, build_inversion_index, landing_banner
 from runzi.cli.inv_setup import *
 from runzi.cli.load_json import load_from_json
 from runzi.cli.inversion_diagnostic_runner import inversion_diagnostic_query
@@ -35,7 +35,7 @@ def main():
         'show': show_values,
         'edit': crustal_edit_menu.run,
         'new': crustal_setup,
-        'run': crustal_run
+        'run': crustal_run,
     })
     
     subduction_menu = MenuHandler(context + '/inversions/subduction', {
@@ -44,13 +44,14 @@ def main():
         'show': show_values,
         'edit': subduction_edit_menu.run,
         'new': subduction_setup,
-        'run': subduction_run
+        'run': subduction_run,
     })
 
     inversions_menu = MenuHandler(context + '/inversions', {
         'crustal': crustal_menu.run,
         'subduction': subduction_menu.run,
-        'diagnostics': inversion_diagnostic_query
+        'diagnostics': inversion_diagnostic_query,
+        'index': build_inversion_index
     })
 
     main_menu = MenuHandler(context, {

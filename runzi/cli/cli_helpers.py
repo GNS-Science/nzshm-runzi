@@ -2,6 +2,8 @@ import sys
 import random
 import string
 import os
+
+from pygments.formatters.terminal256 import TerminalTrueColorFormatter
 from prompt_toolkit import prompt
 from prompt_toolkit.validation import Validator, ValidationError
 from prompt_toolkit.completion import WordCompleter
@@ -15,6 +17,8 @@ from pygments.formatters import Terminal256Formatter
 from pprint import pformat
 from pyfiglet import Figlet
 from termcolor import cprint
+import inquirer
+from runzi.automation.build_manual_index import build_manual_index
 
 
 def landing_banner():
@@ -159,3 +163,9 @@ class NumberValidator(Validator):
             raise ValidationError(message='This input must be an integer -- no non-numeric characters please',
                                   cursor_position=i)
 
+
+def build_inversion_index(*args):
+    general_task_id = inquirer.text('General Task ID: ')
+    confirm = inquirer.confirm(f'Confirm you want to run inversion diagnostics for ID: {general_task_id}')
+    if confirm == True:
+        build_manual_index(general_task_id, 'INVERSION')
