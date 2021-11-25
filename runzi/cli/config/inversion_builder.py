@@ -1,5 +1,5 @@
-from .config_builder import Config
-from subduction_inversion_runner import run_subduction_inversion
+from runzi.cli.config.config_builder import Config
+
 
 class InversionConfig(Config):
     def __init__(self, task_title, task_description, file_id, worker_pool_size, jvm_heap_max, java_threads,
@@ -30,7 +30,7 @@ class SubductionConfig(InversionConfig):
     def __init__(self, task_title, task_description, file_id, worker_pool_size, jvm_heap_max, java_threads,
     use_api,  general_task_id, mock_mode, rounds_range) -> None:
         super().__init__(task_title, task_description, file_id, worker_pool_size, jvm_heap_max, java_threads,
-        use_api,  general_task_id, mock_mode, rounds_range)
+        use_api, general_task_id, mock_mode, rounds_range)
 
         self._model_type = "SUBDUCTION"
         self._mfd_uncertainty_weights =[]
@@ -42,7 +42,7 @@ class CrustalConfig(InversionConfig):
     def __init__(self, task_title, task_description, file_id, worker_pool_size, jvm_heap_max, java_threads,
     use_api,  general_task_id, mock_mode, rounds_range) -> None:
         super().__init__(task_title, task_description, file_id, worker_pool_size, jvm_heap_max, java_threads,
-        use_api,  general_task_id, mock_mode, rounds_range)
+        use_api, general_task_id, mock_mode, rounds_range)
 
         self._model_type = "CRUSTAL"
         self._slip_rate_weights = []
@@ -52,6 +52,6 @@ class CrustalConfig(InversionConfig):
         self._mfd_mag_gt_5_tvz = []
         self._mfd_b_values_sans = []
         self._mfd_b_values_tvz = []
-
-    # def runCrustal(self):
-    #     None
+        self._paleo_constraint_weight = []
+        self._paleo_rate_constraints = []
+        self._paleo_probability_model = []

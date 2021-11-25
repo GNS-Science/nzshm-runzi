@@ -31,6 +31,7 @@ def run_crustal_inversion(config):
     MODEL_TYPE = config._model_type
     SUBTASK_TYPE = config._subtask_type
 
+    global WORK_PATH
     if CLUSTER_MODE == EnvMode['AWS']:
         WORK_PATH='/WORKING'
 

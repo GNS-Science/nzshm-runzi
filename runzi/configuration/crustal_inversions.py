@@ -51,7 +51,9 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 selection_interval_secs, threads_per_selector, averaging_threads, averaging_interval_secs,
                 non_negativity_function, perturbation_function,
                 deformation_model,
-                scaling_relationship, scaling_recalc_mag
+                scaling_relationship, scaling_recalc_mag,
+                paleo_rate_constraint_weight, paleo_rate_constraint,
+                paleo_probability_model, paleo_parent_rate_smoothness_constraint_weight
                 )\
             in itertools.product(
                 args['rounds'], args['completion_energies'], args['max_inversion_times'],
@@ -65,6 +67,8 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 args['non_negativity_function'], args['perturbation_function'],
                 args['deformation_models'],
                 args['scaling_relationships'], args['scaling_recalc_mags'],
+                args['paleo_rate_constraint_weights'], args['paleo_rate_constraints'],
+                args['paleo_probability_models'], args['paleo_parent_rate_smoothness_constraint_weights']
                 ):
 
             task_count +=1
@@ -100,7 +104,13 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 perturbation_function=perturbation_function,
 
                 scaling_relationship=scaling_relationship,
-                scaling_recalc_mag=scaling_recalc_mag
+                scaling_recalc_mag=scaling_recalc_mag,
+
+                #New Paleo Args...
+                paleo_rate_constraint_weight=paleo_rate_constraint_weight,
+                paleo_rate_constraint=paleo_rate_constraint,
+                paleo_probability_model=paleo_probability_model,
+                paleo_parent_rate_smoothness_constraint_weight=paleo_parent_rate_smoothness_constraint_weight
                 )
 
             job_arguments = dict(
