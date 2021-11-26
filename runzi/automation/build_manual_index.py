@@ -177,7 +177,8 @@ def inv_template(rgt, upload_folder, tui, display_keys=None):
 def build_manual_index(
     general_task_id,
     subtask_type,
-    index_url="http://nzshm22-rupset-diags-poc.s3-website-ap-southeast-2.amazonaws.com/index.html",
+    multiple_entries=False,
+    index_url="http://nzshm22-rupset-diags-poc.s3-website-ap-southeast-2.amazonaws.com/index.html"
 ):
 
     API_URL = os.getenv("NZSHM22_TOSHI_API_URL", "http://127.0.0.1:5000/graphql")
@@ -198,7 +199,7 @@ def build_manual_index(
         return
 
     info_keys = node["swept_arguments"]
-    print(info_keys)
+    # print(info_keys)
 
     def node_template(node, info_keys):
         node_list = []
@@ -215,6 +216,7 @@ def build_manual_index(
         return "".join(node_list)
 
     new_entries = f"""
+<hr />
     {gt_template(node, general_task_id, TUI)}
 <ul>
     {node_template(node, info_keys)}
@@ -222,11 +224,18 @@ def build_manual_index(
 <hr />
     """
 
-    index_request = urllib.request.Request(index_url)
-    index_html = urllib.request.urlopen(index_request)
-    parsed_index_html = index_html.read().decode("utf-8")
-    elements = parsed_index_html.split("<hr />", 1)
-    new_index_html = elements[0] + new_entries + elements[1]
+    if multiple_entries == False:
+        index_request = urllib.request.Request(index_url)
+        index_html = urllib.request.urlopen(index_request)
+        parsed_index_html = index_html.read().decode("utf-8")
+        elements = parsed_index_html.split("<hr />", 1)
+        new_index_html = elements[0] + new_entries + elements[1]
+    else:
+        with open(f"{WORK_PATH}/index.html", "r") as index:
+            parsed_index_html = index.read()
+            elements = parsed_index_html.split("<hr />", 1)
+            new_index_html = elements[0] + new_entries + elements[1]
+
     with open(f"{WORK_PATH}/index.html", "w") as f:
         f.write(new_index_html)
     print(f"Finished! New index is at {WORK_PATH}/index.html")
