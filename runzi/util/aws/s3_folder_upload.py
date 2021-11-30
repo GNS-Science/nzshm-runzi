@@ -53,17 +53,13 @@ def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT):
     
     def path_exists(path, bucket_name):
         """Check to see if an object exists on S3"""
-        resource_session = boto3.session.Session()
-        s3 = resource_session.resource('s3')
-        try:
-            s3.ObjectSummary(bucket_name=bucket_name, key=path).load()
-        except ClientError as e:
-            if e.response['Error']['Code'] == "404":
-                return False
-            else:
-                error(f"exception raised on {bucket_name}/{path}")
-                raise e
-        return True
+        response = client.list_objects_v2(Bucket=bucket_name, Prefix=path)
+        if response:
+            for obj in response['Contents']:
+                if path == obj['Key']:
+                    return True
+        return False
+
         
     pool = ThreadPool(processes=S3_UPLOAD_WORKERS)
     pool.map(upload, file_list)
