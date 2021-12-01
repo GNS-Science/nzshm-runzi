@@ -1,31 +1,21 @@
 import argparse
 import json
-from runzi.automation.scaling.local_config import S3_REPORT_BUCKET, WORK_PATH
+
 import git
 import os
 import base64
 from pathlib import PurePath, Path
 import platform
 import urllib
+import time
+import datetime as dt
+from dateutil.tz import tzutc
 
 from runzi.util.build_named_fault_mfd_index import build_named_fault_mfd_index
 from py4j.java_gateway import JavaGateway, GatewayParameters
-import datetime as dt
-from dateutil.tz import tzutc
-from runzi.util.aws import get_secret
+
 from runzi.util.aws.s3_folder_upload import upload_to_bucket
-
-import time
-
-API_URL  = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
-API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
-S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL',"http://localhost:4569")
-
-#Get API key from AWS secrets manager
-if 'TEST' in API_URL.upper():
-    API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_TEST", "us-east-1").get("NZSHM22_TOSHI_API_KEY_TEST")
-elif 'PROD' in API_URL.upper():
-    API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_PROD", "us-east-1").get("NZSHM22_TOSHI_API_KEY_PROD")
+from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET)
 
 class BuilderTask():
     """
