@@ -53,12 +53,16 @@ def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT):
     
     def path_exists(path, bucket_name):
         """Check to see if an object exists on S3"""
-        response = client.list_objects_v2(Bucket=bucket_name, Prefix=path)
-        if response:
-            for obj in response['Contents']:
-                if path == obj['Key']:
-                    return True
-        return False
+        try:
+            response = client.list_objects_v2(Bucket=bucket_name, Prefix=path)
+            if response:
+                for obj in response['Contents']:
+                    if path == obj['Key']:
+                        return True
+            return False
+        except ClientError as e:
+                error(f"exception raised on {bucket_name}/{path}")
+                raise e
 
         
     pool = ThreadPool(processes=S3_UPLOAD_WORKERS)
@@ -83,3 +87,6 @@ def mimetype(local_path):
     if mimetype is None:
         raise Exception("Failed to guess mimetype")
     return mimetype
+
+
+upload_to_bucket('SW52ZXJzaW9uU29sdXRpb246MjMwNi4wU2lHM1E=', 'nzshm-static-reports-test')
