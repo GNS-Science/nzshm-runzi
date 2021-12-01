@@ -13,8 +13,7 @@ from runzi.automation.scaling.local_config import WORK_PATH, S3_UPLOAD_WORKERS
 
 
 logging.basicConfig(level="INFO")
-S3_REPORT_BUCKET_ROOT = 'opensha/DATA/'
-
+S3_REPORT_BUCKET_ROOT = 'opensha/DATA'
 
 def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT):
     info(f"Beginning bucket upload... to {bucket}/{root_path}/{id}")
@@ -31,7 +30,6 @@ def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT):
             s3_path = os.path.join(root_path, id, relative_path)
 
             file_list.append((local_path, bucket, s3_path))
-
     def upload(args):
         """Map function for pool, uploads to S3 Bucket if it doesn't exist already"""
         local_path, bucket, s3_path = args[0], args[1], args[2]
@@ -56,10 +54,12 @@ def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT):
         try:
             response = client.list_objects_v2(Bucket=bucket_name, Prefix=path)
             if response:
-                for obj in response['Contents']:
-                    if path == obj['Key']:
-                        return True
-            return False
+                if response['KeyCount'] == 0:
+                    return False
+                else:    
+                    for obj in response['Contents']:
+                        if path == obj['Key']:
+                            return True
         except ClientError as e:
                 error(f"exception raised on {bucket_name}/{path}")
                 raise e
@@ -87,6 +87,3 @@ def mimetype(local_path):
     if mimetype is None:
         raise Exception("Failed to guess mimetype")
     return mimetype
-
-
-upload_to_bucket('SW52ZXJzaW9uU29sdXRpb246MjMwNi4wU2lHM1E=', 'nzshm-static-reports-test')
