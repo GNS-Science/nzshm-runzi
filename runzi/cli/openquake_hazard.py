@@ -9,6 +9,7 @@ def openquake_hazard_query(*args):
     file_list = []
     for root, dirs, files in os.walk(os.path.join(WORK_PATH, "/examples")):
         for file in files:
+            print(file)
             if(file.endswith(".ini")):
                 file_list.append(os.path.join(root,file))
     
