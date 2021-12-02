@@ -15,6 +15,10 @@ def openquake_hazard_query(*args):
     confirm = inquirer.confirm(f'Are you sure you would like to run hazard for {config}')
     if confirm == True:
         subprocess.run(['oq engine', '--run', config])
+    else:
+        return
     export = inquirer.confirm('Would you like to export your hazard?')
     if export == True:
         subprocess.run(['oq engine', '--export-outputs', '1', f'/{WORK_PATH}/output',])
+        print('Done')
+    return
