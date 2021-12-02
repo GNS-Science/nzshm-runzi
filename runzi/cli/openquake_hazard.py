@@ -1,12 +1,13 @@
 import subprocess
 import os
 import inquirer
+import pathlib
 
 from runzi.automation.scaling.local_config import WORK_PATH
 
 def openquake_hazard_query(*args):
     file_list = []
-    for root, dirs, files in os.walk(WORK_PATH + "/examples"):
+    for root, dirs, files in os.walk(os.path.join(WORK_PATH, "/examples")):
         for file in files:
             if(file.endswith(".ini")):
                 file_list.append(os.path.join(root,file))
