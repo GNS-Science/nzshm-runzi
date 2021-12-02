@@ -3,11 +3,11 @@ import os
 import inquirer
 import pathlib
 
-from runzi.automation.scaling.local_config import WORK_PATH
+# from runzi.automation.scaling.local_config import WORK_PATH
 
 def openquake_hazard_query(*args):
     file_list = []
-    for root, dirs, files in os.walk(os.path.join(WORK_PATH, "/examples")):
+    for root, dirs, files in os.walk("/examples"):
         for file in files:
             print(file)
             if(file.endswith(".ini")):
