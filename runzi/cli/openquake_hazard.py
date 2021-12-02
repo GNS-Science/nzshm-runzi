@@ -11,8 +11,7 @@ def openquake_hazard_query(*args):
         for file in files:
             if(file.endswith(".ini")):
                 file_list.append(os.path.join(root,file))
-    formatted_file_list = [files[22:] for files in file_list]
-    config = inquirer.list_input('Which ini file would you like to use?', choices=formatted_file_list)
+    config = inquirer.list_input('Which ini file would you like to use?', choices=file_list)
     confirm = inquirer.confirm(f'Are you sure you would like to run hazard for {config}')
     if confirm == True:
         subprocess.run([f'oq engine --run {config}'], shell=True)
