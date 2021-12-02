@@ -75,7 +75,7 @@ class MenuHandler():
         self.context = menu_context
         self.options = options or {'quit', sys.exit}
         self.exit_options = exit_options or ['done']
-        self.options.update({'help': self.option_help, 'done': self.option_done})
+        self.options.update({'help': self.option_help, 'done': self.option_done, 'exit': self.exit})
         self.value = None
         self.cmd = ''
 
@@ -147,6 +147,8 @@ class MenuHandler():
                 return self.cmd.lower() #leave this menu
             self.interrogate(self.cmd)
 
+    def exit(self, *args):
+        sys.exit()
 
 class NumberValidator(Validator):
     def validate(self, document):

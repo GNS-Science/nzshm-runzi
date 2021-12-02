@@ -54,8 +54,12 @@ def main():
         'index': build_inversion_index
     })
 
+    hazard_menu = MenuHandler(context + '/hazards', {
+        'openquake': openquake_query
+    })
     main_menu = MenuHandler(context, {
         'inversions': inversions_menu.run,
+        'hazard': hazard_menu.run
     })
 
     main_menu.run()
