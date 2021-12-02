@@ -5,7 +5,7 @@ from runzi.cli.cli_helpers import MenuHandler, build_inversion_index, landing_ba
 from runzi.cli.inv_setup import *
 from runzi.cli.load_json import load_from_json
 from runzi.cli.inversion_diagnostic_runner import inversion_diagnostic_query
-
+from openquake_hazard import openquake_hazard_query
 
 context = 'runziCLI'
 
@@ -55,7 +55,7 @@ def main():
     })
 
     hazard_menu = MenuHandler(context + '/hazards', {
-        'openquake': openquake_query
+        'openquake': openquake_hazard_query
     })
     main_menu = MenuHandler(context, {
         'inversions': inversions_menu.run,
