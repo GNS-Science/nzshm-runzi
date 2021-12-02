@@ -55,6 +55,7 @@ docker run -it --rm \
 -e NZSHM22_TOSHI_API_URL \
 -e NZSHM22_SCRIPT_CLUSTER_MODE \
 -e NZSHM22_S3_REPORT_BUCKET=BLAH \
+-e NZSHM22_SCRIPT_WORK_PATH=/WORKING
 nzshm22/runzi-openquake -s bash
 ```
 
