@@ -1,6 +1,7 @@
 # Dockerfile
 # Extend base image
-FROM openquake/engine
+# needs openquake/engine >= 3.13.0
+FROM openquake/engine:nightly
 
 USER root
 RUN apt-get update
@@ -8,8 +9,10 @@ RUN apt-get install git -y
 
 WORKDIR /WORKING
 WORKDIR /app
-RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
+
+# Install Runzi
+RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 
 RUN git fetch
@@ -18,6 +21,7 @@ RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 
 RUN chown openquake /WORKING
+
 USER openquake
 
 CMD ["python3 /app/nzshm-runzi/runzi/cli/cli.py"]
