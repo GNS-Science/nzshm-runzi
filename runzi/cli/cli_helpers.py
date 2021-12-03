@@ -172,7 +172,7 @@ def build_inversion_index(*args):
 
 def build_inversion_index_query(multiple=False):
     general_task_id = inquirer.text('General Task ID')
-    confirm = inquirer.confirm(f'Confirm you want to run inversion diagnostics for ID: {general_task_id}')
+    confirm = inquirer.confirm(f'Confirm you want to run inversion diagnostics for ID: {general_task_id}\b')
     if confirm == True:
         build_manual_index(general_task_id, 'INVERSION', multiple)
     multiple_query = inquirer.confirm('Would you like to add another index?')
@@ -182,16 +182,16 @@ def build_inversion_index_query(multiple=False):
         return
     
 def display_env(*args):
-    cprint(f'Work Path: {WORK_PATH}', 'cyan', end=':')
-    cprint(f'Use Api: {USE_API}', 'magenta', end=':')
-    cprint(f'Api URL: {API_URL}', 'red', end=':')
-    cprint(f'S3 URL: {S3_URL}', 'grey', end=':')
-    cprint(f'Cluster Mode: {CLUSTER_MODE.name}', 'green', end=':')
-    cprint(f'S3 Report Bucket: {S3_REPORT_BUCKET}', 'blue', end=':')
-    cprint(f'S3 Upload Workers: {S3_UPLOAD_WORKERS}', 'white', end=':')
-    cprint(f'Java Threads: {JAVA_THREADS}', 'white', end=':')
-    cprint(f'JVM Heap Start: {JVM_HEAP_START}', 'white', end=':')
-    cprint(f'JVM Heap max: {JVM_HEAP_MAX}', 'white', end=':')
-    cprint(f'Worker Pool Size: {WORKER_POOL_SIZE}', 'white', end=':')
+    cprint(f'Work Path: {WORK_PATH}\b', 'cyan')
+    cprint(f'Use Api: {USE_API}\b', 'magenta')
+    cprint(f'Api URL: {API_URL}\b', 'red')
+    cprint(f'S3 URL: {S3_URL}\b', 'cyan')
+    cprint(f'Cluster Mode: {CLUSTER_MODE.name}\b', 'green')
+    cprint(f'S3 Report Bucket: {S3_REPORT_BUCKET}\b', 'blue')
+    cprint(f'S3 Upload Workers: {S3_UPLOAD_WORKERS}\b', 'white')
+    cprint(f'Java Threads: {JAVA_THREADS}\b', 'red')
+    cprint(f'JVM Heap Start: {JVM_HEAP_START}\b', 'magenta')
+    cprint(f'JVM Heap max: {JVM_HEAP_MAX}\b', 'blue')
+    cprint(f'Worker Pool Size: {WORKER_POOL_SIZE}\b', 'cyan')
 
     
