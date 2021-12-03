@@ -13,7 +13,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 
 RUN git fetch
-# RUN git checkout feature/48_openquake_cli
+RUN git checkout feature/56_cli_env_display
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 
