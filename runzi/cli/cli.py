@@ -1,7 +1,6 @@
 from runzi.cli.inv_setup import change_job_values, change_task_values, add_task_arg
 from runzi.cli.load_json import load_crustal, load_subduction
-import sys
-from runzi.cli.cli_helpers import MenuHandler, build_inversion_index, landing_banner
+from runzi.cli.cli_helpers import MenuHandler, build_inversion_index, display_env, landing_banner
 from runzi.cli.inv_setup import *
 from runzi.cli.load_json import load_from_json
 from runzi.cli.inversion_diagnostic_runner import inversion_diagnostic_query
@@ -59,7 +58,8 @@ def main():
     })
     main_menu = MenuHandler(context, {
         'inversions': inversions_menu.run,
-        'hazard': hazard_menu.run
+        'hazard': hazard_menu.run,
+        'env': display_env
     })
 
     main_menu.run()

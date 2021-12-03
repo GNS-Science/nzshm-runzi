@@ -20,7 +20,7 @@ from termcolor import cprint
 import inquirer
 from runzi.automation.build_manual_index import build_manual_index
 
-from runzi.automation.scaling.local_config import (WORK_PATH, CLUSTER_MODE, API_URL, EnvMode)
+from runzi.automation.scaling.local_config import (JAVA_THREADS, JVM_HEAP_MAX, JVM_HEAP_START, S3_URL, S3_UPLOAD_WORKERS, USE_API, WORKER_POOL_SIZE, WORK_PATH, CLUSTER_MODE, API_URL, S3_REPORT_BUCKET, EnvMode)
 
 def landing_banner():
 
@@ -180,4 +180,18 @@ def build_inversion_index_query(multiple=False):
         build_inversion_index_query(True)
     else:
         return
+    
+def display_env(*args):
+    cprint(f'Work Path: {WORK_PATH}', 'cyan', end=':')
+    cprint(f'Use Api: {USE_API}', 'magenta', end=':')
+    cprint(f'Api URL: {API_URL}', 'red', end=':')
+    cprint(f'S3 URL: {S3_URL}', 'grey', end=':')
+    cprint(f'Cluster Mode: {CLUSTER_MODE.name}', 'green', end=':')
+    cprint(f'S3 Report Bucket: {S3_REPORT_BUCKET}', 'blue', end=':')
+    cprint(f'S3 Upload Workers: {S3_UPLOAD_WORKERS}', 'white', end=':')
+    cprint(f'Java Threads: {JAVA_THREADS}', 'white', end=':')
+    cprint(f'JVM Heap Start: {JVM_HEAP_START}', 'white', end=':')
+    cprint(f'JVM Heap max: {JVM_HEAP_MAX}', 'white', end=':')
+    cprint(f'Worker Pool Size: {WORKER_POOL_SIZE}', 'white', end=':')
+
     
