@@ -29,7 +29,7 @@ def check_if_slowdown(e):
 def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT):
     logger.info(f"Beginning bucket upload... to {bucket}/{root_path}/{id}")
     t0 = dt.datetime.utcnow()
-    local_directory = WORK_PATH + '/' + id
+    local_directory = os.path.join(WORK_PATH, id)
     session = boto3.session.Session()
     client = session.client('s3')
     file_list = []
