@@ -99,5 +99,3 @@ def mimetype(local_path):
     if mimetype is None:
         raise Exception("Failed to guess mimetype")
     return mimetype
-
-upload_to_bucket('SW52ZXJzaW9uU29sdXRpb246MjMwNi4wU2lHM1E=', 'nzshm-static-reports-test')
