@@ -1,6 +1,7 @@
 from botocore.errorfactory import ClientError
 import boto3
 import boto3.session
+from botocore.exceptions import ClientError
 import os
 from multiprocessing.pool import ThreadPool
 import datetime as dt
@@ -8,12 +9,20 @@ import shutil
 import mimetypes 
 import logging
 from logging import info, error
+import backoff
+import botocore.exceptions
 
 from runzi.automation.scaling.local_config import WORK_PATH, S3_UPLOAD_WORKERS
 
 
 logging.basicConfig(level="INFO")
 S3_REPORT_BUCKET_ROOT = 'opensha/DATA'
+
+def check_if_slowdown(e):
+    try:
+        return e.response['Error']['Code'] == 'SlowDown'
+    except AttributeError:
+        return False
 
 def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT):
     info(f"Beginning bucket upload... to {bucket}/{root_path}/{id}")
@@ -28,8 +37,9 @@ def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT):
             local_path = os.path.join(root, filename)
             relative_path = os.path.relpath(local_path, local_directory)
             s3_path = os.path.join(root_path, id, relative_path)
-
             file_list.append((local_path, bucket, s3_path))
+    
+    @backoff.on_predicate(backoff.expo, check_if_slowdown)
     def upload(args):
         """Map function for pool, uploads to S3 Bucket if it doesn't exist already"""
         local_path, bucket, s3_path = args[0], args[1], args[2]
@@ -45,7 +55,7 @@ def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT):
                         'ContentType': mimetype(local_path)
                         })
                 info("Uploading %s..." % s3_path)
-            except Exception as e:
+            except ClientError as e:
                 error(f"exception raised uploading {local_path} => {bucket}/{s3_path}")
                 error(e)
     

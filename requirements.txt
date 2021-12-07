@@ -10,3 +10,4 @@ inquirer==2.7.0
 Pygments==2.10.0
 pyfiglet==0.8.post1
 boto3
+backoff==1.11.1
