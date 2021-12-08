@@ -3,7 +3,6 @@ import sys
 import random
 import string
 import os
-import asyncio
 
 from pygments.formatters.terminal256 import TerminalTrueColorFormatter
 from prompt_toolkit import prompt
