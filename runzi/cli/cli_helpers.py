@@ -1,7 +1,9 @@
+from logging import Manager
 import sys
 import random
 import string
 import os
+import asyncio
 
 from pygments.formatters.terminal256 import TerminalTrueColorFormatter
 from prompt_toolkit import prompt
@@ -170,14 +172,27 @@ class NumberValidator(Validator):
 def build_inversion_index(*args):
     build_inversion_index_query()
 
-def build_inversion_index_query(multiple=False):
-    general_task_id = inquirer.text('General Task ID')
-    confirm = inquirer.confirm(f'Confirm you want to run inversion diagnostics for ID: {general_task_id}')
-    if confirm == True:
-        build_manual_index(general_task_id, 'INVERSION', multiple)
-    multiple_query = inquirer.confirm('Would you like to add another index?')
-    if multiple_query == True:
-        build_inversion_index_query(True)
-    else:
-        return
+# def build_inversion_index_query():
+#     general_task_id = inquirer.text('General Task ID')
+#     confirm = inquirer.confirm(f'Confirm you want to run inversion diagnostics for ID: {general_task_id}')
+#     if confirm == True:
+#         build_manual_index(general_task_id, 'INVERSION')
+#     multiple_query = inquirer.confirm('Would you like to add another index?')
+#     if multiple_query == True:
+#         build_inversion_index_query(True)
+#     else:
+#         return
     
+async def build_inversion_index_query():
+    general_tasks = inquirer.text('General Task ID - for multiple put a space between each')
+    general_task_list = ' '.split(general_tasks)
+    confirm = inquirer.confirm(f'Confirm you want to run inversion diagnostics for IDs: {general_task_list}')
+    if confirm == True:
+        if general_task_list.length == 1:
+            build_manual_index(general_task_list[0], 'INVERSION')
+        elif general_task_list.length > 1:
+            await build_manual_index(general_task_list[0], 'INVERSION')
+            for gt in general_task_list[1:]:
+                build_manual_index(gt, 'INVERSION', True)
+        else:
+            return
