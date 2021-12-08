@@ -178,7 +178,7 @@ def build_manual_index(
     general_task_id,
     subtask_type,
     multiple_entries=False,
-    index_url="http://nzshm22-rupset-diags-poc.s3-website-ap-southeast-2.amazonaws.com/index.html"
+    index_url="http://nzshm22-static-reports.s3-website-ap-southeast-2.amazonaws.com/opensha/index.html"
 ):
 
     API_URL = os.getenv("NZSHM22_TOSHI_API_URL", "http://127.0.0.1:5000/graphql")
