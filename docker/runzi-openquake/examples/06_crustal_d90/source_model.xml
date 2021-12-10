@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nrml xmlns:gml="http://www.opengis.net/gml"
+      xmlns="http://openquake.org/xmlns/nrml/0.5">
+    <logicTree logicTreeID="Crustal-LT-SOMESUCH">
+        <logicTreeBranchSet uncertaintyType="sourceModel" branchSetID="bs1">
+            <logicTreeBranch branchID="Crustal-LTB-SOMESUCH">
+                <uncertaintyModel>
+                    SW52ZXJzaW9uU29sdXRpb246MTU2NjcuMHpxc1dM-ruptures.xml
+                    SW52ZXJzaW9uU29sdXRpb246MTU2NjcuMHpxc1dM-ruptures_sections.xml
+                </uncertaintyModel>
+                <uncertaintyWeight>1.0</uncertaintyWeight>
+            </logicTreeBranch>
+        </logicTreeBranchSet>
+    </logicTree>
+</nrml>

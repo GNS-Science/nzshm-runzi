@@ -1,4 +1,9 @@
 
+# About
+
+a docker image tha integrates Openquake, the opensha converter, and RUnzi
+
+
 # BUILD
 
 ```
@@ -31,6 +36,7 @@ nzshm22/runzi-openquake
 docker run -it --rm \
 -v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
 -v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
+
 -e AWS_PROFILE=toshi_batch_devops \
 -e NZSHM22_TOSHI_API_ENABLED=Yes \
 -e NZSHM22_TOSHI_S3_URL \
@@ -40,30 +46,29 @@ docker run -it --rm \
 nzshm22/runzi-openquake
 ```
 
-
-# DEMO Example
+### TEST EXAMPLE
 
 ```
-docker run -it --rm \
--v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
--v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
--v $(pwd)/WORKING:/WORKING \
+docker run -u root -it --rm \
 -v $(pwd)/examples:/WORKING/examples \
--e AWS_PROFILE=toshi_batch_devops \
--e NZSHM22_TOSHI_API_ENABLED=Yes \
--e NZSHM22_TOSHI_S3_URL \
--e NZSHM22_TOSHI_API_URL \
--e NZSHM22_SCRIPT_CLUSTER_MODE \
--e NZSHM22_S3_REPORT_BUCKET=BLAH \
--e NZSHM22_SCRIPT_WORK_PATH=/WORKING \
-nzshm22/runzi-openquake -s bash
+-v $(pwd)/../../../ucerf:/app/ucerf \
+{IMAGEID}
+-s bash
 ```
 
+in the container ...
+
+in /app
 
 ```
 oq engine --run /WORKING/examples/01_point_era_oq/job-WLG.ini
 oq engine --export-outputs 1 /WORKING/output
 ```
+
+```
+python3 convert.py
+```
+
 
 ## New Runzi commands (Ben)
 
