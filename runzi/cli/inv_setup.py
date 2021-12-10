@@ -177,7 +177,7 @@ def add_task_arg(*args):
     value = inquirer.text('Argument value: ')
     if data_type == 'Integer':
         value = int(value)
-    if data_type == 'List (put a comma between each value)':
+    if data_type == 'List':
         value = value.split(',')
     confirm = inquirer.confirm("Are you sure you would like to add this argument?")
     if confirm == True: 

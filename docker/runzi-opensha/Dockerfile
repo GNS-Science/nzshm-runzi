@@ -15,7 +15,9 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/56_cli_env_display
+
+# RUN git checkout feature/41_task_index_list_input
+
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 
