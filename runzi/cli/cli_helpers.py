@@ -202,7 +202,7 @@ def display_env(*args):
 def build_inversion_index_query():
     general_tasks = inquirer.text('General Task ID - for multiple put a space between each')
     general_task_list = general_tasks.split(' ')
-    confirm = inquirer.confirm(f'Confirm you want to run inversion diagnostics for IDs: {general_task_list}')
+    confirm = inquirer.confirm(f'Confirm you want to update index.html for IDs: {general_task_list}')
     if confirm == True:
         if len(general_task_list) == 1:
             build_manual_index(general_task_list[0], 'INVERSION')

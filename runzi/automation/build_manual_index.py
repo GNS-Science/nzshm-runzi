@@ -184,7 +184,7 @@ def build_manual_index(
     API_URL = os.getenv("NZSHM22_TOSHI_API_URL", "http://127.0.0.1:5000/graphql")
     API_KEY = os.getenv("NZSHM22_TOSHI_API_KEY", "")
     S3_URL = os.getenv("NZSHM22_TOSHI_S3_URL", "http://localhost:4569")
-    UPLOAD_FOLDER = "opensha/DATA"
+    UPLOAD_FOLDER = "./DATA"
     TUI = "http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com/"
 
     headers = {"x-api-key": API_KEY}
