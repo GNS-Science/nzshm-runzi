@@ -1,10 +1,9 @@
 import os
 import pwd
+import datetime as dt
 import boto3
 from subprocess import check_call
 from multiprocessing.dummy import Pool
-
-import datetime as dt
 
 from runzi.configuration.crustal_inversions import build_crustal_tasks
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs

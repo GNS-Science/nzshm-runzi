@@ -31,8 +31,6 @@ if CLUSTER_MODE == EnvMode['AWS']:
 def build_crustal_tasks(general_task_id, rupture_sets, args):
     task_count = 0
 
-    # java_threads = int(args['threads_per_selector']) * int(args['averaging_threads'])
-
     factory_class = get_factory(CLUSTER_MODE)
 
     task_factory = factory_class(OPENSHA_ROOT, WORK_PATH, inversion_solution_builder_task,
@@ -115,7 +113,6 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
 
             job_arguments = dict(
                 task_id = task_count,
-                round = _round,
                 java_threads = int(threads_per_selector) * int(averaging_threads), # JAVA_THREADS,
                 jvm_heap_max = JVM_HEAP_MAX,
                 java_gateway_port=task_factory.get_next_port(),
