@@ -4,7 +4,7 @@ RUN apk add --no-cache curl tar bash procps \
 	python3 py3-pip git ttf-dejavu
 
 WORKDIR /app/nzshm-opensha/build/libs
-COPY nzshm-opensha/build/libs/nzshm-opensha-all-101-perturbed-subduction.jar .
+COPY nzshm-opensha/build/libs/nzshm-opensha-all-107-scaling-check.jar .
 
 WORKDIR /WORKING
 WORKDIR /app
@@ -23,7 +23,7 @@ RUN pip3 install -e .
 ENV NZSHM22_TOSHI_API_ENABLED=1
 ENV NZSHM22_SCRIPT_WORK_PATH=/WORKING
 ENV NZSHM22_OPENSHA_JRE=/opt/java/openjdk/bin/java
-ENV NZSHM22_FATJAR=/app/nzshm-opensha/build/libs/nzshm-opensha-all-101-perturbed-subduction.jar
+ENV NZSHM22_FATJAR=/app/nzshm-opensha/build/libs/nzshm-opensha-all-107-scaling-check.jar
 ENV NZSHM22_OPENSHA_ROOT=/app
 ENV NZSHM22_S3_UPLOAD_WORKERS=25
 ENV NZSHM22_BUILD_PLOTS=TRUE

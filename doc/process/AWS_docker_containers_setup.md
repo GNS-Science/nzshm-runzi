@@ -52,11 +52,10 @@ docker build . --no-cache
 ### Tag new docker image
 
 ```
-export RUNZI_GITREF=cd7a072
-export NZOPENSHA_GITREF=25fd82e
-export OPENSHA_GITREF=da915e2
-export IMAGE_ID=99419a927193 #from docker build
-export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_opensha-${NZOPENSHA_GITREF}_opensha-${OPENSHA_GITREF}
+export RUNZI_GITREF=836029b
+export NZOPENSHA_GITREF=101-perturbed-subduction
+export IMAGE_ID=39428b379077 #from docker build
+export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_opensha-${NZOPENSHA_GITREF}
 
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
 ```
@@ -106,8 +105,11 @@ docker run -it --rm --env-file environ \
 $ docker run -it --rm --env-file environ nzshm22/runzi-opensha -s /app/container_task.sh
 
 # so now we must pass in credentials, then it can use boto to retrieve the ToshiAPI secret
-$ docker run -it --rm --env-file environ -v $HOME/.aws/credentials:/root/.aws/credentials:ro -e AWS_PROFILE=toshi_batch_devops nzshm22/runzi-opensha -s /app/container_task.sh
 
+docker run -it --rm --env-file environ \
+-v $HOME/.aws/credentials:/root/.aws/credentials:ro
+-e AWS_PROFILE=toshi_batch_devops nzshm22/runzi-opensha
+-s /app/container_task.sh
 ```
 
 Note this passing in of credentials is done using Job Definition.jobRoleARN in the ECS environment.
