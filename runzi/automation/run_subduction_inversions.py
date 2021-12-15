@@ -30,9 +30,7 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
     task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, inversion_solution_builder_task,
         initial_gateway_port=27933,
         jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
-        task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START,
-        pbs_ppn=JAVA_THREADS,
-        pbs_script=CLUSTER_MODE)
+        task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
 
     for (rid, rupture_set_info) in rupture_sets.items():
 
@@ -43,7 +41,8 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
                 selection_interval_secs, threads_per_selector, averaging_threads, averaging_interval_secs,
                 non_negativity_function, perturbation_function,
                 mfd_uncertainty_weight, mfd_uncertainty_power,
-                scaling_relationship, scaling_recalc_mag
+                scaling_relationship, scaling_recalc_mag,
+                deformation_model
                 )\
             in itertools.product(
                 args['rounds'], args['completion_energies'], args['max_inversion_times'],
@@ -54,6 +53,7 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
                 args['non_negativity_functions'], args['perturbation_functions'],
                 args['mfd_uncertainty_weights'], args['mfd_uncertainty_powers'],
                 args['scaling_relationships'], args['scaling_recalc_mags'],
+                args['deformation_models']
                 ):
 
             task_count +=1
@@ -86,7 +86,9 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
                 perturbation_function=perturbation_function,
 
                 scaling_relationship=scaling_relationship,
-                scaling_recalc_mag=scaling_recalc_mag
+                scaling_recalc_mag=scaling_recalc_mag,
+                deformation_model=deformation_model
+
                 )
 
             job_arguments = dict(

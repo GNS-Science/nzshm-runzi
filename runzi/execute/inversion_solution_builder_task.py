@@ -48,11 +48,16 @@ class BuilderTask():
 
         t0 = dt.datetime.utcnow()
 
+        API_GitVersion = self._gateway.entry_point.getGitVersion()
+
+        print(f"Running nzshm-opensha {API_GitVersion}")
+
         environment = {
             "host": platform.node(),
             #"gitref_opensha":self._repoheads['opensha'],
             #"gitref_nzshm-opensha":self._repoheads['nzshm-opensha'],
             #"gitref_nzshm-runzi":self._repoheads['nzshm-runzi']
+            "nzshm-opensha.version": API_GitVersion
             }
 
         if self.use_api:
@@ -114,7 +119,7 @@ class BuilderTask():
 
         elif ta['config_type'] == 'subduction':
             inversion_runner = self._gateway.entry_point.getSubductionInversionRunner()
-
+            inversion_runner.setDeformationModel(ta['deformation_model'])
             inversion_runner.setGutenbergRichterMFDWeights(
                     float(ta['mfd_equality_weight']),
                     float(ta['mfd_inequality_weight']))\
