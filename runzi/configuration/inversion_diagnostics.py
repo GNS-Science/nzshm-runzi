@@ -35,7 +35,6 @@ def generate_tasks_or_configs(general_task_id, solutions):
         jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
         task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
 
-
     for (sid, solution_info) in solutions.items():
 
         task_count +=1

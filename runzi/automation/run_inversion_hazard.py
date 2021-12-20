@@ -58,22 +58,32 @@ def run_tasks(general_task_id, solutions, subtask_arguments):
             general_task_id = general_task_id,
             use_api = USE_API,
             )
+            if CLUSTER_MODE == EnvMode['AWS']:
 
-        #write a config
-        task_factory.write_task_config(task_arguments, job_arguments)
+                job_name = f"Runzi-automation-hazard-{task_count}"
+                config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
 
-        script = task_factory.get_task_script()
+                yield get_ecs_job_config(job_name, rupture_set_info['id'], config_data,
+                    toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
+                    task_module=inversion_solution_builder_task.__name__,
+                    time_minutes=int(max_inversion_time), memory=30720, vcpu=4)
 
-        script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
-        with open(script_file_path, 'w') as f:
-            f.write(script)
+            else:
+                #write a config
+                task_factory.write_task_config(task_arguments, job_arguments)
 
-        #make file executable
-        st = os.stat(script_file_path)
-        os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
+                script = task_factory.get_task_script()
 
-        yield str(script_file_path)
-        #return
+                script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
+                with open(script_file_path, 'w') as f:
+                    f.write(script)
+
+                #make file executable
+                st = os.stat(script_file_path)
+                os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
+
+                yield str(script_file_path)
+                #return
 
 if __name__ == "__main__":
 
