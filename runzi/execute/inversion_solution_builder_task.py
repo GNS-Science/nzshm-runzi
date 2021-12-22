@@ -135,7 +135,15 @@ class BuilderTask():
                     float(ta['mfd_uncertainty_power']))
 
         if ta.get('scaling_relationship') and ta.get('scaling_recalc_mag'):
-            inversion_runner.setScalingRelationship(ta.get('scaling_relationship'), bool(ta.get('scaling_recalc_mag')))
+            sr = self._gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
+            if ta.get('scaling_relationship') == "SIMPLE_CRUSTAL":
+                sr.setupCrustal(float(ta.get('scaling_c_val_dip_slip')),
+                    float(ta.get('scaling_c_val_strike_slip')))
+            elif ta.get('scaling_relationship') == "SIMPLE_SUBDUCTION":
+                sr.setupSubduction(float(ta.get('scaling_c_val')))
+            else:
+                sr =ta.get('scaling_relationship')
+            inversion_runner.setScalingRelationship(sr, bool(ta.get('scaling_recalc_mag')))
 
         inversion_runner\
             .setInversionSeconds(int(float(ta['max_inversion_time']) * 60))\
