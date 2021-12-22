@@ -19,11 +19,14 @@ WORKDIR /app/nzshm-runzi
 RUN git fetch
 RUN git checkout feature/64_produce_sub-solutions
 
-RUN apk add --no-cache proj-dev geos-dev gdal-dev \
-	make automake gcc g++ python3-dev \
- 	proj-util
-
-ENV PROJ_DIR=/usr
+# FOR SOLVIS ... Sub Solutions
+#
+#RUN apk add --no-cache proj-dev geos-dev gdal-dev \
+#	make automake gcc g++ python3-dev \
+# 	proj-util
+#
+#ENV PROJ_DIR=/usr
+#pip install git+https://github.com/GNS-Science/solvis#egg=solvis geopandas
 
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
