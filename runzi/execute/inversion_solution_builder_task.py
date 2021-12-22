@@ -14,7 +14,6 @@ from dateutil.tz import tzutc
 from types import SimpleNamespace
 
 from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
-from nshm_toshi_client.general_task import GeneralTask
 from nshm_toshi_client.task_relation import TaskRelation
 
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -36,8 +35,6 @@ class BuilderTask():
 
         if self.use_api:
             headers={"x-api-key":API_KEY}
-            # self._ruptgen_api = RuptureGenerationTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-            self._general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
             self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
             self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 

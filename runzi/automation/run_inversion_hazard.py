@@ -20,7 +20,7 @@ import scaling.inversion_hazard_report_task
 # Set up your local config, from environment variables, with some sone defaults
 from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, CLUSTER_MODE)
+    API_KEY, API_URL, S3_URL, CLUSTER_MODE, EnvMode )
 
 
 def run_tasks(general_task_id, solutions, subtask_arguments):
@@ -58,32 +58,33 @@ def run_tasks(general_task_id, solutions, subtask_arguments):
             general_task_id = general_task_id,
             use_api = USE_API,
             )
-            if CLUSTER_MODE == EnvMode['AWS']:
 
-                job_name = f"Runzi-automation-hazard-{task_count}"
-                config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
+        if CLUSTER_MODE == EnvMode['AWS']:
 
-                yield get_ecs_job_config(job_name, rupture_set_info['id'], config_data,
-                    toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
-                    task_module=inversion_solution_builder_task.__name__,
-                    time_minutes=int(max_inversion_time), memory=30720, vcpu=4)
+            job_name = f"Runzi-automation-hazard-{task_count}"
+            config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
 
-            else:
-                #write a config
-                task_factory.write_task_config(task_arguments, job_arguments)
+            yield get_ecs_job_config(job_name, rupture_set_info['id'], config_data,
+                toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
+                task_module=inversion_solution_builder_task.__name__,
+                time_minutes=int(max_inversion_time), memory=30720, vcpu=4)
 
-                script = task_factory.get_task_script()
+        else:
+            #write a config
+            task_factory.write_task_config(task_arguments, job_arguments)
 
-                script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
-                with open(script_file_path, 'w') as f:
-                    f.write(script)
+            script = task_factory.get_task_script()
 
-                #make file executable
-                st = os.stat(script_file_path)
-                os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
+            script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
+            with open(script_file_path, 'w') as f:
+                f.write(script)
 
-                yield str(script_file_path)
-                #return
+            #make file executable
+            st = os.stat(script_file_path)
+            os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
+
+            yield str(script_file_path)
+            #return
 
 if __name__ == "__main__":
 
@@ -92,7 +93,7 @@ if __name__ == "__main__":
     GENERAL_TASK_ID = None
     # If you wish to override something in the main config, do so here ..
     WORKER_POOL_SIZE = 2
-    JVM_HEAP_MAX = 22
+    JVM_HEAP_MAX = 20
     JAVA_THREADS = 12
     #USE_API = False #True #to read the ruptset form the API
 
@@ -115,7 +116,7 @@ if __name__ == "__main__":
     args = dict(
         #iml_periods = "0.0, 0.05, 0.075, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0".split(',').join(),
         iml_periods = [v.strip() for v in "0.0, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0".split(',')],
-        bg_seismicitys = ["EXCLUDE"],
+        bg_seismicitys = ["INCLUDE", "EXCLUDE"],
         gmpes = ["ASK_2014"],
         forecast_timespans = ['50'],
         grid_spacings = ['0.1'],
@@ -127,9 +128,16 @@ if __name__ == "__main__":
     #"R2VuZXJhbFRhc2s6NTk2SmJXZUI="
     #"R2VuZXJhbFRhc2s6NzU0cGp4c1c="
     #"R2VuZXJhbFRhc2s6NzU2andXeTc=",
-    for inversion_task_id in ["R2VuZXJhbFRhc2s6NTQ5N2NZOFU4"]: # R2VuZXJhbFRhc2s6NjMyUzRDZGM="]: #TEST Inversion
+    # R2VuZXJhbFRhc2s6NjMyUzRDZGM="]: #TEST Inversion
 
-        file_generator = get_output_file_ids(toshi_api, inversion_task_id) #
+    #PROD
+    #R2VuZXJhbFRhc2s6NjA1Mlk2blUz
+
+    #R2VuZXJhbFRhc2s6NTg4N01zRHZO  Modular Inversions: Randomness test 1 (40)
+    #R2VuZXJhbFRhc2s6NTkyOHFpTjlE  Modular Inversions: Randomness test 2 (4)
+    #R2VuZXJhbFRhc2s6NTkzM0RkaDNz  Modular Inversions: Randomness test 3 (24)
+    for inversion_task_id in ["R2VuZXJhbFRhc2s6NTkzM0RkaDNz"]:
+        file_generator = get_output_file_ids(toshi_api, inversion_task_id)
         #file_generator = get_output_file_id(toshi_api, "RmlsZTozMDkuMHB3U0dn") #for file by file ID
 
         solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
@@ -141,7 +149,6 @@ if __name__ == "__main__":
 
         print('task count: ', len(scripts))
         pool.map(call_script, scripts)
-
 
     args_list = []
     for key, value in args.items():

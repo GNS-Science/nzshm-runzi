@@ -40,7 +40,7 @@ def generate_tasks_or_configs(general_task_id, solutions):
         task_count +=1
 
         #get FM name
-        fault_model = solution_info['info']['fault_model']
+        fault_model = solution_info['info'].get('fault_model', "")
 
         task_arguments = dict(
             file_id = str(solution_info['id']),
