@@ -94,7 +94,10 @@ class BuilderTask():
             inversion_runner.setGutenbergRichterMFDWeights(
                     float(ta['mfd_equality_weight']),
                     float(ta['mfd_inequality_weight']))
-            inversion_runner.setMinMagForSeismogenicRups(float(ta['seismogenic_min_mag']))
+
+            #set both the same for now
+            minMagSans = minMagTvz = float(ta['seismogenic_min_mag'])
+            inversion_runner.setMinMags(minMagSans, minMagTvz)
 
             if ta['slip_rate_weighting_type'] == 'UNCERTAINTY_ADJUSTED':
                 inversion_runner.setSlipRateUncertaintyConstraint(
