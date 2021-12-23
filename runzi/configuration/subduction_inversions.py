@@ -47,7 +47,9 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
                 non_negativity_function, perturbation_function,
                 mfd_uncertainty_weight, mfd_uncertainty_power,
                 scaling_relationship, scaling_recalc_mag,
-                deformation_model
+                deformation_model,
+                scaling_c_val,
+                initial_solution_id
                 )\
             in itertools.product(
                 args['rounds'], args['completion_energies'], args['max_inversion_times'],
@@ -58,7 +60,9 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
                 args['non_negativity_functions'], args['perturbation_functions'],
                 args['mfd_uncertainty_weights'], args['mfd_uncertainty_powers'],
                 args['scaling_relationships'], args['scaling_recalc_mags'],
-                args['deformation_models']
+                args['deformation_models'],
+                args.get('scaling_c_vals', [None]),
+                args.get('initial_solution_ids', [None])
                 ):
 
             task_count +=1
@@ -92,8 +96,10 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
 
                 scaling_relationship=scaling_relationship,
                 scaling_recalc_mag=scaling_recalc_mag,
-                deformation_model=deformation_model
+                deformation_model=deformation_model,
 
+                scaling_c_val=scaling_c_val,
+                initial_solution_id=initial_solution_id
                 )
 
             job_arguments = dict(
