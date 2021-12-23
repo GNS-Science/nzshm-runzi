@@ -156,10 +156,8 @@ def inv_template(rgt, upload_folder, tui, display_keys=None):
         return f"""<li>
             <a href="{tui}Find/{rid}">{rid}</a> result: {result}&nbsp;
             <a href="{tui}InversionSolution/{fid}">Inversion Solution detail</a>&nbsp;
-            <a href="{upload_folder}/{fid}/mag_rates/MAG_rates_log_fixed_yscale.png">Mag Rate overall</a>&nbsp;
             {solution_diags}
             {named_faults_link}
-
 
             <br />
             <div class="display_info">{display_info}</div>

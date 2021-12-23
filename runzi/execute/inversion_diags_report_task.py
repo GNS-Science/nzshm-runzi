@@ -27,7 +27,6 @@ class BuilderTask():
 
         #setup the java gateway binding
         self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=job_args['java_gateway_port']))
-        self._report_builder = self._gateway.entry_point.getInversionDiagnosticsReportBuilder()
         self._page_gen = self._gateway.entry_point.getReportPageGen()
         self._output_folder = PurePath(WORK_PATH)
 
@@ -68,17 +67,6 @@ class BuilderTask():
     def build_mfd_plots(self, task_arguments, job_arguments):
         t0 = dt.datetime.utcnow()
         ta, ja = task_arguments, job_arguments
-        self._report_builder\
-            .setRuptureSetName(ta['file_path'])
-
-        # build the MagRate Curve
-        mag_rates_folder = Path(self._output_folder, ta['file_id'], 'mag_rates')
-        mag_rates_folder.mkdir(parents=True, exist_ok=True)
-
-        self._report_builder\
-            .setName("")\
-            .setOutputDir(str(mag_rates_folder))\
-            .generateRateDiagnosticsPlot()
 
         # build the Named Fault MFDS, only if we have a FM with named faults
         if ta["fault_model"][:7] == "CFM_0_9":

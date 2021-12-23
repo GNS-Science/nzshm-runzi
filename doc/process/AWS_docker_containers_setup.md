@@ -54,10 +54,9 @@ docker build . --build-arg FATJAR_TAG=${FATJAR_TAG} --no-cache
 ### Tag new docker image
 
 ```
-export RUNZI_GITREF=2062379
-export NZOPENSHA_GITREF=${FATJAR_TAG}
-export IMAGE_ID=0f62d98aae92 #from docker build
-export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_opensha-${NZOPENSHA_GITREF}
+export RUNZI_GITREF=b406f4f
+export IMAGE_ID=e84a0ad0b305 #from docker build
+export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_opensha-${FATJAR_TAG}
 
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
 ```
@@ -81,14 +80,22 @@ This assumes the command is being run from the folder containing `Dockerfile`
 set_tosh_test_env
 ```
 
-# Local cli testing
+### Local cli testing
 
 ```
+wget https://nzshm-opensha-public-jars.s3.ap-southeast-2.amazonaws.com/nzshm-opensha-all-${FATJAR_TAG}.jar -P $(pwd)/nzshm-opensha/build/libs
 export NZSHM22_FATJAR=$(pwd)/nzshm-opensha/build/libs/nzshm-opensha-all-${FATJAR_TAG}.jar
 NZSHM22_SCRIPT_CLUSTER_MODE=LOCAL python3 ../../runzi/cli/cli.py
 ```
 
+### AWS or Dockerised run
+
+run the docker container...
+ - use LOCAL to run on local docker host
+ - use AWS to run on AWS Batch
+
 ```
+
 # -v $HOME/DEV/GNS/AWS_S3_DATA/WORKING:/WORKING \
 
 docker run -it --rm --env-file environ \
