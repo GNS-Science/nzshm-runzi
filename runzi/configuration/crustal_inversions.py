@@ -52,7 +52,8 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 scaling_relationship, scaling_recalc_mag,
                 paleo_rate_constraint_weight, paleo_rate_constraint,
                 paleo_probability_model, paleo_parent_rate_smoothness_constraint_weight,
-                scaling_c_val_dip_slip, scaling_c_val_strike_slip
+                scaling_c_val_dip_slip, scaling_c_val_strike_slip,
+                initial_solution_id
                 )\
             in itertools.product(
                 args['rounds'], args['completion_energies'], args['max_inversion_times'],
@@ -68,7 +69,8 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 args['scaling_relationships'], args['scaling_recalc_mags'],
                 args['paleo_rate_constraint_weights'], args['paleo_rate_constraints'],
                 args['paleo_probability_models'], args['paleo_parent_rate_smoothness_constraint_weights'],
-                args['scaling_c_val_dip_slips'], args['scaling_c_val_strike_slips']
+                args['scaling_c_val_dip_slips'], args['scaling_c_val_strike_slips'],
+                args.get('initial_solution_ids', [None,])
                 ):
 
             task_count +=1
@@ -113,7 +115,8 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 paleo_parent_rate_smoothness_constraint_weight=paleo_parent_rate_smoothness_constraint_weight,
 
                 scaling_c_val_dip_slip=scaling_c_val_dip_slip,
-                scaling_c_val_strike_slip=scaling_c_val_strike_slip
+                scaling_c_val_strike_slip=scaling_c_val_strike_slip,
+                initial_solution_id=initial_solution_id
                 )
 
             job_arguments = dict(

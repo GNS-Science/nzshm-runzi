@@ -16,8 +16,10 @@ from types import SimpleNamespace
 from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL)
+
 
 class BuilderTask():
     """
@@ -49,6 +51,11 @@ class BuilderTask():
 
         print(f"Running nzshm-opensha {API_GitVersion}")
 
+        initial_solution_id = ta.get('initial_solution_id')
+        if initial_solution_id:
+            file_generator = get_output_file_id(self._toshi_api , initial_solution_id)
+            initial_solution_info = download_files(self._toshi_api , file_generator, str(WORK_PATH), overwrite=False)
+
         environment = {
             "host": platform.node(),
             #"gitref_opensha":self._repoheads['opensha'],
@@ -72,10 +79,13 @@ class BuilderTask():
             #link task tp the parent task
             self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
 
-            # #link task to the input datafile
+            # link task to the input datafiles
             input_file_id = task_arguments.get('rupture_set_file_id')
             if input_file_id:
                 self._toshi_api.automation_task.link_task_file(task_id, input_file_id, 'READ')
+
+            if initial_solution_id:
+                self._toshi_api.automation_task.link_task_file(task_id, initial_solution_id, 'READ')
 
         else:
             task_id = str(uuid.uuid4())
@@ -154,6 +164,9 @@ class BuilderTask():
             .setPerturbationFunction(ta['perturbation_function'])
 
         inversion_runner.setRuptureSetFile(str(PurePath(job_arguments['working_path'], ta['rupture_set'])))
+
+        if initial_solution_id:
+            inversion_runner.setInitialSolution(initial_solution_info[initial_solution_id]['filepath'])
 
         if ta.get("averaging_threads"):
             inversion_runner.setInversionAveraging(
