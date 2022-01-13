@@ -104,6 +104,7 @@ docker run -it --rm --env-file environ \
 -e AWS_PROFILE=toshi_batch_devops \
 -e NZSHM22_TOSHI_S3_URL \
 -e NZSHM22_TOSHI_API_URL \
+-e NZSHM22_TOSHI_API_KEY \
 -e NZSHM22_SCRIPT_CLUSTER_MODE \
 -e NZSHM22_S3_REPORT_BUCKET \
 -e NZSHM22_REPORT_LEVEL=FULL \

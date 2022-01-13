@@ -11,10 +11,9 @@ import datetime as dt
 from dateutil.tz import tzutc
 
 import time
+from runzi.util.aws.s3_folder_upload import upload_to_bucket
+from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET)
 
-API_URL  = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
-API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
-S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL',"http://localhost:4569")
 
 class BuilderTask():
     """
@@ -26,7 +25,8 @@ class BuilderTask():
 
         #setup the java gateway binding
         self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=job_args['java_gateway_port']))
-        self._report_builder = self._gateway.entry_point.getInversionDiagnosticsReportBuilder()
+        #self._report_builder = self._gateway.entry_point.getInversionDiagnosticsReportBuilder()
+        self._page_gen = self._gateway.entry_point.getReportPageGen()
         self._output_folder = PurePath(job_args.get('working_path'))
 
     def run(self, task_arguments, job_arguments):
@@ -49,11 +49,13 @@ class BuilderTask():
         # # build the full report
         report_title = f"Rupture Set Diagnostics. Rupset ID: {ta['rupture_set_file_id']}"
 
-        self._report_builder\
-            .setRuptureSetName(ta['rupture_set_file_path'])\
+        self._page_gen\
+            .setRuptureSet(ta['rupture_set_file_path'])\
             .setName(report_title)\
-            .setOutputDir(str(diags_folder))\
-            .generateRuptureSetDiagnosticsReport()
+            .setOutputPath(str(diags_folder))\
+            .setPlotLevel(ja['build_report_level'])\
+            .setFillSurfaces(True)\
+            .generateRupSetPage()
 
         t1 = dt.datetime.utcnow()
         print("Report took %s secs" % (t1-t0).total_seconds())
@@ -85,3 +87,4 @@ if __name__ == "__main__":
     # print(config)
     task = BuilderTask(config['job_arguments'])
     task.run(**config)
+    upload_to_bucket(config['task_arguments']['rupture_set_file_id'], S3_REPORT_BUCKET)

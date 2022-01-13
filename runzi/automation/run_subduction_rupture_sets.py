@@ -12,24 +12,26 @@ from multiprocessing.dummy import Pool
 import datetime as dt
 from dateutil.tz import tzutc
 
-# from nshm_toshi_client.general_task import GeneralTask
-from scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
-
-from scaling.opensha_task_factory import OpenshaTaskFactory
-
-import scaling.subduction_rupture_set_builder_task
+from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
+from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.automation.scaling import subduction_rupture_set_builder_task
 
 
 # Set up your local config, from environment variables, with some sone defaults
 from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, CLUSTER_MODE)
+    API_KEY, API_URL, S3_URL, CLUSTER_MODE, EnvMode)
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
 JVM_HEAP_MAX = 12
 JVM_HEAP_START = 2
 
+INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
+MAX_JOB_TIME_SECS = 60*30 #Change this soon
+
+if CLUSTER_MODE == EnvMode['AWS']:
+    WORK_PATH='/WORKING'
 
 def build_tasks(general_task_id, args):
     """
@@ -37,12 +39,17 @@ def build_tasks(general_task_id, args):
 
     """
     task_count = 0
-    task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, scaling.subduction_rupture_set_builder_task,
-        initial_gateway_port=25733,
+    factory_class = get_factory(CLUSTER_MODE)
+
+    task_factory = factory_class(OPENSHA_ROOT, WORK_PATH, subduction_rupture_set_builder_task,
+        initial_gateway_port=INITIAL_GATEWAY_PORT,
         jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
-        task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START,
-        pbs_ppn=JAVA_THREADS,
-        pbs_script=CLUSTER_MODE)
+        task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
+
+    # task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, scaling.subduction_rupture_set_builder_task,
+    #     initial_gateway_port=25733,
+    #     jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
+    #     task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
     for (model, min_aspect_ratio, max_aspect_ratio, aspect_depth_threshold,
             min_fill_ratio, growth_position_epsilon, growth_size_epsilon, scaling_relationship, deformation_model) in itertools.product(
             args['models'], args['min_aspect_ratios'], args['max_aspect_ratios'], args['aspect_depth_thresholds'], args['min_fill_ratios'],
@@ -102,13 +109,13 @@ if __name__ == "__main__":
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "Build Hikurangi/Louisville rupture set with Kermits Revenge SBD_0_4_HKR_LR_30 fault model"
+    TASK_TITLE = "Build Puysegur ruptures - 1st cut"
 
     TASK_DESCRIPTION = """
     """
     ##Test parameters
     args = dict(
-        models = ["SBD_0_4_HKR_LR_30", ], #"SBD_0_1_HKR_KRM_10"]
+        models = ["SBD_0_1_PUY_30", ], #"SBD_0_1_HKR_KRM_10"]
         min_aspect_ratios = ["2.0",],
         max_aspect_ratios = ["5.0",],
         aspect_depth_thresholds = ["5",],
