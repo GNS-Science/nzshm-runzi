@@ -67,8 +67,10 @@ def run_crustal_inversion(config):
     print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
 
     scripts = []
-    for script_file_or_config in build_crustal_tasks(GENERAL_TASK_ID, rupture_sets, args):
+    for script_file_or_config in build_crustal_tasks(GENERAL_TASK_ID, rupture_sets, args, config):
         scripts.append(script_file_or_config)
+
+    print(f"GENERAL_TASK_ID:{GENERAL_TASK_ID} with {len(scripts)} subtasks")
 
     if CLUSTER_MODE == EnvMode['LOCAL']:
         def call_script(script_or_config):
@@ -92,6 +94,7 @@ def run_crustal_inversion(config):
         for script_or_config in scripts:
             check_call(['qsub', script_or_config])
 
+    toshi_api.general_task.update_subtask_count(GENERAL_TASK_ID, len(scripts))
+
+    print(f"GENERAL_TASK_ID:{GENERAL_TASK_ID} with {len(scripts)} subtasks")
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
-    print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
-    

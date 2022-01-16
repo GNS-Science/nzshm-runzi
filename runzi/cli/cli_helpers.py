@@ -49,6 +49,7 @@ def to_json_format(config):
 
 def from_json_format(config):
     flat_dict = {**config['job_args'], **config['general_args'], **config['task_args']}
+    flat_dict['config_version'] = config['config_version']
     return {'_' + k : v for k, v in flat_dict.items()}
 
 def unique_id():

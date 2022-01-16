@@ -78,3 +78,18 @@ def inversion_diagnostic_query(*args):
         inversion_diagnostic_runner(general_task_id)
 
 
+
+if __name__ == '__main__':
+    headers={"x-api-key":API_KEY}
+    file_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+
+    general_task_id = 'R2VuZXJhbFRhc2s6MTY5MDZxajVT'
+    file_generator = get_output_file_ids(file_api, general_task_id)
+
+
+    files = [f for f in file_generator]
+    for f in files:
+        print(files)
+    solutions = download_files(file_api, files, str(WORK_PATH), overwrite=False, skip_existing=False)
+    for s in solutions:
+        print(s)
