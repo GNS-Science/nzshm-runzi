@@ -54,10 +54,8 @@ def build_crustal_tasks(general_task_id, rupture_sets, args, config):
     for (rid, rupture_set_info) in rupture_sets.items():
 
         job_arguments = dict(
-            task_id = task_count,
             java_threads = config.get_job_args().get("_java_threads", JAVA_THREADS), # JAVA_THREADS,
             jvm_heap_max = JVM_HEAP_MAX,
-            java_gateway_port=task_factory.get_next_port(),
             working_path=str(WORK_PATH),
             root_folder=OPENSHA_ROOT,
             general_task_id=general_task_id,
@@ -67,6 +65,9 @@ def build_crustal_tasks(general_task_id, rupture_sets, args, config):
         for task_arguments in permutations_generator(args, rupture_set_info):
 
             task_count +=1
+
+            job_arguments['task_id'] = task_count
+            job_arguments['java_gateway_port'] = task_factory.get_next_port()
 
             if CLUSTER_MODE == EnvMode['AWS']:
 

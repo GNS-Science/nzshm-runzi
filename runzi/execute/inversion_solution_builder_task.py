@@ -53,7 +53,7 @@ class BuilderTask():
 
         initial_solution_id = ta.get('initial_solution_id')
         if initial_solution_id:
-            file_generator = get_output_file_id(self._toshi_api , initial_solution_id)
+            file_generator = get_output_file_id(self._toshi_api, initial_solution_id)
             initial_solution_info = download_files(self._toshi_api , file_generator, str(WORK_PATH), overwrite=False)
 
         environment = {
