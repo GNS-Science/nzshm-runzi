@@ -47,7 +47,7 @@ $ aws batch submit-job --cli-input-json "$(<task-specs/job-submit-002.json)"
 ### Build new container with no tag, forcing git pull etc
 
 ```
-#EG export FATJAR_TAG=95-modular-hazard
+#EG export FATJAR_TAG=120-api-inversion-config
 docker build . --build-arg FATJAR_TAG=${FATJAR_TAG} --no-cache
 ```
 

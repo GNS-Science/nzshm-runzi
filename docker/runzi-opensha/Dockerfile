@@ -17,7 +17,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/66_support_initial_solution
+RUN git checkout feature/69_new_inversion_configs
 
 # FOR SOLVIS ... Sub Solutions
 #
