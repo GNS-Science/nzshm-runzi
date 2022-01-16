@@ -1,6 +1,6 @@
 import os
 import pwd
-import itertools
+
 import stat
 import json
 from pathlib import PurePath
@@ -9,6 +9,7 @@ from multiprocessing.dummy import Pool
 import boto3
 
 import datetime as dt
+import logging
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
 from runzi.automation.scaling.opensha_task_factory import get_factory
@@ -22,13 +23,19 @@ from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPEN
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
     API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, EnvMode)
 
-INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
+from runzi.configuration.crustal_inversion_permutations import all_permutations_generator, branch_permutations_generator
+
 #JAVA_THREADS = 4
+
+logging.basicConfig()
+log = logging.getLogger(__name__)
+
+INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 
 if CLUSTER_MODE == EnvMode['AWS']:
     WORK_PATH='/WORKING'
 
-def build_crustal_tasks(general_task_id, rupture_sets, args):
+def build_crustal_tasks(general_task_id, rupture_sets, args, config):
     task_count = 0
 
     factory_class = get_factory(CLUSTER_MODE)
@@ -38,97 +45,28 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
         jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
         task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
 
+    config_version = config.get_config_version()
+    permutations_generator = branch_permutations_generator \
+         if config_version == "2.0" else all_permutations_generator
+    log.info(f"Using permutations_generator {permutations_generator} for config version {config_version}.")
+
+
     for (rid, rupture_set_info) in rupture_sets.items():
-        for (_round, completion_energy, max_inversion_time,
-                mfd_equality_weight, mfd_inequality_weight, slip_rate_weighting_type,
-                slip_rate_weight, slip_uncertainty_scaling_factor,
-                slip_rate_normalized_weight, slip_rate_unnormalized_weight,
-                mfd_mag_gt_5_sans, mfd_mag_gt_5_tvz,
-                mfd_b_value_sans, mfd_b_value_tvz, mfd_transition_mag,
-                seismogenic_min_mag,
-                selection_interval_secs, threads_per_selector, averaging_threads, averaging_interval_secs,
-                non_negativity_function, perturbation_function,
-                deformation_model,
-                scaling_relationship, scaling_recalc_mag,
-                paleo_rate_constraint_weight, paleo_rate_constraint,
-                paleo_probability_model, paleo_parent_rate_smoothness_constraint_weight,
-                scaling_c_val_dip_slip, scaling_c_val_strike_slip,
-                initial_solution_id
-                )\
-            in itertools.product(
-                args['rounds'], args['completion_energies'], args['max_inversion_times'],
-                args['mfd_equality_weights'], args['mfd_inequality_weights'], args['slip_rate_weighting_types'],
-                args['slip_rate_weights'], args['slip_uncertainty_scaling_factors'],
-                args['slip_rate_normalized_weights'],  args['slip_rate_unnormalized_weights'],
-                args['mfd_mag_gt_5_sans'], args['mfd_mag_gt_5_tvz'],
-                args['mfd_b_values_sans'], args['mfd_b_values_tvz'], args['mfd_transition_mags'],
-                args['seismogenic_min_mags'],
-                args['selection_interval_secs'], args['threads_per_selector'], args['averaging_threads'], args['averaging_interval_secs'],
-                args['non_negativity_function'], args['perturbation_function'],
-                args['deformation_models'],
-                args['scaling_relationships'], args['scaling_recalc_mags'],
-                args['paleo_rate_constraint_weights'], args['paleo_rate_constraints'],
-                args['paleo_probability_models'], args['paleo_parent_rate_smoothness_constraint_weights'],
-                args['scaling_c_val_dip_slips'], args['scaling_c_val_strike_slips'],
-                args.get('initial_solution_ids', [None,])
-                ):
+
+        job_arguments = dict(
+            task_id = task_count,
+            java_threads = config.get_job_args().get("_java_threads", JAVA_THREADS), # JAVA_THREADS,
+            jvm_heap_max = JVM_HEAP_MAX,
+            java_gateway_port=task_factory.get_next_port(),
+            working_path=str(WORK_PATH),
+            root_folder=OPENSHA_ROOT,
+            general_task_id=general_task_id,
+            use_api = USE_API,
+            )
+
+        for task_arguments in permutations_generator(args, rupture_set_info):
 
             task_count +=1
-
-            task_arguments = dict(
-                round = _round,
-                config_type = 'crustal',
-                deformation_model=deformation_model,
-                rupture_set_file_id=rupture_set_info['id'],
-                rupture_set=rupture_set_info['filepath'],
-                completion_energy=completion_energy,
-                max_inversion_time=max_inversion_time,
-                mfd_equality_weight=mfd_equality_weight,
-                mfd_inequality_weight=mfd_inequality_weight,
-                slip_rate_weighting_type=slip_rate_weighting_type,
-                slip_rate_weight=slip_rate_weight,
-                slip_uncertainty_scaling_factor=slip_uncertainty_scaling_factor,
-                slip_rate_normalized_weight=slip_rate_normalized_weight,
-                slip_rate_unnormalized_weight=slip_rate_unnormalized_weight,
-                seismogenic_min_mag=seismogenic_min_mag,
-                mfd_mag_gt_5_sans=mfd_mag_gt_5_sans,
-                mfd_mag_gt_5_tvz=mfd_mag_gt_5_tvz,
-                mfd_b_value_sans=mfd_b_value_sans,
-                mfd_b_value_tvz=mfd_b_value_tvz,
-                mfd_transition_mag=mfd_transition_mag,
-
-                #New config arguments for Simulated Annealing ...
-                selection_interval_secs=selection_interval_secs,
-                threads_per_selector=threads_per_selector,
-                averaging_threads=averaging_threads,
-                averaging_interval_secs=averaging_interval_secs,
-                non_negativity_function=non_negativity_function,
-                perturbation_function=perturbation_function,
-
-                scaling_relationship=scaling_relationship,
-                scaling_recalc_mag=scaling_recalc_mag,
-
-                #New Paleo Args...
-                paleo_rate_constraint_weight=paleo_rate_constraint_weight,
-                paleo_rate_constraint=paleo_rate_constraint,
-                paleo_probability_model=paleo_probability_model,
-                paleo_parent_rate_smoothness_constraint_weight=paleo_parent_rate_smoothness_constraint_weight,
-
-                scaling_c_val_dip_slip=scaling_c_val_dip_slip,
-                scaling_c_val_strike_slip=scaling_c_val_strike_slip,
-                initial_solution_id=initial_solution_id
-                )
-
-            job_arguments = dict(
-                task_id = task_count,
-                java_threads = int(threads_per_selector) * int(averaging_threads), # JAVA_THREADS,
-                jvm_heap_max = JVM_HEAP_MAX,
-                java_gateway_port=task_factory.get_next_port(),
-                working_path=str(WORK_PATH),
-                root_folder=OPENSHA_ROOT,
-                general_task_id=general_task_id,
-                use_api = USE_API,
-                )
 
             if CLUSTER_MODE == EnvMode['AWS']:
 
@@ -138,7 +76,7 @@ def build_crustal_tasks(general_task_id, rupture_sets, args):
                 yield get_ecs_job_config(job_name, rupture_set_info['id'], config_data,
                     toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
                     task_module=inversion_solution_builder_task.__name__,
-                    time_minutes=int(max_inversion_time), memory=30720, vcpu=4)
+                    time_minutes=int(task_arguments['max_inversion_time']), memory=30720, vcpu=4)
 
             else:
                 #write a config

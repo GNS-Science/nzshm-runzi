@@ -29,10 +29,10 @@ class CreateGeneralTaskArgs(object):
 
     def set_argument_list(self, arg_list):
         self._arguments['argument_lists'] = arg_list
-        subtask_count = 1
-        for arg in arg_list:
-            subtask_count *= len(arg['v'])
-        self._arguments['subtask_count'] = subtask_count
+        # subtask_count = 1
+        # for arg in arg_list:
+        #     subtask_count *= len(arg['v'])
+        # self._arguments['subtask_count'] = subtask_count
         return self
 
     def set_meta(self, meta_list):
@@ -153,3 +153,43 @@ class GeneralTask(object):
         #input_variables = dict(created=created, agent_name=agent_name, title=title, description=description)
         executed = self.api.run_query(qry, create_args.as_dict())
         return executed['create_general_task']['general_task']['id']
+
+
+    # def get_example_complete_variables(self):
+    #       return {"task_id": "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjA=",
+    #       "duration": 600,
+    #       "result": "SUCCESS",
+    #       "state": "DONE",
+    #       "subtask_count": 0
+    #        }
+
+    # def validate_variables(self, reference, values):
+    #     valid_keys = reference.keys()
+    #     if not values.keys() == valid_keys:
+    #         diffs = set(valid_keys).difference(set(values.keys()))
+    #         missing_keys = ", ".join(diffs)
+    #         print(valid_keys)
+    #         print(values.leys())
+    #         raise ValueError("complete_variables must contain keys: %s" % missing_keys)
+
+    def update_subtask_count(self, task_id, subtask_count):
+        qry = '''
+            mutation update_subtask_count (
+              $task_id:ID!
+              $subtask_count:Int!
+            ){
+              update_general_task(input:{
+                task_id:$task_id
+                subtask_count:$subtask_count
+              }) {
+                ok
+              }
+            }
+
+        '''
+
+        print(qry)
+
+        # self.validate_variables(self.get_example_complete_variables(), input_variables)
+        executed = self.api.run_query(qry, dict(task_id=task_id, subtask_count=subtask_count))
+        return executed['update_general_task']['ok']
