@@ -101,7 +101,7 @@ def build_crustal_tasks(general_task_id, rupture_sets, args, config):
 
                 yield str(script_file_path)
 
-            return
+            #return
 
 # if __name__ == "__main__":
 
