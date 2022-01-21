@@ -23,7 +23,7 @@ from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPEN
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
     API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, EnvMode)
 
-from runzi.configuration.crustal_inversion_permutations import all_permutations_generator, branch_permutations_generator
+from runzi.configuration.crustal_inversion_permutations import *
 
 #JAVA_THREADS = 4
 
@@ -46,10 +46,16 @@ def build_crustal_tasks(general_task_id, rupture_sets, args, config):
         task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
 
     config_version = config.get_config_version()
-    permutations_generator = branch_permutations_generator \
-         if config_version == "2.0" else all_permutations_generator
-    log.info(f"Using permutations_generator {permutations_generator} for config version {config_version}.")
+    if config_version == "2.0":
+        permutations_generator = branch_permutations_generator
+    if config_version == "2.1":
+        permutations_generator = branch_permutations_generator_21
+    if config_version == "2.2":
+        permutations_generator = branch_permutations_generator_22
+    else:
+        permutations_generator = all_permutations_generator
 
+    log.info(f"Using permutations_generator {permutations_generator} for config version {config_version}.")
 
     for (rid, rupture_set_info) in rupture_sets.items():
 
@@ -95,7 +101,7 @@ def build_crustal_tasks(general_task_id, rupture_sets, args, config):
 
                 yield str(script_file_path)
 
-            #return
+            return
 
 # if __name__ == "__main__":
 

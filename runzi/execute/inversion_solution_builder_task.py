@@ -173,6 +173,9 @@ class BuilderTask():
                 int(ta["averaging_threads"]),
                 int(ta["averaging_interval_secs"]))
 
+        if ta.get('cooling_schedule'):
+            inversion_runner.setCoolingSchedule(ta['cooling_schedule'])
+
         #int(ta['max_inversion_time'] * 60))\
 
         print("Starting inversion of up to %s minutes" % ta['max_inversion_time'])
