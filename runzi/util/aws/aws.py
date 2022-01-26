@@ -93,7 +93,7 @@ def get_ecs_job_config(job_name, toshi_file_id, config, toshi_api_url, toshi_s3_
                 },
                 {
                     "name": "NZSHM22_SCRIPT_JVM_HEAP_MAX",
-                    "value": str(int(memory/1000))
+                    "value": str(int(memory/1000)-2)
                 },
                 {
                     "name": "NZSHM22_AWS_JAVA_THREADS",
