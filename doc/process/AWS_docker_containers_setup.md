@@ -47,15 +47,15 @@ $ aws batch submit-job --cli-input-json "$(<task-specs/job-submit-002.json)"
 ### Build new container with no tag, forcing git pull etc
 
 ```
-#EG export FATJAR_TAG=126-faster-inversion
+#EG export FATJAR_TAG=135-paleo-prob
 docker build . --build-arg FATJAR_TAG=${FATJAR_TAG} --no-cache
 ```
 
 ### Tag new docker image
 
 ```
-export RUNZI_GITREF=4a6a2e0
-export IMAGE_ID=92e8b2505d51 #from docker build
+export RUNZI_GITREF=7aaf2b4
+export IMAGE_ID=8319898e05cd #from docker build
 export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_opensha-${FATJAR_TAG}
 
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
@@ -99,7 +99,6 @@ run the docker container...
 # -v $HOME/DEV/GNS/AWS_S3_DATA/WORKING:/WORKING \
 
 docker run -it --rm --env-file environ \
--v $HOME/DEV/GNS/AWS_S3_DATA/WORKING:/WORKING \
 -v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
 -e AWS_PROFILE=toshi_batch_devops \

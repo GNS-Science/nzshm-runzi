@@ -355,9 +355,9 @@ def branch_permutations_generator_22(args, rupture_set_info):
 
                                 # Composite args (branch sets)
                                 # are required for ToshiUI filtering
-                                b_and_n = str(b_and_n['tag']),
-                                scaling_c = str(scaling_c['tag']),
-                                constraint_wts = str(wts['tag'])
+                                b_and_n = str(b_and_n),
+                                scaling_c = str(scaling_c),
+                                constraint_wts = str(wts)
                                 )
 
                             yield task_arguments
