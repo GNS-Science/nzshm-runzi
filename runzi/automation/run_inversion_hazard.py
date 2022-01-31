@@ -2,6 +2,7 @@ import os
 import pwd
 import itertools
 import stat
+import boto3
 from pathlib import PurePath
 from subprocess import check_call
 from multiprocessing.dummy import Pool
@@ -13,19 +14,19 @@ from scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
 
 from scaling.opensha_task_factory import OpenshaTaskFactory
 from scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
+from runzi.util.aws import get_ecs_job_config
 
-
-import scaling.inversion_hazard_report_task
+import runzi.automation.scaling.inversion_hazard_report_task
 
 # Set up your local config, from environment variables, with some sone defaults
 from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, CLUSTER_MODE, EnvMode )
+    API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, EnvMode )
 
 
 def run_tasks(general_task_id, solutions, subtask_arguments):
     task_count = 0
-    task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, scaling.inversion_hazard_report_task,
+    task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, runzi.automation.scaling.inversion_hazard_report_task,
         jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
         task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
 
@@ -37,12 +38,13 @@ def run_tasks(general_task_id, solutions, subtask_arguments):
         task_count +=1
 
         #get FM name
-        #fault_model = rupture_set_info['info']['fault_model']
-        fault_model = 'CFM_0_9_SANSTVZ_D90'
+        fault_model = rupture_set_info['info']['fault_model']
+        # fault_model = 'CFM_0_9_SANSTVZ_D90'
 
         task_arguments = dict(
             file_id = str(rupture_set_info['id']),
             file_path = rupture_set_info['filepath'],
+            file_name = rupture_set_info['info']['file_name'],
             fault_model = fault_model,
             subtask_arguments = subtask_arguments,
             )
@@ -66,8 +68,8 @@ def run_tasks(general_task_id, solutions, subtask_arguments):
 
             yield get_ecs_job_config(job_name, rupture_set_info['id'], config_data,
                 toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
-                task_module=inversion_solution_builder_task.__name__,
-                time_minutes=int(max_inversion_time), memory=30720, vcpu=4)
+                task_module=runzi.automation.scaling.inversion_hazard_report_task.__name__,
+                time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4)
 
         else:
             #write a config
@@ -94,13 +96,15 @@ if __name__ == "__main__":
     # If you wish to override something in the main config, do so here ..
     WORKER_POOL_SIZE = 2
     JVM_HEAP_MAX = 20
-    JAVA_THREADS = 12
+    JAVA_THREADS = 4
+    HAZARD_MAX_TIME = 15
     #USE_API = False #True #to read the ruptset form the API
+    USE_API = True
 
-    #If using API give this task a descriptive setting...
-    TASK_TITLE = "Inversion diags"
-    TASK_DESCRIPTION = """
-    """
+    # #If using API give this task a descriptive setting...
+    # TASK_TITLE = "Inversion diags"
+    # TASK_DESCRIPTION = """
+    # """
 
     def call_script(script_name):
         print("call_script with:", script_name)
@@ -136,42 +140,36 @@ if __name__ == "__main__":
     #R2VuZXJhbFRhc2s6NTg4N01zRHZO  Modular Inversions: Randomness test 1 (40)
     #R2VuZXJhbFRhc2s6NTkyOHFpTjlE  Modular Inversions: Randomness test 2 (4)
     #R2VuZXJhbFRhc2s6NTkzM0RkaDNz  Modular Inversions: Randomness test 3 (24)
-    for inversion_task_id in ["R2VuZXJhbFRhc2s6NTkzM0RkaDNz"]:
+    scripts = []
+    for inversion_task_id in ["R2VuZXJhbFRhc2s6MTkyMWNqWFVN"]:
         file_generator = get_output_file_ids(toshi_api, inversion_task_id)
-        #file_generator = get_output_file_id(toshi_api, "RmlsZTozMDkuMHB3U0dn") #for file by file ID
+        solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False, skip_download=(CLUSTER_MODE == EnvMode['AWS']))
 
-        solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
-
-        scripts = []
         for script_file in run_tasks(GENERAL_TASK_ID, solutions, args):
             print('scheduling: ', script_file)
             scripts.append(script_file)
 
+    if CLUSTER_MODE == EnvMode['LOCAL']:
         print('task count: ', len(scripts))
+        pool = Pool(WORKER_POOL_SIZE)
         pool.map(call_script, scripts)
+        pool.close()
+        pool.join()
 
-    args_list = []
-    for key, value in args.items():
-        args_list.append(dict(k=key, v=value))
+    elif CLUSTER_MODE == EnvMode['AWS']:
 
+        batch_client = boto3.client(
+            service_name='batch',
+            region_name='us-east-1',
+            endpoint_url='https://batch.us-east-1.amazonaws.com')
 
-    if USE_API:
-        #create new task in toshi_api
-        gt_args = CreateGeneralTaskArgs(
-            agent_name=pwd.getpwuid(os.getuid()).pw_name,
-            title="Hazard on Modular with a modular inversion solution",
-            description="run hazard analyis on the given upstream GT, producing "
-            )\
-            .set_argument_list(args_list)\
-            .set_subtask_type('HAZARD')\
-            .set_model_type('CRUSTAL')
+        for script_or_config in scripts:
+            print('AWS_TIME!: ', script_or_config)
 
-        GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
+            #res = batch_client.submit_job(**script_or_config)
+            print(res)
 
     print('worker count: ', WORKER_POOL_SIZE)
     print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
-
-    pool.close()
-    pool.join()
 
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())

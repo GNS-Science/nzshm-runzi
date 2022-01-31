@@ -2,6 +2,7 @@ import argparse
 import json
 import git
 import time
+import urllib
 import datetime as dt
 import itertools
 import copy
@@ -10,7 +11,7 @@ from py4j.java_gateway import JavaGateway, GatewayParameters
 from runzi.automation.scaling.toshi_api import ToshiApi
 
 # Set up local config, from environment variables, with some some defaults
-from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL)
+from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH)
 from runzi.automation.hazPlot import plotHazardCurve
 
 class BuilderTask():
@@ -27,7 +28,7 @@ class BuilderTask():
         #setup the java gateway binding
         self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=job_args['java_gateway_port']))
         self._hazard_builder = self._gateway.entry_point.getHazardCalculatorBuilder()
-        self._output_folder = PurePath(job_args.get('working_path'))
+        self._output_folder = PurePath(WORK_PATH) #job_args.get('working_path'))
         self.grid_iml_periods = [0, 0.5, 0.75, 1.0, 2.0]
 
     def run(self, task_arguments, job_arguments):
@@ -116,8 +117,11 @@ class BuilderTask():
         print("Task took %s secs" % (t4-t0).total_seconds())
 
     def setup_builder(self, ta, forecast_timespans, bg_seismicitys, iml_periods, gmpes, grid_spacings, regions, **kwargs):
-       self._hazard_builder\
-            .setSolutionFile(ta['file_path'])\
+
+        file_path = PurePath(WORK_PATH, 'downloads', ta['file_id'], ta['file_name'])
+
+        self._hazard_builder\
+            .setSolutionFile(str(file_path))\
             .setLinear(True)\
             .setForecastTimespan(float(forecast_timespans))\
             .setIntensityMeasurePeriod(float(iml_periods))\
@@ -214,9 +218,14 @@ if __name__ == "__main__":
     parser.add_argument("config")
     args = parser.parse_args()
 
-    config_file = args.config
-    f= open(config_file, 'r', encoding='utf-8')
-    config = json.load(f)
+    try:
+        # LOCAL and CLUSTER this is a file
+        config_file = args.config
+        f= open(args.config, 'r', encoding='utf-8')
+        config = json.load(f)
+    except:
+        # for AWS this must be a quoted JSON string
+        config = json.loads(urllib.parse.unquote(args.config))
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(2)
