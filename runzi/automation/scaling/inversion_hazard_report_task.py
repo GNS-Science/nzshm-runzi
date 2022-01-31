@@ -12,7 +12,7 @@ from runzi.automation.scaling.toshi_api import ToshiApi
 
 # Set up local config, from environment variables, with some some defaults
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH)
-from runzi.automation.hazPlot import plotHazardCurve
+#from runzi.automation.hazPlot import plotHazardCurve
 
 class BuilderTask():
     """
