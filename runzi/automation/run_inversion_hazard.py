@@ -12,7 +12,7 @@ from dateutil.tz import tzutc
 
 from scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
 
-from scaling.opensha_task_factory import OpenshaTaskFactory
+from runzi.automation.scaling.opensha_task_factory import get_factory
 from scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 from runzi.util.aws import get_ecs_job_config
 
@@ -23,10 +23,11 @@ from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
     API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, EnvMode )
 
-
 def run_tasks(general_task_id, solutions, subtask_arguments):
     task_count = 0
-    task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, runzi.automation.scaling.inversion_hazard_report_task,
+    factory_class = get_factory(CLUSTER_MODE)
+    task_factory = factory_class(OPENSHA_ROOT, WORK_PATH, runzi.automation.scaling.inversion_hazard_report_task,
+        initial_gateway_port=INITIAL_GATEWAY_PORT,
         jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
         task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
 
@@ -164,9 +165,8 @@ if __name__ == "__main__":
             endpoint_url='https://batch.us-east-1.amazonaws.com')
 
         for script_or_config in scripts:
-            print('AWS_TIME!: ', script_or_config)
-
-            #res = batch_client.submit_job(**script_or_config)
+            print('AWS_CONFIG: ', script_or_config)
+            res = batch_client.submit_job(**script_or_config)
             print(res)
 
     print('worker count: ', WORKER_POOL_SIZE)
