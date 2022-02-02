@@ -102,6 +102,7 @@ if __name__ == "__main__":
         upstream_task_id = "R2VuZXJhbFRhc2s6Mjg5NVpXNUZQ" ## PROD
         #upstream_task_id = "R2VuZXJhbFRhc2s6MTA0OXFKNWRQ" ## TEST
         upstream_task_id = "R2VuZXJhbFRhc2s6NTQyMXJma2pB"
+        upstream_task_id = "R2VuZXJhbFRhc2s6Nzk4OXBnckNF"
 
         """
         CHOOSE ONE OF:

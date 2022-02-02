@@ -27,14 +27,10 @@ JAVA_THREADS = 16
 INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 
 #If using API give this task a descriptive setting...
-TASK_TITLE = "Build Coulomb CFM 0.9A D90 ruptsets for new experiments"
+TASK_TITLE = "Build Coulomb full CFM 0.9C D90 with corrected rake orientation"
 
 TASK_DESCRIPTION = """
- - saved using simplified (non-descriptive) a file naming.
- - saved in non-modular, U3-style archive format.
- - simliar setup toRmlsZTozMDMuMEJCOVVY, but with the slimmed-down 9A Fault Model.
 """
-
 
 def build_tasks(general_task_id, args):
     """
@@ -49,20 +45,18 @@ def build_tasks(general_task_id, args):
         jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
         task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
 
-    # task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, scaling.coulomb_rupture_set_builder_task,
-    #     initial_gateway_port=25733,
-    #     jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
-    #     task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
-
     for ( model, min_sub_sects_per_parent,
             min_sub_sections, max_jump_distance,
             adaptive_min_distance, thinning_factor,
-            max_sections )\
+            max_sections,
+            # use_inverted_rake
+            )\
             in itertools.product(
                 args['models'], args['min_sub_sects_per_parents'],
                 args['min_sub_sections_list'], args['jump_limits'],
                 args['adaptive_min_distances'], args['thinning_factors'],
-                args['max_sections']
+                args['max_sections'],
+                # args['use_inverted_rakes']
                 ):
 
         task_count +=1
@@ -75,7 +69,8 @@ def build_tasks(general_task_id, args):
             max_jump_distance=max_jump_distance,
             adaptive_min_distance=adaptive_min_distance,
             thinning_factor=thinning_factor,
-            scaling_relationship='TMG_CRU_2017', #'SHAW_2009_MOD' TODO this is currently not a settable parameter!
+            scaling_relationship='SIMPLE_CRUSTAL', #TMG_CRU_2017, 'SHAW_2009_MOD' default
+            # use_inverted_rake=use_inverted_rake
             )
 
 
@@ -121,13 +116,14 @@ if __name__ == "__main__":
 
     args = dict(
         ##Test parameters
-        models = ["CFM_0_9A_SANSTVZ_D90"], #, "CFM_0_9_ALL_D90","CFM_0_9_SANSTVZ_2010"]
+        models = ["CFM_0_9C_SANSTVZ_D90"], #, "CFM_0_9_ALL_D90","CFM_0_9_SANSTVZ_2010"]
         jump_limits = [15], #default is 15
         adaptive_min_distances = [6,], #9] default is 6
         thinning_factors = [0,], #5, 0.1, 0.2, 0.3] #, 0.05, 0.1, 0.2]
         min_sub_sects_per_parents = [2], #3,4,5]
         min_sub_sections_list = [2],
         max_sections=[MAX_SECTIONS],
+        # use_inverted_rakes=[True]
     )
 
     args_list = []
@@ -150,7 +146,6 @@ if __name__ == "__main__":
         GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
 
         print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
-
 
     pool = Pool(WORKER_POOL_SIZE)
 

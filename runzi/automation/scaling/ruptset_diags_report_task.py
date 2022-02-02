@@ -26,7 +26,8 @@ class BuilderTask():
 
         #setup the java gateway binding
         self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=job_args['java_gateway_port']))
-        self._report_builder = self._gateway.entry_point.getInversionDiagnosticsReportBuilder()
+        #self._report_builder = self._gateway.entry_point.getInversionDiagnosticsReportBuilder()
+        self._page_gen = self._gateway.entry_point.getReportPageGen()
         self._output_folder = PurePath(job_args.get('working_path'))
 
     def run(self, task_arguments, job_arguments):
@@ -47,13 +48,22 @@ class BuilderTask():
         diags_folder.mkdir(parents=True, exist_ok=True)
 
         # # build the full report
-        report_title = f"Rupture Set Diagnostics. Rupset ID: {ta['rupture_set_file_id']}"
+        report_title = f"Rupture Set Diagnostics: {ta['rupture_set_file_id']}"
 
-        self._report_builder\
-            .setRuptureSetName(ta['rupture_set_file_path'])\
+        # self._report_builder\
+        #     .setRuptureSetName(ta['rupture_set_file_path'])\
+        #     .setName(report_title)\
+        #     .setOutputDir(str(diags_folder))\
+        #     .generateRuptureSetDiagnosticsReport()
+
+        self._page_gen\
             .setName(report_title)\
-            .setOutputDir(str(diags_folder))\
-            .generateRuptureSetDiagnosticsReport()
+            .setRuptureSet(ta['rupture_set_file_path'])\
+            .setOutputPath(str(diags_folder))\
+            .setFillSurfaces(True)\
+            .generateRupSetPage()
+
+            # .setPlotLevel('FULL')\
 
         t1 = dt.datetime.utcnow()
         print("Report took %s secs" % (t1-t0).total_seconds())

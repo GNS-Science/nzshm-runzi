@@ -47,15 +47,15 @@ $ aws batch submit-job --cli-input-json "$(<task-specs/job-submit-002.json)"
 ### Build new container with no tag, forcing git pull etc
 
 ```
-#EG export FATJAR_TAG=135-paleo-prob
+#EG export FATJAR_TAG=140-inverted-rake-take2
 docker build . --build-arg FATJAR_TAG=${FATJAR_TAG} --no-cache
 ```
 
 ### Tag new docker image
 
 ```
-export RUNZI_GITREF=7aaf2b4
-export IMAGE_ID=8319898e05cd #from docker build
+export RUNZI_GITREF=7ae3bab
+export IMAGE_ID=143684a42f24 #from docker build
 export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_opensha-${FATJAR_TAG}
 
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}

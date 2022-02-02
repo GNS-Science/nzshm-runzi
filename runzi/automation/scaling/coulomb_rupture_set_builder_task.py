@@ -33,8 +33,8 @@ class RuptureSetBuilderTask():
         self.use_api = job_args.get('use_api', False)
 
         #setup the java gateway binding
-        gateway = JavaGateway(gateway_parameters=GatewayParameters(port=job_args['java_gateway_port']))
-        app = gateway.entry_point
+        self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=job_args['java_gateway_port']))
+        app = self._gateway.entry_point
         self._builder = app.getCoulombRuptureSetBuilder()
 
         repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
@@ -102,6 +102,21 @@ class RuptureSetBuilderTask():
             .setMinSubSectsPerParent(int(ta["min_sub_sects_per_parent"]))\
             .setMinSubSections(int(ta["min_sub_sections"]))\
             .setFaultModel(ta["fault_model"])
+            #.setCmlRakeThresh(0.0) #TURN IT OFF
+
+        # invert_rake = bool(ta.get('use_inverted_rake', False))
+        # if invert_rake:
+        #     print('use inverted rake!')
+        #     self._builder.setInvertRake(invert_rake)
+
+        if ta.get('scaling_relationship') == "SIMPLE_CRUSTAL":
+            sr = self._gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
+            sr.setupCrustal(4.2, 4.2) #TODO this is hard-wired
+            self._builder.setScalingRelationship(sr)
+        elif ta.get('scaling_relationship') == "TMG_CRU_2017":
+            sr = self._gateway.jvm.org.opensha.commons.calc.magScalingRelations.magScalingRelImpl.TMG2017CruMagAreaRel()
+            sr.setRake(0.0)
+            self._builder.setScalingRelationship(sr)
 
         #name the output file
         if self.use_api:
