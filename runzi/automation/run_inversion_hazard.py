@@ -23,6 +23,8 @@ from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
     API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, EnvMode )
 
+INITIAL_GATEWAY_PORT = 26533
+
 def run_tasks(general_task_id, solutions, subtask_arguments):
     task_count = 0
     factory_class = get_factory(CLUSTER_MODE)
@@ -142,7 +144,7 @@ if __name__ == "__main__":
     #R2VuZXJhbFRhc2s6NTkyOHFpTjlE  Modular Inversions: Randomness test 2 (4)
     #R2VuZXJhbFRhc2s6NTkzM0RkaDNz  Modular Inversions: Randomness test 3 (24)
     scripts = []
-    for inversion_task_id in ["R2VuZXJhbFRhc2s6MTY5MDZxajVT"]:
+    for inversion_task_id in ["R2VuZXJhbFRhc2s6Nzk5MTN6WVNn"]:
         file_generator = get_output_file_ids(toshi_api, inversion_task_id)
         solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False, skip_download=(CLUSTER_MODE == EnvMode['AWS']))
 
