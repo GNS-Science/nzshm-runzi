@@ -111,7 +111,6 @@ class BuilderTask():
 
             if ta['slip_rate_weighting_type'] == 'UNCERTAINTY_ADJUSTED':
                 inversion_runner.setSlipRateUncertaintyConstraint(
-                    ta['slip_rate_weighting_type'],
                     int(float(ta['slip_rate_weight'])),
                     int(ta['slip_uncertainty_scaling_factor']))
             else:
