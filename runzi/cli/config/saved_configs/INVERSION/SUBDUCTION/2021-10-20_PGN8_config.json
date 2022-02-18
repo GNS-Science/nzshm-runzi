@@ -1,0 +1,70 @@
+{
+    "unique_id": "PGN8",
+    "task_title": "my test",
+    "task_description": "line1\\n - line 2\\n - line 3",
+    "worker_pool_size": 4,
+    "jvm_heap_max": 5,
+    "java_threads": 12,
+    "use_api": true,
+    "general_task_id": "8",
+    "file_id": "RmlsZToxNTMwLjBxVU5iaQ==",
+    "mock_mode": false,
+    "rounds_range": 1,
+    "subtask_type": "INVERSION",
+    "rounds": [
+        "0"
+    ],
+    "completion_energies": [
+        []
+    ],
+    "max_inversion_times": [
+        []
+    ],
+    "mfd_transition_mags": [
+        []
+    ],
+    "mfd_equality_weights": [
+        []
+    ],
+    "mfd_inequality_weights": [
+        []
+    ],
+    "slip_rate_weighting_types": [
+        []
+    ],
+    "slip_rate_normalized_weights": [
+        []
+    ],
+    "slip_rate_unnormalized_weights": [
+        []
+    ],
+    "selection_interval_secs": [
+        []
+    ],
+    "threads_per_selector": [
+        []
+    ],
+    "averaging_threads": [
+        []
+    ],
+    "averaging_interval_secs": [
+        []
+    ],
+    "non_negativity_function": [
+        []
+    ],
+    "perturbation_function": [],
+    "model_type": "SUBDUCTION",
+    "mfd_uncertainty_weights": [
+        []
+    ],
+    "mfd_uncertainty_powers": [
+        []
+    ],
+    "mfd_mag_gt_5s": [
+        []
+    ],
+    "mfd_b_values": [
+        []
+    ]
+}

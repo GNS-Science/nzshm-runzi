@@ -1,0 +1,50 @@
+{
+    "job_args": {
+        "worker_pool_size": 1,
+        "jvm_heap_max": 15,
+        "java_threads": 16,
+        "use_api": true,
+        "general_task_id": "",
+        "file_id": "RmlsZToyMzAxLjBSZWthZg=="
+    },
+    "general_args": {
+        "task_title": "Modular Inversions: Subduction w roughened Deformations ",
+        "task_description": "",
+        "mock_mode": false,
+        "subtask_type": "INVERSION",
+        "model_type": "SUBDUCTION"
+    },
+    "task_args": {
+        "rounds": [0],
+        "completion_energies": [0.0],
+        "max_inversion_times": [1],
+        "mfd_transition_mags": [9.15],
+        "mfd_equality_weights": [0, 1e4],
+        "mfd_inequality_weights": [0],
+        "mfd_uncertainty_weights": [1e4],
+        "mfd_uncertainty_powers": [0],
+        "slip_rate_weighting_types": ["BOTH"],
+        "slip_rate_normalized_weights": [1e3, 1e4],
+        "slip_rate_unnormalized_weights": [1e5],
+        "selection_interval_secs": [1],
+        "threads_per_selectors": [4],
+        "averaging_threads": [4],
+        "averaging_interval_secs": [30],
+        "non_negativity_functions": ["TRY_ZERO_RATES_OFTEN"],
+        "perturbation_functions": ["EXPONENTIAL_SCALE"],
+        "slip_rate_weights": [""],
+        "slip_uncertainty_scaling_factors": [0],
+        "seismogenic_min_mags": [7.0],
+        "mfd_mag_gt_5s": [27.7],
+        "mfd_b_values": [1.03],
+        "scaling_relationships": ["SMPL_NZ_INT_MN"],
+        "scaling_recalc_mags":  [true],
+        "deformation_models": [
+            "FAULT_MODEL",
+            "SBD_0_2_HKR_LR_30_CTP1",
+            "SBD_0_2_HKR_LR_30_CTP2",
+            "SBD_0_2_HKR_LR_30_LTP1",
+            "SBD_0_2_HKR_LR_30_LTP2"
+        ]
+    }
+}

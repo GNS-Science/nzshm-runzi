@@ -1,0 +1,64 @@
+{
+  "config_version": "2.2",
+  "job_args": {
+    "worker_pool_size": 1,
+    "jvm_heap_max": 30,
+    "java_threads": 16,
+    "use_api": true,
+    "general_task_id": "",
+    "mock_mode": false
+  },
+  "general_args": {
+    "unique_id": "LTB023",
+    "subtask_type": "INVERSION",
+    "model_type": "CRUSTAL",
+    "file_id": "RmlsZToxNTQ3Ni4wZVBZUHU=",
+    "task_title": "NZSHM Logic Tree Branch run LTB023 (0 starting, 2 weight sets)",
+    "task_description": "Geologic deformation only, with bN options (1840-2020, 1840-1889, 1965-2008, )\n - 126-faster-inversion build\n - zero starting models\n - 2 * weight sets"
+   },
+  "task_args": {
+    "rounds": ["0"],
+    "completion_energies": ["0.0"],
+    "max_inversion_times": ["60"],
+    "deformation_models": ["FAULT_MODEL"],
+    "initial_solution_ids": [""],
+    "scaling_c": [
+        {"tag": "low", "dip": 4.1, "strike": 4.1},
+        {"tag": "med", "dip": 4.2, "strike": 4.2},
+        {"tag": "high", "dip": 4.3, "strike": 4.3}],
+    "b_and_n": [
+        {"tag": "1840-2020 med", "b_sans": 0.9, "N_sans": 4.2, "b_tvz": 1.2, "N_tvz": 0.7},
+        {"tag": "1840-2020 low", "b_sans": 0.8, "N_sans": 2.6, "b_tvz": 0.98, "N_tvz": 0.4},
+        {"tag": "1840-2020 high", "b_sans": 1.0, "N_sans": 6.6, "b_tvz": 1.34, "N_tvz": 1.2},
+        {"tag": "1840-1889 med", "b_sans": 0.9, "N_sans": 7.0, "b_tvz": 1.2, "N_tvz": 0.7},
+        {"tag": "1840-1889 low", "b_sans": 0.8, "N_sans": 4.2, "b_tvz": 0.98, "N_tvz": 0.4},
+        {"tag": "1840-1889 high", "b_sans": 1.0, "N_sans": 12.1, "b_tvz": 1.34, "N_tvz": 1.2},
+        {"tag": "1965-2008 med", "b_sans": 0.9, "N_sans": 1.3, "b_tvz": 1.2, "N_tvz": 1.1},
+        {"tag": "1965-2008 low", "b_sans": 0.8, "N_sans": 1.3, "b_tvz": 0.98, "N_tvz": 1.1},
+        {"tag": "1965-2008 high", "b_sans": 1.0, "N_sans": 1.3, "b_tvz": 1.34, "N_tvz": 1.1},
+        {"tag": "1957-2006 med", "b_sans": 0.9, "N_sans": 1.3, "b_tvz": 1.2, "N_tvz": 0.9},
+        {"tag": "1957-2006 low", "b_sans": 0.8, "N_sans": 1.3, "b_tvz": 0.98, "N_tvz": 0.9},
+        {"tag": "1957-2006 high", "b_sans": 1.0, "N_sans": 1.3, "b_tvz": 1.34, "N_tvz": 0.9}
+      ],
+    "constraint_wts" : [
+        {"tag": "mfd weak", "mfd_eq": "1e4", "mfd_ineq": "1e4", "sr_norm": "1e3", "sr_unnorm": "1e5", "paleo_rate": "1e3", "paleo_smoothing": "1e4" },
+        {"tag": "mfd even", "mfd_eq": "1e4", "mfd_ineq": "1e4", "sr_norm": "1e2", "sr_unnorm": "1e4", "paleo_rate": "1e2", "paleo_smoothing": "1e4" }
+    ],
+    "mfd_transition_mags": [7.85],
+    "seismogenic_min_mags": [6.95],
+    "slip_rate_weighting_types": ["BOTH"],
+    "slip_rate_weights": [null],
+    "slip_uncertainty_scaling_factors": [null],
+    "selection_interval_secs": ["1"],
+    "threads_per_selector": ["4"],
+    "averaging_threads": ["4"],
+    "averaging_interval_secs": ["30"],
+    "non_negativity_function": ["TRY_ZERO_RATES_OFTEN"],
+    "perturbation_function": ["EXPONENTIAL_SCALE"],
+    "cooling_schedules": ["FAST_SA"],
+    "scaling_relationships": ["SIMPLE_CRUSTAL"],
+    "scaling_recalc_mags": ["True"],
+    "paleo_rate_constraints": ["GEOLOGIC_SLIP_1_0"],
+    "paleo_probability_models": ["UCERF3_PLUS_PT5"]
+  }
+}

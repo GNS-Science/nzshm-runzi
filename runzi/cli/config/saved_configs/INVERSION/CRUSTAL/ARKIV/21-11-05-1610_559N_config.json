@@ -1,0 +1,98 @@
+{
+  "job_args": {
+    "worker_pool_size": 1,
+    "jvm_heap_max": 30,
+    "java_threads": 16,
+    "use_api": true,
+    "general_task_id": "",
+    "mock_mode": false
+  },
+  "general_args": {
+    "unique_id": "559N",
+    "task_title": "Modular Inversions: Coulomb D90 Geologic; Simplified Scaling Upper bound",
+    "task_description": "revised b/N values for Upper Bound",
+    "file_id": "RmlsZTozMDMuMEJCOVVY",
+    "subtask_type": "INVERSION",
+    "model_type": "CRUSTAL"
+  },
+  "task_args": {
+    "rounds": [
+      0
+    ],
+    "completion_energies": [
+      0.0
+    ],
+    "max_inversion_times": [
+      60
+    ],
+    "mfd_transition_mags": [
+      7.85
+    ],
+    "mfd_equality_weights": [
+      1000.0,
+      10000.0
+    ],
+    "mfd_inequality_weights": [
+      0
+    ],
+    "slip_rate_weighting_types": [
+      "BOTH"
+    ],
+    "slip_rate_normalized_weights": [
+      1000.0,
+      10000.0
+    ],
+    "slip_rate_unnormalized_weights": [
+      10000.0
+    ],
+    "selection_interval_secs": [
+      1
+    ],
+    "threads_per_selector": [
+      4
+    ],
+    "averaging_threads": [
+      4
+    ],
+    "averaging_interval_secs": [
+      30
+    ],
+    "non_negativity_function": [
+      "TRY_ZERO_RATES_OFTEN"
+    ],
+    "perturbation_function": [
+      "EXPONENTIAL_SCALE"
+    ],
+    "slip_rate_weights": [
+      ""
+    ],
+    "slip_uncertainty_scaling_factors": [
+      0
+    ],
+    "seismogenic_min_mags": [
+      7.0
+    ],
+    "mfd_mag_gt_5_sans": [
+      "2.0",
+      "3.3"
+    ],
+    "mfd_mag_gt_5_tvz": [
+      "0.8"
+    ],
+    "mfd_b_values_sans": [
+      "0.89"
+    ],
+    "mfd_b_values_tvz": [
+      "1.21"
+    ],
+    "scaling_relationships": [
+      "SMPL_NZ_INT_UP"
+    ],
+    "scaling_recalc_mags": [
+      true
+    ],
+    "deformation_models": [
+      "FAULT_MODEL"
+    ]
+  }
+}

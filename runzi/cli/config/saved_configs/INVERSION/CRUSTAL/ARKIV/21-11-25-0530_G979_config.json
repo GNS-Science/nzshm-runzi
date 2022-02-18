@@ -1,0 +1,116 @@
+{
+  "job_args": {
+    "worker_pool_size": 1,
+    "jvm_heap_max": 30,
+    "java_threads": 16,
+    "use_api": true,
+    "general_task_id": "",
+    "mock_mode": false
+  },
+  "general_args": {
+    "unique_id": "G979",
+    "task_title": "Modular Inversions: BASELINE3 bugfix paleo validation test 60m ",
+    "task_description": "see https://github.com/GNS-Science/nzshm-opensha/issues/82\n",
+    "file_id": "RmlsZTozMDMuMEJCOVVY",
+    "subtask_type": "INVERSION",
+    "model_type": "CRUSTAL"
+  },
+  "task_args": {
+    "rounds": [
+      0
+    ],
+    "completion_energies": [
+      0.0
+    ],
+    "max_inversion_times": [
+      60
+    ],
+    "mfd_transition_mags": [
+      7.85
+    ],
+    "mfd_equality_weights": [
+      "1e4"
+    ],
+    "mfd_inequality_weights": [
+      "0",
+      "1e4",
+      "1e5"
+    ],
+    "slip_rate_weighting_types": [
+      "BOTH"
+    ],
+    "slip_rate_normalized_weights": [
+      "1e5"
+    ],
+    "slip_rate_unnormalized_weights": [
+      "1e3"
+    ],
+    "selection_interval_secs": [
+      1
+    ],
+    "threads_per_selector": [
+      4
+    ],
+    "averaging_threads": [
+      4
+    ],
+    "averaging_interval_secs": [
+      30
+    ],
+    "non_negativity_function": [
+      "TRY_ZERO_RATES_OFTEN"
+    ],
+    "perturbation_function": [
+      "EXPONENTIAL_SCALE"
+    ],
+    "slip_rate_weights": [
+      0
+    ],
+    "slip_uncertainty_scaling_factors": [
+      2
+    ],
+    "seismogenic_min_mags": [
+      7.0
+    ],
+    "mfd_mag_gt_5_sans": [
+      4.4
+    ],
+    "mfd_mag_gt_5_tvz": [
+      0.75
+    ],
+    "mfd_b_values_sans": [
+      0.9
+    ],
+    "mfd_b_values_tvz": [
+      1.2
+    ],
+    "scaling_relationships": [
+      "SMPL_NZ_CRU_UP"
+    ],
+    "scaling_recalc_mags": [
+      true
+    ],
+    "deformation_models": [
+      "FAULT_MODEL"
+    ],
+    "paleo_rate_constraint_weights": [
+      0,
+      100.0,
+      1000.0,
+      10000.0,
+      1000000.0
+    ],
+    "paleo_rate_constraints": [
+      "GEOLOGIC_SLIP_1_0"
+    ],
+    "paleo_probability_models": [
+      "UCERF3"
+    ],
+    "paleo_parent_rate_smoothness_constraint_weights": [
+      0,
+      100.0,
+      10000.0,
+      1000000.0
+    ]
+  }
+}

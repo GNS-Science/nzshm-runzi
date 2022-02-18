@@ -1,0 +1,55 @@
+{
+  "config_version": "2.0",
+  "job_args": {
+    "worker_pool_size": 1,
+    "jvm_heap_max": 30,
+    "java_threads": 16,
+    "use_api": true,
+    "general_task_id": "",
+    "mock_mode": false
+  },
+  "general_args": {
+    "unique_id": "LTB015",
+    "subtask_type": "INVERSION",
+    "model_type": "CRUSTAL",
+    "file_id": "RmlsZToxNTQ3Ni4wZVBZUHU=",
+    "task_title": "NZSHM Logic Tree Branch run LTB015 1840-1889",
+    "task_description": "Geologic deformation only, with bN option 1840-1889\n - 126-faster-inversion build\n - starting solution, 4hr run\n - slip weights 1e2 & 1e4"
+   },
+  "task_args": {
+    "rounds": ["0"],
+    "completion_energies": ["0.0"],
+    "max_inversion_times": ["240"],
+    "deformation_models": ["FAULT_MODEL"],
+    "initial_solution_ids": ["SW52ZXJzaW9uU29sdXRpb246MTcyNjAuMFJNd2FK"],
+    "scaling_c": [
+        {"tag": "low", "dip": 4.1, "strike": 4.1},
+        {"tag": "med", "dip": 4.2, "strike": 4.2},
+        {"tag": "low", "dip": 4.3, "strike": 4.3}],
+    "b_and_n": [
+        {"tag": "1840-1889 med", "b_sans": 0.9, "N_sans": 7.0, "b_tvz": 1.2, "N_tvz": 0.7},
+        {"tag": "1840-1889 low", "b_sans": 0.8, "N_sans": 4.2, "b_tvz": 0.98, "N_tvz": 0.4},
+        {"tag": "1840-1889 high", "b_sans": 1.0, "N_sans": 12.1, "b_tvz": 1.34, "N_tvz": 1.2}],
+    "mfd_transition_mags": [7.85],
+    "seismogenic_min_mags": [6.95],
+    "mfd_equality_weights": ["1e4"],
+    "mfd_inequality_weights": ["1e4"],
+    "slip_rate_weighting_types": ["BOTH"],
+    "slip_rate_weights": [null],
+    "slip_uncertainty_scaling_factors": [null],
+    "slip_rate_normalized_weights": ["1e2"],
+    "slip_rate_unnormalized_weights": ["1e4"],
+    "selection_interval_secs": ["1"],
+    "threads_per_selector": ["4"],
+    "averaging_threads": ["4"],
+    "averaging_interval_secs": ["30"],
+    "non_negativity_function": ["TRY_ZERO_RATES_OFTEN"],
+    "perturbation_function": ["EXPONENTIAL_SCALE"],
+    "scaling_relationships": ["SIMPLE_CRUSTAL"],
+    "scaling_recalc_mags": ["True"],
+    "paleo_rate_constraint_weights": ["1e2"],
+    "paleo_rate_constraints": ["GEOLOGIC_SLIP_1_0"],
+    "paleo_probability_models": ["UCERF3", "UCERF3_PLUS_PT5"],
+    "paleo_parent_rate_smoothness_constraint_weights": ["1e4"]
+  }
+}

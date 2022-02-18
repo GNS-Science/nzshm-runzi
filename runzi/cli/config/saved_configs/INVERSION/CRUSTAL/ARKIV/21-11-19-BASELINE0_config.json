@@ -1,0 +1,96 @@
+{
+  "job_args": {
+    "worker_pool_size": 1,
+    "jvm_heap_max": 30,
+    "java_threads": 16,
+    "use_api": true,
+    "general_task_id": "",
+    "mock_mode": false
+  },
+  "general_args": {
+    "unique_id": "BASELINE0",
+    "task_title": "Modular Inversions: ENV:PROD BASELINE0 validation test 60m",
+    "task_description": "see https://github.com/GNS-Science/nzshm-opensha/issues/82\n",
+    "file_id": "RmlsZTozMDMuMEJCOVVY",
+    "subtask_type": "INVERSION",
+    "model_type": "CRUSTAL"
+  },
+  "task_args": {
+    "rounds": [
+      0
+    ],
+    "completion_energies": [
+      0.0
+    ],
+    "max_inversion_times": [
+      60
+    ],
+    "mfd_transition_mags": [
+      7.85
+    ],
+    "mfd_equality_weights": [
+      "1e3"
+    ],
+    "mfd_inequality_weights": [
+      0
+    ],
+    "slip_rate_weighting_types": [
+      "BOTH", "NORMALIZED_BY_SLIP_RATE", "UNCERTAINTY_ADJUSTED"
+    ],
+    "slip_rate_normalized_weights": [
+      "1e3"
+    ],
+    "slip_rate_unnormalized_weights": [
+      "1e4"
+    ],
+    "selection_interval_secs": [
+      1
+    ],
+    "threads_per_selector": [
+      4
+    ],
+    "averaging_threads": [
+      4
+    ],
+    "averaging_interval_secs": [
+      30
+    ],
+    "non_negativity_function": [
+      "TRY_ZERO_RATES_OFTEN"
+    ],
+    "perturbation_function": [
+      "EXPONENTIAL_SCALE"
+    ],
+    "slip_rate_weights": [
+      "1e4"
+    ],
+    "slip_uncertainty_scaling_factors": [
+      2
+    ],
+    "seismogenic_min_mags": [
+      7.0
+    ],
+    "mfd_mag_gt_5_sans": [
+      "4.0"
+    ],
+    "mfd_mag_gt_5_tvz": [
+      "0.81"
+    ],
+    "mfd_b_values_sans": [
+      "0.91"
+    ],
+    "mfd_b_values_tvz": [
+      "1.05"
+    ],
+    "scaling_relationships": [
+      "SMPL_NZ_CRU_UP",
+      "SMPL_NZ_CRU_MN"
+    ],
+    "scaling_recalc_mags": [
+      true
+    ],
+    "deformation_models": [
+      "FAULT_MODEL"
+    ]
+  }
+}

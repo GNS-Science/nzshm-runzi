@@ -1,0 +1,117 @@
+{
+  "job_args": {
+    "worker_pool_size": 1,
+    "jvm_heap_max": 30,
+    "java_threads": 16,
+    "use_api": true,
+    "general_task_id": "",
+    "mock_mode": false
+  },
+  "general_args": {
+    "unique_id": "RVYU",
+    "subtask_type": "INVERSION",
+    "model_type": "CRUSTAL",
+    "file_id": "RmlsZToxNTg3LjBuVm9GdA==",
+    "task_title": "Initial solutoin from Seed Inversions TEST",
+    "task_description": " - for Chris DiCaprio\n - using replica of QXV0b21hdGlvblRhc2s6NTcyNkI1OFNo setttings."
+   },
+  "task_args": {
+    "rounds": [
+      0
+    ],
+    "completion_energies": [
+      0.0
+    ],
+    "max_inversion_times": [
+      1
+    ],
+    "initial_solution_ids": [
+      "SW52ZXJzaW9uU29sdXRpb246MzIwNy4walo0Ylc=",
+      "SW52ZXJzaW9uU29sdXRpb246MzIwNy4walo0Ylc="
+    ],
+    "mfd_transition_mags": [
+      7.85
+    ],
+    "mfd_equality_weights": [
+      "1e4"
+    ],
+    "mfd_inequality_weights": [
+      "0"
+    ],
+    "slip_rate_weighting_types": [
+      "BOTH"
+    ],
+    "slip_rate_normalized_weights": [
+      "1e4"
+    ],
+    "slip_rate_unnormalized_weights": [
+      "1e5"
+    ],
+    "selection_interval_secs": [
+      1
+    ],
+    "threads_per_selector": [
+      4
+    ],
+    "averaging_threads": [
+      4
+    ],
+    "averaging_interval_secs": [
+      30
+    ],
+    "non_negativity_function": [
+      "TRY_ZERO_RATES_OFTEN"
+    ],
+    "perturbation_function": [
+      "EXPONENTIAL_SCALE"
+    ],
+    "slip_rate_weights": [
+      0
+    ],
+    "slip_uncertainty_scaling_factors": [
+      2
+    ],
+    "seismogenic_min_mags": [
+      6.95
+    ],
+    "mfd_mag_gt_5_sans": [
+      4.2
+    ],
+    "mfd_mag_gt_5_tvz": [
+      0.9
+    ],
+    "mfd_b_values_sans": [
+      0.9
+    ],
+    "mfd_b_values_tvz": [
+      1.2
+    ],
+    "scaling_relationships": [
+      "SIMPLE_CRUSTAL"
+    ],
+    "scaling_recalc_mags": [
+      true
+    ],
+    "deformation_models": [
+      "FAULT_MODEL"
+    ],
+    "paleo_rate_constraint_weights": [
+      0
+    ],
+    "paleo_rate_constraints": [
+      "GEOLOGIC_SLIP_1_0"
+    ],
+    "paleo_probability_models": [
+      "UCERF3_PLUS_PT5"
+    ],
+    "paleo_parent_rate_smoothness_constraint_weights": [
+      0
+    ],
+    "scaling_c_val_dip_slips": [
+      "4.2"
+    ],
+    "scaling_c_val_strike_slips": [
+      "4.2"
+    ]
+  }
+}
