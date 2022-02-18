@@ -113,3 +113,25 @@ class InversionSolution(object):
         input_args = dict(id=inversion_solution_id, tables=[
             dict(label=label, table_id=mfd_table_id, table_type=table_type, dimensions=dimensions)])
         return self.api.run_query(qry, dict(input=input_args))
+
+
+    def get_solution(self, solution_id):
+
+        qry = '''
+        query get_sol_tables ($solution_id: ID!) {
+            node(id:$solution_id) {
+              ... on InversionSolution {
+                tables {
+                  created
+                  produced_by_id
+                  table_type
+                  identity
+                  table_id
+                }
+              }
+            }
+        }
+        '''
+
+        executed = self.api.run_query(qry, dict(solution_id=solution_id))
+        return executed['node']
