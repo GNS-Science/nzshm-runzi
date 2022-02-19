@@ -47,15 +47,15 @@ $ aws batch submit-job --cli-input-json "$(<task-specs/job-submit-002.json)"
 ### Build new container with no tag, forcing git pull etc
 
 ```
-#EG export FATJAR_TAG=new-deform-paleo-models
+#EG export FATJAR_TAG=155-minMag-QA
 docker build . --build-arg FATJAR_TAG=${FATJAR_TAG} --no-cache
 ```
 
 ### Tag new docker image
 
 ```
-export RUNZI_GITREF=af61f78
-export IMAGE_ID=08c15f607431 #from docker build
+export RUNZI_GITREF=4178004
+export IMAGE_ID=6c119408a82b #from docker build
 export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_opensha-${FATJAR_TAG}
 
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
@@ -64,8 +64,17 @@ docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runz
 ### get credential, push image into AWS ECR
 
 ```
-$(aws ecr get-login --no-include-email --region us-east-1)
+
+$(aws ecr get-login --no-include-email --region us-east-1)  
 docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
+
+```
+
+### for AWS cli v2
+```
+aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 461564345538.dkr.ecr.us-east-1.amazonaws.com
+docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
+
 ```
 
 ### Update AWS Job Defintion with ${CONTAINER_TAG}
@@ -97,8 +106,8 @@ run the docker container...
 ```
 
 # -v $HOME/DEV/GNS/AWS_S3_DATA/WORKING:/WORKING \
-
-docker run -it --rm --env-file environ \
+export NZSHM22_SCRIPT_CLUSTER_MODE=AWS
+sudo docker run -it --rm --env-file environ \
 -v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
 -e AWS_PROFILE=toshi_batch_devops \
@@ -126,6 +135,20 @@ docker run -it --rm --env-file environ \
 -v $HOME/.aws/credentials:/root/.aws/credentials:ro
 -e AWS_PROFILE=toshi_batch_devops nzshm22/runzi-opensha
 -s /app/container_task.sh
+```
+
+```
+docker run -it --rm --env-file environ \
+-v $HOME/.aws/credentials:/root/.aws/credentials:ro \
+-v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
+-e AWS_PROFILE=toshi_batch_devops \
+-e NZSHM22_TOSHI_S3_URL \
+-e NZSHM22_TOSHI_API_URL \
+-e NZSHM22_SCRIPT_CLUSTER_MODE \
+-e NZSHM22_S3_REPORT_BUCKET \
+-e NZSHM22_REPORT_LEVEL=FULL \
+-e NZSHM22_FATJAR=/app/nzshm-opensha/build/libs/nzshm-opensha-all-${FATJAR_TAG}.jar \
+461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG} -s bash
 ```
 
 Note this passing in of credentials is done using Job Definition.jobRoleARN in the ECS environment.
