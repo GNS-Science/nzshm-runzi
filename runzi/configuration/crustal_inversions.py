@@ -52,7 +52,7 @@ def build_crustal_tasks(general_task_id, rupture_sets, args, config):
         permutations_generator = branch_permutations_generator_21
     if config_version == "2.2":
         permutations_generator = branch_permutations_generator_22
-    if config_version == "2.3"
+    if config_version == "2.3":
         permutations_generator = branch_permutations_generator_23
     else:
         permutations_generator = all_permutations_generator
