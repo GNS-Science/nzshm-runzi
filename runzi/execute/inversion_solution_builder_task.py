@@ -206,7 +206,9 @@ class BuilderTask():
         # metrics['by_fault_name'] = inversion_runner.byFaultNameMetrics()
         # metrics['parent_fault_moment_rates'] = inversion_runner.parentFaultMomentRates()
 
-        table_rows = inversion_runner.getTabularSolutionMfds()
+        table_rows_v1 = inversion_runner.getTabularSolutionMfds()
+        table_rows_v2 = inversion_runner.getTabularSolutionMfdsV2()
+        mfd_table_rows = [table_rows_v1, table_rows_v2]
 
         if self.use_api:
             #record the completed task
@@ -230,28 +232,33 @@ class BuilderTask():
             print("created inversion solution: ", inversion_id)
 
             # # now get the MFDS...
-            mfd_table_id = None
+            for table_rows in mfd_table_rows:
+                mfd_table_id = None
 
-            mfd_table_data = []
-            for row in table_rows:
-                mfd_table_data.append([x for x in row])
+                mfd_table_data = []
+                for row in table_rows:
+                    mfd_table_data.append([x for x in row])
 
-            result = self._toshi_api.table.create_table(
-                mfd_table_data,
-                column_headers = ["series", "series_name", "X", "Y"],
-                column_types = ["integer","string","double","double"],
-                object_id=inversion_id,
-                table_name="Inversion Solution MFD table",
-                table_type="MFD_CURVES",
-                dimensions=None,
-            )
-            mfd_table_id = result['id']
-            result = self._toshi_api.inversion_solution.append_hazard_table(inversion_id, mfd_table_id,
-                label= "Inversion Solution MFD table",
-                table_type="MFD_CURVES",
-                dimensions=None,
-            )
-            print("created & linked table: ", mfd_table_id)
+                result = self._toshi_api.table.create_table(
+                    mfd_table_data,
+                    column_headers = ["series", "series_name", "X", "Y"],
+                    column_types = ["integer","string","double","double"],
+                    object_id=inversion_id,
+                    table_name="Inversion Solution MFD table",
+                    table_type="MFD_CURVES",
+                    dimensions=None,
+                )
+                mfd_table_id = result['id']
+                result = self._toshi_api.inversion_solution.append_hazard_table(inversion_id, mfd_table_id,
+                    label= "Inversion Solution MFD table",
+                    table_type="MFD_CURVES",
+                    dimensions=None,
+                )
+                print("created & linked table: ", mfd_table_id)
+
+
+            
+
 
         else:
             print(metrics)
