@@ -208,10 +208,10 @@ class BuilderTask():
 
         table_rows_v1 = inversion_runner.getTabularSolutionMfds()
         table_rows_v2 = inversion_runner.getTabularSolutionMfdsV2()
-        mfd_table_rows = [table_rows_v1, table_rows_v2]
+        mfd_table_rows = {"MFD_CURVES":table_rows_v1, "MFD_CURVES_V2":table_rows_v2}
 
         if self.use_api:
-            #record the completed task
+            #record the comp"leted task
             done_args = {
              'task_id':task_id,
              'duration':duration,
@@ -232,7 +232,7 @@ class BuilderTask():
             print("created inversion solution: ", inversion_id)
 
             # # now get the MFDS...
-            for table_rows in mfd_table_rows:
+            for table_type, table_rows in mfd_table_rows.items():
                 mfd_table_id = None
 
                 mfd_table_data = []
@@ -245,13 +245,13 @@ class BuilderTask():
                     column_types = ["integer","string","double","double"],
                     object_id=inversion_id,
                     table_name="Inversion Solution MFD table",
-                    table_type="MFD_CURVES",
+                    table_type=table_type,
                     dimensions=None,
                 )
                 mfd_table_id = result['id']
                 result = self._toshi_api.inversion_solution.append_hazard_table(inversion_id, mfd_table_id,
                     label= "Inversion Solution MFD table",
-                    table_type="MFD_CURVES",
+                    table_type=table_type,
                     dimensions=None,
                 )
                 print("created & linked table: ", mfd_table_id)
