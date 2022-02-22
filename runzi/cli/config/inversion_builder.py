@@ -48,6 +48,7 @@ class CrustalConfig(InversionConfig):
         self._slip_rate_weights = []
         self._slip_uncertainty_scaling_factors = []
         self._seismogenic_min_mags = []
+        self._max_mags = []
         self._mfd_mag_gt_5_sans = []
         self._mfd_mag_gt_5_tvz = []
         self._mfd_b_values_sans = []

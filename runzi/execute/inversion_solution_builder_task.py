@@ -110,6 +110,10 @@ class BuilderTask():
             minMagTvz = float(ta['seismogenic_min_mag_tvz'])
             inversion_runner.setMinMags(minMagSans, minMagTvz)
 
+            maxMagSans = float(ta['max_mag_sans'])
+            maxMagTvz = float(ta['max_mag_tvz'])
+            inversion_runner.setMaxMags(maxMagSans,maxMagTvz)
+
             if ta['slip_rate_weighting_type'] == 'UNCERTAINTY_ADJUSTED':
                 inversion_runner.setSlipRateUncertaintyConstraint(
                     int(float(ta['slip_rate_weight'])),
