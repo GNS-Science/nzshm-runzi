@@ -30,8 +30,10 @@
         {"tag": "MFD_SR_PL(3,3)", "mfd_eq": "2e4", "mfd_ineq": "2e4", "sr_norm": "1e3", "sr_unnorm": "1e5", "paleo_rate": "1e3", "paleo_smoothing": "1e3" }
         ],
     "mfd_transition_mags": [7.85],
-    "seismogenic_min_mags": [{"TVZ": 6.5,"sansTVZ": 7.0}],
-    "max_mags": [{"TVZ": 8.0,"sansTVZ": 9.0}],
+    "mag_ranges": [
+            {"min_mag_sans":7.0, "min_mag_tvz":6.5, "max_mag_sans":9.0, "max_mag_tvz":8.0},
+            {"min_mag_sans":7.5, "min_mag_tvz":7.1, "max_mag_sans":9.1, "max_mag_tvz":8.5}
+        ],
     "slip_rate_weighting_types": ["BOTH"],
     "slip_rate_weights": [null],
     "slip_uncertainty_scaling_factors": [null],

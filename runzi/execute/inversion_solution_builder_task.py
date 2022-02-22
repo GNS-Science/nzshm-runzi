@@ -106,8 +106,8 @@ class BuilderTask():
                     float(ta['mfd_inequality_weight']))
 
             #set both the same for now
-            minMagSans = float(ta['seismogenic_min_mag_sans'])
-            minMagTvz = float(ta['seismogenic_min_mag_tvz'])
+            minMagSans = float(ta['min_mag_sans'])
+            minMagTvz = float(ta['min_mag_tvz'])
             inversion_runner.setMinMags(minMagSans, minMagTvz)
 
             maxMagSans = float(ta['max_mag_sans'])
