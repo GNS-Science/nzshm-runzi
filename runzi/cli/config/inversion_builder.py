@@ -51,6 +51,7 @@ class CrustalConfig(InversionConfig):
         self._min_mag_tvz = []
         self._max_mag_sans = []
         self._max_mag_tvz = []
+        self._max_mag_type = []
         self._mfd_mag_gt_5_sans = []
         self._mfd_mag_gt_5_tvz = []
         self._mfd_b_values_sans = []

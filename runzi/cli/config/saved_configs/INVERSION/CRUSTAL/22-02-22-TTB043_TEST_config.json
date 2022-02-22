@@ -31,9 +31,10 @@
         ],
     "mfd_transition_mags": [7.85],
     "mag_ranges": [
-            {"min_mag_sans":7.0, "min_mag_tvz":6.5, "max_mag_sans":9.0, "max_mag_tvz":8.0},
-            {"min_mag_sans":7.5, "min_mag_tvz":7.1, "max_mag_sans":9.1, "max_mag_tvz":8.5}
+        {"min_mag_sans":6.0, "min_mag_tvz":6.8, "max_mag_sans":10.0, "max_mag_tvz":7.5},
+        {"min_mag_sans":6.5, "min_mag_tvz":6.8, "max_mag_sans":10.0, "max_mag_tvz":8.0}
         ],
+    "max_mag_types": ["NONE", "FILTER_RUPSET", "MANIPULATE_MFD"],
     "slip_rate_weighting_types": ["BOTH"],
     "slip_rate_weights": [null],
     "slip_uncertainty_scaling_factors": [null],

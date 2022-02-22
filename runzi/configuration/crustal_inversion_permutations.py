@@ -471,6 +471,7 @@ def branch_permutations_generator_24(args, rupture_set_info):
                             slip_rate_normalized_weight, slip_rate_unnormalized_weight,
                             mfd_mag_gt_5_sans, mfd_mag_gt_5_tvz,
                             mfd_b_value_sans, mfd_b_value_tvz, mfd_transition_mag,
+                            max_mag_type,
                             min_mag_sans,min_mag_tvz,
                             max_mag_sans,max_mag_tvz,
                             selection_interval_secs, threads_per_selector, averaging_threads, averaging_interval_secs,
@@ -491,6 +492,7 @@ def branch_permutations_generator_24(args, rupture_set_info):
                             [b_and_n['N_sans']], [b_and_n['N_tvz']],
                             [b_and_n['b_sans']], [b_and_n['b_tvz']],
                             args['mfd_transition_mags'],
+                            args['max_mag_types'],
                             [mag_ranges['min_mag_sans']], [mag_ranges['min_mag_tvz']],
                             [mag_ranges['max_mag_sans']], [mag_ranges['max_mag_tvz']],
                             args['selection_interval_secs'], args['threads_per_selector'], args['averaging_threads'], args['averaging_interval_secs'],
@@ -520,6 +522,7 @@ def branch_permutations_generator_24(args, rupture_set_info):
                                     slip_uncertainty_scaling_factor=slip_uncertainty_scaling_factor,
                                     slip_rate_normalized_weight=slip_rate_normalized_weight,
                                     slip_rate_unnormalized_weight=slip_rate_unnormalized_weight,
+                                    max_mag_type=max_mag_type,
                                     min_mag_sans=min_mag_sans,
                                     min_mag_tvz=min_mag_tvz,
                                     max_mag_sans=max_mag_sans,
@@ -593,6 +596,8 @@ if __name__ == '__main__':
         {"min_mag_sans":7.5, "min_mag_tvz":7.1, "max_mag_sans":9.1, "max_mag_tvz":8.5}
     ]
 
+
+
     args = dict(
         rounds = [str(x) for x in range(1)],
         completion_energies = ['0.0'],
@@ -611,6 +616,8 @@ if __name__ == '__main__':
         mfd_transition_mags = [7.85],
 
         mag_ranges = mag_ranges,
+
+        max_mag_types = ["NONE", "FILTER_RUPSET", "MANIPULATE_MFD"],
 
         slip_rate_weighting_types = ['BOTH'], #NORMALIZED_BY_SLIP_RATE', UNCERTAINTY_ADJUSTED', BOTH
 
