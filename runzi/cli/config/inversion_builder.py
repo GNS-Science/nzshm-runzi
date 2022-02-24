@@ -59,3 +59,5 @@ class CrustalConfig(InversionConfig):
         self._paleo_constraint_weight = []
         self._paleo_rate_constraints = []
         self._paleo_probability_model = []
+        self._tvz_slip_rate_factor = []
+

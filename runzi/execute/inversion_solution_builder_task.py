@@ -115,6 +115,8 @@ class BuilderTask():
             maxMagType = ta['max_mag_type']
             inversion_runner.setMaxMags(maxMagType,maxMagSans,maxMagTvz)
 
+            inversion_runner.setTVZSlipRateFactor(float(ta['tvz_slip_rate_factor']))
+
             if ta['slip_rate_weighting_type'] == 'UNCERTAINTY_ADJUSTED':
                 inversion_runner.setSlipRateUncertaintyConstraint(
                     int(float(ta['slip_rate_weight'])),
