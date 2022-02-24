@@ -1,0 +1,53 @@
+{
+  "config_version": "2.5",
+  "job_args": {
+    "worker_pool_size": 1,
+    "jvm_heap_max": 30,
+    "java_threads": 16,
+    "use_api": true,
+    "general_task_id": "",
+    "mock_mode": false
+  },
+  "general_args": {
+    "unique_id": "TTB047",
+    "subtask_type": "INVERSION",
+    "model_type": "CRUSTAL",
+    "file_id": "RmlsZToxNTg3LjBuVm9GdA==",
+    "task_title": "NZSHM Logic Tree Branch run TTB047 test TVZ slip scaling ",
+    "task_description": "Test TVZ slip rate scaling"
+   },
+  "task_args": {
+    "rounds": ["0"],
+    "completion_energies": ["0.0"],
+    "max_inversion_times": ["15"],
+    "deformation_models": ["FAULT_MODEL"],
+    "initial_solution_ids": [""],
+    "scaling_c": [{"tag": "MED", "dip": 4.2, "strike": 4.2}],
+    "b_and_n": [
+        {"tag": "1840-2020_MED + TVZd", "b_sans": 0.9, "N_sans": 3.9, "b_tvz": 0.9, "N_tvz": 1.2}        
+      ],
+    "constraint_wts" : [
+        {"tag": "MFD_SR_PL(3,3)", "mfd_eq": "2e4", "mfd_ineq": "2e4", "sr_norm": "1e3", "sr_unnorm": "1e5", "paleo_rate": "1e3", "paleo_smoothing": "1e3" }
+        ],
+    "mfd_transition_mags": [7.85],
+    "mag_ranges": [
+        {"min_mag_sans":6.8, "min_mag_tvz":6.5, "max_mag_sans":10.0, "max_mag_tvz":7.5}
+        ],
+    "tvz_slip_rate_factors": [1, 0.7, 0.5, 0.3],
+    "max_mag_types": ["FILTER_RUPSET"],
+    "slip_rate_weighting_types": ["BOTH"],
+    "slip_rate_weights": [null],
+    "slip_uncertainty_scaling_factors": [null],
+    "selection_interval_secs": ["1"],
+    "threads_per_selector": ["4"],
+    "averaging_threads": ["4"],
+    "averaging_interval_secs": ["30"],
+    "non_negativity_function": ["TRY_ZERO_RATES_OFTEN"],
+    "perturbation_function": ["EXPONENTIAL_SCALE"],
+    "cooling_schedules": ["FAST_SA"],
+    "scaling_relationships": ["SIMPLE_CRUSTAL"],
+    "scaling_recalc_mags": ["True"],
+    "paleo_rate_constraints": ["GEOLOGIC_SLIP_4FEB"],
+    "paleo_probability_models": ["NZSHM22_C_42"]
+  }
+}
