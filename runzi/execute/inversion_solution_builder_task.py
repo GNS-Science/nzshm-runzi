@@ -214,9 +214,9 @@ class BuilderTask():
         # metrics['parent_fault_moment_rates'] = inversion_runner.parentFaultMomentRates()
 
         table_rows_v1 = inversion_runner.getTabularSolutionMfds()
-        # table_rows_v2 = inversion_runner.getTabularSolutionMfdsV2() # not in current opensha build
-        # mfd_table_rows = {"MFD_CURVES":table_rows_v1, "MFD_CURVES_V2":table_rows_v2}
-        mfd_table_rows = {"MFD_CURVES":table_rows_v1}
+        table_rows_v2 = inversion_runner.getTabularSolutionMfdsV2() # not in current opensha build
+        mfd_table_rows = {"MFD_CURVES":table_rows_v1, "MFD_CURVES_V2":table_rows_v2}
+        #mfd_table_rows = {"MFD_CURVES":table_rows_v1}
 
         if self.use_api:
             #record the comp"leted task
