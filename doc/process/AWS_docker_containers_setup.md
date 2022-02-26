@@ -49,7 +49,7 @@ make sure Dockerfile has correct runzi branch
 
 
 ```
-#EG 
+#EG
 export FATJAR_TAG=165-filter-rupset-alpha2
 docker build . --build-arg FATJAR_TAG=${FATJAR_TAG} --no-cache
 ```
@@ -68,7 +68,7 @@ docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runz
 
 ```
 
-$(aws ecr get-login --no-include-email --region us-east-1)  
+$(aws ecr get-login --no-include-email --region us-east-1)
 docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
 
 ```
@@ -116,6 +116,7 @@ docker run -it --rm --env-file environ \
 -e AWS_PROFILE=toshi_batch_devops \
 -e NZSHM22_TOSHI_S3_URL \
 -e NZSHM22_TOSHI_API_URL \
+-e NZSHM22_TOSHI_API_KEY \
 -e NZSHM22_SCRIPT_CLUSTER_MODE \
 -e NZSHM22_S3_REPORT_BUCKET \
 -e NZSHM22_REPORT_LEVEL=FULL \

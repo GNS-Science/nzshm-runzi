@@ -65,7 +65,6 @@ def run_tasks(general_task_id, solutions, subtask_arguments):
             )
 
         if CLUSTER_MODE == EnvMode['AWS']:
-
             job_name = f"Runzi-automation-hazard-{task_count}"
             config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
 
@@ -77,7 +76,6 @@ def run_tasks(general_task_id, solutions, subtask_arguments):
         else:
             #write a config
             task_factory.write_task_config(task_arguments, job_arguments)
-
             script = task_factory.get_task_script()
 
             script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
@@ -101,6 +99,7 @@ if __name__ == "__main__":
     JVM_HEAP_MAX = 20
     JAVA_THREADS = 4
     HAZARD_MAX_TIME = 15
+
     #USE_API = False #True #to read the ruptset form the API
     USE_API = True
 
@@ -131,15 +130,11 @@ if __name__ == "__main__":
         )
 
     pool = Pool(WORKER_POOL_SIZE)
-    #"R2VuZXJhbFRhc2s6NTQ5ZWttekY="
-    #"R2VuZXJhbFRhc2s6NTk2SmJXZUI="
-    #"R2VuZXJhbFRhc2s6NzU0cGp4c1c="
-    #"R2VuZXJhbFRhc2s6NzU2andXeTc=",
+
     # R2VuZXJhbFRhc2s6NjMyUzRDZGM="]: #TEST Inversion
 
     #PROD
     #R2VuZXJhbFRhc2s6NjA1Mlk2blUz
-
     #R2VuZXJhbFRhc2s6NTg4N01zRHZO  Modular Inversions: Randomness test 1 (40)
     #R2VuZXJhbFRhc2s6NTkyOHFpTjlE  Modular Inversions: Randomness test 2 (4)
     #R2VuZXJhbFRhc2s6NTkzM0RkaDNz  Modular Inversions: Randomness test 3 (24)

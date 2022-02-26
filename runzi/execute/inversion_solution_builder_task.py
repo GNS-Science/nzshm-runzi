@@ -58,9 +58,6 @@ class BuilderTask():
 
         environment = {
             "host": platform.node(),
-            #"gitref_opensha":self._repoheads['opensha'],
-            #"gitref_nzshm-opensha":self._repoheads['nzshm-opensha'],
-            #"gitref_nzshm-runzi":self._repoheads['nzshm-runzi']
             "nzshm-opensha.version": API_GitVersion
             }
 
@@ -105,7 +102,6 @@ class BuilderTask():
                     float(ta['mfd_equality_weight']),
                     float(ta['mfd_inequality_weight']))
 
-            #set both the same for now
             minMagSans = float(ta['min_mag_sans'])
             minMagTvz = float(ta['min_mag_tvz'])
             inversion_runner.setMinMags(minMagSans, minMagTvz)
@@ -114,8 +110,8 @@ class BuilderTask():
             maxMagTvz = float(ta['max_mag_tvz'])
             maxMagType = ta['max_mag_type']
             inversion_runner.setMaxMags(maxMagType,maxMagSans,maxMagTvz)
-
             inversion_runner.setTVZSlipRateFactor(float(ta['tvz_slip_rate_factor']))
+
 
             if ta['slip_rate_weighting_type'] == 'UNCERTAINTY_ADJUSTED':
                 inversion_runner.setSlipRateUncertaintyConstraint(
@@ -219,7 +215,7 @@ class BuilderTask():
         #mfd_table_rows = {"MFD_CURVES":table_rows_v1}
 
         if self.use_api:
-            #record the comp"leted task
+            #record the completed task
             done_args = {
              'task_id':task_id,
              'duration':duration,
@@ -263,10 +259,6 @@ class BuilderTask():
                     dimensions=None,
                 )
                 print("created & linked table: ", mfd_table_id)
-
-
-            
-
 
         else:
             print(metrics)

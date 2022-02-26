@@ -22,7 +22,7 @@ import scaling.ruptset_diags_report_task
 # Set up your local config, from environment variables, with some sone defaults
 from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, CLUSTER_MODE)
+    API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, REPORT_LEVEL)
 
 # If you wish to override something in the main config, do so here ..
 # WORKER_POOL_SIZE = 3
@@ -66,6 +66,7 @@ def run_tasks(general_task_id, rupture_sets):
             root_folder = OPENSHA_ROOT,
             general_task_id = general_task_id,
             use_api = USE_API,
+            build_report_level = REPORT_LEVEL
             )
 
         #write a config
@@ -101,7 +102,6 @@ if __name__ == "__main__":
         #upstream_task_id = "R2VuZXJhbFRhc2s6NzIybjVvc0I=" ## test 2
         upstream_task_id = "R2VuZXJhbFRhc2s6Mjg5NVpXNUZQ" ## PROD
         #upstream_task_id = "R2VuZXJhbFRhc2s6MTA0OXFKNWRQ" ## TEST
-        upstream_task_id = "R2VuZXJhbFRhc2s6NTQyMXJma2pB"
         upstream_task_id = "R2VuZXJhbFRhc2s6Nzk4OXBnckNF"
 
         """
