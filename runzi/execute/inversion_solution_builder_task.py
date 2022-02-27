@@ -120,8 +120,7 @@ class BuilderTask():
             inversion_runner.setMaxMags(maxMagType,maxMagSans,maxMagTvz)
             inversion_runner.setTVZSlipRateFactor(float(ta['tvz_slip_rate_factor']))
 
-            if ta.get('slip_uncertainty_weight') and \
-                ta.get('slip_uncertainty_scaling_factor'):
+            if not ta.get('slip_uncertainty_scaling_factor') is None:
                 #V30 config
                 inversion_runner.setSlipRateUncertaintyConstraint(
                     float(ta.get('slip_uncertainty_weight')),
@@ -138,8 +137,7 @@ class BuilderTask():
                     float(ta['slip_rate_normalized_weight']),
                     float(ta['slip_rate_unnormalized_weight']))
             else:
-                print(ta)
-                raise ValueError("invalid slip constraint weight setup")
+                raise ValueError(f"invalid slip constraint weight setup {ta}")
 
             if ta.get('paleo_rate_constraint_weight', 0):
                 inversion_runner.setPaleoRateConstraints(
