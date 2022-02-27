@@ -17,16 +17,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/69_new_inversion_configs
-
-# FOR SOLVIS ... Sub Solutions
-#
-#RUN apk add --no-cache proj-dev geos-dev gdal-dev \
-#	make automake gcc g++ python3-dev \
-# 	proj-util
-#
-#ENV PROJ_DIR=/usr
-#pip install git+https://github.com/GNS-Science/solvis#egg=solvis geopandas
+RUN git checkout feature/75_new_uncertainty
 
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .

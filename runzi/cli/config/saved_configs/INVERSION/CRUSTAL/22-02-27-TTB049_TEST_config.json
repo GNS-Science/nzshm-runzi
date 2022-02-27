@@ -13,13 +13,13 @@
     "subtask_type": "INVERSION",
     "model_type": "CRUSTAL",
     "file_id": "RmlsZToxNTg3LjBuVm9GdA==",
-    "task_title": "NZSHM Logic Tree Branch run TTB049 test new uincertainty ",
+    "task_title": "NZSHM Logic Tree Branch run TTB049 test new uncertainty setup",
     "task_description": ""
    },
   "task_args": {
     "rounds": ["0"],
     "completion_energies": ["0.0"],
-    "max_inversion_times": ["15"],
+    "max_inversion_times": ["5"],
     "deformation_models": ["FAULT_MODEL"],
     "initial_solution_ids": [""],
     "scaling_c": [{"tag": "MED", "dip": 4.2, "strike": 4.2}],
@@ -35,8 +35,8 @@
     "mag_ranges": [
         {"min_mag_sans":6.8, "min_mag_tvz":6.5, "max_mag_sans":10.0, "max_mag_tvz":7.5}
         ],
-    "tvz_slip_rate_factors": [1, 0.7, 0.5, 0.3],
-    "max_mag_types": ["FILTER_RUPSET"],
+    "tvz_slip_rate_factors": [1.0, 0.7],
+    "max_mag_types": ["MANIPULATE_MFD"],
     "slip_rate_weighting_types": ["BOTH"],
     "slip_rate_weights": [null],
     "slip_uncertainty_scaling_factors": [null],

@@ -46,22 +46,26 @@ def build_crustal_tasks(general_task_id, rupture_sets, args, config):
         task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
 
     config_version = config.get_config_version()
-    if config_version == "2.0":
-        permutations_generator = branch_permutations_generator
-    if config_version == "2.1":
-        permutations_generator = branch_permutations_generator_21
-    if config_version == "2.2":
-        permutations_generator = branch_permutations_generator_22
-    if config_version == "2.3":
-        permutations_generator = branch_permutations_generator_23
-    if config_version == "2.4":
-        permutations_generator = branch_permutations_generator_24
+    # Deprecated versions
+    # if config_version == "2.0":
+    #     permutations_generator = branch_permutations_generator
+    # elif config_version == "2.1":
+    #     permutations_generator = branch_permutations_generator_21
+    # elif config_version == "2.2":
+    #     permutations_generator = branch_permutations_generator_22
+    # elif config_version == "2.3":
+    #     permutations_generator = branch_permutations_generator_23
+    # elif config_version == "2.4":
+    #     permutations_generator = branch_permutations_generator_24
+    # else:
+    #     permutations_generator = all_permutations_generator
+
     if config_version == "2.5":
         permutations_generator = branch_permutations_generator_25
-    if config_version == "3.0":
+    elif config_version == "3.0":
         permutations_generator = branch_permutations_generator_30
     else:
-        permutations_generator = all_permutations_generator
+        raise ValueError(F"Config version {config_version} is not supported")
 
     log.info(f"Using permutations_generator {permutations_generator} for config version {config_version}.")
 
