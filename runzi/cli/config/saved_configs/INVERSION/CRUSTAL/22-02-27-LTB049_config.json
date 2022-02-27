@@ -12,14 +12,14 @@
     "unique_id": "LTB049",
     "subtask_type": "INVERSION",
     "model_type": "CRUSTAL",
-    "file_id": "RmlsZToxNTg3LjBuVm9GdA==",
+    "file_id": "RmlsZToyMjE4My4wUGVpWGE=",
     "task_title": "NZSHM Logic Tree Branch run LTB049 test new uncertainty setup",
     "task_description": "sweeps on uncertainty constraint weights: MFD, Slip and Paleo"
    },
   "task_args": {
     "rounds": ["0"],
     "completion_energies": ["0.0"],
-    "max_inversion_times": ["5"],
+    "max_inversion_times": ["120"],
     "deformation_models": ["FAULT_MODEL"],
     "initial_solution_ids": [""],
     "scaling_c": [{"tag": "MED", "dip": 4.2, "strike": 4.2}],

@@ -128,7 +128,6 @@ def branch_permutations_generator_30(args, rupture_set_info):
                                     )
 
                                 yield task_arguments
-                                return
 
 if __name__ == '__main__':
 
