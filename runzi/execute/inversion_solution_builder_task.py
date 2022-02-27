@@ -98,9 +98,17 @@ class BuilderTask():
                     float(ta['mfd_b_value_sans']),
                     float(ta['mfd_b_value_tvz']),
                     float(ta['mfd_transition_mag']))
-            inversion_runner.setGutenbergRichterMFDWeights(
-                    float(ta['mfd_equality_weight']),
-                    float(ta['mfd_inequality_weight']))
+
+            if ta.get('mfd_equality_weight') and  ta.get('mfd_inequality_weight'):
+                inversion_runner.setGutenbergRichterMFDWeights(
+                        float(ta['mfd_equality_weight']),
+                        float(ta['mfd_inequality_weight']))
+            elif ta.get('mfd_uncertainty_weight') and  ta.get('mfd_uncertainty_power'):
+                inversion_runner.setUncertaintyWeightedMFDWeights(
+                    float(ta.get('mfd_uncertainty_weight')),
+                    float(ta.get('mfd_uncertainty_power')))
+            else:
+                raise ValueError("Neither eq/ineq , nor uncertainty weights provided for MFD constraint setup")
 
             minMagSans = float(ta['min_mag_sans'])
             minMagTvz = float(ta['min_mag_tvz'])
@@ -112,16 +120,26 @@ class BuilderTask():
             inversion_runner.setMaxMags(maxMagType,maxMagSans,maxMagTvz)
             inversion_runner.setTVZSlipRateFactor(float(ta['tvz_slip_rate_factor']))
 
-
-            if ta['slip_rate_weighting_type'] == 'UNCERTAINTY_ADJUSTED':
+            if ta.get('slip_uncertainty_weight') and
+                ta.get('slip_uncertainty_scaling_factor') and
+                ta.get('slip_modify_std'):
+                #V30 config
+                inversion_runner.setSlipRateUncertaintyConstraint(
+                    float(ta.get('slip_uncertainty_weight')),
+                    float(ta.get('slip_uncertainty_scaling_factor')))\
+                .setUnmodifiedSlipRateStdvs(bool(ta.get('slip_modify_std')))
+            elif ta.get('slip_rate_weighting_type') and ta['slip_rate_weighting_type'] == 'UNCERTAINTY_ADJUSTED':
+                #Deprecated...
                 inversion_runner.setSlipRateUncertaintyConstraint(
                     int(float(ta['slip_rate_weight'])),
                     int(ta['slip_uncertainty_scaling_factor']))
-            else:
+            elif ta.get('slip_rate_normalized_weight'):
                 #covers UCERF3 style SR constraints
                 inversion_runner.setSlipRateConstraint(ta['slip_rate_weighting_type'],
                     float(ta['slip_rate_normalized_weight']),
                     float(ta['slip_rate_unnormalized_weight']))
+            else:
+                raise ValueError("invalid slip constraint weight setup")
 
             if ta.get('paleo_rate_constraint_weight', 0):
                 inversion_runner.setPaleoRateConstraints(
