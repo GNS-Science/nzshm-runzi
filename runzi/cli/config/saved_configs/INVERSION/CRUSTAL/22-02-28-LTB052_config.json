@@ -1,0 +1,53 @@
+{
+  "config_version": "3.1",
+  "job_args": {
+    "worker_pool_size": 1,
+    "jvm_heap_max": 30,
+    "java_threads": 16,
+    "use_api": true,
+    "general_task_id": "",
+    "mock_mode": false
+  },
+  "general_args": {
+    "unique_id": "LTB052",
+    "subtask_type": "INVERSION",
+    "model_type": "CRUSTAL",
+    "file_id": "RmlsZToyMjE4My4wUGVpWGE=",
+    "task_title": "NZSHM Logic Tree Branch run LTB052 test uncertainty w reweighting",
+    "task_description": "sweeps on uncertainty constraint weights: MFD, Slip and Paleo, setting 1e-10 for std on bins outside min/max mags"
+   },
+  "task_args": {
+    "rounds": ["0"],
+    "completion_energies": ["0.0"],
+    "max_inversion_times": ["60"],
+    "deformation_models": ["FAULT_MODEL"],
+    "initial_solution_ids": [""],
+    "scaling_c": [{"tag": "MED", "dip": 4.2, "strike": 4.2}],
+    "b_and_n": [
+        {"tag": "1840-2020_MED + TVZ_MED", "b_sans": 0.9, "N_sans": 3.9, "b_tvz": 1.2, "N_tvz": 1.0}
+      ],
+    "constraint_wts" : [
+        {"tag": "UCT Mpow(0.25)_S(0,0)_Psmth(3)",     "reweight": true, "mfd_pow": 0.15,"sr_scaling": 0, "sr_mod_std": 0,"paleo_smoothing": 1e3},
+        {"tag": "UCT Mpow(0.5)_S(3,0,0)_Psmth(3,3)",  "reweight": true, "mfd_pow": 0.25,"sr_scaling": 0, "sr_mod_std": 0,"paleo_smoothing": 1e3 },
+        {"tag": "UCT Mpow(0.75)_S(3,0,0)_Psmth(3,3)", "reweight": true, "mfd_pow": 0.5,"sr_scaling": 0, "sr_mod_std": 0,"paleo_smoothing": 1e3 }
+    ],
+    "mfd_transition_mags": [7.85],
+    "mag_ranges": [{"min_mag_sans": 6.8, "min_mag_tvz": 6.5, "max_mag_sans": 10.0, "max_mag_tvz": 7.5}],
+    "tvz_slip_rate_factors": [1.0],
+    "max_mag_types": ["MANIPULATE_MFD"],
+    "slip_rate_weighting_types": ["BOTH"],
+    "slip_rate_weights": [null],
+    "slip_uncertainty_scaling_factors": [null],
+    "selection_interval_secs": ["1"],
+    "threads_per_selector": ["4"],
+    "averaging_threads": ["4"],
+    "averaging_interval_secs": ["30"],
+    "non_negativity_function": ["TRY_ZERO_RATES_OFTEN"],
+    "perturbation_function": ["EXPONENTIAL_SCALE"],
+    "cooling_schedules": ["FAST_SA"],
+    "scaling_relationships": ["SIMPLE_CRUSTAL"],
+    "scaling_recalc_mags": ["True"],
+    "paleo_rate_constraints": ["GEOLOGIC_SLIP_4FEB"],
+    "paleo_probability_models": ["NZSHM22_C_42"]
+  }
+}

@@ -103,9 +103,10 @@ class BuilderTask():
                 inversion_runner.setGutenbergRichterMFDWeights(
                         float(ta['mfd_equality_weight']),
                         float(ta['mfd_inequality_weight']))
-            elif ta.get('mfd_uncertainty_weight') and  ta.get('mfd_uncertainty_power'):
+            elif (ta.get('mfd_uncertainty_weight') and  ta.get('mfd_uncertainty_power')) or (not ta.get('reweight') is None):
+                weight = 1 if ta.get('reweight') else ta.get('mfd_uncertainty_weight')
                 inversion_runner.setUncertaintyWeightedMFDWeights(
-                    float(ta.get('mfd_uncertainty_weight')),
+                    float(weight), #set default for reweighting
                     float(ta.get('mfd_uncertainty_power')))
             else:
                 raise ValueError("Neither eq/ineq , nor uncertainty weights provided for MFD constraint setup")
@@ -120,10 +121,15 @@ class BuilderTask():
             inversion_runner.setMaxMags(maxMagType,maxMagSans,maxMagTvz)
             inversion_runner.setTVZSlipRateFactor(float(ta['tvz_slip_rate_factor']))
 
+            if not ta.get('reweight') is None:
+                inversion_runner.setReweightTargetQuantity("MAD")
+
+
             if not ta.get('slip_uncertainty_scaling_factor') is None:
-                #V30 config
+                #V3x config
+                weight = 1 if ta.get('reweight') else ta.get('slip_uncertainty_weight')
                 inversion_runner.setSlipRateUncertaintyConstraint(
-                    float(ta.get('slip_uncertainty_weight')),
+                    float(weight), #set default for reweighting
                     float(ta.get('slip_uncertainty_scaling_factor')))\
                 .setUnmodifiedSlipRateStdvs(bool(ta.get('slip_modify_std')))
             elif ta.get('slip_rate_weighting_type') and ta['slip_rate_weighting_type'] == 'UNCERTAINTY_ADJUSTED':
@@ -140,8 +146,9 @@ class BuilderTask():
                 raise ValueError(f"invalid slip constraint weight setup {ta}")
 
             if ta.get('paleo_rate_constraint_weight', 0):
+                weight = 1 if ta.get('reweight') else ta.get('paleo_rate_constraint_weight')
                 inversion_runner.setPaleoRateConstraints(
-                    float(ta['paleo_rate_constraint_weight']),
+                    float(weight), #set default for reweighting
                     float(ta['paleo_parent_rate_smoothness_constraint_weight']),
                     ta['paleo_rate_constraint'],
                     ta['paleo_probability_model'])
