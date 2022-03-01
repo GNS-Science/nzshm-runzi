@@ -12,14 +12,14 @@
     "unique_id": "TTB054",
     "subtask_type": "INVERSION",
     "model_type": "CRUSTAL",
-    "file_id": "RmlsZToyMjE4My4wUGVpWGE=",
+    "file_id": "RmlsZToxNTg3LjBuVm9GdA==",
     "task_title": "NZSHM Logic Tree Branch run TTB054 test uncertainty w reweighting and MFD stddev units",
     "task_description": "seweights: MFD, Slip and Paleo, setting 1e-10 for std on bins outside min/max mags"
    },
   "task_args": {
     "rounds": ["0"],
     "completion_energies": ["0.0"],
-    "max_inversion_times": ["15"],
+    "max_inversion_times": ["1"],
     "deformation_models": ["FAULT_MODEL"],
     "initial_solution_ids": [""],
     "scaling_c": [{"tag": "MED", "dip": 4.2, "strike": 4.2}],
@@ -27,9 +27,9 @@
         {"tag": "1840-2020_MED + TVZ_MED", "b_sans": 0.9, "N_sans": 3.9, "b_tvz": 1.2, "N_tvz": 1.0}
       ],
     "constraint_wts" : [
-        {"tag": "UCT Mpow(0.0)_S(0,0)_Psmth(0)", "reweight": true, "mfd_pow": 0.0001,"sr_scaling": 0, "sr_use_scaling": 0,"paleo_smoothing": 1e0 },
-        {"tag": "UCT Mpow(0.25)_S(0,0)_Psmth(0)", "reweight": true, "mfd_pow": 0.25,"sr_scaling": 0, "sr_use_scaling": 0,"paleo_smoothing": 1e0 },
-        {"tag": "UCT Mpow(0.5)_S(0,0)_Psmth(0)", "reweight": true, "mfd_pow": 0.5,"sr_scaling": 0, "sr_use_scaling": 0,"paleo_smoothing": 1e0 }
+
+        {"tag": "UCT Mpow(0.0)_S(0,0)_Psmth(0)", "reweight": true, "mfd_pow": 0.0001,"sr_scaling": 0, "sr_use_scaling": 1,"paleo_smoothing": 1e0 },
+        {"tag": "UCT Mpow(0.0)_S(0,0)_Psmth(0)", "reweight": true, "mfd_pow": 0.0001,"sr_scaling": 1, "sr_use_scaling": 0,"paleo_smoothing": 1e0 }
     ],
     "mfd_transition_mags": [7.85],
     "mag_ranges": [{"min_mag_sans": 6.8, "min_mag_tvz": 6.5, "max_mag_sans": 10.0, "max_mag_tvz": 7.5}],
