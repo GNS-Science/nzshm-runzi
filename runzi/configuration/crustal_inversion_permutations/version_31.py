@@ -75,7 +75,7 @@ def branch_permutations_generator_31(args, rupture_set_info):
 
                                     #slip_uncertainty_weight=slip_uncertainty_weight,
                                     slip_uncertainty_scaling_factor=slip_uncertainty_scaling_factor,
-                                    slip_modify_std_=slip_modify_std,
+                                    slip_modify_std=slip_modify_std,
 
                                     #slip_rate_normalized_weight=slip_rate_normalized_weight,
                                     #slip_rate_unnormalized_weight=slip_rate_unnormalized_weight,
