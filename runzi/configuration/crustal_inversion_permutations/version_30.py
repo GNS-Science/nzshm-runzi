@@ -16,7 +16,7 @@ def branch_permutations_generator_30(args, rupture_set_info):
                             #slip_rate_normalized_weight, slip_rate_unnormalized_weight,
 
                             mfd_uncertainty_weight, mfd_uncertainty_power,
-                            slip_uncertainty_weight, slip_uncertainty_scaling_factor, slip_modify_std,
+                            slip_uncertainty_weight, slip_uncertainty_scaling_factor, slip_use_scaling,
 
                             mfd_mag_gt_5_sans, mfd_mag_gt_5_tvz,
                             mfd_b_value_sans, mfd_b_value_tvz, mfd_transition_mag,
@@ -41,7 +41,7 @@ def branch_permutations_generator_30(args, rupture_set_info):
                             #[wts['sr_norm']],  [wts['sr_unnorm']],
 
                             [wts["mfd_wt"]], [wts["mfd_pow"]],
-                            [wts["sr_wt"]], [wts["sr_scaling"]], [wts["sr_mod_std"]],
+                            [wts["sr_wt"]], [wts["sr_scaling"]], [wts["sr_use_scaling"]],
 
                             [b_and_n['N_sans']], [b_and_n['N_tvz']],
                             [b_and_n['b_sans']], [b_and_n['b_tvz']],
@@ -80,7 +80,7 @@ def branch_permutations_generator_30(args, rupture_set_info):
 
                                     slip_uncertainty_weight=slip_uncertainty_weight,
                                     slip_uncertainty_scaling_factor=slip_uncertainty_scaling_factor,
-                                    slip_modify_std_=slip_modify_std,
+                                    slip_use_scaling=slip_use_scaling,
 
                                     #slip_rate_normalized_weight=slip_rate_normalized_weight,
                                     #slip_rate_unnormalized_weight=slip_rate_unnormalized_weight,
@@ -149,7 +149,7 @@ if __name__ == '__main__':
     constraint_wts = [
         {"tag": "UCY MFD_(2e4,0.5)_SR(3,0,0)_PL(3,3)",
             "mfd_wt": "2e4", "mfd_pow": "0.5",
-            "sr_wt": "1e3", "sr_scaling": "0", "sr_mod_std": "0",
+            "sr_wt": "1e3", "sr_scaling": "0", "sr_use_scaling": "0",
             "paleo_rate": "1e3", "paleo_smoothing": "1e3" }]
 
     mag_ranges = [
