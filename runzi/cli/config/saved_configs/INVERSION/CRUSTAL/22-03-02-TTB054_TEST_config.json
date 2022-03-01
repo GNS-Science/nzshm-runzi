@@ -27,9 +27,8 @@
         {"tag": "1840-2020_MED + TVZ_MED", "b_sans": 0.9, "N_sans": 3.9, "b_tvz": 1.2, "N_tvz": 1.0}
       ],
     "constraint_wts" : [
-
-        {"tag": "UCT Mpow(0.0)_S(0,0)_Psmth(0)", "reweight": true, "mfd_pow": 0.0001,"sr_scaling": 0, "sr_use_scaling": 1,"paleo_smoothing": 1e0 },
-        {"tag": "UCT Mpow(0.0)_S(0,0)_Psmth(0)", "reweight": true, "mfd_pow": 0.0001,"sr_scaling": 1, "sr_use_scaling": 0,"paleo_smoothing": 1e0 }
+        {"tag": "UCT Mpow(0.0)_S(0,0)_Psmth(0)", "reweight": true, "mfd_pow": 0.0001,"sr_scaling": 1, "sr_use_scaling": 1,"paleo_smoothing": 1e0 },
+        {"tag": "UCT Mpow(0.0)_S(0,0)_Psmth(0)", "reweight": true, "mfd_pow": 0.0001,"sr_scaling": 0, "sr_use_scaling": 0,"paleo_smoothing": 1e0 }
     ],
     "mfd_transition_mags": [7.85],
     "mag_ranges": [{"min_mag_sans": 6.8, "min_mag_tvz": 6.5, "max_mag_sans": 10.0, "max_mag_tvz": 7.5}],

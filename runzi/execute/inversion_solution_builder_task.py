@@ -124,14 +124,13 @@ class BuilderTask():
             if not ta.get('reweight') is None:
                 inversion_runner.setReweightTargetQuantity("MAD")
 
-
             if not ta.get('slip_use_scaling') is None:
                 #V3x config
                 weight = 1 if ta.get('reweight') else ta.get('slip_uncertainty_weight')
                 inversion_runner.setSlipRateUncertaintyConstraint(
                     float(weight), #set default for reweighting
                     float(ta.get('slip_uncertainty_scaling_factor')))\
-                .setUnmodifiedSlipRateStdvs(bool(ta.get('slip_use_scaling')))
+                .setUnmodifiedSlipRateStdvs(not bool(ta.get('slip_use_scaling'))) #True means no slips scaling and vice-versa
             elif ta.get('slip_rate_weighting_type') and ta['slip_rate_weighting_type'] == 'UNCERTAINTY_ADJUSTED':
                 #Deprecated...
                 inversion_runner.setSlipRateUncertaintyConstraint(
