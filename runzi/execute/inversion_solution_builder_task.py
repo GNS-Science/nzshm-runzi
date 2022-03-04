@@ -121,8 +121,8 @@ class BuilderTask():
             maxMagType = ta['max_mag_type']
             inversion_runner.setMaxMags(maxMagType,maxMagSans,maxMagTvz)
 
-            srf_sans = float(ta.get('sans_slip_rate_factor'),1.0)
-            srf_tvz = float(ta.get('tvz_slip_rate_factor'),1.0)
+            srf_sans = float(ta.get('sans_slip_rate_factor',1.0))
+            srf_tvz = float(ta.get('tvz_slip_rate_factor',1.0))
             inversion_runner.setSlipRateFactor(srf_sans,srf_tvz)
             
             if not ta.get('reweight') is None:
