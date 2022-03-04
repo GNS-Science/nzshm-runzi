@@ -148,7 +148,7 @@ class BuilderTask():
             else:
                 raise ValueError(f"invalid slip constraint weight setup {ta}")
 
-            if ta.get('paleo_rate_constraint_weight', 0):
+            if ta.get('paleo_rate_constraint_weight', 1):
                 weight = 1 if ta.get('reweight') else ta.get('paleo_rate_constraint_weight')
                 inversion_runner.setPaleoRateConstraints(
                     float(weight), #set default for reweighting
