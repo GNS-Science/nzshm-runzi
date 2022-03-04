@@ -14,12 +14,12 @@
     "model_type": "CRUSTAL",
     "file_id": "RmlsZToyMjE4My4wUGVpWGE=",
     "task_title": "NZSHM Logic Tree Branch run TTB054 test uncertainty w reweighting and MFD stddev units",
-    "task_description": "seweights: MFD, Slip and Paleo, setting 1e-10 for std on bins outside min/max mags"
+    "task_description": "sweep MFD unc power and test re-weighting"
    },
   "task_args": {
     "rounds": ["0"],
     "completion_energies": ["0.0"],
-    "max_inversion_times": ["15"],
+    "max_inversion_times": ["120"],
     "deformation_models": ["FAULT_MODEL"],
     "initial_solution_ids": [""],
     "scaling_c": [{"tag": "MED", "dip": 4.2, "strike": 4.2}],
@@ -32,8 +32,10 @@
         {"tag": "UCT Mpow(0.5)_S(0,0)_Psmth(0)", "reweight": true, "mfd_pow": 0.5,"sr_scaling": 0, "sr_use_scaling": 0,"paleo_smoothing": 1e0 }
     ],
     "mfd_transition_mags": [7.85],
-    "mag_ranges": [{"min_mag_sans": 6.8, "min_mag_tvz": 6.5, "max_mag_sans": 10.0, "max_mag_tvz": 7.5}],
-    "tvz_slip_rate_factors": [1.0],
+    "mag_ranges": [{"min_mag_sans": 6.8, "min_mag_tvz": 6.8, "max_mag_sans": 10.0, "max_mag_tvz": 10.0},
+      {"min_mag_sans": 6.8, "min_mag_tvz": 6.5, "max_mag_sans": 10.0, "max_mag_tvz": 7.5}
+    ],
+    "tvz_slip_rate_factors": [0.7],
     "max_mag_types": ["MANIPULATE_MFD"],
     "slip_rate_weighting_types": ["BOTH"],
     "slip_rate_weights": [null],

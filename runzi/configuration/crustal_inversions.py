@@ -66,6 +66,8 @@ def build_crustal_tasks(general_task_id, rupture_sets, args, config):
         permutations_generator = branch_permutations_generator_30
     elif config_version == "3.1":
         permutations_generator = branch_permutations_generator_31
+    elif config_version == "3.2":
+        permutations_generator = branch_permutations_generator_32
     else:
         raise ValueError(F"Config version {config_version} is not supported")
 

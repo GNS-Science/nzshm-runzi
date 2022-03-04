@@ -50,15 +50,15 @@ make sure Dockerfile has correct runzi branch
 
 ```
 #EG
-export FATJAR_TAG=mfd_unc_units #153-reweighting-alpha1 #low-stddev-alpha4-1e20 #low-stddev-alpha3
+export FATJAR_TAG=assemble_march04_alpha0 #mfd_unc_units #153-reweighting-alpha1 #low-stddev-alpha4-1e20 #low-stddev-alpha3
 docker build . --build-arg FATJAR_TAG=${FATJAR_TAG} --no-cache
 ```
 
 ### Tag new docker image
 
 ```
-export RUNZI_GITREF=d3e6137
-export IMAGE_ID=14885acd5b40 #from docker build
+export RUNZI_GITREF=a4f818a
+export IMAGE_ID=063551c39dcf #from docker build
 export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_opensha-${FATJAR_TAG}
 
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}

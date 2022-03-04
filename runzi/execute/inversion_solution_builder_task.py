@@ -107,7 +107,8 @@ class BuilderTask():
                 weight = 1 if ta.get('reweight') else ta.get('mfd_uncertainty_weight')
                 inversion_runner.setUncertaintyWeightedMFDWeights(
                     float(weight), #set default for reweighting
-                    float(ta.get('mfd_uncertainty_power')))
+                    float(ta.get('mfd_uncertainty_power')),
+                    float(ta.get('mfd_uncertainty_scalar')))
             else:
                 raise ValueError("Neither eq/ineq , nor uncertainty weights provided for MFD constraint setup")
 
@@ -119,8 +120,11 @@ class BuilderTask():
             maxMagTvz = float(ta['max_mag_tvz'])
             maxMagType = ta['max_mag_type']
             inversion_runner.setMaxMags(maxMagType,maxMagSans,maxMagTvz)
-            inversion_runner.setTVZSlipRateFactor(float(ta['tvz_slip_rate_factor']))
 
+            srf_sans = float(ta.get('sans_slip_rate_factor'),1.0)
+            srf_tvz = float(ta.get('tvz_slip_rate_factor'),1.0)
+            inversion_runner.setSlipRateFactor(srf_sans,srf_tvz)
+            
             if not ta.get('reweight') is None:
                 inversion_runner.setReweightTargetQuantity("MAD")
 
@@ -144,7 +148,7 @@ class BuilderTask():
             else:
                 raise ValueError(f"invalid slip constraint weight setup {ta}")
 
-            if ta.get('paleo_rate_constraint_weight', 1):
+            if ta.get('paleo_rate_constraint_weight', 0):
                 weight = 1 if ta.get('reweight') else ta.get('paleo_rate_constraint_weight')
                 inversion_runner.setPaleoRateConstraints(
                     float(weight), #set default for reweighting
