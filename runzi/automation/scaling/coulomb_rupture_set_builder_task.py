@@ -18,11 +18,16 @@ from nshm_toshi_client.task_relation import TaskRelation
 
 import time
 
-CLUSTER_MODE = os.getenv('NZSHM22_SCRIPT_CLUSTER_MODE', False)
 
-API_URL  = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
-API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
-S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL',"http://localhost:4569")
+from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
+    JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
+    API_KEY, API_URL, S3_URL, CLUSTER_MODE)
+
+# CLUSTER_MODE = os.getenv('NZSHM22_SCRIPT_CLUSTER_MODE', False)
+
+# API_URL  = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
+# API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
+# S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL',"http://localhost:4569")
 
 class RuptureSetBuilderTask():
     """
