@@ -63,6 +63,7 @@ in the container ...
 in /app
 
 ```
+oq db start &
 oq engine --run /WORKING/examples/01_point_era_oq/job-WLG.ini
 oq engine --export-outputs 1 /WORKING/output
 ```
@@ -71,9 +72,7 @@ oq engine --export-outputs 1 /WORKING/output
 python3 convert.py
 ```
 
-
 ## New Runzi commands (Ben)
-
 
 runziCLI/hazard>
 runziCLI/hazard/run
