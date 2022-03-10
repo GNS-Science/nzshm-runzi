@@ -9,6 +9,9 @@ import requests
 
 from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 
+import logging
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 class InversionSolution(object):
 
@@ -26,18 +29,17 @@ class InversionSolution(object):
         return file_id
 
     def upload_content(self, post_url, filepath):
-        #print('upload_content **** POST DATA %s' % post_url )
+        log.debug(f'upload_content() POST URL: {post_url}; PATH: {filepath}')
         filedata = open(filepath, 'rb')
         files = {'file': filedata}
-        url = self.api._s3_url
-        #print('url', url)
+        log.debug(f'upload_content() _s3_url: {self.api._s3_url}')
 
         response = requests.post(
-            url=url,
+            url=self.api._s3_url,
             data=post_url,
             files=files)
-        print("upload_content POST RESPONSE", response, filepath)
-
+        log.debug(f'response {response}')
+        response.raise_for_status()
 
     def _create_inversion_solution(self, filepath, produced_by, mfd_table=None, meta=None, metrics=None):
         qry = '''

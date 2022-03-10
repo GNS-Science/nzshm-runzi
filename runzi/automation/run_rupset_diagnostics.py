@@ -24,6 +24,18 @@ from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
     API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, REPORT_LEVEL)
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
+loglevel = logging.INFO
+logging.getLogger('py4j.java_gateway').setLevel(loglevel)
+logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
+logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
+logging.getLogger('urllib3').setLevel(loglevel)
+logging.getLogger('git.cmd').setLevel(loglevel)
+
+log = logging.getLogger(__name__)
+
 # If you wish to override something in the main config, do so here ..
 # WORKER_POOL_SIZE = 3
 WORKER_POOL_SIZE = 1
@@ -102,7 +114,7 @@ if __name__ == "__main__":
         #upstream_task_id = "R2VuZXJhbFRhc2s6NzIybjVvc0I=" ## test 2
         upstream_task_id = "R2VuZXJhbFRhc2s6Mjg5NVpXNUZQ" ## PROD
         #upstream_task_id = "R2VuZXJhbFRhc2s6MTA0OXFKNWRQ" ## TEST
-        upstream_task_id = "R2VuZXJhbFRhc2s6Nzk4OXBnckNF"
+        upstream_task_id = "RmlsZToxMDAwMzM="
 
         """
         CHOOSE ONE OF:
@@ -111,8 +123,9 @@ if __name__ == "__main__":
          - file_generator = get_output_file_ids(general_api, upstream_task_id)
         """
         #for a single rupture set, pass a valid FileID
-        #file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
-        file_generator = get_output_file_ids(toshi_api, upstream_task_id)
+        file_id = "RmlsZToxMDAwMzM="
+        file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
+        #file_generator = get_output_file_ids(toshi_api, upstream_task_id)
 
         rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 

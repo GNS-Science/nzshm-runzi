@@ -2,6 +2,8 @@ import os
 import pwd
 import itertools
 import stat
+import logging
+
 from pathlib import PurePath
 from subprocess import check_call
 from multiprocessing.dummy import Pool
@@ -20,14 +22,16 @@ from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
     API_KEY, API_URL, S3_URL, CLUSTER_MODE)
 
+logging.basicConfig(level=logging.INFO)
+
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
-JVM_HEAP_MAX = 58
+JVM_HEAP_MAX = 36
 JAVA_THREADS = 16
 INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 
 #If using API give this task a descriptive setting...
-TASK_TITLE = "Build Coulomb full CFM 0.9C D90 with corrected rake orientation"
+TASK_TITLE = "Build Coulomb full CFM 0.9D D90 with corrected rake orientation"
 
 TASK_DESCRIPTION = """
 """
@@ -112,11 +116,11 @@ if __name__ == "__main__":
     GENERAL_TASK_ID = None
 
     #limit test size, nomally 1000 for NZ CFM
-    MAX_SECTIONS = 2000
+    MAX_SECTIONS = 20
 
     args = dict(
         ##Test parameters
-        models = ["CFM_0_9C_SANSTVZ_D90"], #, "CFM_0_9_ALL_D90","CFM_0_9_SANSTVZ_2010"]
+        models = ["CFM_0_9D_SANSTVZ_D90"], #, "CFM_0_9_ALL_D90","CFM_0_9_SANSTVZ_2010"]
         jump_limits = [15], #default is 15
         adaptive_min_distances = [6,], #9] default is 6
         thinning_factors = [0,], #5, 0.1, 0.2, 0.3] #, 0.05, 0.1, 0.2]

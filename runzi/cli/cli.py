@@ -1,3 +1,5 @@
+import logging, logging.config
+import os
 from runzi.cli.inv_setup import change_job_values, change_task_values, add_task_arg
 from runzi.cli.load_json import load_crustal, load_subduction
 from runzi.cli.cli_helpers import MenuHandler, build_inversion_index, display_env, landing_banner
@@ -7,6 +9,16 @@ from runzi.cli.inversion_diagnostic_runner import inversion_diagnostic_query
 from openquake_hazard import openquake_hazard_query
 
 context = 'runziCLI'
+
+LOGGING_CFG = 'logging.yaml'
+
+if os.path.exists(LOGGING_CFG):
+    with open(LOGGING_CFG, 'rt') as f:
+        config = yaml.safe_load(f.read())
+    logging.config.dictConfig(config)
+else:
+    logging.getLogger().setLevel(logging.INFO)
+    logging.basicConfig(level=logging.INFO)
 
 def main():
 
