@@ -123,6 +123,9 @@ class BuilderTask():
             else:
                 raise ValueError("Neither eq/ineq , nor uncertainty weights provided for MFD constraint setup")
 
+            enable_tvz_mfd = ta.get('enable_tvz_mfd',True)
+            inversion_runner.setEnableTvzMFDs(enable_tvz_mfd)
+
             minMagSans = float(ta['min_mag_sans'])
             minMagTvz = float(ta['min_mag_tvz'])
             inversion_runner.setMinMags(minMagSans, minMagTvz)
