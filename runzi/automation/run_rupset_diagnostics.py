@@ -123,7 +123,7 @@ if __name__ == "__main__":
          - file_generator = get_output_file_ids(general_api, upstream_task_id)
         """
         #for a single rupture set, pass a valid FileID
-        file_id = "RmlsZToxMDAwMzM="
+        file_id = "RmlsZToxMDAwMw=="
         file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
         #file_generator = get_output_file_ids(toshi_api, upstream_task_id)
 

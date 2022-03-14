@@ -13,7 +13,7 @@ from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 import logging
 log = logging.getLogger(__name__)
 # log.setLevel(logging.DEBUG)
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 class AutomationTask(object):
 

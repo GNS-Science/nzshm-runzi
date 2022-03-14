@@ -1,4 +1,4 @@
-import logging, logging.config
+# import logging, logging.config
 import os
 from runzi.cli.inv_setup import change_job_values, change_task_values, add_task_arg
 from runzi.cli.load_json import load_crustal, load_subduction
@@ -12,13 +12,14 @@ context = 'runziCLI'
 
 LOGGING_CFG = 'logging.yaml'
 
-if os.path.exists(LOGGING_CFG):
-    with open(LOGGING_CFG, 'rt') as f:
-        config = yaml.safe_load(f.read())
-    logging.config.dictConfig(config)
-else:
-    logging.getLogger().setLevel(logging.INFO)
-    logging.basicConfig(level=logging.INFO)
+# if os.path.exists(LOGGING_CFG):
+#     with open(LOGGING_CFG, 'rt') as f:
+#         config = yaml.safe_load(f.read())
+#     logging.config.dictConfig(config)
+# else:
+#     # logging.getLogger().setLevel(logging.INFO)
+#     # logging.basicConfig(level=logging.INFO)
+#     pass
 
 def main():
 

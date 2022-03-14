@@ -16,17 +16,6 @@ from nshm_toshi_client.general_task import GeneralTask
 from nshm_toshi_client.task_relation import TaskRelation
 
 import logging
-logging.basicConfig(level=logging.INFO)
-
-loglevel = logging.INFO
-logging.getLogger('py4j.java_gateway').setLevel(loglevel)
-logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
-logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
-logging.getLogger('urllib3').setLevel(loglevel)
-logging.getLogger('git.cmd').setLevel(loglevel)
-
-log = logging.getLogger(__name__)
-
 
 import time
 
@@ -180,6 +169,17 @@ def get_repo_heads(rootdir, repos):
 
 
 if __name__ == "__main__":
+
+    logging.basicConfig(level=logging.INFO)
+
+    loglevel = logging.INFO
+    logging.getLogger('py4j.java_gateway').setLevel(loglevel)
+    logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
+    logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
+    logging.getLogger('urllib3').setLevel(loglevel)
+    logging.getLogger('git.cmd').setLevel(loglevel)
+
+    log = logging.getLogger(__name__)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("config")

@@ -24,16 +24,6 @@ from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, EnvMode )
 
 import logging
-logging.basicConfig(level=logging.INFO)
-
-loglevel = logging.INFO
-logging.getLogger('py4j.java_gateway').setLevel(loglevel)
-logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
-logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
-logging.getLogger('urllib3').setLevel(loglevel)
-logging.getLogger('git.cmd').setLevel(loglevel)
-
-log = logging.getLogger(__name__)
 
 INITIAL_GATEWAY_PORT = 26533
 
@@ -105,6 +95,16 @@ if __name__ == "__main__":
 
     t0 = dt.datetime.utcnow()
 
+    logging.basicConfig(level=logging.INFO)
+    loglevel = logging.INFO
+    logging.getLogger('py4j.java_gateway').setLevel(loglevel)
+    logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
+    logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
+    logging.getLogger('urllib3').setLevel(loglevel)
+    logging.getLogger('git.cmd').setLevel(loglevel)
+
+    log = logging.getLogger(__name__)
+
     GENERAL_TASK_ID = None
     # If you wish to override something in the main config, do so here ..
     WORKER_POOL_SIZE = 2
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     #R2VuZXJhbFRhc2s6NTkyOHFpTjlE  Modular Inversions: Randomness test 2 (4)
     #R2VuZXJhbFRhc2s6NTkzM0RkaDNz  Modular Inversions: Randomness test 3 (24)
     scripts = []
-    for inversion_task_id in ["R2VuZXJhbFRhc2s6MTAwMDMx"]:
+    for inversion_task_id in ["R2VuZXJhbFRhc2s6MTAwMDQ="]:
         file_generator = get_output_file_ids(toshi_api, inversion_task_id)
         solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False, skip_download=(CLUSTER_MODE == EnvMode['AWS']))
 
@@ -178,7 +178,7 @@ if __name__ == "__main__":
             res = batch_client.submit_job(**script_or_config)
             log.info(res)
 
-    log.info('worker count: ' +  WORKER_POOL_SIZE)
-    log.info("GENERAL_TASK_ID: " + GENERAL_TASK_ID)
+    log.info(f'worker count: {WORKER_POOL_SIZE}')
+    log.info(f'GENERAL_TASK_ID: {GENERAL_TASK_ID}')
 
     log.info("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())

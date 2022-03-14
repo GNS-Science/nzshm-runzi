@@ -329,5 +329,5 @@ if __name__ == "__main__":
     time.sleep(3)
     task = BuilderTask(config['job_arguments'])
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(config['job_arguments']['task_id'] * 0.666 * 2 * 4)
+    time.sleep(config['job_arguments']['task_id'] * 0.666 )
     task.run(**config)

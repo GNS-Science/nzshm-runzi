@@ -112,16 +112,28 @@ if __name__ == "__main__":
 
     t0 = dt.datetime.utcnow()
 
+    logging.basicConfig(level=logging.INFO)
+
+    loglevel = logging.INFO
+    logging.getLogger('py4j.java_gateway').setLevel(loglevel)
+    logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
+    logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
+    logging.getLogger('urllib3').setLevel(loglevel)
+    logging.getLogger('botocore').setLevel(loglevel)
+    logging.getLogger('git.cmd').setLevel(loglevel)
+
+    log = logging.getLogger(__name__)
+
     #USE_API = False
     GENERAL_TASK_ID = None
 
     #limit test size, nomally 1000 for NZ CFM
-    MAX_SECTIONS = 20
+    MAX_SECTIONS = 2000
 
     args = dict(
         ##Test parameters
         models = ["CFM_0_9D_SANSTVZ_D90"], #, "CFM_0_9_ALL_D90","CFM_0_9_SANSTVZ_2010"]
-        jump_limits = [15], #default is 15
+        jump_limits = [15,13,11,8,6,4,2,1], #default is 15
         adaptive_min_distances = [6,], #9] default is 6
         thinning_factors = [0,], #5, 0.1, 0.2, 0.3] #, 0.05, 0.1, 0.2]
         min_sub_sects_per_parents = [2], #3,4,5]
