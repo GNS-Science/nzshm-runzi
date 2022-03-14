@@ -17,7 +17,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/75_new_uncertainty
+RUN git checkout feature/tested_with_new_api
 
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
