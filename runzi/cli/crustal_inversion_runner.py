@@ -48,26 +48,41 @@ def run_crustal_inversion(config):
 
     # for file_id that is a GT
     # TODO: determine is ID is for a GT or single task and call appropriate get_output...
-    #file_generators = get_output_file_ids(toshi_api, file_id)
-    #rupture_sets = download_files(toshi_api, file_generators, str(WORK_PATH), overwrite=False)
+    file_generator = get_output_file_ids(toshi_api, file_id)
+    rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
     
 
-    # for a list of file ids in the task_args
-    # TODO: a switch so that allows the old way of defining a rupture set to work
-    #file_ids = ["RmlsZToxNTg3LjBuVm9GdA==","RmlsZToxMDEyOQ=="] little test list
-    if args.get('rupture_sets'):
-        file_ids = [rupture_set['id'] for rupture_set in args['rupture_sets']]
-        rupture_sets = {}
-        for rs in args['rupture_sets']:
-            tag = rs['tag']
-            file_id = rs['id']
-            file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
-            rupture_set = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
-            rupture_set[next(iter(rupture_set.keys()))]['tag'] = tag
-            rupture_sets.update(rupture_set)
-    else:
-        file_generator = get_output_file_id(toshi_api, file_id)
-        rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+
+    #add extra GT meta data gleaned from rupture_sets for TUI
+    # TODO
+    print(args_list)
+    distances = []
+    for (rid, rupture_set_info) in rupture_sets.items():
+        print(rid, rupture_set_info)
+        print(rupture_set_info['info']['max_jump_distance'])
+        distances.append(rupture_set_info['info']['max_jump_distance'])
+
+    args_list.append(dict(k="max_jump_distances", v=distances))
+    print(args_list)
+    assert 0
+
+
+    # # for a list of file ids in the task_args
+    # # TODO: a switch so that allows the old way of defining a rupture set to work
+    # #file_ids = ["RmlsZToxNTg3LjBuVm9GdA==","RmlsZToxMDEyOQ=="] little test list
+    # if args.get('rupture_sets'):
+    #     file_ids = [rupture_set['id'] for rupture_set in args['rupture_sets']]
+    #     rupture_sets = {}
+    #     for rs in args['rupture_sets']:
+    #         tag = rs['tag']
+    #         file_id = rs['id']
+    #         file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
+    #         rupture_set = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+    #         rupture_set[next(iter(rupture_set.keys()))]['tag'] = tag
+    #         rupture_sets.update(rupture_set)
+    # else:
+    #     file_generator = get_output_file_id(toshi_api, file_id)
+    #     rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
     if USE_API:
         #create new task in toshi_api
@@ -92,6 +107,8 @@ def run_crustal_inversion(config):
 
     scripts = []
     for script_file_or_config in build_crustal_tasks(GENERAL_TASK_ID, rupture_sets, args, config):
+        print(script_file_or_config)
+        assert 0
         scripts.append(script_file_or_config)
 
     toshi_api.general_task.update_subtask_count(GENERAL_TASK_ID, len(scripts))
