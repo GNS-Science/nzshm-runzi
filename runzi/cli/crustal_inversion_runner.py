@@ -65,6 +65,9 @@ def run_crustal_inversion(config):
             rupture_set = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
             rupture_set[next(iter(rupture_set.keys()))]['tag'] = tag
             rupture_sets.update(rupture_set)
+    else:
+        file_generator = get_output_file_id(toshi_api, file_id)
+        rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
     if USE_API:
         #create new task in toshi_api
