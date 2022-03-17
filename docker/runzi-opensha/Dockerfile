@@ -17,7 +17,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/refactor-regional-mfd
+RUN git checkout feature/iterate-rupture-sets
 
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .

@@ -72,7 +72,7 @@ def branch_permutations_generator_35(args, rupture_set_info):
                                 [slip_rate_factors['slip_factor_sans']],[slip_rate_factors['slip_factor_tvz']]
                                 ):
                                     task_arguments = dict(
-                                        rupture_name=rupture_set_info['short_name'],
+                                        max_jump_distance=rupture_set_info['info']['max_jump_distance'],
                                         round = _round,
                                         config_type = 'crustal',
                                         deformation_model=deformation_model,
