@@ -8,7 +8,7 @@ import requests
 from pathlib import Path, PurePath
 
 def get_output_file_ids(general_task_api, upstream_task_id, file_extension='zip'):
-
+    
     api_result = general_task_api.get_subtask_files(upstream_task_id)
     for subtask in api_result['children']['edges']:
 
@@ -20,6 +20,16 @@ def get_output_file_ids(general_task_api, upstream_task_id, file_extension='zip'
                 for kv in filenode['node']['file'].get('meta', []):
                     if kv.get('k') == 'fault_model':
                         fault_model = kv.get('v')
+                        break
+
+        #get rupture set max jump distance
+        max_jump_distance = ""
+        for filenode in subtask['node']['child']['files']['edges']:
+            #print("FN:", filenode)
+            if filenode['node']['file'].get('meta', []):
+                for kv in filenode['node']['file'].get('meta', []):
+                    if kv.get('k') == 'max_jump_distance':
+                        max_jump_distance = kv.get('v')
                         break
 
         for filenode in subtask['node']['child']['files']['edges']:
@@ -37,6 +47,8 @@ def get_output_file_ids(general_task_api, upstream_task_id, file_extension='zip'
 
                 if fault_model:
                     res['fault_model'] = fault_model
+                if max_jump_distance:
+                    res['max_jump_distance'] = max_jump_distance
                 yield res
                 #TESTING
                 #return
