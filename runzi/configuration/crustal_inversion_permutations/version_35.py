@@ -5,7 +5,7 @@ def branch_permutations_generator_35(args, rupture_set_info):
     """
     Generate Uncertainty Constraint argument forms
     """
-
+    
     # bit of a no-no to change a list in a for loop, but since we're only altering the contents of the list items, we should be OK
     for i,a in enumerate(args['b_and_n']):
         args['b_and_n'][i]['string'] = str(a) #preserve origional string for TUI

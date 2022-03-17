@@ -55,15 +55,13 @@ def run_crustal_inversion(config):
     #file_ids = [rupture_set['id'] for rupture_set in args['rupture_sets']]
     rupture_sets = {}
     for rs in args['rupture_sets']:
-        file_id = rs['id']
         short_name = rs['short_name']
+        file_id = rs['id']
         file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
         rupture_set = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
-        rupture_set['short_name'] = short_name
+        rupture_set[next(iter(rupture_set.keys()))]['short_name'] = short_name
         rupture_sets.update(rupture_set)
-        
-        
-    
+
     if USE_API:
         #create new task in toshi_api
         gt_args = CreateGeneralTaskArgs(
