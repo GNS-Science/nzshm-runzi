@@ -42,9 +42,28 @@ def run_crustal_inversion(config):
     for key, value in args.items():
         args_list.append(dict(k=key, v=value))
 
-    file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
-    rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+    # for a file id that is a single rupture set
+    #file_generator = get_output_file_id(toshi_api, file_id)
+    #rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
+    # for file_id that is a GT
+    #file_generator = get_output_file_ids(toshi_api, file_id)
+    #rupture_sets = download_files(toshi_api, file_generators, str(WORK_PATH), overwrite=False)
+
+    # for a list of file ids in the task_args    
+    #file_ids = ["RmlsZToxNTg3LjBuVm9GdA==","RmlsZToxMDEyOQ=="] little test list
+    #file_ids = [rupture_set['id'] for rupture_set in args['rupture_sets']]
+    rupture_sets = {}
+    for rs in args['rupture_sets']:
+        file_id = rs['id']
+        short_name = rs['short_name']
+        file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
+        rupture_set = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+        rupture_set['short_name'] = short_name
+        rupture_sets.update(rupture_set)
+        
+        
+    
     if USE_API:
         #create new task in toshi_api
         gt_args = CreateGeneralTaskArgs(

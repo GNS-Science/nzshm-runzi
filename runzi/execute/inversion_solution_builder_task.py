@@ -52,7 +52,8 @@ class BuilderTask():
             self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     def run(self, task_arguments, job_arguments):
-
+        print("I'm in your BuilderTask running your methods")
+        return
         # Run the task....
         ta = task_arguments
 
@@ -220,7 +221,7 @@ class BuilderTask():
             inversion_runner.setCoolingSchedule(ta['cooling_schedule'])
 
         #int(ta['max_inversion_time'] * 60))\
-
+        
         log.info("Starting inversion of up to %s minutes" % ta['max_inversion_time'])
         log.info("======================================")
         inversion_runner.runInversion()

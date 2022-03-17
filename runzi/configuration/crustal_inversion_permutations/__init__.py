@@ -5,3 +5,4 @@ from .version_31 import branch_permutations_generator_31
 from .version_32 import branch_permutations_generator_32
 from .version_33 import branch_permutations_generator_33
 from .version_34 import branch_permutations_generator_34
+from .version_35 import branch_permutations_generator_35
