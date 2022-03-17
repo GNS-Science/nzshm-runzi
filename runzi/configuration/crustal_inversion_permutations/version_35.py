@@ -22,132 +22,132 @@ def branch_permutations_generator_35(args, rupture_set_info):
             for wts in args['constraint_wts']:
                 for mag_ranges in args['mag_ranges']:
                     for slip_rate_factors in args['slip_rate_factors']:
-                        for (_round, completion_energy, max_inversion_time,
+                            for (_round, completion_energy, max_inversion_time,
 
-                                #mfd_equality_weight, mfd_inequality_weight, slip_rate_weighting_type,
-                                #slip_rate_weight, slip_uncertainty_scaling_factor,
-                                #slip_rate_normalized_weight, slip_rate_unnormalized_weight,
-                                reweight,
-                                mfd_uncertainty_power, mfd_uncertainty_scalar,
-                                slip_uncertainty_scaling_factor, slip_use_scaling,
-                                enable_tvz_mfd,
-                                mfd_mag_gt_5_sans, mfd_mag_gt_5_tvz,
-                                mfd_b_value_sans, mfd_b_value_tvz, mfd_transition_mag,
-                                max_mag_type,
-                                min_mag_sans,min_mag_tvz,
-                                max_mag_sans,max_mag_tvz,
-                                selection_interval_secs, threads_per_selector, averaging_threads, averaging_interval_secs,
-                                non_negativity_function, perturbation_function,
-                                deformation_model,
-                                scaling_relationship, scaling_recalc_mag,
-                                paleo_rate_constraint,
-                                paleo_probability_model, paleo_parent_rate_smoothness_constraint_weight,
-                                scaling_c_val_dip_slip, scaling_c_val_strike_slip,
-                                initial_solution_id,
-                                cooling_schedule,
-                                sans_slip_rate_factor,tvz_slip_rate_factor,
-                                )\
-                            in itertools.product(
-                                args['rounds'], args['completion_energies'], args['max_inversion_times'],
-                                [wts["reweight"]],
-                                [wts["mfd_pow"]],[wts["mfd_unc_scalar"]],
-                                [wts["sr_scaling"]], [wts["sr_use_scaling"]],
-                                [b_and_n['enable_tvz_mfd']],
-                                [b_and_n['N_sans']], [b_and_n['N_tvz']],
-                                [b_and_n['b_sans']], [b_and_n['b_tvz']],
-                                args['mfd_transition_mags'],
-                                args['max_mag_types'],
-                                [mag_ranges['min_mag_sans']], [mag_ranges['min_mag_tvz']],
-                                [mag_ranges['max_mag_sans']], [mag_ranges['max_mag_tvz']],
-                                args['selection_interval_secs'], args['threads_per_selector'], args['averaging_threads'], args['averaging_interval_secs'],
-                                args['non_negativity_function'], args['perturbation_function'],
-                                args['deformation_models'],
-                                args['scaling_relationships'], args['scaling_recalc_mags'],
-                                args['paleo_rate_constraints'],
-                                args['paleo_probability_models'], [wts['paleo_smoothing']],
-                                #args['scaling_c_val_dip_slips'], args['scaling_c_val_strike_slips'],
-                                [scaling_c['dip']], [scaling_c['strike']],
-                                args.get('initial_solution_ids', [None,]),
-                                args['cooling_schedules'],
-                                [slip_rate_factors['slip_factor_sans']],[slip_rate_factors['slip_factor_tvz']]
-                                ):
-                                    task_arguments = dict(
-                                        max_jump_distance=rupture_set_info['info']['max_jump_distance'],
-                                        round = _round,
-                                        config_type = 'crustal',
-                                        deformation_model=deformation_model,
-                                        
-                                        rupture_set_file_id=rupture_set_info['id'],
-                                        rupture_set=rupture_set_info['filepath'],
-                                        completion_energy=completion_energy,
-                                        max_inversion_time=max_inversion_time,
-                                        #mfd_equality_weight=mfd_equality_weight,
-                                        #mfd_inequality_weight=mfd_inequality_weight,
+                                    #mfd_equality_weight, mfd_inequality_weight, slip_rate_weighting_type,
+                                    #slip_rate_weight, slip_uncertainty_scaling_factor,
+                                    #slip_rate_normalized_weight, slip_rate_unnormalized_weight,
+                                    reweight,
+                                    mfd_uncertainty_power, mfd_uncertainty_scalar,
+                                    slip_uncertainty_scaling_factor, slip_use_scaling,
+                                    enable_tvz_mfd,
+                                    mfd_mag_gt_5_sans, mfd_mag_gt_5_tvz,
+                                    mfd_b_value_sans, mfd_b_value_tvz, mfd_transition_mag,
+                                    max_mag_type,
+                                    min_mag_sans,min_mag_tvz,
+                                    max_mag_sans,max_mag_tvz,
+                                    selection_interval_secs, threads_per_selector, averaging_threads, averaging_interval_secs,
+                                    non_negativity_function, perturbation_function,
+                                    deformation_model,
+                                    scaling_relationship, scaling_recalc_mag,
+                                    paleo_rate_constraint,
+                                    paleo_probability_model, paleo_parent_rate_smoothness_constraint_weight,
+                                    scaling_c_val_dip_slip, scaling_c_val_strike_slip,
+                                    initial_solution_id,
+                                    cooling_schedule,
+                                    sans_slip_rate_factor,tvz_slip_rate_factor,
+                                    )\
+                                in itertools.product(
+                                    args['rounds'], args['completion_energies'], args['max_inversion_times'],
+                                    [wts["reweight"]],
+                                    [wts["mfd_pow"]],[wts["mfd_unc_scalar"]],
+                                    [wts["sr_scaling"]], [wts["sr_use_scaling"]],
+                                    [b_and_n['enable_tvz_mfd']],
+                                    [b_and_n['N_sans']], [b_and_n['N_tvz']],
+                                    [b_and_n['b_sans']], [b_and_n['b_tvz']],
+                                    args['mfd_transition_mags'],
+                                    args['max_mag_types'],
+                                    [mag_ranges['min_mag_sans']], [mag_ranges['min_mag_tvz']],
+                                    [mag_ranges['max_mag_sans']], [mag_ranges['max_mag_tvz']],
+                                    args['selection_interval_secs'], args['threads_per_selector'], args['averaging_threads'], args['averaging_interval_secs'],
+                                    args['non_negativity_function'], args['perturbation_function'],
+                                    args['deformation_models'],
+                                    args['scaling_relationships'], args['scaling_recalc_mags'],
+                                    args['paleo_rate_constraints'],
+                                    args['paleo_probability_models'], [wts['paleo_smoothing']],
+                                    #args['scaling_c_val_dip_slips'], args['scaling_c_val_strike_slips'],
+                                    [scaling_c['dip']], [scaling_c['strike']],
+                                    args.get('initial_solution_ids', [None,]),
+                                    args['cooling_schedules'],
+                                    [slip_rate_factors['slip_factor_sans']],[slip_rate_factors['slip_factor_tvz']]
+                                    ):
+                                        task_arguments = dict(
+                                            round = _round,
+                                            config_type = 'crustal',
+                                            deformation_model=deformation_model,
+                                            
+                                            rupture_set_file_id=rupture_set_info['id'],
+                                            rupture_set=rupture_set_info['filepath'],
+                                            completion_energy=completion_energy,
+                                            max_inversion_time=max_inversion_time,
+                                            #mfd_equality_weight=mfd_equality_weight,
+                                            #mfd_inequality_weight=mfd_inequality_weight,
 
-                                        #mfd_uncertainty_weight=mfd_uncertainty_weight,
-                                        mfd_uncertainty_power=mfd_uncertainty_power,
-                                        mfd_uncertainty_scalar=mfd_uncertainty_scalar,
+                                            #mfd_uncertainty_weight=mfd_uncertainty_weight,
+                                            mfd_uncertainty_power=mfd_uncertainty_power,
+                                            mfd_uncertainty_scalar=mfd_uncertainty_scalar,
 
-                                        #slip_rate_weighting_type=slip_rate_weighting_type,
-                                        #slip_rate_weight=slip_rate_weight,
+                                            #slip_rate_weighting_type=slip_rate_weighting_type,
+                                            #slip_rate_weight=slip_rate_weight,
 
-                                        #slip_uncertainty_weight=slip_uncertainty_weight,
-                                        slip_uncertainty_scaling_factor=slip_uncertainty_scaling_factor,
-                                        slip_use_scaling=slip_use_scaling,
+                                            #slip_uncertainty_weight=slip_uncertainty_weight,
+                                            slip_uncertainty_scaling_factor=slip_uncertainty_scaling_factor,
+                                            slip_use_scaling=slip_use_scaling,
 
-                                        enable_tvz_mfd=enable_tvz_mfd,
+                                            enable_tvz_mfd=enable_tvz_mfd,
 
-                                        #slip_rate_normalized_weight=slip_rate_normalized_weight,
-                                        #slip_rate_unnormalized_weight=slip_rate_unnormalized_weight,
+                                            #slip_rate_normalized_weight=slip_rate_normalized_weight,
+                                            #slip_rate_unnormalized_weight=slip_rate_unnormalized_weight,
 
-                                        max_mag_type=max_mag_type,
-                                        min_mag_sans=min_mag_sans,
-                                        min_mag_tvz=min_mag_tvz,
-                                        max_mag_sans=max_mag_sans,
-                                        max_mag_tvz=max_mag_tvz,
-                                        mfd_mag_gt_5_sans=mfd_mag_gt_5_sans,
-                                        mfd_mag_gt_5_tvz=mfd_mag_gt_5_tvz,
-                                        mfd_b_value_sans=mfd_b_value_sans,
-                                        mfd_b_value_tvz=mfd_b_value_tvz,
-                                        mfd_transition_mag=mfd_transition_mag,
-                                        sans_slip_rate_factor=sans_slip_rate_factor,
-                                        tvz_slip_rate_factor=tvz_slip_rate_factor,
-                                        
-                                        #New config arguments for Simulated Annealing ...
-                                        selection_interval_secs=selection_interval_secs,
-                                        threads_per_selector=threads_per_selector,
-                                        averaging_threads=averaging_threads,
-                                        averaging_interval_secs=averaging_interval_secs,
-                                        non_negativity_function=non_negativity_function,
-                                        perturbation_function=perturbation_function,
-                                        cooling_schedule=cooling_schedule,
+                                            max_mag_type=max_mag_type,
+                                            min_mag_sans=min_mag_sans,
+                                            min_mag_tvz=min_mag_tvz,
+                                            max_mag_sans=max_mag_sans,
+                                            max_mag_tvz=max_mag_tvz,
+                                            mfd_mag_gt_5_sans=mfd_mag_gt_5_sans,
+                                            mfd_mag_gt_5_tvz=mfd_mag_gt_5_tvz,
+                                            mfd_b_value_sans=mfd_b_value_sans,
+                                            mfd_b_value_tvz=mfd_b_value_tvz,
+                                            mfd_transition_mag=mfd_transition_mag,
+                                            sans_slip_rate_factor=sans_slip_rate_factor,
+                                            tvz_slip_rate_factor=tvz_slip_rate_factor,
+                                            
+                                            #New config arguments for Simulated Annealing ...
+                                            selection_interval_secs=selection_interval_secs,
+                                            threads_per_selector=threads_per_selector,
+                                            averaging_threads=averaging_threads,
+                                            averaging_interval_secs=averaging_interval_secs,
+                                            non_negativity_function=non_negativity_function,
+                                            perturbation_function=perturbation_function,
+                                            cooling_schedule=cooling_schedule,
 
-                                        scaling_relationship=scaling_relationship,
-                                        scaling_recalc_mag=scaling_recalc_mag,
+                                            scaling_relationship=scaling_relationship,
+                                            scaling_recalc_mag=scaling_recalc_mag,
 
-                                        #New Paleo Args...
-                                        #paleo_rate_constraint_weight=paleo_rate_constraint_weight,
-                                        paleo_rate_constraint=paleo_rate_constraint,
-                                        paleo_probability_model=paleo_probability_model,
-                                        paleo_parent_rate_smoothness_constraint_weight=paleo_parent_rate_smoothness_constraint_weight,
+                                            #New Paleo Args...
+                                            #paleo_rate_constraint_weight=paleo_rate_constraint_weight,
+                                            paleo_rate_constraint=paleo_rate_constraint,
+                                            paleo_probability_model=paleo_probability_model,
+                                            paleo_parent_rate_smoothness_constraint_weight=paleo_parent_rate_smoothness_constraint_weight,
 
-                                        #new reweight
-                                        reweight=reweight,
+                                            #new reweight
+                                            reweight=reweight,
 
-                                        scaling_c_val_dip_slip=scaling_c_val_dip_slip,
-                                        scaling_c_val_strike_slip=scaling_c_val_strike_slip,
-                                        initial_solution_id=initial_solution_id,
+                                            scaling_c_val_dip_slip=scaling_c_val_dip_slip,
+                                            scaling_c_val_strike_slip=scaling_c_val_strike_slip,
+                                            initial_solution_id=initial_solution_id,
 
-                                        # Composite args (branch sets)
-                                        # are required for ToshiUI filtering
-                                        b_and_n = str(b_and_n['string']),
-                                        scaling_c = str(scaling_c),
-                                        constraint_wts = str(wts),
-                                        mag_ranges = str(mag_ranges),
-                                        slip_rate_factors = str(slip_rate_factors)
-                                        )
+                                            # Composite args (branch sets)
+                                            # are required for ToshiUI filtering
+                                            b_and_n = str(b_and_n['string']),
+                                            scaling_c = str(scaling_c),
+                                            constraint_wts = str(wts),
+                                            mag_ranges = str(mag_ranges),
+                                            slip_rate_factors = str(slip_rate_factors),
+                                            rupture_set_tag=rupture_set_info['tag']
+                                            )
 
-                                    yield task_arguments
+                                        yield task_arguments
 
 if __name__ == '__main__':
 
