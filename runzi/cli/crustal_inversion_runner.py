@@ -63,10 +63,8 @@ def run_crustal_inversion(config):
         distances.append(rupture_set_info['info']['max_jump_distance'])
 
     args_list.append(dict(k="max_jump_distances", v=distances))
-    print(args_list)
-    assert 0
-
-
+    #print(args_list)
+    
     # # for a list of file ids in the task_args
     # # TODO: a switch so that allows the old way of defining a rupture set to work
     # #file_ids = ["RmlsZToxNTg3LjBuVm9GdA==","RmlsZToxMDEyOQ=="] little test list
@@ -107,8 +105,6 @@ def run_crustal_inversion(config):
 
     scripts = []
     for script_file_or_config in build_crustal_tasks(GENERAL_TASK_ID, rupture_sets, args, config):
-        print(script_file_or_config)
-        assert 0
         scripts.append(script_file_or_config)
 
     toshi_api.general_task.update_subtask_count(GENERAL_TASK_ID, len(scripts))
