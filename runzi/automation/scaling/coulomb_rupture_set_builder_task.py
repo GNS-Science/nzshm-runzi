@@ -102,8 +102,15 @@ class RuptureSetBuilderTask():
             .setAdaptiveSectFract(float(ta["thinning_factor"]))\
             .setMinSubSectsPerParent(int(ta["min_sub_sects_per_parent"]))\
             .setMinSubSections(int(ta["min_sub_sections"]))\
-            .setFaultModel(ta["fault_model"])
+            .setFaultModel(ta["fault_model"])\
             #.setCmlRakeThresh(0.0) #TURN IT OFF
+
+
+        if ta['fault_model'] == "CFM_1_0_DOM_SANSTVZ":
+            tvzDomain = "4"
+            self._builder \
+                .setScaleDepthIncludeDomain(tvzDomain, ta['depth_scaling_tvz'])\
+                .setScaleDepthExcludeDomain(tvzDomain, ta['depth_scaling_sans'])
 
         # invert_rake = bool(ta.get('use_inverted_rake', False))
         # if invert_rake:

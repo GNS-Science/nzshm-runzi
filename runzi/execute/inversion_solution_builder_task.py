@@ -18,7 +18,7 @@ from nshm_toshi_client.task_relation import TaskRelation
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL)
+from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL, SPOOF_INVERSION)
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -84,8 +84,9 @@ class BuilderTask():
                 environment=environment
                 )
 
-            #link task tp the parent task
-            self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
+            #link task to the parent task
+            gt_conn = self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
+            log.info(f"created task_relationship: {gt_conn} for at: {task_id} on GT: {job_arguments['general_task_id']}")
 
             # link task to the input datafiles
             input_file_id = task_arguments.get('rupture_set_file_id')
@@ -123,8 +124,8 @@ class BuilderTask():
             else:
                 raise ValueError("Neither eq/ineq , nor uncertainty weights provided for MFD constraint setup")
 
-            enable_tvz_mfd = ta.get('enable_tvz_mfd',True)
-            inversion_runner.setEnableTvzMFDs(enable_tvz_mfd)
+            if not ta.get('enable_tvz_mfd') is None:
+                inversion_runner.setEnableTvzMFDs(ta.get('enable_tvz_mfd'))
 
             minMagSans = float(ta['min_mag_sans'])
             minMagTvz = float(ta['min_mag_tvz'])
@@ -221,9 +222,10 @@ class BuilderTask():
 
         #int(ta['max_inversion_time'] * 60))\
 
-        log.info("Starting inversion of up to %s minutes" % ta['max_inversion_time'])
-        log.info("======================================")
-        inversion_runner.runInversion()
+        if not SPOOF_INVERSION:
+            log.info("Starting inversion of up to %s minutes" % ta['max_inversion_time'])
+            log.info("======================================")
+            inversion_runner.runInversion()
 
         output_file = str(PurePath(job_arguments['working_path'], f"NZSHM22_InversionSolution-{task_id}.zip"))
         #name the output file
@@ -231,7 +233,11 @@ class BuilderTask():
         # log.info("building %s started at %s" % (outputfile, dt.datetime.utcnow().isoformat()), end=' ')
 
         # output_file = str(PurePath(job_arguments['output_file']))
-        inversion_runner.writeSolution(output_file)
+        if not SPOOF_INVERSION:
+            inversion_runner.writeSolution(output_file)
+        else:
+            with open(output_file, 'w') as spoof:
+                spoof.write("this is spoofed solution")
 
         t1 = dt.datetime.utcnow()
         log.info("Inversion took %s secs" % (t1-t0).total_seconds())
@@ -239,20 +245,16 @@ class BuilderTask():
         #capture task metrics
         duration = (dt.datetime.utcnow() - t0).total_seconds()
 
-        metrics = {}
-        #fecth metrics and convert Java Map to python dict
-        jmetrics = inversion_runner.getSolutionMetrics()
-        for k in jmetrics:
-            metrics[k] = jmetrics[k]
+        metrics = {"SPOOF_INVERSION": True }
+        if not SPOOF_INVERSION:
+            #fecth metrics and convert Java Map to python dict
+            jmetrics = inversion_runner.getSolutionMetrics()
+            for k in jmetrics:
+                metrics[k] = jmetrics[k]
 
-        # metrics['moment_rate'] = inversion_runner.momentAndRateMetrics()
-        # metrics['by_fault_name'] = inversion_runner.byFaultNameMetrics()
-        # metrics['parent_fault_moment_rates'] = inversion_runner.parentFaultMomentRates()
-
-        table_rows_v1 = inversion_runner.getTabularSolutionMfds()
-        table_rows_v2 = inversion_runner.getTabularSolutionMfdsV2() # not in current opensha build
+        table_rows_v1 = inversion_runner.getTabularSolutionMfds() if not SPOOF_INVERSION else []
+        table_rows_v2 = inversion_runner.getTabularSolutionMfdsV2()  if not SPOOF_INVERSION else [] # not in current opensha build
         mfd_table_rows = {"MFD_CURVES":table_rows_v1, "MFD_CURVES_V2":table_rows_v2}
-        #mfd_table_rows = {"MFD_CURVES":table_rows_v1}
 
         if self.use_api:
             #record the completed task
@@ -275,7 +277,7 @@ class BuilderTask():
                 meta=task_arguments, metrics=metrics)
             log.info(f"created inversion solution: {inversion_id}")
 
-            # # now get the MFDS...
+            # Get the MFD tables...
             for table_type, table_rows in mfd_table_rows.items():
                 mfd_table_id = None
 
@@ -329,8 +331,8 @@ if __name__ == "__main__":
         config = json.loads(urllib.parse.unquote(args.config))
 
     # maybe the JVM App is a little slow to get listening
-    time.sleep(3)
+    time.sleep(0.2)
     task = BuilderTask(config['job_arguments'])
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(config['job_arguments']['task_id'] * 0.666 )
+    time.sleep(config['job_arguments']['task_id'] * 0.01 )
     task.run(**config)
