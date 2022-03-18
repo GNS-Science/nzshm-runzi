@@ -57,6 +57,7 @@ def get_output_file_id(file_api, single_file_id):
 
     api_result = file_api.get_file_detail(single_file_id)
     fault_model = ""
+    max_jump_distance = ""
 
     print("FN:", api_result)
     if api_result['file_name'][-3:] == "zip":
@@ -68,8 +69,14 @@ def get_output_file_id(file_api, single_file_id):
             if kv.get('k') == 'fault_model':
                 fault_model = kv.get('v')
 
+        for kv in api_result['meta']:
+            if kv.get('k') == 'max_jump_distance':
+                max_jump_distance = kv.get('v')
+
         if fault_model:
             res['fault_model'] = fault_model
+        if max_jump_distance:
+            res['max_jump_distance'] = max_jump_distance
         yield res #yep yield one
 
     return

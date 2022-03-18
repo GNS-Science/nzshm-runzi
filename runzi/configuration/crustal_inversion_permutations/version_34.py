@@ -1,4 +1,5 @@
 import itertools
+import copy
 import json
 
 def branch_permutations_generator_34(args, rupture_set_info):
@@ -6,18 +7,19 @@ def branch_permutations_generator_34(args, rupture_set_info):
     Generate Uncertainty Constraint argument forms
     """
 
+    bn_list = copy.deepcopy(args['b_and_n'])
     # bit of a no-no to change a list in a for loop, but since we're only altering the contents of the list items, we should be OK
-    for i,a in enumerate(args['b_and_n']):
-        args['b_and_n'][i]['string'] = str(a) #preserve origional string for TUI
+    for i,a in enumerate(bn_list):
+        bn_list[i]['string'] = str(a) #preserve origional string for TUI
         if not(a['enable_tvz_mfd']):
-            args['b_and_n'][i]['N_sans'] = args['b_and_n'][i].pop('N')
-            args['b_and_n'][i]['b_sans'] = args['b_and_n'][i].pop('b')
-            args['b_and_n'][i]['N_tvz'] = 1.0
-            args['b_and_n'][i]['b_tvz'] = 1.0
+            bn_list[i]['N_sans'] = bn_list[i].pop('N')
+            bn_list[i]['b_sans'] = bn_list[i].pop('b')
+            bn_list[i]['N_tvz'] = 1.0
+            bn_list[i]['b_tvz'] = 1.0
             
 
 
-    for b_and_n in args['b_and_n']:
+    for b_and_n in bn_list:
         for scaling_c in args['scaling_c']:
             for wts in args['constraint_wts']:
                 for mag_ranges in args['mag_ranges']:
@@ -85,6 +87,8 @@ def branch_permutations_generator_34(args, rupture_set_info):
                                         #mfd_uncertainty_weight=mfd_uncertainty_weight,
                                         mfd_uncertainty_power=mfd_uncertainty_power,
                                         mfd_uncertainty_scalar=mfd_uncertainty_scalar,
+
+                                        max_jump_distances=rupture_set_info['info']['max_jump_distance'],
 
                                         #slip_rate_weighting_type=slip_rate_weighting_type,
                                         #slip_rate_weight=slip_rate_weight,

@@ -57,8 +57,8 @@ docker build . --build-arg FATJAR_TAG=${FATJAR_TAG} --no-cache
 ### Tag new docker image
 
 ```
-export RUNZI_GITREF=67842ed
-export IMAGE_ID=96c6edd77760 #from docker build
+export RUNZI_GITREF=3528aa3
+export IMAGE_ID=f1080e841a51 #from docker build
 export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_opensha-${FATJAR_TAG}
 
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
