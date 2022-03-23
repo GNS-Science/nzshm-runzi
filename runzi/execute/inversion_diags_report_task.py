@@ -69,7 +69,7 @@ class BuilderTask():
         ta, ja = task_arguments, job_arguments
 
         # build the Named Fault MFDS, only if we have a FM with named faults
-        if ta["fault_model"][:7] == "CFM_0_9":
+        if ("CFM_0_9" in ta["fault_model"]) | ("CFM_1_0" in ta["fault_model"]):
             print("Named fault plots for: ", ta['file_id'], ta['fault_model'])
             print("path: ", ta['file_path'])
 

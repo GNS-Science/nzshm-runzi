@@ -6,6 +6,10 @@ Home-page: https://github.com/GNS-Science/nshm-nz-opensha
 Author: GNS NSHM programme
 Author-email: chrisbc@artisan.co.nz
 License: MIT
+Description: 
+        # nzshm-runzi
+        Python tools for running, scheduling, collecting inputs &amp; outputs of NZSHM jobs on workstations and HPC cluster
+        
 Platform: UNKNOWN
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python
@@ -15,9 +19,3 @@ Classifier: Programming Language :: Python :: Implementation :: CPython
 Classifier: Programming Language :: Python :: Implementation :: PyPy
 Requires-Python: >=3.6.0
 Description-Content-Type: text/markdown
-
-
-# nzshm-runzi
-Python tools for running, scheduling, collecting inputs &amp; outputs of NZSHM jobs on workstations and HPC cluster
-
-

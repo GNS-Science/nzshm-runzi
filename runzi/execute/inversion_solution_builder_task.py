@@ -52,7 +52,7 @@ class BuilderTask():
             self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     def run(self, task_arguments, job_arguments):
-
+        
         # Run the task....
         ta = task_arguments
 
