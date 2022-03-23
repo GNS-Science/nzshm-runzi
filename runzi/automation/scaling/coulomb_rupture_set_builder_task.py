@@ -42,7 +42,7 @@ class RuptureSetBuilderTask():
         self._output_folder = PurePath(job_args.get('working_path')) #.joinpath('tmp').joinpath(dt.datetime.utcnow().isoformat().replace(':','-'))
 
         #setup the csv (backup) task recorder
-        self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
+        # self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
 
         if self.use_api:
             headers={"x-api-key":API_KEY}
@@ -66,11 +66,11 @@ class RuptureSetBuilderTask():
 
         environment = {
             "host": platform.node(),
-            "gitref_opensha":self._repoheads['opensha'],
-            "gitref_nzshm-opensha":self._repoheads['nzshm-opensha'],
-            "gitref_nzshm-runzi":self._repoheads['nzshm-runzi'],
+            # "gitref_opensha":self._repoheads['opensha'],
+            # "gitref_nzshm-opensha":self._repoheads['nzshm-opensha'],
+            # "gitref_nzshm-runzi":self._repoheads['nzshm-runzi'],
             "java_threads": job_arguments["java_threads"],
-            "proc_count": job_arguments["PROC_COUNT"],
+            "proc_count": job_arguments["PROC_COUNT"],  
             "jvm_heap_max": job_arguments["JVM_HEAP_MAX"] }
 
         if self.use_api:
@@ -102,11 +102,11 @@ class RuptureSetBuilderTask():
             .setAdaptiveSectFract(float(ta["thinning_factor"]))\
             .setMinSubSectsPerParent(int(ta["min_sub_sects_per_parent"]))\
             .setMinSubSections(int(ta["min_sub_sections"]))\
-            .setFaultModel(ta["fault_model"])\
+            .setFaultModel(ta["fault_model"])
             #.setCmlRakeThresh(0.0) #TURN IT OFF
 
 
-        if ta['fault_model'] == "CFM_1_0_DOM_SANSTVZ":
+        if "CFM_1_0" in ta['fault_model']:
             tvzDomain = "4"
             self._builder \
                 .setScaleDepthIncludeDomain(tvzDomain, ta['depth_scaling_tvz'])\
