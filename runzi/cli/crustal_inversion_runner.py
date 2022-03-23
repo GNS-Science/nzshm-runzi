@@ -42,9 +42,34 @@ def run_crustal_inversion(config):
     for key, value in args.items():
         args_list.append(dict(k=key, v=value))
 
-    file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
-    rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+    # for a file id that is a single rupture set
+    
+    #rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
+    # for file_id that is a GT
+    # TODO: determine is ID is for a GT or single task and call appropriate get_output...
+
+
+    try: # GT ID
+        file_generator = get_output_file_ids(toshi_api, file_id)
+        rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+        print('GT ID')
+    except: # single file ID
+        file_generator = get_output_file_id(toshi_api, file_id)
+        rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+        print('file ID')
+    
+    
+
+
+    #add extra GT meta data gleaned from rupture_sets for TUI
+    # TODO
+    distances = []
+    for (rid, rupture_set_info) in rupture_sets.items():
+        distances.append(rupture_set_info['info']['max_jump_distance'])
+
+    args_list.append(dict(k="max_jump_distances", v=distances))
+    
     if USE_API:
         #create new task in toshi_api
         gt_args = CreateGeneralTaskArgs(

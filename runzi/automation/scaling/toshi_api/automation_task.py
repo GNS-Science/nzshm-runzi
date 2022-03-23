@@ -10,6 +10,11 @@ import requests
 
 from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 
+import logging
+log = logging.getLogger(__name__)
+# log.setLevel(logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
+
 class AutomationTask(object):
 
     def __init__(self, api):
@@ -44,7 +49,7 @@ class AutomationTask(object):
         if environment:
             qry = qry.replace("##ENVIRONMENT##", kvl_to_graphql('environment', environment))
 
-        print(qry)
+        log.debug(f'create_task() qry: {qry}')
         self.validate_variables(self.get_example_create_variables(), input_variables)
 
         executed = self.api.run_query(qry, input_variables)
@@ -113,7 +118,7 @@ class AutomationTask(object):
         if metrics:
             qry = qry.replace("##METRICS##", kvl_to_graphql('metrics', metrics))
 
-        print(qry)
+        log.debug(f'complete_task() qry: {qry}')
 
         self.validate_variables(self.get_example_complete_variables(), input_variables)
         executed = self.api.run_query(qry, input_variables)

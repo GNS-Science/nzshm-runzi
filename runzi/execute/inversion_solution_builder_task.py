@@ -20,6 +20,17 @@ from runzi.automation.scaling.file_utils import download_files, get_output_file_
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL)
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
+loglevel = logging.INFO
+logging.getLogger('py4j.java_gateway').setLevel(loglevel)
+logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
+logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
+logging.getLogger('urllib3').setLevel(loglevel)
+logging.getLogger('git.cmd').setLevel(loglevel)
+
+log = logging.getLogger(__name__)
 
 class BuilderTask():
     """
@@ -41,7 +52,7 @@ class BuilderTask():
             self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     def run(self, task_arguments, job_arguments):
-
+        
         # Run the task....
         ta = task_arguments
 
@@ -49,7 +60,7 @@ class BuilderTask():
 
         API_GitVersion = self._gateway.entry_point.getGitVersion()
 
-        print(f"Running nzshm-opensha {API_GitVersion}")
+        log.info(f"Running nzshm-opensha {API_GitVersion}")
 
         initial_solution_id = ta.get('initial_solution_id')
         if initial_solution_id:
@@ -111,6 +122,9 @@ class BuilderTask():
                     float(ta.get('mfd_uncertainty_scalar')))
             else:
                 raise ValueError("Neither eq/ineq , nor uncertainty weights provided for MFD constraint setup")
+
+            enable_tvz_mfd = ta.get('enable_tvz_mfd',True)
+            inversion_runner.setEnableTvzMFDs(enable_tvz_mfd)
 
             minMagSans = float(ta['min_mag_sans'])
             minMagTvz = float(ta['min_mag_tvz'])
@@ -206,21 +220,21 @@ class BuilderTask():
             inversion_runner.setCoolingSchedule(ta['cooling_schedule'])
 
         #int(ta['max_inversion_time'] * 60))\
-
-        print("Starting inversion of up to %s minutes" % ta['max_inversion_time'])
-        print("======================================")
+        
+        log.info("Starting inversion of up to %s minutes" % ta['max_inversion_time'])
+        log.info("======================================")
         inversion_runner.runInversion()
 
         output_file = str(PurePath(job_arguments['working_path'], f"NZSHM22_InversionSolution-{task_id}.zip"))
         #name the output file
         # outputfile = self._output_folder.joinpath(inversion_runner.getDescriptiveName()+ ".zip")
-        # print("building %s started at %s" % (outputfile, dt.datetime.utcnow().isoformat()), end=' ')
+        # log.info("building %s started at %s" % (outputfile, dt.datetime.utcnow().isoformat()), end=' ')
 
         # output_file = str(PurePath(job_arguments['output_file']))
         inversion_runner.writeSolution(output_file)
 
         t1 = dt.datetime.utcnow()
-        print("Inversion took %s secs" % (t1-t0).total_seconds())
+        log.info("Inversion took %s secs" % (t1-t0).total_seconds())
 
         #capture task metrics
         duration = (dt.datetime.utcnow() - t0).total_seconds()
@@ -259,7 +273,7 @@ class BuilderTask():
             #upload the task output
             inversion_id = self._toshi_api.inversion_solution.upload_inversion_solution(task_id, filepath=output_file,
                 meta=task_arguments, metrics=metrics)
-            print("created inversion solution: ", inversion_id)
+            log.info(f"created inversion solution: {inversion_id}")
 
             # # now get the MFDS...
             for table_type, table_rows in mfd_table_rows.items():
@@ -284,11 +298,11 @@ class BuilderTask():
                     table_type=table_type,
                     dimensions=None,
                 )
-                print("created & linked table: ", mfd_table_id)
+                log.info(f"created & linked table: {mfd_table_id}")
 
         else:
-            print(metrics)
-        print("; took %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+            log.info(metrics)
+        log.info("; took %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
 
 
 def get_repo_heads(rootdir, repos):
@@ -315,8 +329,8 @@ if __name__ == "__main__":
         config = json.loads(urllib.parse.unquote(args.config))
 
     # maybe the JVM App is a little slow to get listening
-    time.sleep(5)
+    time.sleep(3)
     task = BuilderTask(config['job_arguments'])
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(config['job_arguments']['task_id'] * 0.666 * 2 * 4)
+    time.sleep(config['job_arguments']['task_id'] * 0.666 )
     task.run(**config)

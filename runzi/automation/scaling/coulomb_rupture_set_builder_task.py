@@ -15,6 +15,7 @@ from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.general_task import GeneralTask
 from nshm_toshi_client.task_relation import TaskRelation
 
+import logging
 
 import time
 
@@ -123,7 +124,7 @@ class RuptureSetBuilderTask():
             outputfile = self._output_folder.joinpath(f"NZSHM22_RuptureSet-{task_id}.zip")
         else:
             outputfile = self._output_folder.joinpath(self._builder.getDescriptiveName()+ ".zip")
-        print("building %s started at %s" % (outputfile, dt.datetime.utcnow().isoformat()), end=' ')
+        log.info("building %s started at %s" % (outputfile, dt.datetime.utcnow().isoformat()))
 
         self._builder \
             .setNumThreads(int(job_arguments["java_threads"]))\
@@ -155,7 +156,7 @@ class RuptureSetBuilderTask():
             pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
             self._ruptgen_api.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
-        print("; took %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+        log.info("build took %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
 
 
 def get_repo_heads(rootdir, repos):
@@ -169,6 +170,17 @@ def get_repo_heads(rootdir, repos):
 
 if __name__ == "__main__":
 
+    logging.basicConfig(level=logging.INFO)
+
+    loglevel = logging.INFO
+    logging.getLogger('py4j.java_gateway').setLevel(loglevel)
+    logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
+    logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
+    logging.getLogger('urllib3').setLevel(loglevel)
+    logging.getLogger('git.cmd').setLevel(loglevel)
+
+    log = logging.getLogger(__name__)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("config")
     args = parser.parse_args()
@@ -178,7 +190,7 @@ if __name__ == "__main__":
     config = json.load(f)
 
     # maybe the JVM App is a little slow to get listening
-    time.sleep(5)
+    time.sleep(3)
     if CLUSTER_MODE:
 
         # Wait for some more time, scaled by taskid to avoid S3 consistency issue

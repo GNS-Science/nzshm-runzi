@@ -23,6 +23,8 @@ from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
     API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, EnvMode )
 
+import logging
+
 INITIAL_GATEWAY_PORT = 26533
 
 def run_tasks(general_task_id, solutions, subtask_arguments):
@@ -34,7 +36,7 @@ def run_tasks(general_task_id, solutions, subtask_arguments):
         task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
 
     # def run_subtask(forecast_timespans, bg_seismicitys, iml_periods, gmpes):
-    #     print ( forecast_timespans, bg_seismicitys, iml_periods, gmpes )
+    #     log.info ( forecast_timespans, bg_seismicitys, iml_periods, gmpes )
 
     for (sid, rupture_set_info) in solutions.items():
 
@@ -51,7 +53,7 @@ def run_tasks(general_task_id, solutions, subtask_arguments):
             fault_model = fault_model,
             subtask_arguments = subtask_arguments,
             )
-        print(task_arguments)
+        log.info(task_arguments)
 
         job_arguments = dict(
             task_id = task_count,
@@ -93,6 +95,16 @@ if __name__ == "__main__":
 
     t0 = dt.datetime.utcnow()
 
+    logging.basicConfig(level=logging.INFO)
+    loglevel = logging.INFO
+    logging.getLogger('py4j.java_gateway').setLevel(loglevel)
+    logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
+    logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
+    logging.getLogger('urllib3').setLevel(loglevel)
+    logging.getLogger('git.cmd').setLevel(loglevel)
+
+    log = logging.getLogger(__name__)
+
     GENERAL_TASK_ID = None
     # If you wish to override something in the main config, do so here ..
     WORKER_POOL_SIZE = 2
@@ -109,7 +121,7 @@ if __name__ == "__main__":
     # """
 
     def call_script(script_name):
-        print("call_script with:", script_name)
+        log.info(f"call_script with: {script_name}")
         if CLUSTER_MODE:
             check_call(['qsub', script_name])
         else:
@@ -139,16 +151,16 @@ if __name__ == "__main__":
     #R2VuZXJhbFRhc2s6NTkyOHFpTjlE  Modular Inversions: Randomness test 2 (4)
     #R2VuZXJhbFRhc2s6NTkzM0RkaDNz  Modular Inversions: Randomness test 3 (24)
     scripts = []
-    for inversion_task_id in ["R2VuZXJhbFRhc2s6ODQ4OEthSkVN", "R2VuZXJhbFRhc2s6ODQzM2prcFNt"]:
+    for inversion_task_id in ["R2VuZXJhbFRhc2s6MTAwMDQ="]:
         file_generator = get_output_file_ids(toshi_api, inversion_task_id)
         solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False, skip_download=(CLUSTER_MODE == EnvMode['AWS']))
 
         for script_file in run_tasks(GENERAL_TASK_ID, solutions, args):
-            print('scheduling: ', script_file)
+            log.info(f'scheduling: {script_file}')
             scripts.append(script_file)
 
     if CLUSTER_MODE == EnvMode['LOCAL']:
-        print('task count: ', len(scripts))
+        log.info(f'task count: {len(scripts)}')
         pool = Pool(WORKER_POOL_SIZE)
         pool.map(call_script, scripts)
         pool.close()
@@ -162,11 +174,11 @@ if __name__ == "__main__":
             endpoint_url='https://batch.us-east-1.amazonaws.com')
 
         for script_or_config in scripts:
-            print('AWS_CONFIG: ', script_or_config)
+            log.info(f'AWS_CONFIG: {script_or_config}')
             res = batch_client.submit_job(**script_or_config)
-            print(res)
+            log.info(res)
 
-    print('worker count: ', WORKER_POOL_SIZE)
-    print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
+    log.info(f'worker count: {WORKER_POOL_SIZE}')
+    log.info(f'GENERAL_TASK_ID: {GENERAL_TASK_ID}')
 
-    print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+    log.info("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
