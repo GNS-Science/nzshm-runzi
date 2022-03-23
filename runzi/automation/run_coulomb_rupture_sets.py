@@ -26,14 +26,14 @@ logging.basicConfig(level=logging.INFO)
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
-JVM_HEAP_MAX = 36
+JVM_HEAP_MAX = 32
 JAVA_THREADS = 16
 INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 
 #If using API give this task a descriptive setting...
-TASK_TITLE = "Build Coulomb full CFM 0.9D D90 with corrected rake orientation"
+TASK_TITLE = "Build Coulomb CFM 1.0 sans with regional depth scaling"
 
-TASK_DESCRIPTION = """
+TASK_DESCRIPTION = """used to test effect of code change to Coulomb builder against older rupture sets that use CFM_1_0_DOM_SANSTVZ
 """
 
 def build_tasks(general_task_id, args):
@@ -53,6 +53,7 @@ def build_tasks(general_task_id, args):
             min_sub_sections, max_jump_distance,
             adaptive_min_distance, thinning_factor,
             max_sections,
+            depth_scaling
             # use_inverted_rake
             )\
             in itertools.product(
@@ -60,6 +61,7 @@ def build_tasks(general_task_id, args):
                 args['min_sub_sections_list'], args['jump_limits'],
                 args['adaptive_min_distances'], args['thinning_factors'],
                 args['max_sections'],
+                args['depth_scaling']
                 # args['use_inverted_rakes']
                 ):
 
@@ -74,6 +76,8 @@ def build_tasks(general_task_id, args):
             adaptive_min_distance=adaptive_min_distance,
             thinning_factor=thinning_factor,
             scaling_relationship='SIMPLE_CRUSTAL', #TMG_CRU_2017, 'SHAW_2009_MOD' default
+            depth_scaling_tvz = depth_scaling['tvz'],
+            depth_scaling_sans = depth_scaling['sans']
             # use_inverted_rake=use_inverted_rake
             )
 
@@ -129,11 +133,13 @@ if __name__ == "__main__":
 
     #limit test size, nomally 1000 for NZ CFM
     MAX_SECTIONS = 2000
-
+        
     args = dict(
         ##Test parameters
-        models = ["CFM_0_9D_SANSTVZ_D90"], #, "CFM_0_9_ALL_D90","CFM_0_9_SANSTVZ_2010"]
-        jump_limits = [15,13,11,8,6,4,2,1], #default is 15
+        models = ["CFM_1_0_DOM_SANSTVZ"], #, "CFM_0_9_ALL_D90","CFM_0_9_SANSTVZ_2010"]
+        depth_scaling = [{'tvz': 0.667, 'sans': 0.8}],
+        # jump_limits = [15,10,5,1], #default is 15
+        jump_limits = [15,], #default is 15
         adaptive_min_distances = [6,], #9] default is 6
         thinning_factors = [0,], #5, 0.1, 0.2, 0.3] #, 0.05, 0.1, 0.2]
         min_sub_sects_per_parents = [2], #3,4,5]
@@ -144,7 +150,7 @@ if __name__ == "__main__":
 
     args_list = []
     for key, value in args.items():
-        args_list.append(dict(k=key, v=value))
+        args_list.append(dict(k=key, v=str(value)))
 
     if USE_API:
         #create new task in toshi_api
@@ -184,3 +190,6 @@ if __name__ == "__main__":
     pool.join()
 
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+
+
+
