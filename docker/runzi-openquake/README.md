@@ -45,7 +45,7 @@ docker run -it --rm \
 -e NZSHM22_TOSHI_API_URL \
 -e NZSHM22_SCRIPT_CLUSTER_MODE \
 -e NZSHM22_S3_REPORT_BUCKET=BLAH \
-nzshm22/runzi-openquake
+
 ```
 
 ### TEST EXAMPLE
@@ -84,5 +84,13 @@ user selects file
 ...>export y/N
 
 
-
-
+```
+NZSHM22_FATJAR=/home/chrisbc/DEV/GNS/opensha-modular/nzshm-runzi/docker/runzi-opensha/nzshm-opensha/build/libs/nzshm-opensha-all-reportpagegen-rupset.jar
+NZSHM22_TOSHI_API_KEY=8o9XVIVrOh6J9qfp0hW3d3c1S7WyT2U69YzRtgIE
+NZSHM22_TOSHI_S3_URL=https://nzshm22-toshi-api-prod.s3.amazonaws.com
+NZSHM22_S3_REPORT_BUCKET=nzshm22-static-reports
+NZSHM22_SCRIPT_WORK_PATH=/home/chrisbc/DEV/GNS/AWS_S3_DATA/WORKING
+NZSHM22_TOSHI_API_URL=https://aihssdkef5.execute-api.ap-southeast-2.amazonaws.com/prod/graphql
+NZSHM22_SOLVIS_API_URL=https://mmbzw56f1h.execute-api.ap-southeast-2.amazonaws.com/prod
+NZSHM22_SOLVIS_API_KEY=5krfgPtC7P9Ghp8S04PS05oTpoofeL664rjnMWJM
+```

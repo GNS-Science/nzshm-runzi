@@ -15,7 +15,7 @@ from runzi.automation.scaling.local_config import WORK_PATH, S3_UPLOAD_WORKERS
 logging.basicConfig(level="INFO")
 S3_REPORT_BUCKET_ROOT = 'opensha/DATA'
 
-def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT):
+def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT, force_upload=False):
     info(f"Beginning bucket upload... to {bucket}/{root_path}/{id}")
     t0 = dt.datetime.utcnow()
     local_directory = WORK_PATH + '/' + id
@@ -30,13 +30,13 @@ def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT):
             s3_path = os.path.join(root_path, id, relative_path)
 
             file_list.append((local_path, bucket, s3_path))
+
     def upload(args):
         """Map function for pool, uploads to S3 Bucket if it doesn't exist already"""
         local_path, bucket, s3_path = args[0], args[1], args[2]
 
-        if path_exists(s3_path, bucket):
+        if not force_upload and path_exists(s3_path, bucket):
             info("Path found on S3! Skipping %s to %s" % (s3_path, bucket))
-
         else:
             try:
                 client.upload_file(local_path, bucket, s3_path,

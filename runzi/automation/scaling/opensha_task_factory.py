@@ -1,7 +1,7 @@
 #!python3
 
 """
-Wrapper script that produces a job that can be run either locally or
+Wrapper script that produces an Opensha job that can be run either locally or
 to a cluster using PBS
 
 The job is responsible for

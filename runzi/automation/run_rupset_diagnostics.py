@@ -109,12 +109,7 @@ if __name__ == "__main__":
         toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
         #get input files from API
-        #upstream_task_id = "R2VuZXJhbFRhc2s6MTk0NTJNS2dN" ##
-        #upstream_task_id = "R2VuZXJhbFRhc2s6NzE2YWV2a3E=" ##test
-        #upstream_task_id = "R2VuZXJhbFRhc2s6NzIybjVvc0I=" ## test 2
-        upstream_task_id = "R2VuZXJhbFRhc2s6Mjg5NVpXNUZQ" ## PROD
-        #upstream_task_id = "R2VuZXJhbFRhc2s6MTA0OXFKNWRQ" ## TEST
-        upstream_task_id = "RmlsZToxMDAwMzM="
+        upstream_task_id = "R2VuZXJhbFRhc2s6MTAwMDU4"
 
         """
         CHOOSE ONE OF:

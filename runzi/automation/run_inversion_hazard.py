@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
     GENERAL_TASK_ID = None
     # If you wish to override something in the main config, do so here ..
-    WORKER_POOL_SIZE = 2
+    WORKER_POOL_SIZE = 1
     JVM_HEAP_MAX = 20
     JAVA_THREADS = 4
     HAZARD_MAX_TIME = 15
@@ -151,7 +151,9 @@ if __name__ == "__main__":
     #R2VuZXJhbFRhc2s6NTkyOHFpTjlE  Modular Inversions: Randomness test 2 (4)
     #R2VuZXJhbFRhc2s6NTkzM0RkaDNz  Modular Inversions: Randomness test 3 (24)
     scripts = []
+
     for inversion_task_id in ["R2VuZXJhbFRhc2s6MTAwMDQ="]:
+
         file_generator = get_output_file_ids(toshi_api, inversion_task_id)
         solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False, skip_download=(CLUSTER_MODE == EnvMode['AWS']))
 
