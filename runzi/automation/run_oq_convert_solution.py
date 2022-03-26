@@ -32,12 +32,9 @@ def build_tasks(new_gt_id, src_general_tasks, args, task_type, model_type):
         solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False,
             skip_download=(CLUSTER_MODE == EnvMode['AWS']))
 
-        # print(solutions)
-
         for script_file in build_hazard_tasks(new_gt_id, task_type, model_type, solutions, args):
             print('scheduling: ', script_file)
             scripts.append(script_file)
-            assert 0
 
     if CLUSTER_MODE == EnvMode['LOCAL']:
         print('task count: ', len(scripts))
@@ -57,6 +54,8 @@ def build_tasks(new_gt_id, src_general_tasks, args, task_type, model_type):
             print('AWS_CONFIG: ', script_or_config)
             res = batch_client.submit_job(**script_or_config)
             print(res)
+
+            break #Testing
 
     print('worker count: ', WORKER_POOL_SIZE)
     print("GENERAL_TASK_ID:", GENERAL_TASK_ID)

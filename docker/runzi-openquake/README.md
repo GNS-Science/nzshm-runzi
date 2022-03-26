@@ -7,7 +7,7 @@ a docker image tha integrates Openquake, the opensha converter, and RUnzi
 # BUILD
 
 ```
-## previous build be4454febbb1
+## previous builds: be0d236ec1b7, be4454febbb1
 docker pull openquake/engine:nightly
 docker build . -t nzshm22/runzi-openquake
 ```
@@ -58,6 +58,33 @@ docker run -u root -it --rm \
 -s bash
 ```
 
+### for linux only - with localstack ...
+
+```
+docker run -it --rm -u root \
+--net=host \
+-v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
+-v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
+-e AWS_PROFILE=toshi_batch_devops \
+-e NZSHM22_TOSHI_API_ENABLED=Yes \
+-e NZSHM22_TOSHI_S3_URL \
+-e NZSHM22_TOSHI_API_URL \
+-e NZSHM22_SCRIPT_CLUSTER_MODE \
+nzshm22/runzi-openquake:latest \
+-s bash
+```
+
+## Manual conversion
+
+```
+python3 nzshm-runzi/runzi/execute/prepare_inputs.py SW52ZXJzaW9uU29sdXRpb246NTYyNC4wUnZKeFg=
+python nzshm-runzi/runzi/automation/run_oq_convert_solution.py
+
+#/WORKING/task_1.sh
+cat /WORKING/python_script.1.log
+```
+
+
 in the container ...
 
 in /app
@@ -86,7 +113,7 @@ user selects file
 
 ```
 NZSHM22_FATJAR=/home/chrisbc/DEV/GNS/opensha-modular/nzshm-runzi/docker/runzi-opensha/nzshm-opensha/build/libs/nzshm-opensha-all-reportpagegen-rupset.jar
-NZSHM22_TOSHI_API_KEY=8o9XVIVrOh6J9qfp0hW3d3c1S7WyT2U69YzRtgIE
+NZSHM22_TOSHI_API_KEY=never_push_to_github
 NZSHM22_TOSHI_S3_URL=https://nzshm22-toshi-api-prod.s3.amazonaws.com
 NZSHM22_S3_REPORT_BUCKET=nzshm22-static-reports
 NZSHM22_SCRIPT_WORK_PATH=/home/chrisbc/DEV/GNS/AWS_S3_DATA/WORKING

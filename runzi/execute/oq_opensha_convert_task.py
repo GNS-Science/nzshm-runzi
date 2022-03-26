@@ -5,8 +5,9 @@ import base64
 import uuid
 
 import os
-import sys
-import toml
+
+import zipfile
+
 from pathlib import Path, PurePath
 from importlib import import_module
 import datetime as dt
@@ -17,10 +18,10 @@ from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL)
 from nshm_toshi_client.task_relation import TaskRelation #TODO deprecate
 
-required_imports = [
-    'openquake.baselib.sap',
-    'openquake.hazardlib.sourcewriter.write_source_model',
-    'openquake.converters.ucerf.parsers.sections_geojson.get_multi_fault_source' ]
+from openquake.baselib import sap
+from openquake.hazardlib.sourcewriter import write_source_model
+from openquake.converters.ucerf.parsers.sections_geojson import (
+    get_multi_fault_source)
 
 class BuilderTask():
 
@@ -65,51 +66,62 @@ class BuilderTask():
 
 
         # Run the task....
-        src_folder = Path(self._output_folder, ta['solution_id'])
-        src_folder.mkdir(parents=True, exist_ok=True)
+        src_folder = Path(self._output_folder, "downloads", ta['solution_id'])
+        #src_folder.mkdir(parents=True, exist_ok=True)
 
-        def convert():
+        # for filename in list(Path(src_folder).glob('*.zip')):
+        #get name of zifile like `NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MjQ4OVMycWNI.zip`
+        with zipfile.ZipFile(Path(src_folder, ta["file_name"]), 'r') as zip_ref:
+            zip_ref.extractall(src_folder)
+
+        def convert(config):
+
             for mod in required_imports:
                 import_module(mod)
+
+            dip_sd = config['rupture_sampling_distance_km']
+            strike_sd = dip_sd
+            source_id = config['solution_id']
+            source_name = config['solution_id']
+            tectonic_region_type = config['tectonic_region_type']
+            investigation_time = config['investigation_time_years']
 
             computed = get_multi_fault_source(src_folder, dip_sd, strike_sd, source_id,
                                                       source_name, tectonic_region_type,
                                                       investigation_time)
 
             print(computed)
-            Path(out_folder).mkdir(parents=True, exist_ok=True)
-            out_file = os.path.join(out_folder, f'{source_id}-ruptures.xml')
-            write_source_model(out_file, [computed], name=source_name, investigation_time=investigation_time)
-            print('Created output in: {:s}'.format(out_folder))
 
-            ##TODO zip this and return the archive path
+            out_file = os.path.join(self._output_folder, f'{source_id}-ruptures.xml')
+            write_source_model(out_file, [computed], name=source_name, investigation_time=investigation_time)
+
+            print(f'Created output in: {self._output_folder}')
+
+            # zip this and return the archive path
+            output_zip = Path(self._output_folder, ta["file_name"].replace('.zip', '_nrml.zip'))
+            print(f'output: {output_zip}')
+            zip = zipfile.ZipFile(output_zip, 'a')
+            for filename in list(Path(self._output_folder).glob(f'{source_id}*.xml')):
+                arcname = str(filename).replace(str(self._output_folder), '')
+                zip.write(filename, arcname )
+                print(f'archived {filename} as {arcname}')
+
+            return output_zip
 
         #DOIT
-        convert()
+        output_zip = convert(task_arguments)
 
         t1 = dt.datetime.utcnow()
         print("Conversion took %s secs" % (t1-t0).total_seconds())
 
         if self.use_api:
-            #record the completed task
-
-            #the geojson
-            #self._toshi_api.automation_task.upload_task_file(task_id, result["geofile"], 'WRITE')
-
-            # #the python log files
-            # python_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
-            # self._toshi_api.automation_task.upload_task_file(task_id, python_log_file, 'WRITE')
 
             #upload the task output
             nrml_id = self._toshi_api.inversion_solution_nrml.upload_inversion_solution_nrml(
                 task_id,
                 source_solution_id=input_file_id,
-                filepath="requirements.txt",
+                filepath=output_zip,
                 meta=task_arguments, metrics=None)
-                # meta=None,  metrics=None)
-
-                #     .upload_inversion_solution(task_id,
-                #         filepath=result['solution'],
 
             print("created nrml: ", nrml_id)
 

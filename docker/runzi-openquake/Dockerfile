@@ -19,13 +19,15 @@ RUN pip install pytest
 # AND for now we're mapping in the code like so `docker run  -it --rm -v $(pwd)/../../../ucerf:/app/ucerf`
 # AND then running pip install -e . in the ucerf folder to test
 
+USER openquake
+
 # Install Runzi TODO:is this only for these test configs ??
-WORKDIR /app
+WORKDIR /home/app
 RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 
 RUN git fetch
-# RUN git checkout feature/56_cli_env_display
+RUN git checkout feature/48-oq-hazard-part2
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 
