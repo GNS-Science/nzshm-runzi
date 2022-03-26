@@ -12,7 +12,7 @@ from nshm_toshi_client.toshi_file import ToshiFile
 from nshm_toshi_client.toshi_task_file import ToshiTaskFile
 
 from .inversion_solution import InversionSolution
-from .general_task import GeneralTask, CreateGeneralTaskArgs
+from .general_task import GeneralTask, CreateGeneralTaskArgs, SubtaskType
 from .automation_task import AutomationTask
 
 class ToshiApi(ToshiClientBase):

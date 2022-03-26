@@ -1,16 +1,22 @@
 #!python3 oq_opensha_convert.py
+import argparse
+import json
+import base64
+import uuid
 
 import os
 import sys
 import toml
-from pathlib import Path
+from pathlib import Path, PurePath
 from importlib import import_module
-
+import datetime as dt
+from dateutil.tz import tzutc
 
 required_imports = [
     'openquake.baselib.sap',
     'openquake.hazardlib.sourcewriter.write_source_model',
     'openquake.converters.ucerf.parsers.sections_geojson.get_multi_fault_source' ]
+
 
 class BuilderTask():
 
@@ -51,7 +57,7 @@ class BuilderTask():
 
 
         # Run the task....
-        src_folder = Path(self._output_folder, ta['file_id'])
+        src_folder = Path(self._output_folder, ta['solution_id'])
         src_folder.mkdir(parents=True, exist_ok=True)
 
         for mod in required_imports:

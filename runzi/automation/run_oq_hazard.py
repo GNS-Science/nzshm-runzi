@@ -4,7 +4,7 @@
 This script produces tasks in either AWS, PBS or LOCAL that will produce hazard calcluations for a given
 source.
 
-soucrce can be
+source can be
 
  -  InversionSolution
   - A GT containing Inversion Solutions
@@ -73,10 +73,7 @@ if __name__ == "__main__":
     HAZARD_MAX_TIME = 15
     USE_API = True
 
-    # #If using API give this task a descriptive setting...
-    # TASK_TITLE = "Inversion diags"
-    # TASK_DESCRIPTION = """
-    # """
+
 
     def call_script(script_name):
         print("call_script with:", script_name)

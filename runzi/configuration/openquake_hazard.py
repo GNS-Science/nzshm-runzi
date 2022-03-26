@@ -7,9 +7,8 @@ from pathlib import PurePath
 
 import datetime as dt
 from dateutil.tz import tzutc
-from enum import Enum
 
-from scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
+from scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
 
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config
@@ -22,19 +21,14 @@ from scaling.local_config import (WORK_PATH,
     USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-class SubtaskType(Enum):
-    HAZARD = 10
-    CONVERT_INVERSION = 20
-
-def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, solutions, subtask_arguments):
+def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: str, solutions, subtask_arguments):
     task_count = 0
     factory_class = get_factory(CLUSTER_MODE)
 
     if subtask_type == SubtaskType.HAZARD:
         factory_task = runzi.execute.openquake_hazard_task
-    elif subtask_type == SubtaskType.CONVERT_INVERSION:
+    elif subtask_type == SubtaskType.SOLUTION_TO_NRML:
         factory_task = runzi.execute.oq_opensha_convert_task
-
 
     task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
@@ -46,9 +40,9 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, solution
         # # logic tree for the ground-motion characterisation
         # # Use "Subduction Interface" or "Active Shallow Crust"
         # tectonic_region_type = "Subduction Interface"
-        if solution_info['info']['fault_model'][:4] == "CFM":
+        if model_type == "CRUSTAL":
             tectonic_region_type = "Active Shallow Crust"
-        else:
+        elif model_type == "SUBDUCTION":
             tectonic_region_type = "Subduction Interface"
 
         task_arguments = dict(
@@ -69,13 +63,13 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, solution
             )
 
         if CLUSTER_MODE == EnvMode['AWS']:
-            job_name = f"Runzi-automation-oq-hazard-{task_count}"
+            job_name = f"Runzi-automation-oq-convert-solution-{task_count}"
             config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
 
             yield get_ecs_job_config(job_name,
                 solution_info['id'], config_data,
-                toshi_api_url=API_URL, toshi_s3_url=None, toshi_report_bucket=S3_REPORT_BUCKET,
-                task_module=runzi.execute.openquake_hazard_task.__name__,
+                toshi_api_url=API_URL, toshi_s3_url=None, toshi_report_bucket=None,
+                task_module=runzi.execute.oq_opensha_convert_task.__name__,
                 time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4)
 
         else:
