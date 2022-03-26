@@ -8,28 +8,22 @@ from pathlib import PurePath
 import datetime as dt
 from dateutil.tz import tzutc
 
-from scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
 
+from runzi.automation.scaling.toshi_api import SubtaskType
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config
 
 import runzi.execute.openquake_hazard_task
 import runzi.execute.oq_opensha_convert_task
 
-# Set up your local config, from environment variables, with some sone defaults
-from scaling.local_config import (WORK_PATH,
-    USE_API, JAVA_THREADS,
+from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: str, solutions, subtask_arguments):
     task_count = 0
     factory_class = get_factory(CLUSTER_MODE)
 
-    if subtask_type == SubtaskType.HAZARD:
-        factory_task = runzi.execute.openquake_hazard_task
-    elif subtask_type == SubtaskType.SOLUTION_TO_NRML:
-        factory_task = runzi.execute.oq_opensha_convert_task
-
+    factory_task = runzi.execute.oq_opensha_convert_task
     task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
     for (sid, solution_info) in solutions.items():
@@ -50,7 +44,8 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years
             tectonic_region_type = tectonic_region_type,
             solution_id = str(solution_info['id']),
-            file_name = solution_info['info']['file_name']
+            file_name = solution_info['info']['file_name'],
+            model_type=model_type
             )
 
         print(task_arguments)

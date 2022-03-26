@@ -12,11 +12,15 @@ from importlib import import_module
 import datetime as dt
 from dateutil.tz import tzutc
 
+from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
+
+from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL)
+from nshm_toshi_client.task_relation import TaskRelation #TODO deprecate
+
 required_imports = [
     'openquake.baselib.sap',
     'openquake.hazardlib.sourcewriter.write_source_model',
     'openquake.converters.ucerf.parsers.sections_geojson.get_multi_fault_source' ]
-
 
 class BuilderTask():
 
@@ -25,6 +29,10 @@ class BuilderTask():
         self.use_api = job_args.get('use_api', False)
         self._output_folder = PurePath(job_args.get('working_path'))
 
+        if self.use_api:
+            headers={"x-api-key":API_KEY}
+            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
     def run(self, task_arguments, job_arguments):
         # Run the task....
@@ -38,8 +46,8 @@ class BuilderTask():
             task_id = self._toshi_api.automation_task.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
-                    task_type="INVERSION",
-                    model_type=ta['config_type'].upper(),
+                    task_type=SubtaskType.SOLUTION_TO_NRML.name,
+                    model_type=ta['model_type'].upper(),
                     ),
                 arguments=task_arguments,
                 environment=environment
@@ -60,18 +68,24 @@ class BuilderTask():
         src_folder = Path(self._output_folder, ta['solution_id'])
         src_folder.mkdir(parents=True, exist_ok=True)
 
-        for mod in required_imports:
-            import_module(mod)
+        def convert():
+            for mod in required_imports:
+                import_module(mod)
 
-        computed = get_multi_fault_source(src_folder, dip_sd, strike_sd, source_id,
-                                                  source_name, tectonic_region_type,
-                                                  investigation_time)
+            computed = get_multi_fault_source(src_folder, dip_sd, strike_sd, source_id,
+                                                      source_name, tectonic_region_type,
+                                                      investigation_time)
 
-        print(computed)
-        Path(out_folder).mkdir(parents=True, exist_ok=True)
-        out_file = os.path.join(out_folder, f'{source_id}-ruptures.xml')
-        write_source_model(out_file, [computed], name=source_name, investigation_time=investigation_time)
-        print('Created output in: {:s}'.format(out_folder))
+            print(computed)
+            Path(out_folder).mkdir(parents=True, exist_ok=True)
+            out_file = os.path.join(out_folder, f'{source_id}-ruptures.xml')
+            write_source_model(out_file, [computed], name=source_name, investigation_time=investigation_time)
+            print('Created output in: {:s}'.format(out_folder))
+
+            ##TODO zip this and return the archive path
+
+        #DOIT
+        convert()
 
         t1 = dt.datetime.utcnow()
         print("Conversion took %s secs" % (t1-t0).total_seconds())
@@ -80,17 +94,24 @@ class BuilderTask():
             #record the completed task
 
             #the geojson
-            self._toshi_api.automation_task.upload_task_file(task_id, result["geofile"], 'WRITE')
+            #self._toshi_api.automation_task.upload_task_file(task_id, result["geofile"], 'WRITE')
 
             # #the python log files
             # python_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
             # self._toshi_api.automation_task.upload_task_file(task_id, python_log_file, 'WRITE')
 
             #upload the task output
-            inversion_id = self._toshi_api.inversion_solution.upload_inversion_solution(task_id,
-                filepath=result['solution'],
-                meta=task_arguments, metrics=result['metrics'])
-            print("created inversion solution: ", inversion_id)
+            nrml_id = self._toshi_api.inversion_solution_nrml.upload_inversion_solution_nrml(
+                task_id,
+                source_solution_id=input_file_id,
+                filepath="requirements.txt",
+                meta=task_arguments, metrics=None)
+                # meta=None,  metrics=None)
+
+                #     .upload_inversion_solution(task_id,
+                #         filepath=result['solution'],
+
+            print("created nrml: ", nrml_id)
 
             done_args = {
              'task_id':task_id,
@@ -98,8 +119,7 @@ class BuilderTask():
              'result':"SUCCESS",
              'state':"DONE",
             }
-            self._toshi_api.automation_task.complete_task(done_args, result['metrics'])
-
+            self._toshi_api.automation_task.complete_task(done_args, {})
 
 if __name__ == "__main__":
 

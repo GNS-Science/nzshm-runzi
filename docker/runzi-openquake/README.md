@@ -16,7 +16,7 @@ docker build . -t nzshm22/runzi-openquake
 
 NZSHM22_SCRIPT_CLUSTER_MODE #one of LOCAL, CLUSTER, AWS
 NZSHM22_TOSHI_API_ENABLED
-NZSHM22_TOSHI_API_URL 		#default http://127.0.0.1:5000/graphql")
+NZSHM22_TOSHI_API_URL 		#default http://127.0.0.1:5000/graphql")  http://host.docker.internal/5000/graphql etc
 NZSHM22_TOSHI_S3_URL 		#default http://localhost:4569")
 
 # RUN

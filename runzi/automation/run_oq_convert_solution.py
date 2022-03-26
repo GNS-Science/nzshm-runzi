@@ -16,7 +16,7 @@ from subprocess import check_call
 from multiprocessing.dummy import Pool
 
 from scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
-from runzi.configuration.openquake_hazard import build_hazard_tasks, SubtaskType
+from runzi.configuration.oq_opensha_nrml_convert import build_hazard_tasks
 from scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 
 from scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
