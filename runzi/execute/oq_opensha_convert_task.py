@@ -76,9 +76,6 @@ class BuilderTask():
 
         def convert(config):
 
-            for mod in required_imports:
-                import_module(mod)
-
             dip_sd = config['rupture_sampling_distance_km']
             strike_sd = dip_sd
             source_id = config['solution_id']
