@@ -15,26 +15,29 @@ from dateutil.tz import tzutc
 from subprocess import check_call
 from multiprocessing.dummy import Pool
 
-from scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
+from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
 from runzi.configuration.oq_opensha_nrml_convert import build_hazard_tasks
-from scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
+from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 
-from scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
+from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-def build_tasks(new_gt_id, src_general_tasks, args, task_type, model_type):
+# If you wish to override something in the main config, do so here ..
+WORKER_POOL_SIZE = 1
+HAZARD_MAX_TIME = 15
+USE_API = True
 
-    pool = Pool(WORKER_POOL_SIZE)
+def schedule_tasks(scripts):
 
-    scripts = []
-    for gt_id in src_general_tasks:
-        file_generator = get_output_file_ids(toshi_api, gt_id)
-        solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False,
-            skip_download=(CLUSTER_MODE == EnvMode['AWS']))
-
-        for script_file in build_hazard_tasks(new_gt_id, task_type, model_type, solutions, args):
-            print('scheduling: ', script_file)
-            scripts.append(script_file)
+    def call_script(script_name):
+        print("call_script with:", script_name)
+        try:
+            if CLUSTER_MODE:
+                check_call(['qsub', script_name])
+            else:
+                check_call(['bash', script_name])
+        except Exception as err:
+            print(f"check_call err: {err}")
 
     if CLUSTER_MODE == EnvMode['LOCAL']:
         print('task count: ', len(scripts))
@@ -55,11 +58,20 @@ def build_tasks(new_gt_id, src_general_tasks, args, task_type, model_type):
             res = batch_client.submit_job(**script_or_config)
             print(res)
 
-            break #Testing
 
-    print('worker count: ', WORKER_POOL_SIZE)
-    print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
-    print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+def build_tasks(new_gt_id, args, task_type, model_type):
+
+    scripts = []
+    for source_gt_id in args['general_tasks']:
+        file_generator = get_output_file_ids(toshi_api, source_gt_id)
+        solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False,
+            skip_download=(CLUSTER_MODE == EnvMode['AWS']))
+
+        for script_file in build_hazard_tasks(new_gt_id, task_type, model_type, solutions, args, source_gt_id):
+            print('scheduling: ', script_file)
+            scripts.append(script_file)
+
+    return scripts
 
 
 if __name__ == "__main__":
@@ -80,22 +92,10 @@ if __name__ == "__main__":
 
     GENERAL_TASK_ID = None
 
-    # If you wish to override something in the main config, do so here ..
-    WORKER_POOL_SIZE = 1
-    HAZARD_MAX_TIME = 15
-    USE_API = True
-
     # #If using API give this task a descriptive setting...
     # #If using API give this task a descriptive setting...
     TASK_TITLE = "A produce some NRML configs from "
     TASK_DESCRIPTION = """first run locally """
-
-    def call_script(script_name):
-        print("call_script with:", script_name)
-        if CLUSTER_MODE:
-            check_call(['qsub', script_name])
-        else:
-            check_call(['bash', script_name])
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
@@ -103,11 +103,12 @@ if __name__ == "__main__":
     args = dict(
         rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km
         investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years
+        general_tasks = ["R2VuZXJhbFRhc2s6MjQ4ODdRTkhH"]
     )
 
     args_list = []
     for key, value in args.items():
-        args_list.append(dict(k=key, v=str(value)))
+        args_list.append(dict(k=key, v=value))
 
     task_type = SubtaskType.SOLUTION_TO_NRML
     model_type = 'CRUSTAL'
@@ -127,5 +128,14 @@ if __name__ == "__main__":
 
     print("GENERAL_TASK_ID:", new_gt_id)
 
-    general_tasks = ["R2VuZXJhbFRhc2s6MjQ4ODdRTkhH"]
-    build_tasks(new_gt_id, general_tasks, args, task_type, model_type)
+    tasks = build_tasks(new_gt_id, args, task_type, model_type)
+
+    toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
+
+    print('worker count: ', WORKER_POOL_SIZE)
+
+    schedule_tasks(tasks)
+
+    print("GENERAL_TASK_ID:", new_gt_id)
+    print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+

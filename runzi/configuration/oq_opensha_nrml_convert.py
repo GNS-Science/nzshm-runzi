@@ -19,7 +19,7 @@ import runzi.execute.oq_opensha_convert_task
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: str, solutions, subtask_arguments):
+def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: str, solutions, subtask_arguments, upstream_gt_id):
     task_count = 0
     factory_class = get_factory(CLUSTER_MODE)
 
@@ -45,7 +45,8 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             tectonic_region_type = tectonic_region_type,
             solution_id = str(solution_info['id']),
             file_name = solution_info['info']['file_name'],
-            model_type=model_type
+            model_type=model_type,
+            general_task=upstream_gt_id
             )
 
         print(task_arguments)

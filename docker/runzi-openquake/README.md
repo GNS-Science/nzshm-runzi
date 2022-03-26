@@ -34,20 +34,6 @@ nzshm22/runzi-openquake
 ## With AWS + TOSHI
 
 
-```
-docker run -it --rm \
--v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
--v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
-
--e AWS_PROFILE=toshi_batch_devops \
--e NZSHM22_TOSHI_API_ENABLED=Yes \
--e NZSHM22_TOSHI_S3_URL \
--e NZSHM22_TOSHI_API_URL \
--e NZSHM22_SCRIPT_CLUSTER_MODE \
--e NZSHM22_S3_REPORT_BUCKET=BLAH \
-
-```
-
 ### TEST EXAMPLE
 
 ```
@@ -65,6 +51,7 @@ docker run -it --rm -u root \
 --net=host \
 -v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
 -v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
+-v $(pwd)/examples:/WORKING/examples \
 -e AWS_PROFILE=toshi_batch_devops \
 -e NZSHM22_TOSHI_API_ENABLED=Yes \
 -e NZSHM22_TOSHI_S3_URL \
@@ -74,22 +61,24 @@ nzshm22/runzi-openquake:latest \
 -s bash
 ```
 
-## Manual conversion
+## In container: Manual conversion
 
 ```
 python3 nzshm-runzi/runzi/execute/prepare_inputs.py SW52ZXJzaW9uU29sdXRpb246NTYyNC4wUnZKeFg=
-python nzshm-runzi/runzi/automation/run_oq_convert_solution.py
+python3 nzshm-runzi/runzi/automation/run_oq_convert_solution.py
 
 #/WORKING/task_1.sh
 cat /WORKING/python_script.1.log
 ```
 
 
-in the container ...
+## In container: run openquake ...
 
 in /app
 
 ```
+#TODO run configuration_setup
+
 oq db start &
 oq engine --run /WORKING/examples/01_point_era_oq/job-WLG.ini
 oq engine --export-outputs 1 /WORKING/output
