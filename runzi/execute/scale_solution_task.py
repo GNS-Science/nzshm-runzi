@@ -44,7 +44,7 @@ class BuilderTask():
             task_id = self._toshi_api.automation_task.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
-                    task_type="INVERSION",
+                    task_type="SCALE_SOLUTION", #TODO should I get this from the general task?
                     model_type=task_arguments['config_type'].upper(),
                     ),
                 arguments=task_arguments,
@@ -54,16 +54,21 @@ class BuilderTask():
             #link task to the parent task
             self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
 
+            # TODO: do we need this?
             #link task to the input solution
-            input_file_id = task_arguments.get('solution_id')
-            if input_file_id:
-                self._toshi_api.automation_task.link_task_file(task_id, input_file_id, 'READ')
+            #input_file_id = task_arguments.get('source_solution_id')
+            #if input_file_id:
+            #    self._toshi_api.automation_task.link_task_file(task_id, input_file_id, 'READ')
 
         else:
             task_id = str(uuid.uuid4())
 
         ##DO THE WORK
-        result = self.scaleRuptureRates(job_arguments.get('solution_info').get('filepath'),task_arguments.get('scale'))
+        result = self.scaleRuptureRates(
+            job_arguments.get('source_solution_info').get('filepath'),
+            task_id,
+            task_arguments.get('scale')
+        )
 
 
         # SAVE the results
@@ -79,11 +84,12 @@ class BuilderTask():
 
             #upload the task output
             meta = task_arguments.copy()
-            meta['input_solution_id'] = job_arguments.get('solution_id')
-            inversion_id = self._toshi_api.inversion_solution.upload_inversion_solution(task_id,
+            meta['source_solution_id'] = job_arguments.get('source_solution_id')
+            inversion_id = self._toshi_api.scaled_inversion_solution.upload_inversion_solution(task_id,
                 filepath=result['scaled_solution'],
+                source_solution_id=job_arguments.get('source_solution_id'),
                 meta=meta, metrics=result['metrics'])
-            print("created inversion solution: ", inversion_id)
+            print("created scaled inversion solution: ", inversion_id)
 
             done_args = {
              'task_id':task_id,
@@ -98,7 +104,7 @@ class BuilderTask():
         print("Report took %s secs" % (t1-t0).total_seconds())
 
 
-    def scaleRuptureRates(self, in_solution_filepath,scale):
+    def scaleRuptureRates(self, in_solution_filepath,task_id,scale):
 
         soln = InversionSolution().from_archive(in_solution_filepath)
 
@@ -113,8 +119,8 @@ class BuilderTask():
         scaled_soln =  InversionSolution()
         scaled_soln.set_props(rates, ruptures, indices, soln.fault_sections.copy())
 
-        new_archive = PurePath(WORK_PATH, PurePath(in_solution_filepath).stem + '_s' + str(scale) + '.zip')
-        
+        new_archive = PurePath(WORK_PATH, 'NZSHM22_ScaledInversionSolution-' + str(task_id) + '.zip')
+                
         scaled_soln.to_archive(new_archive,in_solution_filepath)
 
         metrics = dict(scale=scale)
