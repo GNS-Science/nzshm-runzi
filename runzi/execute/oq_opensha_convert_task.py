@@ -78,7 +78,7 @@ class BuilderTask():
 
             dip_sd = config['rupture_sampling_distance_km']
             strike_sd = dip_sd
-            source_id = config['solution_id']
+            source_id = config['solution_id'].replace('=', '_')
             source_name = config['solution_id']
             tectonic_region_type = config['tectonic_region_type']
             investigation_time = config['investigation_time_years']
