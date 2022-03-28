@@ -40,7 +40,7 @@ RUN chown openquake /WORKING
 # Install Marcos Converter
 # git@gitlab.openquake.org:hazard/converters/ucerf.git
 # we'll use ADD for now as the repo is not public
-ADD ucerf3-master /app/ucerf
+ADD ucerf3-updates /app/ucerf
 WORKDIR /app/ucerf
 RUN pip install -e .
 

@@ -110,3 +110,33 @@ NZSHM22_TOSHI_API_URL=https://aihssdkef5.execute-api.ap-southeast-2.amazonaws.co
 NZSHM22_SOLVIS_API_URL=https://mmbzw56f1h.execute-api.ap-southeast-2.amazonaws.com/prod
 NZSHM22_SOLVIS_API_KEY=5krfgPtC7P9Ghp8S04PS05oTpoofeL664rjnMWJM
 ```
+
+
+## TEST log
+
+```
+openquake@tryharder-ubuntu:/app$ history
+    1  time oq engine --run /WORKING/examples/16_SRWG_TEST/oq_inputs/4-sites_many-periods_vs30-475.ini
+    2  oq engine --export-outputs 1 /WORKING/examples/output/TEST/4-sites-many
+    3  ls -lath /home/openquake/oqdata/
+    4  cp /home/openquake/oqdata/calc_1.hdf5 /WORKING/examples/output/TEST/4-sites-many.hdf5
+    5  time oq engine --run /WORKING/examples/16_SRWG_TEST/oq_inputs/many-sites_3-periods_vs30-475.ini
+    6  cp /home/openquake/oqdata/calc_2.hdf5 /WORKING/examples/output/TEST/34-sites-few.hdf5
+    7  oq engine --export-outputs 2 /WORKING/examples/output/TEST/34-sites-few
+    8  pwd
+    9  ls
+   10  cd /opt/openquake/
+   11  ls
+   12  cd lib
+   13  ls
+   14  cd python3.8/
+   15  ls
+   16  cd site-packages/
+   17  ls
+   18  oq --version
+   19  cd /app
+   20  time oq engine --run /WORKING/examples/16_SRWG_TEST/oq_inputs/test-disagg.ini
+   21  oq engine --export-outputs 3 /WORKING/examples/output/TEST/test-disagg
+   22  cp /home/openquake/oqdata/calc_3.hdf5 /WORKING/examples/output/TEST/test-disagg.hdf5
+   23  history
+```
