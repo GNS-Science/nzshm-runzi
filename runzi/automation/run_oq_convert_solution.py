@@ -62,14 +62,9 @@ def schedule_tasks(scripts):
 def build_tasks(new_gt_id, args, task_type, model_type):
 
     scripts = []
-    for source_gt_id in args['general_tasks']:
-        file_generator = get_output_file_ids(toshi_api, source_gt_id)
-        solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False,
-            skip_download=(CLUSTER_MODE == EnvMode['AWS']))
-
-        for script_file in build_hazard_tasks(new_gt_id, task_type, model_type, solutions, args, source_gt_id):
-            print('scheduling: ', script_file)
-            scripts.append(script_file)
+    for script_file in build_hazard_tasks(new_gt_id, task_type, model_type, args):
+        print('scheduling: ', script_file)
+        scripts.append(script_file)
 
     return scripts
 
