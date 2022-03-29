@@ -25,10 +25,10 @@ class BuilderTask():
         self.use_api = job_args.get('use_api', False)
         self._output_folder = PurePath(job_args.get('working_path'))
 
-        if self.use_api:
-            headers={"x-api-key":API_KEY}
-            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+        # if self.use_api:
+        #     headers={"x-api-key":API_KEY}
+        #     self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+        #     self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
     def run(self, task_arguments, job_arguments):
         # Run the task....
@@ -56,13 +56,13 @@ class BuilderTask():
                 )
         '''
 
-        configfile = Path(WORK_PATH, ta["work_folder"], ta["config_file"])
-        logfile = Path(WORK_PATH, ta["work_folder"], "jobs", f'{ta["solution_id"]}.log')
+        configfile = Path(ja['working_path'], ta["work_folder"], ta["config_file"])
+        logfile = Path(ja['working_path'], ta["work_folder"], "jobs", f'{ta["solution_id"]}.log')
 
         try:
 
             #oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
-            cmd = ['oq', 'engine',f'--config-file {configfile}', f'-L {logfile}']
+            cmd = ['oq', 'engine',f'--config-file',  f'{configfile}', f'-L',  f'{logfile}']
 
             print(f'cmd: {cmd}')
             subprocess.check_call(cmd)
@@ -85,6 +85,7 @@ class BuilderTask():
                 fileish.readline() #consume header
                 lines = fileish.readlines()
                 for line in fileish.readlines():
+                    print(line)
                     task = int(line.split("|")[0])
 
                 return task
@@ -99,7 +100,7 @@ class BuilderTask():
             oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
             cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
             """
-            cmd = ['oq', 'engine',f'--export-outputs {last_task}', f'-L {output_path}']
+            cmd = ['oq', 'engine',f'--export-outputs', f'{last_task}', f'-L', f'{output_path}']
             print(f'cmd: {cmd}')
             subprocess.check_call(cmd)
 
