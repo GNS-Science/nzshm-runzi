@@ -17,6 +17,7 @@ from nshm_toshi_client.task_relation import TaskRelation
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL)
 
+
 class BuilderTask():
     """
     The python client for solution rate scaling
@@ -54,9 +55,8 @@ class BuilderTask():
             #link automation task to the parent general task
             self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
 
-            # TODO: do we need this?
             #link task to the input solution
-            input_file_id = task_arguments.get('source_solution_id')
+            input_file_id = job_arguments.get('source_solution_id')
             if input_file_id:
                 self._toshi_api.automation_task.link_task_file(task_id, input_file_id, 'READ')
 
@@ -74,6 +74,7 @@ class BuilderTask():
         # SAVE the results
         if self.use_api:
             
+            # record the complteded task
             done_args = {
              'task_id':task_id,
              'duration':(dt.datetime.utcnow() - t0).total_seconds(),
@@ -81,6 +82,10 @@ class BuilderTask():
              'state':"DONE",
             }
             self._toshi_api.automation_task.complete_task(done_args, result['metrics'])
+
+            #add the log files
+            pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
+            self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
             #upload the task output
             meta = task_arguments.copy()

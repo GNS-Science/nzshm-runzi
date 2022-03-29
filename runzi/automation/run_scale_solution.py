@@ -110,7 +110,7 @@ if __name__ == "__main__":
     WORKER_POOL_SIZE = 1
     USE_API = True
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "Crustal Scaled Inverions, scale = 1.63"
+    TASK_TITLE = "Hikurangi Scaled Inverions, scale = 0.587"
     TASK_DESCRIPTION = """
     
     """
@@ -124,14 +124,16 @@ if __name__ == "__main__":
         #"SW52ZXJzaW9uU29sdXRpb246MTAwMDQ5",
         #"SW52ZXJzaW9uU29sdXRpb246MTAwMDUw",
         #"SW52ZXJzaW9uU29sdXRpb246MTAwMDU2"
-        "R2VuZXJhbFRhc2s6MTAwMTA2",
+        #"R2VuZXJhbFRhc2s6MTAwMTA2",
+        "R2VuZXJhbFRhc2s6MTAwMDEz",
         #"SW52ZXJzaW9uU29sdXRpb246MTAwMjQ4",
         #"SW52ZXJzaW9uU29sdXRpb246MTAwMjUw",
         #"SW52ZXJzaW9uU29sdXRpb246MTAwMjUy"
     ]
     #scales = [0.5,2.0]
     #scales = [0.49, 1.63]
-    scales = [1.63,]
+    # scales = [0.587, 1.419]
+    scales = [0.587]
     model_type = 'crustal'
 
 
