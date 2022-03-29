@@ -18,6 +18,45 @@ from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WOR
 
 import subprocess
 
+
+def build_sources_xml(sources_list):
+    template = """
+<nrml xmlns:gml="http://www.opengis.net/gml"
+      xmlns="http://openquake.org/xmlns/nrml/0.5">
+    <logicTree logicTreeID="Combined">
+        <logicTreeBranchSet uncertaintyType="sourceModel" branchSetID="BS-NONCE1">
+            <logicTreeBranch branchID="Combined">
+                <uncertaintyModel>
+<!-- INSERT_SOURCE_FILE_LIST -->
+                </uncertaintyModel>
+                <uncertaintyWeight>1.0</uncertaintyWeight>
+            </logicTreeBranch>
+        </logicTreeBranchSet>
+    </logicTree>
+</nrml>
+"""
+    insert = " " * 16 #indentation is nice
+    for filepath in sources_list:
+        insert += f"{filepath}\n"
+
+    template = template.replace('<!-- INSERT_SOURCE_FILE_LIST -->', insert)
+    return template
+
+def write_sources(xml_str, filepath):
+    with open(filepath, 'w') as mf:
+        mf.write(xml_str)
+
+def write_meta(filepath, task_arguments, job_arguments):
+    meta = dict(
+        solution_id = task_arguments["solution_id"],
+        general_task_id = job_arguments['general_task_id'],
+        meta =  dict(task_arguments=task_arguments, job_arguments=job_arguments))
+
+    with open(filepath, 'a') as mf:
+        mf.write( json.dumps(meta) )
+        mf.write( ",\n")
+
+
 class BuilderTask():
 
     def __init__(self, job_args):
@@ -56,15 +95,36 @@ class BuilderTask():
                 )
         '''
 
-        configfile = Path(ja['working_path'], ta["work_folder"], ta["config_file"])
-        logfile = Path(ja['working_path'], ta["work_folder"], "jobs", f'{ta["solution_id"]}.log')
+
+        target_folder = Path(ja['working_path'], ta["work_folder"])
+        srcs_folder = Path(target_folder, 'sources')
+
+
+        def unpack_sources(ta, source_path):
+            with zipfile.ZipFile(Path(WORK_PATH, "downloads", ta['solution_id'], ta["file_name"]), 'r') as zip_ref:
+                zip_ref.extractall(source_path)
+                return [f'{Path(source_path, p)}' for p in zip_ref.namelist()]
+
+        sources_list = unpack_sources(ta, srcs_folder)
+
+        print(f'sources_list: {sources_list}')
+
+        src_xml = build_sources_xml(sources_list)
+
+        print(src_xml)
+
+        write_sources(src_xml, Path(target_folder, f'source_model_{ja["task_id"]}.xml'))
+
+        configfile = Path(target_folder, ta["config_file"])
+        logfile = Path(target_folder, "jobs", f'{ta["solution_id"]}.log')
 
         try:
 
             #oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
             cmd = ['oq', 'engine',f'--config-file',  f'{configfile}', f'-L',  f'{logfile}']
 
-            print(f'cmd: {cmd}')
+            print(f'cmd 1: {cmd}')
+
             subprocess.check_call(cmd)
 
             def get_last_task():
@@ -101,15 +161,20 @@ class BuilderTask():
             cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
             """
             cmd = ['oq', 'engine',f'--export-outputs', f'{last_task}', f'-L', f'{output_path}']
-            print(f'cmd: {cmd}')
+            print(f'cmd 2: {cmd}')
             subprocess.check_call(cmd)
 
             cmd = ["cp", f"/home/openquake/oqdata/calc_{last_task}.hdf5", str(output_path)]
-            print(f'cmd: {cmd}')
+            print(f'cmd 3: {cmd}')
+
             subprocess.check_call(cmd)
 
+            write_meta(Path(target_folder, 'metadata.json'), task_arguments, job_arguments)
+
         except Exception as err:
-            print(f"check_call err: {err}")
+            print(f"err: {err}")
+
+
 
         t1 = dt.datetime.utcnow()
         print("Task took %s secs" % (t1-t0).total_seconds())
