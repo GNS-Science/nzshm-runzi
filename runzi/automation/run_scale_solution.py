@@ -110,7 +110,7 @@ if __name__ == "__main__":
     WORKER_POOL_SIZE = 1
     USE_API = True
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "scale intersion rates test"
+    TASK_TITLE = "Crustal Scaled Inverions, scale = 1.63"
     TASK_DESCRIPTION = """
     
     """
@@ -122,10 +122,17 @@ if __name__ == "__main__":
 
     source_solution_ids = [
         #"SW52ZXJzaW9uU29sdXRpb246MTAwMDQ5",
-        "SW52ZXJzaW9uU29sdXRpb246MTAwMDUx" #test
+        #"SW52ZXJzaW9uU29sdXRpb246MTAwMDUw",
+        #"SW52ZXJzaW9uU29sdXRpb246MTAwMDU2"
+        "R2VuZXJhbFRhc2s6MTAwMTA2",
+        #"SW52ZXJzaW9uU29sdXRpb246MTAwMjQ4",
+        #"SW52ZXJzaW9uU29sdXRpb246MTAwMjUw",
+        #"SW52ZXJzaW9uU29sdXRpb246MTAwMjUy"
     ]
     #scales = [0.5,2.0]
-    scales = [0.5,]
+    #scales = [0.49, 1.63]
+    scales = [1.63,]
+    model_type = 'crustal'
 
 
     file_generators = []
@@ -135,13 +142,13 @@ if __name__ == "__main__":
          - file_generator = get_output_file_id(file_api, file_id)
          - file_generator = get_output_file_ids(general_api, upstream_task_id)
         """
-        file_generators.append(get_output_file_id(toshi_api, file_id)) #for file by file ID
+        file_generators.append(get_output_file_ids(toshi_api, file_id)) #for file by file ID
 
     source_solutions = download_files(toshi_api, chain(*file_generators), str(WORK_PATH), overwrite=False)
 
     args = dict(
         scales = scales,
-        config_type = 'crustal' #TODO, do I need this?
+        config_type = model_type.lower() #TODO, do I need this?
     )
 
     args_list = []
@@ -159,7 +166,7 @@ if __name__ == "__main__":
             )\
             .set_argument_list(args_list)\
             .set_subtask_type('SCALE_SOLUTION')\
-            .set_model_type('CRUSTAL') #TODO what goes here? Can I get it from the source solution?
+            .set_model_type(model_type.upper()) #TODO what goes here? Can I get it from the source solution?
 
         GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
 
