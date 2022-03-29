@@ -88,7 +88,7 @@ if __name__ == "__main__":
     GENERAL_TASK_ID = None
 
     # #If using API give this task a descriptive setting...
-    # #If using API give this task a descriptive setting...
+
     TASK_TITLE = "A produce some NRML configs from "
     TASK_DESCRIPTION = """first run locally """
 
