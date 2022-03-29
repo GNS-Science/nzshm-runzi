@@ -51,14 +51,14 @@ class BuilderTask():
                 environment=environment
                 )
 
-            #link task to the parent task
+            #link automation task to the parent general task
             self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
 
             # TODO: do we need this?
             #link task to the input solution
-            #input_file_id = task_arguments.get('source_solution_id')
-            #if input_file_id:
-            #    self._toshi_api.automation_task.link_task_file(task_id, input_file_id, 'READ')
+            input_file_id = task_arguments.get('source_solution_id')
+            if input_file_id:
+                self._toshi_api.automation_task.link_task_file(task_id, input_file_id, 'READ')
 
         else:
             task_id = str(uuid.uuid4())
@@ -73,14 +73,14 @@ class BuilderTask():
 
         # SAVE the results
         if self.use_api:
-            #record the completed task
-
-            #the geojson
-            #self._toshi_api.automation_task.upload_task_file(task_id, result["geofile"], 'WRITE')
-
-            # #the python log files
-            # python_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
-            # self._toshi_api.automation_task.upload_task_file(task_id, python_log_file, 'WRITE')
+            
+            done_args = {
+             'task_id':task_id,
+             'duration':(dt.datetime.utcnow() - t0).total_seconds(),
+             'result':"SUCCESS",
+             'state':"DONE",
+            }
+            self._toshi_api.automation_task.complete_task(done_args, result['metrics'])
 
             #upload the task output
             meta = task_arguments.copy()
@@ -90,14 +90,6 @@ class BuilderTask():
                 source_solution_id=job_arguments.get('source_solution_id'),
                 meta=meta, metrics=result['metrics'])
             print("created scaled inversion solution: ", inversion_id)
-
-            done_args = {
-             'task_id':task_id,
-             'duration':(dt.datetime.utcnow() - t0).total_seconds(),
-             'result':"SUCCESS",
-             'state':"DONE",
-            }
-            self._toshi_api.automation_task.complete_task(done_args, result['metrics'])
 
 
         t1 = dt.datetime.utcnow()
