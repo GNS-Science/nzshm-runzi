@@ -12,6 +12,7 @@ from nshm_toshi_client.toshi_file import ToshiFile
 from nshm_toshi_client.toshi_task_file import ToshiTaskFile
 
 from .inversion_solution import InversionSolution
+from .scaled_inversion_solution import ScaledInversionSolution
 from .general_task import GeneralTask, CreateGeneralTaskArgs
 from .automation_task import AutomationTask
 
@@ -25,6 +26,7 @@ class ToshiApi(ToshiClientBase):
         self.task_file = ToshiTaskFile(url, auth_token, with_schema_validation, headers)
 
         #set up the handler for inversion_solution operations
+        self.scaled_inversion_solution = ScaledInversionSolution(self)
         self.inversion_solution = InversionSolution(self)
         self.general_task = GeneralTask(self)
         self.automation_task = AutomationTask(self)

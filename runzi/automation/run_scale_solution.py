@@ -40,7 +40,7 @@ def build_subset_tasks(general_task_id, source_solutions, args):
     task_factory = factory_class(OPENSHA_ROOT, WORK_PATH, scale_solution_task,
         task_config_path=WORK_PATH )
 
-    for (solution_id, solution_info) in source_solutions.items():
+    for (src_sol_id, src_sol_info) in source_solutions.items():
 
         for scale in args['scales']:
             
@@ -53,8 +53,8 @@ def build_subset_tasks(general_task_id, source_solutions, args):
 
             job_arguments = dict(
                 task_id = task_count,
-                solution_id = solution_id,
-                solution_info = solution_info,
+                source_solution_id = src_sol_id,
+                source_solution_info = src_sol_info,
                 working_path=str(WORK_PATH),
                 root_folder = OPENSHA_ROOT,
                 general_task_id=general_task_id,
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     WORKER_POOL_SIZE = 1
     USE_API = True
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "sclae intersion rates test"
+    TASK_TITLE = "Hikurangi Scaled Inverions, scale = 0.587"
     TASK_DESCRIPTION = """
     
     """
@@ -120,28 +120,37 @@ if __name__ == "__main__":
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-    solution_ids = [
-        "SW52ZXJzaW9uU29sdXRpb246MTAwMDQ5",
-        "SW52ZXJzaW9uU29sdXRpb246MTAwMDUx" #test
+    source_solution_ids = [
+        #"SW52ZXJzaW9uU29sdXRpb246MTAwMDQ5",
+        #"SW52ZXJzaW9uU29sdXRpb246MTAwMDUw",
+        #"SW52ZXJzaW9uU29sdXRpb246MTAwMDU2"
+        #"R2VuZXJhbFRhc2s6MTAwMTA2",
+        "R2VuZXJhbFRhc2s6MTAwMDEz",
+        #"SW52ZXJzaW9uU29sdXRpb246MTAwMjQ4",
+        #"SW52ZXJzaW9uU29sdXRpb246MTAwMjUw",
+        #"SW52ZXJzaW9uU29sdXRpb246MTAwMjUy"
     ]
-    scales = [0.5,2.0]
+    #scales = [0.5,2.0]
+    #scales = [0.49, 1.63]
+    # scales = [0.587, 1.419]
+    scales = [0.587]
+    model_type = 'crustal'
 
 
     file_generators = []
-    for file_id in solution_ids:
+    for file_id in source_solution_ids:
         """
         CHOOSE ONE OF:
          - file_generator = get_output_file_id(file_api, file_id)
          - file_generator = get_output_file_ids(general_api, upstream_task_id)
         """
-        file_generators.append(get_output_file_id(toshi_api, file_id)) #for file by file ID
+        file_generators.append(get_output_file_ids(toshi_api, file_id)) #for file by file ID
 
     source_solutions = download_files(toshi_api, chain(*file_generators), str(WORK_PATH), overwrite=False)
 
     args = dict(
         scales = scales,
-        input_solution_ids = solution_ids,
-        config_type = 'crustal'
+        config_type = model_type.lower() #TODO, do I need this?
     )
 
     args_list = []
@@ -150,7 +159,6 @@ if __name__ == "__main__":
     print(args_list)
     
     
-    #TODO: add new type INVERSION_SUBSET
     if USE_API:
         #create new task in toshi_api
         gt_args = CreateGeneralTaskArgs(
@@ -159,8 +167,8 @@ if __name__ == "__main__":
             description=TASK_DESCRIPTION
             )\
             .set_argument_list(args_list)\
-            .set_subtask_type('INVERSION')\
-            .set_model_type('CRUSTAL')
+            .set_subtask_type('SCALE_SOLUTION')\
+            .set_model_type(model_type.upper()) #TODO what goes here? Can I get it from the source solution?
 
         GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
 

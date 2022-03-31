@@ -25,6 +25,10 @@ from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
 logging.basicConfig(level=logging.INFO)
 
 # If you wish to override something in the main config, do so here ..
+# WORKER_POOL_SIZE = 3
+# JVM_HEAP_MAX = 16
+# JAVA_THREADS = 10
+
 WORKER_POOL_SIZE = 1
 JVM_HEAP_MAX = 32
 JAVA_THREADS = 16
@@ -133,13 +137,14 @@ if __name__ == "__main__":
 
     #limit test size, nomally 1000 for NZ CFM
     MAX_SECTIONS = 2000
-        
+    # MAX_SECTIONS = 50
+            
     args = dict(
         ##Test parameters
         models = ["CFM_1_0_DOM_SANSTVZ"], #, "CFM_0_9_ALL_D90","CFM_0_9_SANSTVZ_2010"]
         depth_scaling = [{'tvz': 0.667, 'sans': 0.8}],
-        # jump_limits = [15,10,5,1], #default is 15
         jump_limits = [15,], #default is 15
+        # jump_limits = [15,14,13,12,11,10,9,8,7,6,5,4,3,2,1], #default is 15
         adaptive_min_distances = [6,], #9] default is 6
         thinning_factors = [0,], #5, 0.1, 0.2, 0.3] #, 0.05, 0.1, 0.2]
         min_sub_sects_per_parents = [2], #3,4,5]
