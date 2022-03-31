@@ -46,6 +46,7 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
                 selection_interval_secs, threads_per_selector, averaging_threads, averaging_interval_secs,
                 non_negativity_function, perturbation_function,
                 mfd_uncertainty_weight, mfd_uncertainty_power,
+                mfd_uncertainty_scalar,
                 scaling_relationship, scaling_recalc_mag,
                 deformation_model,
                 scaling_c_val,
@@ -59,6 +60,7 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
                 args['selection_interval_secs'], args['threads_per_selectors'], args['averaging_threads'], args['averaging_interval_secs'],
                 args['non_negativity_functions'], args['perturbation_functions'],
                 args['mfd_uncertainty_weights'], args['mfd_uncertainty_powers'],
+                args['mfd_uncertainty_scalars'],
                 args['scaling_relationships'], args['scaling_recalc_mags'],
                 args['deformation_models'],
                 args.get('scaling_c_vals', [None]),
@@ -85,6 +87,7 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
 
                 mfd_uncertainty_weight=mfd_uncertainty_weight,
                 mfd_uncertainty_power=mfd_uncertainty_power,
+                mfd_uncertainty_scalar=mfd_uncertainty_scalar,
 
                 #New config arguments for Simulated Annealing ...
                 selection_interval_secs=selection_interval_secs,
