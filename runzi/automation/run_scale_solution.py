@@ -3,7 +3,7 @@ import pwd
 import itertools
 import stat
 from pathlib import PurePath
-from subprocess import check_call
+from subprocess import run
 from multiprocessing.dummy import Pool
 import boto3
 import logging
@@ -132,8 +132,8 @@ if __name__ == "__main__":
     ]
     #scales = [0.5,2.0]
     #scales = [0.49, 1.63]
-    # scales = [0.587, 1.419]
-    scales = [0.587]
+    scales = [0.587, 1.419, 2, 3]
+    # scales = [0.587]
     model_type = 'crustal'
 
 
@@ -181,9 +181,9 @@ if __name__ == "__main__":
     def call_script(script_name):
         print("call_script with:", script_name)
         if CLUSTER_MODE:
-            check_call(['qsub', script_name])
+            run(['qsub', script_name])
         else:
-            check_call(['bash', script_name])
+            run(['bash', script_name])
 
     
     MOCK_MODE = True
