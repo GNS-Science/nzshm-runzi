@@ -53,7 +53,7 @@ def write_meta(filepath, task_arguments, job_arguments):
         meta =  dict(task_arguments=task_arguments, job_arguments=job_arguments))
 
     with open(filepath, 'a') as mf:
-        mf.write( json.dumps(meta) )
+        mf.write( json.dumps(meta, indent=4) )
         mf.write( ",\n")
 
 
@@ -103,7 +103,7 @@ class BuilderTask():
         def unpack_sources(ta, source_path):
             with zipfile.ZipFile(Path(WORK_PATH, "downloads", ta['solution_id'], ta["file_name"]), 'r') as zip_ref:
                 zip_ref.extractall(source_path)
-                return [f'{Path(source_path, p)}' for p in zip_ref.namelist()]
+                return zip_ref.namelist()
 
         sources_list = unpack_sources(ta, srcs_folder)
 
@@ -113,7 +113,7 @@ class BuilderTask():
 
         print(src_xml)
 
-        write_sources(src_xml, Path(target_folder, f'source_model_{ja["task_id"]}.xml'))
+        write_sources(src_xml, Path(target_folder, 'source_model.xml'))
 
         configfile = Path(target_folder, ta["config_file"])
         logfile = Path(target_folder, "jobs", f'{ta["solution_id"]}.log')
@@ -121,7 +121,7 @@ class BuilderTask():
         try:
 
             #oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
-            cmd = ['oq', 'engine',f'--config-file',  f'{configfile}', f'-L',  f'{logfile}']
+            cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
 
             print(f'cmd 1: {cmd}')
 
@@ -143,7 +143,7 @@ class BuilderTask():
                 fileish.seek(0)
 
                 fileish.readline() #consume header
-                lines = fileish.readlines()
+                #lines = fileish.readlines()
                 for line in fileish.readlines():
                     print(line)
                     task = int(line.split("|")[0])
@@ -152,7 +152,7 @@ class BuilderTask():
 
             last_task = get_last_task()
 
-            output_path = Path(WORK_PATH, ta["work_folder"], "output")
+            output_path = Path(WORK_PATH, ta["work_folder"], "output", ta["solution_id"])
 
             #get the job ID
 
@@ -160,7 +160,7 @@ class BuilderTask():
             oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
             cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
             """
-            cmd = ['oq', 'engine',f'--export-outputs', f'{last_task}', f'-L', f'{output_path}']
+            cmd = ['oq', 'engine', '--export-outputs', str(output_path)]
             print(f'cmd 2: {cmd}')
             subprocess.check_call(cmd)
 

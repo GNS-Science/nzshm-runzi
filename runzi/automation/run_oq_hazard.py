@@ -16,7 +16,7 @@ from subprocess import check_call
 from multiprocessing.dummy import Pool
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
-from runzi.configuration.openquake_hazard import build_hazard_tasks
+from runzi.configuration.oq_hazard import build_hazard_tasks
 
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
@@ -95,18 +95,16 @@ if __name__ == "__main__":
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     args = dict(
-        config_file = "4-sites_many-periods_vs30-475.ini",# Unit of measure for the rupture sampling: km
+        config_files = ["many-sites_3-periods_vs30-475.ini", "4-sites_many-periods_vs30-475.ini"],
         work_folder = "examples/18_SWRG_INIT",
-        # general_tasks = ["R2VuZXJhbFRhc2s6MTAwMTU0"] # using the GT for the NRML for now
-        general_tasks = ["R2VuZXJhbFRhc2s6MTAwMTU5"]
-
+        general_tasks = ["R2VuZXJhbFRhc2s6MTAwMTk2", "R2VuZXJhbFRhc2s6MTAwMjA2"]
     )
 
     args_list = []
     for key, value in args.items():
         args_list.append(dict(k=key, v=value))
 
-    task_type = SubtaskType.SOLUTION_TO_NRML
+    task_type = SubtaskType.HAZARD
     model_type = 'CRUSTAL'
 
     # if USE_API:
@@ -131,7 +129,6 @@ if __name__ == "__main__":
     print('worker count: ', WORKER_POOL_SIZE)
 
     print( tasks )
-    #assert 0
     schedule_tasks(tasks)
 
     print("GENERAL_TASK_ID:", new_gt_id)
