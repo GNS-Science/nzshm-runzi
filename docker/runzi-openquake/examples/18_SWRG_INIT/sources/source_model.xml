@@ -1,0 +1,18 @@
+
+<nrml xmlns:gml="http://www.opengis.net/gml"
+      xmlns="http://openquake.org/xmlns/nrml/0.5">
+    <logicTree logicTreeID="Combined">
+        <logicTreeBranchSet uncertaintyType="sourceModel" branchSetID="BS-NONCE1">
+            <logicTreeBranch branchID="Combined">
+                <uncertaintyModel>
+                    ./BG/fADDTOT346ave_Test4_s1.63.xml
+                </uncertaintyModel>
+                <uncertaintyWeight>1.0</uncertaintyWeight>
+            </logicTreeBranch>
+        </logicTreeBranchSet>
+    </logicTree>
+<!--
+                    ./BG/fADDTOT346ave_Test4_s0.49.xml
+                    ./BG/fADDTOT346ave_Test4.xml
+-->
+</nrml>
