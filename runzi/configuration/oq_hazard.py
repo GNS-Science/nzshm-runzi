@@ -23,7 +23,10 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
 def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: str, subtask_arguments):
     task_count = 0
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
@@ -34,13 +37,6 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
 
     for source_gt_id in subtask_arguments['general_tasks']:
 
-        #TODO this is ugly hack, one time use only
-        assert 0
-        if source_gt_id == "R2VuZXJhbFRhc2s6MTAwMTk2":
-            model_type = "SUBDUCTION"
-        else:
-            model_type = "CRUSTAL"
-
         file_generator = get_output_file_ids(toshi_api, source_gt_id)
         solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False,
                         skip_download=(CLUSTER_MODE == EnvMode['AWS']))
@@ -50,16 +46,9 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
 
                 task_count +=1
 
-                # if model_type == "CRUSTAL":
-                #     tectonic_region_type = "Active Shallow Crust"
-                # elif model_type == "SUBDUCTION":
-                #     tectonic_region_type = "Subduction Interface"
-
                 task_arguments = dict(
-                    # tectonic_region_type = tectonic_region_type,
                     solution_id = str(solution_info['id']),
                     file_name = solution_info['info']['file_name'],
-                    model_type = model_type,
                     config_file = config_file,
                     work_folder = subtask_arguments['work_folder'],
                     upstream_general_task=source_gt_id
