@@ -118,9 +118,9 @@ if __name__ == "__main__":
          - file_generator = get_output_file_ids(general_api, upstream_task_id)
         """
         #for a single rupture set, pass a valid FileID
-        file_id = "RmlsZToxMDAwMw=="
+        file_id = "RmlsZToxMDAwODc="
         file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
-        #file_generator = get_output_file_ids(toshi_api, upstream_task_id)
+        # file_generator = get_output_file_ids(toshi_api, upstream_task_id)
 
         rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 

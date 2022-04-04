@@ -183,10 +183,12 @@ class BuilderTask():
                 .setGutenbergRichterMFD(
                     float(ta['mfd_mag_gt_5']),
                     float(ta['mfd_b_value']),
-                    float(ta['mfd_transition_mag']))\
-                .setUncertaintyWeightedMFDWeights(
+                    float(ta['mfd_transition_mag']))
+            if ta.get('mfd_uncertainty_weight'):
+                inversion_runner.setUncertaintyWeightedMFDWeights(
                     float(ta['mfd_uncertainty_weight']),
-                    float(ta['mfd_uncertainty_power']))
+                    float(ta['mfd_uncertainty_power']),
+                    float(ta.get('mfd_uncertainty_scalar')))
 
         if ta.get('scaling_relationship') and ta.get('scaling_recalc_mag'):
             sr = self._gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
@@ -252,9 +254,14 @@ class BuilderTask():
             for k in jmetrics:
                 metrics[k] = jmetrics[k]
 
-        table_rows_v1 = inversion_runner.getTabularSolutionMfds() if not SPOOF_INVERSION else []
-        table_rows_v2 = inversion_runner.getTabularSolutionMfdsV2()  if not SPOOF_INVERSION else [] # not in current opensha build
-        mfd_table_rows = {"MFD_CURVES":table_rows_v1, "MFD_CURVES_V2":table_rows_v2}
+
+        if ta['config_type'] == 'subduction':
+            table_rows_v1 = inversion_runner.getTabularSolutionMfds() if not SPOOF_INVERSION else []
+            mfd_table_rows = {"MFD_CURVES":table_rows_v1}
+        else:
+            table_rows_v1 = inversion_runner.getTabularSolutionMfds() if not SPOOF_INVERSION else []
+            table_rows_v2 = inversion_runner.getTabularSolutionMfdsV2()  if not SPOOF_INVERSION else [] 
+            mfd_table_rows = {"MFD_CURVES":table_rows_v1, "MFD_CURVES_V2":table_rows_v2}
 
         if self.use_api:
             #record the completed task
