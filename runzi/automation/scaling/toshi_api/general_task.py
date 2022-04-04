@@ -3,6 +3,7 @@ import datetime as dt
 from dateutil.tz import tzutc
 from hashlib import md5
 from pathlib import PurePath
+from enum import Enum
 
 import base64
 import copy
@@ -10,6 +11,15 @@ import json
 import requests
 
 from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
+
+class SubtaskType(Enum):
+    RUPTURE_SET = 10
+    INVERSION = 20
+    HAZARD = 30
+    REPORT = 40
+    SCALE_SOLUTION = 50
+    SOLUTION_TO_NRML = 60
+    OPENSHA_HAZARD = 70
 
 
 class CreateGeneralTaskArgs(object):
@@ -40,7 +50,7 @@ class CreateGeneralTaskArgs(object):
         return self
 
     def set_subtask_type(self, subtask_type):
-        assert subtask_type in ['RUPTURE_SET', 'INVERSION', 'SCALE_SOLUTION', 'HAZARD', 'REPORT']
+        assert subtask_type in [name for name, n  in SubtaskType.__members__.items()]
         self._arguments['subtask_type'] = subtask_type
         return self
 

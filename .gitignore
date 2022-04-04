@@ -12,3 +12,4 @@ shell/**
 tmp/**
 **/.DS_Store
 .vscode/**
+docker/runzi-openquake/examples/**

@@ -1,0 +1,721 @@
+[
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMQ==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMQ==",
+            "file_name": "NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTUy_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 1,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMg==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMg==",
+            "file_name": "NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTUz_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 2,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMw==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMw==",
+            "file_name": "NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTU4_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 3,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNA==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNA==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTg3_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 4,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNQ==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNQ==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTg4_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 5,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNg==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNg==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTg5_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 6,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNw==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNw==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTkx_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 7,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzOA==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzOA==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTky_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 8,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzOQ==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzOQ==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTkz_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 9,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMQ==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMQ==",
+            "file_name": "NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTUy_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 10,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMg==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMg==",
+            "file_name": "NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTUz_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 11,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMw==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMw==",
+            "file_name": "NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTU4_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 12,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNA==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNA==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTg3_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 13,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNQ==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNQ==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTg4_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 14,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNg==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNg==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTg5_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 15,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNw==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzNw==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTkx_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 16,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzOA==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzOA==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTky_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 17,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzOQ==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzOQ==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTkz_nrml.zip",
+            "model_type": "SUBDUCTION",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMTk2"
+        },
+        "job_arguments": {
+            "task_id": 18,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0MA==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0MA==",
+            "file_name": "NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTA5_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 19,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0MQ==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0MQ==",
+            "file_name": "NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTA3_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 20,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mg==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mg==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTIx_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 21,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mw==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mw==",
+            "file_name": "NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTA4_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 22,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NA==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NA==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTIy_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 23,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NQ==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NQ==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTI5_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 24,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTIz_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 25,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Nw==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Nw==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTMw_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 26,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OA==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OA==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTMx_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 27,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0MA==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0MA==",
+            "file_name": "NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTA5_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 28,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0MQ==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0MQ==",
+            "file_name": "NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTA3_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 29,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mg==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mg==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTIx_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 30,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mw==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mw==",
+            "file_name": "NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTA4_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 31,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NA==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NA==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTIy_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 32,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NQ==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NQ==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTI5_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 33,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTIz_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 34,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Nw==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Nw==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTMw_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 35,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+},
+{
+    "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OA==",
+    "general_task_id": null,
+    "meta": {
+        "task_arguments": {
+            "solution_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OA==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTMx_nrml.zip",
+            "model_type": "CRUSTAL",
+            "config_file": "4-sites_many-periods_vs30-475.ini",
+            "work_folder": "/WORKING/examples/18_SWRG_INIT",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 36,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
+}]

@@ -87,4 +87,4 @@ if __name__ == "__main__":
     # print(config)
     task = BuilderTask(config['job_arguments'])
     task.run(**config)
-    upload_to_bucket(config['task_arguments']['rupture_set_file_id'], S3_REPORT_BUCKET)
+    upload_to_bucket(config['task_arguments']['rupture_set_file_id'], S3_REPORT_BUCKET, force_upload=True)
