@@ -13,12 +13,14 @@ import requests
 from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 
 class SubtaskType(Enum):
-    OPENSHA_HAZARD = 10
-    SOLUTION_TO_NRML = 20
-    RUPTURE_SET = 30
-    INVERSION = 40
-    HAZARD = 50
-    REPORT = 60
+    RUPTURE_SET = 10
+    INVERSION = 20
+    HAZARD = 30
+    REPORT = 40
+    SCALE_SOLUTION = 50
+    SOLUTION_TO_NRML = 60
+    OPENSHA_HAZARD = 70
+
 
 class CreateGeneralTaskArgs(object):
 
