@@ -82,10 +82,12 @@ class BuilderTask():
             source_name = config['solution_id']
             tectonic_region_type = config['tectonic_region_type']
             investigation_time = config['investigation_time_years']
+            prefix = config['prefix']
 
             computed = get_multi_fault_source(src_folder, dip_sd, strike_sd, source_id,
                                                       source_name, tectonic_region_type,
-                                                      investigation_time)
+                                                      investigation_time,
+                                                      prefix)
 
             print(computed)
 
