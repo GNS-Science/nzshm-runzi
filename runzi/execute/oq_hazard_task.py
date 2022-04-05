@@ -56,6 +56,28 @@ def write_meta(filepath, task_arguments, job_arguments):
         mf.write( json.dumps(meta, indent=4) )
         mf.write( ",\n")
 
+def unpack_sources(ta, source_path):
+    with zipfile.ZipFile(Path(WORK_PATH, "downloads", ta['solution_id'], ta["file_name"]), 'r') as zip_ref:
+        zip_ref.extractall(source_path)
+        return zip_ref.namelist()
+
+def explode_config_template(toshi_api:ToshiApi, working_path: str, config_template_id: str):
+    config_folder = Path(working_path, "config")
+
+    filedeets = toshi_api.file.get_download_url(config_template_id)
+
+    r1 = requests.get(filedeets['file_url'])
+    file_path = Path(working_path, filedeets['file_name'])
+
+    with open(file_path, 'wb') as f:
+        f.write(r1.content)
+        print("downloaded input file:", file_path, f)
+        assert os.path.getsize(file_path) == filedeets['file_size']
+
+    with zipfile.ZipFile(file_path, 'r') as zip_ref:
+        zip_ref.extractall(config_folder)
+        return config_folder
+
 
 class BuilderTask():
 
@@ -64,10 +86,9 @@ class BuilderTask():
         self.use_api = job_args.get('use_api', False)
         self._output_folder = PurePath(job_args.get('working_path'))
 
-        # if self.use_api:
-        #     headers={"x-api-key":API_KEY}
-        #     self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-        #     self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+        headers={"x-api-key":API_KEY}
+        self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+        self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
     def run(self, task_arguments, job_arguments):
         # Run the task....
@@ -82,7 +103,8 @@ class BuilderTask():
                 model_type = model_type,
                 config_file = subtask_arguments['config_file'],
                 work_folder = subtask_arguments['work_folder'],
-                upstream_general_task=source_gt_id
+                upstream_general_task=source_gt_id,
+                config_template_id = #ToshiID
                 )
 
             print(task_arguments)
@@ -94,29 +116,44 @@ class BuilderTask():
                 use_api = USE_API,
                 )
         '''
+        if self.use_api:
+            # task_id = self._toshi_api.automation_task.create_task(
+            #     dict(
+            #         created=dt.datetime.now(tzutc()).isoformat(),
+            #         task_type=SubtaskType.OPENQUAKE_HAZARD.value,
+            #         model_type=ta['config_type'].upper(),
+            #         ),
+            #     arguments=task_arguments,
+            #     environment=environment
+            #     )
+            pass
 
+        work_folder = ja['working_path']
 
-        target_folder = Path(ja['working_path'], ta["work_folder"])
-        srcs_folder = Path(target_folder, 'sources')
+        # get the configuration_archive
+        # see run_build_openquake_config_template.py
+        config_folder = explode_config_template(
+            self._toshi_api,
+            work_folder,
+            ta.get('config_template_id', 'RmlsZToxOA=='),)
 
+        # target_folder = Path(ja['working_path'], ta["work_folder"])
+        srcs_folder = Path(config_folder, 'sources')
 
-        def unpack_sources(ta, source_path):
-            with zipfile.ZipFile(Path(WORK_PATH, "downloads", ta['solution_id'], ta["file_name"]), 'r') as zip_ref:
-                zip_ref.extractall(source_path)
-                return zip_ref.namelist()
-
+        # the download of sources to have occurred already prepare_inputs
+        # sources are the Openquake Source NRML XML file(s) to include in the sources list
         sources_list = unpack_sources(ta, srcs_folder)
-
         print(f'sources_list: {sources_list}')
 
+        # the local source_models.xml file must be written out
         src_xml = build_sources_xml(sources_list)
-
         print(src_xml)
+        write_sources(src_xml, Path(config_folder, 'source_model.xml'))
 
-        write_sources(src_xml, Path(target_folder, 'source_model.xml'))
+        ##now the config is written and ready to use, lets zip it and save it in the API.
 
-        configfile = Path(target_folder, ta["config_file"])
-        logfile = Path(target_folder, "jobs", f'{ta["solution_id"]}.log')
+        configfile = Path(config_folder, ta["config_file"])
+        logfile = Path(work_folder, f'{ta["solution_id"]}.log')
 
         try:
 
@@ -169,12 +206,10 @@ class BuilderTask():
 
             subprocess.check_call(cmd)
 
-            write_meta(Path(target_folder, 'metadata.json'), task_arguments, job_arguments)
+            write_meta(Path(work_folder, 'metadata.json'), task_arguments, job_arguments)
 
         except Exception as err:
             print(f"err: {err}")
-
-
 
         t1 = dt.datetime.utcnow()
         print("Task took %s secs" % (t1-t0).total_seconds())

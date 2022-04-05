@@ -23,10 +23,6 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
 def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: str, subtask_arguments):
     task_count = 0
 
-<<<<<<< HEAD
-
-=======
->>>>>>> main
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
