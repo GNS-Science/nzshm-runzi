@@ -13,7 +13,7 @@ from runzi.automation.scaling.toshi_api import SubtaskType
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config
 
-import runzi.execute.openquake_hazard_task
+import runzi.execute.oq_hazard_task
 import runzi.execute.oq_opensha_convert_task
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
