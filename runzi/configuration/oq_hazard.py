@@ -20,7 +20,7 @@ import runzi.execute.oq_hazard_task
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: str, subtask_arguments):
+def build_nrml_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: str, subtask_arguments):
     task_count = 0
 
     headers={"x-api-key":API_KEY}
@@ -34,19 +34,18 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
     for source_gt_id in subtask_arguments['general_tasks']:
 
         file_generator = get_output_file_ids(toshi_api, source_gt_id)
-        solutions = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False,
+        solution_nrmls = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False,
                         skip_download=(CLUSTER_MODE == EnvMode['AWS']))
 
         for config_file in subtask_arguments['config_files']:
-            for (sid, solution_info) in solutions.items():
+            for (sid, nrml_info) in solution_nrmls.items():
 
                 task_count +=1
 
                 task_arguments = dict(
-                    solution_id = str(solution_info['id']),
-                    file_name = solution_info['info']['file_name'],
+                    nrml_id = str(nrml_info['id']),
+                    file_name = nrml_info['info']['file_name'],
                     config_file = config_file,
-                    work_folder = subtask_arguments['work_folder'],
                     upstream_general_task=source_gt_id
                     )
 
@@ -65,7 +64,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
 
                     #TODO: This is commented out until it supports new oq docker image
                     # yield get_ecs_job_config(job_name,
-                    #     solution_info['id'], config_data,
+                    #     nrml_info['id'], config_data,
                     #     toshi_api_url=API_URL, toshi_s3_url=None, toshi_report_bucket=None,
                     #     task_module=runzi.execute.oq_opensha_convert_task.__name__,
                     #     time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4)

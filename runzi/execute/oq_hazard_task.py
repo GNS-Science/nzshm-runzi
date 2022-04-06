@@ -1,12 +1,12 @@
 #!python3 openquake_hazard_task.py
 import argparse
 import json
-import base64
-import uuid
+
 
 import os
 import io
 import zipfile
+import subprocess
 
 from pathlib import Path, PurePath
 from importlib import import_module
@@ -14,10 +14,7 @@ import datetime as dt
 from dateutil.tz import tzutc
 
 from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
-from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH)
-
-import subprocess
-
+from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 
 def build_sources_xml(sources_list):
     template = """
@@ -79,6 +76,69 @@ def explode_config_template(toshi_api:ToshiApi, working_path: str, config_templa
         return config_folder
 
 
+def execute_openquake(configfile, logfile):
+    if SPOOF_HAZARD:
+        print("execute_openquake skipping SPOOF=True")
+        return
+
+    try:
+
+        #oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
+        cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
+
+        print(f'cmd 1: {cmd}')
+
+        subprocess.check_call(cmd)
+
+        def get_last_task():
+            """
+            root@tryharder-ubuntu:/app# oq engine --lhc
+            job_id |     status |          start_time |         description
+                 6 |   complete | 2022-03-29 01:12:16 | 35 sites, few periods
+            """
+
+            cmd = ['oq', 'engine', '--lhc']
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+            out, err = p.communicate()
+
+            fileish = io.StringIO()
+            fileish.write(out.decode())
+            fileish.seek(0)
+
+            fileish.readline() #consume header
+            #lines = fileish.readlines()
+            for line in fileish.readlines():
+                print(line)
+                task = int(line.split("|")[0])
+
+            return task
+
+        last_task = get_last_task()
+
+        output_path = Path(WORK_PATH, ta["work_folder"], "output", ta["solution_id"])
+
+        #get the job ID
+
+        """
+        oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
+        cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
+        """
+        cmd = ['oq', 'engine', '--export-outputs', str(output_path)]
+        print(f'cmd 2: {cmd}')
+        subprocess.check_call(cmd)
+
+        cmd = ["cp", f"/home/openquake/oqdata/calc_{last_task}.hdf5", str(output_path)]
+        print(f'cmd 3: {cmd}')
+
+        subprocess.check_call(cmd)
+
+        #Not need for API
+        write_meta(Path(work_folder, 'metadata.json'), task_arguments, job_arguments)
+
+    except Exception as err:
+        print(f"err: {err}")
+
+
 class BuilderTask():
 
     def __init__(self, job_args):
@@ -95,27 +155,7 @@ class BuilderTask():
         t0 = dt.datetime.utcnow()
         ta, ja = task_arguments, job_arguments
 
-        '''
-            task_arguments = dict(
-                tectonic_region_type = tectonic_region_type,
-                solution_id = str(solution_info['id']),
-                file_name = solution_info['info']['file_name'],
-                model_type = model_type,
-                config_file = subtask_arguments['config_file'],
-                work_folder = subtask_arguments['work_folder'],
-                upstream_general_task=source_gt_id,
-                config_template_id = #ToshiID
-                )
-
-            print(task_arguments)
-
-            job_arguments = dict(
-                task_id = task_count,
-                working_path = str(WORK_PATH),
-                general_task_id = general_task_id,
-                use_api = USE_API,
-                )
-        '''
+        ## Create the OpenquakeHazardTask, with task details
         if self.use_api:
             # task_id = self._toshi_api.automation_task.create_task(
             #     dict(
@@ -137,80 +177,33 @@ class BuilderTask():
             work_folder,
             ta.get('config_template_id', 'RmlsZToxOA=='),)
 
-        # target_folder = Path(ja['working_path'], ta["work_folder"])
-        srcs_folder = Path(config_folder, 'sources')
+        sources_folder = Path(config_folder, 'sources')
 
         # the download of sources to have occurred already prepare_inputs
         # sources are the Openquake Source NRML XML file(s) to include in the sources list
-        sources_list = unpack_sources(ta, srcs_folder)
+        sources_list = unpack_sources(ta, sources_folder)
         print(f'sources_list: {sources_list}')
 
-        # the local source_models.xml file must be written out
+        # the local source_models.xml file must be written to the configuration
         src_xml = build_sources_xml(sources_list)
         print(src_xml)
         write_sources(src_xml, Path(config_folder, 'source_model.xml'))
 
-        ##now the config is written and ready to use, lets zip it and save it in the API.
+        ## now the complete config is written and ready to use, lets zip it and save it in the API.
+        ## TODO
+        ##
+        ## link the OpenquakeHazardTask, with the config
 
+        # Do the heavy lifting in openquake , passing the config
         configfile = Path(config_folder, ta["config_file"])
         logfile = Path(work_folder, f'{ta["solution_id"]}.log')
 
-        try:
+        execute_openquake(configfile, logfile)
 
-            #oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
-            cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
-
-            print(f'cmd 1: {cmd}')
-
-            subprocess.check_call(cmd)
-
-            def get_last_task():
-                """
-                root@tryharder-ubuntu:/app# oq engine --lhc
-                job_id |     status |          start_time |         description
-                     6 |   complete | 2022-03-29 01:12:16 | 35 sites, few periods
-                """
-
-                cmd = ['oq', 'engine', '--lhc']
-                p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-                out, err = p.communicate()
-
-                fileish = io.StringIO()
-                fileish.write(out.decode())
-                fileish.seek(0)
-
-                fileish.readline() #consume header
-                #lines = fileish.readlines()
-                for line in fileish.readlines():
-                    print(line)
-                    task = int(line.split("|")[0])
-
-                return task
-
-            last_task = get_last_task()
-
-            output_path = Path(WORK_PATH, ta["work_folder"], "output", ta["solution_id"])
-
-            #get the job ID
-
-            """
-            oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
-            cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
-            """
-            cmd = ['oq', 'engine', '--export-outputs', str(output_path)]
-            print(f'cmd 2: {cmd}')
-            subprocess.check_call(cmd)
-
-            cmd = ["cp", f"/home/openquake/oqdata/calc_{last_task}.hdf5", str(output_path)]
-            print(f'cmd 3: {cmd}')
-
-            subprocess.check_call(cmd)
-
-            write_meta(Path(work_folder, 'metadata.json'), task_arguments, job_arguments)
-
-        except Exception as err:
-            print(f"err: {err}")
-
+        ## TODO
+        ## Upload the hazard outputs
+        ## link the hazard outputs to the OpenquakeHazardTask
+        ## Mark the OpenquakeHazardTask as Done
         t1 = dt.datetime.utcnow()
         print("Task took %s secs" % (t1-t0).total_seconds())
 
@@ -223,12 +216,35 @@ if __name__ == "__main__":
 
     try:
         # LOCAL and CLUSTER this is a file
-        config_file = args.config
-        f= open(args.config, 'r', encoding='utf-8')
+        f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
     except:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
+
+
+    #TESTING
+
+    # nrml_id = str(nrml_info['id']),
+    # file_name = nrml_info['info']['file_name'],
+    # config_file = config_file,
+    # work_folder = subtask_arguments['work_folder'],
+    # upstream_general_task=source_gt_id
+
+    config = {
+        "task_arguments": {
+            "nrml_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mg==",
+            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTIx_nrml.zip",
+            "config_file": "many-sites_3-periods_vs30-475.ini",
+            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
+        },
+        "job_arguments": {
+            "task_id": 12,
+            "working_path": "/app/tmp",
+            "general_task_id": null,
+            "use_api": true
+        }
+    }
 
     task = BuilderTask(config['job_arguments'])
     task.run(**config)

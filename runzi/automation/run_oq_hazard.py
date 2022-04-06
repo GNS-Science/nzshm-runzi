@@ -12,12 +12,10 @@ import pwd
 import os
 import datetime as dt
 from dateutil.tz import tzutc
-from subprocess import check_call
-from multiprocessing.dummy import Pool
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
 from runzi.configuration.oq_hazard import build_hazard_tasks
-
+from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
@@ -26,37 +24,6 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 WORKER_POOL_SIZE = 1
 HAZARD_MAX_TIME = 15
 USE_API = True
-
-def schedule_tasks(scripts):
-
-    def call_script(script_name):
-        print("call_script with:", script_name)
-        try:
-            if CLUSTER_MODE:
-                check_call(['qsub', script_name])
-            else:
-                check_call(['bash', script_name])
-        except Exception as err:
-            print(f"check_call err: {err}")
-
-    if CLUSTER_MODE == EnvMode['LOCAL']:
-        print('task count: ', len(scripts))
-        pool = Pool(WORKER_POOL_SIZE)
-        pool.map(call_script, scripts)
-        pool.close()
-        pool.join()
-
-    elif CLUSTER_MODE == EnvMode['AWS']:
-
-        batch_client = boto3.client(
-            service_name='batch',
-            region_name='us-east-1',
-            endpoint_url='https://batch.us-east-1.amazonaws.com')
-
-        for script_or_config in scripts:
-            print('AWS_CONFIG: ', script_or_config)
-            res = batch_client.submit_job(**script_or_config)
-            print(res)
 
 def build_tasks(new_gt_id, args, task_type, model_type):
 
@@ -86,9 +53,9 @@ if __name__ == "__main__":
     USE_API = False
     new_gt_id = None
 
-    # #If using API give this task a descriptive setting...
+    # If using API give this task a descriptive setting...
 
-    TASK_TITLE = "A produce some NRML configs from "
+    TASK_TITLE = "Openquake Hazard calcs "
     TASK_DESCRIPTION = """first run locally """
 
     headers={"x-api-key":API_KEY}
@@ -96,7 +63,8 @@ if __name__ == "__main__":
 
     args = dict(
         config_files = ["many-sites_3-periods_vs30-475.ini", "4-sites_many-periods_vs30-475.ini"],
-        work_folder = "examples/18_SWRG_INIT",
+        #TODO: These are the GTs producing NRMLS from one or more Inversion GTS (is this a good approach??....)
+        #it's convenient because inf the config & run stages the file_utils has all it needs here
         general_tasks = ["R2VuZXJhbFRhc2s6MTAwMTk2", "R2VuZXJhbFRhc2s6MTAwMjA2"]
     )
 
@@ -104,19 +72,20 @@ if __name__ == "__main__":
     for key, value in args.items():
         args_list.append(dict(k=key, v=value))
 
-    task_type = SubtaskType.HAZARD
-    model_type = 'CRUSTAL'
+    task_type = SubtaskType.OPENQUAKE_HAZARD
+    #model_type = 'CRUSTAL'
 
-    # if USE_API:
-    #     #create new task in toshi_api
-    #     gt_args = CreateGeneralTaskArgs(
-    #         agent_name=pwd.getpwuid(os.getuid()).pw_name,
-    #         title=TASK_TITLE,
-    #         description=TASK_DESCRIPTION
-    #         )\
-    #         .set_argument_list(args_list)\
-    #         .set_subtask_type(task_type.name)\
-    #         .set_model_type(model_type)
+    if USE_API:
+
+        #create new task in toshi_api
+        gt_args = CreateGeneralTaskArgs(
+            agent_name=pwd.getpwuid(os.getuid()).pw_name,
+            title=TASK_TITLE,
+            description=TASK_DESCRIPTION
+            )\
+            .set_argument_list(args_list)\
+            .set_subtask_type(task_type.name)
+            # .set_model_type(model_type)
 
     #     new_gt_id = toshi_api.general_task.create_task(gt_args)
 
@@ -125,7 +94,6 @@ if __name__ == "__main__":
     tasks = build_tasks(new_gt_id, args, task_type, model_type)
 
     # toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
-
     print('worker count: ', WORKER_POOL_SIZE)
 
     print( tasks )

@@ -15,11 +15,11 @@ from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 class SubtaskType(Enum):
     RUPTURE_SET = 10
     INVERSION = 20
-    HAZARD = 30
+    HAZARD = 30 #Todo maybe DEPRECATED ?
     REPORT = 40
     SCALE_SOLUTION = 50
     SOLUTION_TO_NRML = 60
-    OPENSHA_HAZARD = 70
+    OPENQUAKE_HAZARD = 70
 
 class CreateGeneralTaskArgs(object):
 
