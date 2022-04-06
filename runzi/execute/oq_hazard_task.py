@@ -80,6 +80,8 @@ class BuilderTask():
                 file_names = file_names,
                 config_file = config_file,
                 work_folder = subtask_arguments['work_folder'],
+                source_tag = sources['tag'],
+                source_names = source_names
                 )
 
             print(task_arguments)
@@ -116,13 +118,18 @@ class BuilderTask():
         src_xml = build_sources_xml(sources_list)
 
         print(src_xml)
-
-        write_sources(src_xml, Path(srcs_folder,'source_model.xml'))
-
+        source_file = f'source_model_{ta["source_tag"]}.xml'
+        
+        write_sources(src_xml, Path(srcs_folder,source_file))
+        
         configfile = Path(target_folder, ta["config_file"])
         logfile = Path(target_folder, "jobs", f'{ta["solution_ids"][0]}.log')
 
         try:
+
+            cmd = ['cp',str(Path(srcs_folder,source_file)),str(Path(srcs_folder,'source_model.xml'))]
+            print(f'cmd 0: {cmd}')
+            subprocess.check_call(cmd)
 
             #oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
             cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
@@ -168,7 +175,11 @@ class BuilderTask():
             print(f'cmd 2: {cmd}')
             subprocess.check_call(cmd)
 
-            cmd = ["cp", f"/home/openquake/oqdata/calc_{last_task}.hdf5", str(output_path)]
+             #TODO need envvar here
+            # OPENQUAKE_DATA_FOLDER = "/home/openquake/oqdata/" # docker
+            OPENQUAKE_DATA_FOLDER = "/home/chrisdc/oqdata/" # w/o docker
+
+            cmd = ["cp", f"{OPENQUAKE_DATA_FOLDER}calc_{last_task}.hdf5", str(output_path)]
             print(f'cmd 3: {cmd}')
 
             subprocess.check_call(cmd)
