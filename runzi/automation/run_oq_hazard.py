@@ -97,7 +97,9 @@ if __name__ == "__main__":
     args = dict(
         config_files = ["many-sites_3-periods_vs30-475.ini", "4-sites_many-periods_vs30-475.ini"],
         work_folder = "examples/18_SWRG_INIT",
-        general_tasks = ["R2VuZXJhbFRhc2s6MTAwMTk2", "R2VuZXJhbFRhc2s6MTAwMjA2"]
+        #TODO: it is currently up to the user to make sure each nrml id has a unique prefix
+        nrml_ids = ["SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==", #crustal
+        "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="] #hik
     )
 
     args_list = []

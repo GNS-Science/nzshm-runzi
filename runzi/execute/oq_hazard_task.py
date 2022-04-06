@@ -76,13 +76,10 @@ class BuilderTask():
 
         '''
             task_arguments = dict(
-                tectonic_region_type = tectonic_region_type,
-                solution_id = str(solution_info['id']),
-                file_name = solution_info['info']['file_name'],
-                model_type = model_type,
-                config_file = subtask_arguments['config_file'],
+                solution_ids = sids,
+                file_names = file_names,
+                config_file = config_file,
                 work_folder = subtask_arguments['work_folder'],
-                upstream_general_task=source_gt_id
                 )
 
             print(task_arguments)
@@ -101,9 +98,16 @@ class BuilderTask():
 
 
         def unpack_sources(ta, source_path):
-            with zipfile.ZipFile(Path(WORK_PATH, "downloads", ta['solution_id'], ta["file_name"]), 'r') as zip_ref:
-                zip_ref.extractall(source_path)
-                return zip_ref.namelist()
+            namelist = []
+            for solution_id,file_name in zip(ta['solution_ids'],ta['file_names']):
+                print('=============')
+                print('solution_id:',solution_id)
+                print('file_name:',file_name)
+                print('=============')
+                with zipfile.ZipFile(Path(WORK_PATH, "downloads", solution_id, file_name), 'r') as zip_ref:
+                    zip_ref.extractall(source_path)
+                    namelist += zip_ref.namelist()
+            return namelist
 
         sources_list = unpack_sources(ta, srcs_folder)
 
@@ -113,10 +117,10 @@ class BuilderTask():
 
         print(src_xml)
 
-        write_sources(src_xml, Path(target_folder, 'source_model.xml'))
+        write_sources(src_xml, Path(srcs_folder,'source_model.xml'))
 
         configfile = Path(target_folder, ta["config_file"])
-        logfile = Path(target_folder, "jobs", f'{ta["solution_id"]}.log')
+        logfile = Path(target_folder, "jobs", f'{ta["solution_ids"][0]}.log')
 
         try:
 

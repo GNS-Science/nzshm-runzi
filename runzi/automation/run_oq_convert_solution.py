@@ -98,8 +98,8 @@ if __name__ == "__main__":
     args = dict(
         rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km
         investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years
-        general_tasks = ["R2VuZXJhbFRhc2s6MjQ4ODdRTkhH"],
-        prefix = 'crustal'
+        general_tasks = ["R2VuZXJhbFRhc2s6MTAwMzA5"],
+        prefix = 'hik'
     )
 
     args_list = []
@@ -107,7 +107,7 @@ if __name__ == "__main__":
         args_list.append(dict(k=key, v=value))
 
     task_type = SubtaskType.SOLUTION_TO_NRML
-    model_type = 'CRUSTAL'
+    model_type = 'SUBDUCTION'
 
     if USE_API:
         #create new task in toshi_api
