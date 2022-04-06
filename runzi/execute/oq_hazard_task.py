@@ -7,6 +7,7 @@ import os
 import io
 import zipfile
 import subprocess
+import requests
 
 from pathlib import Path, PurePath
 from importlib import import_module
@@ -54,22 +55,20 @@ def write_meta(filepath, task_arguments, job_arguments):
         mf.write( ",\n")
 
 def unpack_sources(ta, source_path):
-    with zipfile.ZipFile(Path(WORK_PATH, "downloads", ta['solution_id'], ta["file_name"]), 'r') as zip_ref:
+    with zipfile.ZipFile(Path(WORK_PATH, "downloads", ta['nrml_id'], ta["file_name"]), 'r') as zip_ref:
         zip_ref.extractall(source_path)
         return zip_ref.namelist()
 
-def explode_config_template(toshi_api:ToshiApi, working_path: str, config_template_id: str):
+def explode_config_template(config_info, working_path: str):
     config_folder = Path(working_path, "config")
 
-    filedeets = toshi_api.file.get_download_url(config_template_id)
-
-    r1 = requests.get(filedeets['file_url'])
-    file_path = Path(working_path, filedeets['file_name'])
+    r1 = requests.get(config_info['file_url'])
+    file_path = Path(working_path, config_info['file_name'])
 
     with open(file_path, 'wb') as f:
         f.write(r1.content)
         print("downloaded input file:", file_path, f)
-        assert os.path.getsize(file_path) == filedeets['file_size']
+        assert os.path.getsize(file_path) == config_info['file_size']
 
     with zipfile.ZipFile(file_path, 'r') as zip_ref:
         zip_ref.extractall(config_folder)
@@ -148,7 +147,7 @@ class BuilderTask():
 
         headers={"x-api-key":API_KEY}
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-        self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+        #self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
     def run(self, task_arguments, job_arguments):
         # Run the task....
@@ -172,11 +171,11 @@ class BuilderTask():
 
         # get the configuration_archive
         # see run_build_openquake_config_template.py
-        config_folder = explode_config_template(
-            self._toshi_api,
-            work_folder,
-            ta.get('config_template_id', 'RmlsZToxOA=='),)
+        config_info = self._toshi_api.file.get_download_url(ta['hazard_config_id'])
 
+        print(config_info)
+
+        config_folder = explode_config_template(config_info, work_folder)
         sources_folder = Path(config_folder, 'sources')
 
         # the download of sources to have occurred already prepare_inputs
@@ -187,7 +186,7 @@ class BuilderTask():
         # the local source_models.xml file must be written to the configuration
         src_xml = build_sources_xml(sources_list)
         print(src_xml)
-        write_sources(src_xml, Path(config_folder, 'source_model.xml'))
+        write_sources(src_xml, Path(sources_folder, 'source_model.xml'))
 
         ## now the complete config is written and ready to use, lets zip it and save it in the API.
         ## TODO
@@ -195,8 +194,8 @@ class BuilderTask():
         ## link the OpenquakeHazardTask, with the config
 
         # Do the heavy lifting in openquake , passing the config
-        configfile = Path(config_folder, ta["config_file"])
-        logfile = Path(work_folder, f'{ta["solution_id"]}.log')
+        configfile = Path(config_folder, config_info["file_name"])
+        logfile = Path(work_folder, f'openquake.log')
 
         execute_openquake(configfile, logfile)
 
@@ -206,7 +205,6 @@ class BuilderTask():
         ## Mark the OpenquakeHazardTask as Done
         t1 = dt.datetime.utcnow()
         print("Task took %s secs" % (t1-t0).total_seconds())
-
 
 if __name__ == "__main__":
 
@@ -221,30 +219,6 @@ if __name__ == "__main__":
     except:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
-
-
-    #TESTING
-
-    # nrml_id = str(nrml_info['id']),
-    # file_name = nrml_info['info']['file_name'],
-    # config_file = config_file,
-    # work_folder = subtask_arguments['work_folder'],
-    # upstream_general_task=source_gt_id
-
-    config = {
-        "task_arguments": {
-            "nrml_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mg==",
-            "file_name": "NZSHM22_ScaledInversionSolution-QXV0b21hdGlvblRhc2s6MTAwMTIx_nrml.zip",
-            "config_file": "many-sites_3-periods_vs30-475.ini",
-            "upstream_general_task": "R2VuZXJhbFRhc2s6MTAwMjA2"
-        },
-        "job_arguments": {
-            "task_id": 12,
-            "working_path": "/app/tmp",
-            "general_task_id": null,
-            "use_api": true
-        }
-    }
 
     task = BuilderTask(config['job_arguments'])
     task.run(**config)

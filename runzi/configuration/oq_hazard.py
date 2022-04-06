@@ -20,7 +20,7 @@ import runzi.execute.oq_hazard_task
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-def build_nrml_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: str, subtask_arguments):
+def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, subtask_arguments):
     task_count = 0
 
     headers={"x-api-key":API_KEY}
@@ -37,15 +37,15 @@ def build_nrml_tasks(general_task_id: str, subtask_type: SubtaskType, model_type
         solution_nrmls = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False,
                         skip_download=(CLUSTER_MODE == EnvMode['AWS']))
 
-        for config_file in subtask_arguments['config_files']:
+        for hazard_config_id in subtask_arguments["hazard_configs"]:
             for (sid, nrml_info) in solution_nrmls.items():
 
                 task_count +=1
 
                 task_arguments = dict(
                     nrml_id = str(nrml_info['id']),
-                    file_name = nrml_info['info']['file_name'],
-                    config_file = config_file,
+                    file_name = nrml_info['info']['file_name'], #One NRML , what about multiple NRMLs
+                    hazard_config_id = hazard_config_id,
                     upstream_general_task=source_gt_id
                     )
 

@@ -88,18 +88,21 @@ class OpenquakeHazardConfig(object):
     def get_hazard_config(self, config_id):
 
         qry = '''
-        query get_sol_tables ($config_id: ID!) {
+        query get_hazard_config ($config_id: ID!) {
           node(id:$config_id) {
             __typename
             ... on OpenquakeHazardConfig{
               created
-              source_models {
-                id
-                source_solution {
-                    id
-                    file_name
-                }
-              }
+              file_name
+              file_url
+              file_size
+              # source_models {
+              #   id
+              #   source_solution {
+              #       id
+              #       file_name
+              #   }
+              # }
             }
           }
         }

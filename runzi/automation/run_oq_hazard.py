@@ -13,7 +13,7 @@ import os
 import datetime as dt
 from dateutil.tz import tzutc
 
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
+from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
 from runzi.configuration.oq_hazard import build_hazard_tasks
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
@@ -25,10 +25,10 @@ WORKER_POOL_SIZE = 1
 HAZARD_MAX_TIME = 15
 USE_API = True
 
-def build_tasks(new_gt_id, args, task_type, model_type):
+def build_tasks(new_gt_id, args, task_type):
 
     scripts = []
-    for script_file in build_hazard_tasks(new_gt_id, task_type, model_type, args):
+    for script_file in build_hazard_tasks(new_gt_id, task_type, args):
         print('scheduling: ', script_file)
         scripts.append(script_file)
 
@@ -50,7 +50,6 @@ if __name__ == "__main__":
 
     log = logging.getLogger(__name__)
 
-    USE_API = False
     new_gt_id = None
 
     # If using API give this task a descriptive setting...
@@ -62,10 +61,11 @@ if __name__ == "__main__":
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     args = dict(
-        config_files = ["many-sites_3-periods_vs30-475.ini", "4-sites_many-periods_vs30-475.ini"],
+        #config_files = ["many-sites_3-periods_vs30-475.ini", "4-sites_many-periods_vs30-475.ini"],
+        hazard_configs = ['RmlsZToxOA=='],
         #TODO: These are the GTs producing NRMLS from one or more Inversion GTS (is this a good approach??....)
         #it's convenient because inf the config & run stages the file_utils has all it needs here
-        general_tasks = ["R2VuZXJhbFRhc2s6MTAwMTk2", "R2VuZXJhbFRhc2s6MTAwMjA2"]
+        general_tasks = ["R2VuZXJhbFRhc2s6Nzg="] #"R2VuZXJhbFRhc2s6MTAwMTk2", "R2VuZXJhbFRhc2s6MTAwMjA2"]
     )
 
     args_list = []
@@ -73,7 +73,7 @@ if __name__ == "__main__":
         args_list.append(dict(k=key, v=value))
 
     task_type = SubtaskType.OPENQUAKE_HAZARD
-    #model_type = 'CRUSTAL'
+    model_type = ModelType.COMPOSITE
 
     if USE_API:
 
@@ -84,14 +84,14 @@ if __name__ == "__main__":
             description=TASK_DESCRIPTION
             )\
             .set_argument_list(args_list)\
-            .set_subtask_type(task_type.name)
-            # .set_model_type(model_type)
+            .set_subtask_type(task_type)\
+            .set_model_type(model_type)
 
-    #     new_gt_id = toshi_api.general_task.create_task(gt_args)
+        new_gt_id = toshi_api.general_task.create_task(gt_args)
 
     print("GENERAL_TASK_ID:", new_gt_id)
 
-    tasks = build_tasks(new_gt_id, args, task_type, model_type)
+    tasks = build_tasks(new_gt_id, args, task_type)
 
     # toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
     print('worker count: ', WORKER_POOL_SIZE)

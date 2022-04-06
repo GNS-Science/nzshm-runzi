@@ -13,7 +13,7 @@ from nshm_toshi_client.toshi_task_file import ToshiTaskFile
 
 from .inversion_solution import InversionSolution
 from .scaled_inversion_solution import ScaledInversionSolution
-from .general_task import GeneralTask, CreateGeneralTaskArgs, SubtaskType
+from .general_task import GeneralTask, CreateGeneralTaskArgs, SubtaskType, ModelType
 from .automation_task import AutomationTask
 from .inversion_solution_nrml import InversionSolutionNrml
 
