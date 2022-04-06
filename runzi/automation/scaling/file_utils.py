@@ -65,11 +65,12 @@ def get_output_file_id(file_api, single_file_id):
                 file_name = api_result['file_name'],
                 file_size = api_result['file_size']
                 )
-        for kv in api_result['meta']:
-            if kv.get('k') == 'fault_model':
-                fault_model = kv.get('v')
 
         if api_result.get('meta'):
+            for kv in api_result['meta']:
+                if kv.get('k') == 'fault_model':
+                    fault_model = kv.get('v')
+        
             for kv in api_result['meta']:
                 if kv.get('k') == 'max_jump_distance':
                     max_jump_distance = kv.get('v')
