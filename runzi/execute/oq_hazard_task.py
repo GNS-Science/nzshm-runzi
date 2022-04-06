@@ -123,7 +123,7 @@ class BuilderTask():
         write_sources(src_xml, Path(srcs_folder,source_file))
         
         configfile = Path(target_folder, ta["config_file"])
-        logfile = Path(target_folder, "jobs", f'{ta["solution_ids"][0]}.log')
+        logfile = Path(target_folder, "jobs", f'{ta["source_tag"]}.log')
 
         try:
 

@@ -101,8 +101,8 @@ if __name__ == "__main__":
         #TODO: it is currently up to the user to make sure each nrml id has a unique prefix
         source_combos = [
             {'tag':'combined','nrml_ids':{'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
-            {'tag':'crustal only','nrml_ids':{'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
-            {'tag':'hik only','nrml_ids':{'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}}
+            {'tag':'crustal_only','nrml_ids':{'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
+            {'tag':'hik_only','nrml_ids':{'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}}
         ]
     )
 
