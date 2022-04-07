@@ -9,7 +9,7 @@ import datetime as dt
 from dateutil.tz import tzutc
 
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.toshi_api import SubtaskType
+from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config
@@ -20,7 +20,7 @@ import runzi.execute.oq_hazard_task
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, subtask_arguments):
+def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments):
     task_count = 0
 
     headers={"x-api-key":API_KEY}
@@ -37,16 +37,17 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, subtask_
         solution_nrmls = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False,
                         skip_download=(CLUSTER_MODE == EnvMode['AWS']))
 
-        for hazard_config_id in subtask_arguments["hazard_configs"]:
+        for config_archive_id in subtask_arguments["config_archive_ids"]:
             for (sid, nrml_info) in solution_nrmls.items():
 
                 task_count +=1
 
                 task_arguments = dict(
-                    nrml_id = str(nrml_info['id']),
-                    file_name = nrml_info['info']['file_name'], #One NRML , what about multiple NRMLs
-                    hazard_config_id = hazard_config_id,
-                    upstream_general_task=source_gt_id
+                    nrml_id = nrml_info['id'], #One NRML, what about multiple NRMLs
+                    file_name = nrml_info['info']['file_name'],
+                    config_archive_id = config_archive_id, #File archive object
+                    upstream_general_task=source_gt_id,
+                    model_type = model_type.name
                     )
 
                 print(task_arguments)

@@ -8,6 +8,7 @@ import io
 import zipfile
 import subprocess
 import requests
+import platform
 
 from pathlib import Path, PurePath
 from importlib import import_module
@@ -15,6 +16,7 @@ import datetime as dt
 from dateutil.tz import tzutc
 
 from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
+from nshm_toshi_client.task_relation import TaskRelation
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 
 def build_sources_xml(sources_list):
@@ -33,7 +35,7 @@ def build_sources_xml(sources_list):
     </logicTree>
 </nrml>
 """
-    insert = " " * 16 #indentation is nice
+    insert = " " * 16 #coz some indentation is nice
     for filepath in sources_list:
         insert += f"{filepath}\n"
 
@@ -44,15 +46,29 @@ def write_sources(xml_str, filepath):
     with open(filepath, 'w') as mf:
         mf.write(xml_str)
 
-def write_meta(filepath, task_arguments, job_arguments):
-    meta = dict(
-        solution_id = task_arguments["solution_id"],
-        general_task_id = job_arguments['general_task_id'],
-        meta =  dict(task_arguments=task_arguments, job_arguments=job_arguments))
+# def write_meta(filepath, task_arguments, job_arguments):
+#     meta = dict(
+#         solution_id = task_arguments["solution_id"],
+#         general_task_id = job_arguments['general_task_id'],
+#         meta =  dict(task_arguments=task_arguments, job_arguments=job_arguments))
 
-    with open(filepath, 'a') as mf:
-        mf.write( json.dumps(meta, indent=4) )
-        mf.write( ",\n")
+#     with open(filepath, 'a') as mf:
+#         mf.write( json.dumps(meta, indent=4) )
+#         mf.write( ",\n")
+
+
+def archive(source_path, output_zip):
+    '''
+    zip contents of source path and return the full archive path.
+    '''
+    zip = zipfile.ZipFile(output_zip, 'w')
+
+    for root, dirs, files in os.walk(source_path):
+        for file in files:
+            filename = str(PurePath(root, file))
+            arcname = str(filename).replace(source_path, '')
+            zip.write(filename, arcname )
+    return output_zip
 
 def unpack_sources(ta, source_path):
     with zipfile.ZipFile(Path(WORK_PATH, "downloads", ta['nrml_id'], ta["file_name"]), 'r') as zip_ref:
@@ -76,10 +92,16 @@ def explode_config_template(config_info, working_path: str):
 
 
 def execute_openquake(configfile, logfile):
+
+    oq_result = dict()
+
     if SPOOF_HAZARD:
         print("execute_openquake skipping SPOOF=True")
-        return
-
+        oq_result['csv_archive']=Path(f"{configfile}.csv_archive.zip")
+        oq_result['hdf5_archive']=Path(f"{configfile}.hdf5_archive.zip")
+        oq_result['csv_archive'].touch()
+        oq_result['hdf5_archive'].touch()
+        return oq_result
     try:
 
         #oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
@@ -126,17 +148,26 @@ def execute_openquake(configfile, logfile):
         print(f'cmd 2: {cmd}')
         subprocess.check_call(cmd)
 
-        cmd = ["cp", f"/home/openquake/oqdata/calc_{last_task}.hdf5", str(output_path)]
-        print(f'cmd 3: {cmd}')
+        oq_result['csv_archive'] = archive(Path(output_path), Path(WORK_PATH, 'oq_csv_archive.zip'))
 
-        subprocess.check_call(cmd)
+        #oq_result['csv_archive'] = "output_path"
+        #cmd = ["cp", f"/home/openquake/oqdata/calc_{last_task}.hdf5", str(output_path)]
+        #print(f'cmd 3: {cmd}')
+        #subprocess.check_call(cmd)
+
+        OQDATA = "/home/openquake/oqdata"
+        hdf5_file = f"calc_{last_task}.hdf5"
+        oq_result['hdf5_archive'] = archive(Path(OQDATA, hdf5_file), Path(WORK_PATH, 'oq_hdf5_archive.zip'))
 
         #Not need for API
-        write_meta(Path(work_folder, 'metadata.json'), task_arguments, job_arguments)
+        # write_meta(Path(work_folder, 'metadata.json'), task_arguments, job_arguments)
+
 
     except Exception as err:
         print(f"err: {err}")
 
+
+    return oq_result
 
 class BuilderTask():
 
@@ -147,62 +178,99 @@ class BuilderTask():
 
         headers={"x-api-key":API_KEY}
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-        #self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+        self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
     def run(self, task_arguments, job_arguments):
         # Run the task....
         t0 = dt.datetime.utcnow()
         ta, ja = task_arguments, job_arguments
 
+        environment = {
+            "host": platform.node(),
+            "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version"
+            }
+
         ## Create the OpenquakeHazardTask, with task details
         if self.use_api:
-            # task_id = self._toshi_api.automation_task.create_task(
-            #     dict(
-            #         created=dt.datetime.now(tzutc()).isoformat(),
-            #         task_type=SubtaskType.OPENQUAKE_HAZARD.value,
-            #         model_type=ta['config_type'].upper(),
-            #         ),
-            #     arguments=task_arguments,
-            #     environment=environment
-            #     )
-            pass
+
+            #create the configuration from the template
+            archive_id = ta['config_archive_id']
+            config_id = self._toshi_api.openquake_hazard_config.create_config(
+                [ta['nrml_id']],        # list [NRML source IDS],
+                archive_id) # config_archive_template file
+
+            #create the backref from the archive file to the configuration
+            # NB the archive file is created by run_save_oq_configuration_template.pt
+            self._toshi_api.openquake_hazard_config.create_archive_file_relation(
+                config_id, archive_id, role = 'READ')
+
+            #create new OpenquakeHazardTask, attaching the configuration (Revert standard AutomationTask)
+            task_id = self._toshi_api.openquake_hazard_task.create_task(
+                dict(
+                    created = dt.datetime.now(tzutc()).isoformat(),
+                    model_type = ta['model_type'].upper(),
+                    config_id = config_id
+                    ),
+                arguments=task_arguments,
+                environment=environment
+                )
+
+            #link OpenquakeHazardTask to the parent GT
+            gt_conn = self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
+            print(f"created task_relationship: {gt_conn} for at: {task_id} on GT: {job_arguments['general_task_id']}")
 
         work_folder = ja['working_path']
 
-        # get the configuration_archive
-        # see run_build_openquake_config_template.py
-        config_info = self._toshi_api.file.get_download_url(ta['hazard_config_id'])
+        # get the configuration_archive, we created above (maybe don't need the API for this step)
+        config_template_info = self._toshi_api.openquake_hazard_config.get_config(config_id)['archive']
+        print(config_template_info)
 
-        print(config_info)
+        #unpack the templates
+        config_folder = explode_config_template(config_template_info, work_folder)
 
-        config_folder = explode_config_template(config_info, work_folder)
+        # Expect the download of sources will have occurred already in prepare_inputs
+        # sources are the InversionSolutionNRML XML file(s) to include in the sources list
         sources_folder = Path(config_folder, 'sources')
-
-        # the download of sources to have occurred already prepare_inputs
-        # sources are the Openquake Source NRML XML file(s) to include in the sources list
         sources_list = unpack_sources(ta, sources_folder)
         print(f'sources_list: {sources_list}')
 
-        # the local source_models.xml file must be written to the configuration
+        # now the customised source_models.xml file must be written into the local configuration
         src_xml = build_sources_xml(sources_list)
         print(src_xml)
         write_sources(src_xml, Path(sources_folder, 'source_model.xml'))
 
-        ## now the complete config is written and ready to use, lets zip it and save it in the API.
-        ## TODO
-        ##
-        ## link the OpenquakeHazardTask, with the config
-
         # Do the heavy lifting in openquake , passing the config
-        configfile = Path(config_folder, config_info["file_name"])
+        for itm in config_template_info['meta']:
+            if itm['k'] == "config_filename":
+                config_filename = itm['v']
+                break
+
+        config_file = Path(config_folder, config_filename)
         logfile = Path(work_folder, f'openquake.log')
 
-        execute_openquake(configfile, logfile)
+        oq_result = execute_openquake(config_file, logfile)
 
-        ## TODO
-        ## Upload the hazard outputs
-        ## link the hazard outputs to the OpenquakeHazardTask
-        ## Mark the OpenquakeHazardTask as Done
+        if self.use_api:
+
+            # save the two output archives
+            csv_archive_id, post_url = self._toshi_api.file.create_file(oq_result['csv_archive'])
+            self._toshi_api.file.upload_content(post_url, oq_result['csv_archive'])
+
+            hdf5_archive_id, post_url = self._toshi_api.file.create_file(oq_result['hdf5_archive'])
+            self._toshi_api.file.upload_content(post_url, oq_result['hdf5_archive'])
+
+            # save the hazard solution
+            solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
+                config_id, csv_archive_id, hdf5_archive_id, produced_by=task_id)
+
+            # update the OpenquakeHazardTask
+            self._toshi_api.openquake_hazard_task.complete_task(
+                dict(task_id =task_id,
+                    hazard_solution_id = solution_id,
+                    duration = (dt.datetime.utcnow() - t0).total_seconds(),
+                    result = "SUCCESS",
+                    state = "DONE"))
+
         t1 = dt.datetime.utcnow()
         print("Task took %s secs" % (t1-t0).total_seconds())
 

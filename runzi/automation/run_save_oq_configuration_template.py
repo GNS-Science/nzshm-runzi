@@ -72,8 +72,8 @@ and save this as a ToshiAPI File object""")
 
         meta = dict(config_filename=args.config_filename, tag=args.tag)
 
-        file_id, post_url = toshi_api.file.create_file(archive_path, meta=meta)
+        archive_file_id, post_url = toshi_api.file.create_file(archive_path, meta=meta)
         toshi_api.file.upload_content(post_url, archive_path)
-        print(f"DONE, pushed {file_id} to ToshiAPI {API_URL}")
+        print(f"pushed {file_id} to ToshiAPI {API_URL}")
     else:
         print(f'DONE, archived openquake configuration template in {archive_path}')

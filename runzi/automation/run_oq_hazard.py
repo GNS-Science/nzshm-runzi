@@ -25,10 +25,10 @@ WORKER_POOL_SIZE = 1
 HAZARD_MAX_TIME = 15
 USE_API = True
 
-def build_tasks(new_gt_id, args, task_type):
+def build_tasks(new_gt_id, args, task_type, model_type):
 
     scripts = []
-    for script_file in build_hazard_tasks(new_gt_id, task_type, args):
+    for script_file in build_hazard_tasks(new_gt_id, task_type, model_type, args):
         print('scheduling: ', script_file)
         scripts.append(script_file)
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     args = dict(
         #config_files = ["many-sites_3-periods_vs30-475.ini", "4-sites_many-periods_vs30-475.ini"],
-        hazard_configs = ['RmlsZToxOA=='],
+        config_archive_ids = ['RmlsZToxOA=='], # a Toshi File containing zipped configuration
         #TODO: These are the GTs producing NRMLS from one or more Inversion GTS (is this a good approach??....)
         #it's convenient because inf the config & run stages the file_utils has all it needs here
         general_tasks = ["R2VuZXJhbFRhc2s6Nzg="] #"R2VuZXJhbFRhc2s6MTAwMTk2", "R2VuZXJhbFRhc2s6MTAwMjA2"]
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     print("GENERAL_TASK_ID:", new_gt_id)
 
-    tasks = build_tasks(new_gt_id, args, task_type)
+    tasks = build_tasks(new_gt_id, args, task_type, model_type)
 
     # toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
     print('worker count: ', WORKER_POOL_SIZE)
