@@ -95,9 +95,15 @@ if __name__ == "__main__":
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     args = dict(
-        config_files = ["many-sites_3-periods_vs30-475.ini", "4-sites_many-periods_vs30-475.ini"],
+        # config_files = ["many-sites_3-periods_vs30-475.ini", "4-sites_many-periods_vs30-475.ini"],
+        config_files = ["many-sites_3-periods_vs30-475.ini"],
         work_folder = "examples/18_SWRG_INIT",
-        general_tasks = ["R2VuZXJhbFRhc2s6MTAwMTk2", "R2VuZXJhbFRhc2s6MTAwMjA2"]
+        #TODO: it is currently up to the user to make sure each nrml id has a unique prefix
+        source_combos = [
+            {'tag':'combined','nrml_ids':{'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
+            {'tag':'crustal_only','nrml_ids':{'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
+            {'tag':'hik_only','nrml_ids':{'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}}
+        ]
     )
 
     args_list = []
@@ -105,7 +111,7 @@ if __name__ == "__main__":
         args_list.append(dict(k=key, v=value))
 
     task_type = SubtaskType.HAZARD
-    model_type = 'CRUSTAL'
+    model_type = 'CRUSTAL' #TODO not used
 
     # if USE_API:
     #     #create new task in toshi_api

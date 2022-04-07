@@ -76,13 +76,12 @@ class BuilderTask():
 
         '''
             task_arguments = dict(
-                tectonic_region_type = tectonic_region_type,
-                solution_id = str(solution_info['id']),
-                file_name = solution_info['info']['file_name'],
-                model_type = model_type,
-                config_file = subtask_arguments['config_file'],
+                solution_ids = sids,
+                file_names = file_names,
+                config_file = config_file,
                 work_folder = subtask_arguments['work_folder'],
-                upstream_general_task=source_gt_id
+                source_tag = sources['tag'],
+                source_names = source_names
                 )
 
             print(task_arguments)
@@ -101,9 +100,16 @@ class BuilderTask():
 
 
         def unpack_sources(ta, source_path):
-            with zipfile.ZipFile(Path(WORK_PATH, "downloads", ta['solution_id'], ta["file_name"]), 'r') as zip_ref:
-                zip_ref.extractall(source_path)
-                return zip_ref.namelist()
+            namelist = []
+            for solution_id,file_name in zip(ta['solution_ids'],ta['file_names']):
+                print('=============')
+                print('solution_id:',solution_id)
+                print('file_name:',file_name)
+                print('=============')
+                with zipfile.ZipFile(Path(WORK_PATH, "downloads", solution_id, file_name), 'r') as zip_ref:
+                    zip_ref.extractall(source_path)
+                    namelist += zip_ref.namelist()
+            return namelist
 
         sources_list = unpack_sources(ta, srcs_folder)
 
@@ -112,13 +118,18 @@ class BuilderTask():
         src_xml = build_sources_xml(sources_list)
 
         print(src_xml)
-
-        write_sources(src_xml, Path(target_folder, 'source_model.xml'))
-
+        source_file = f'source_model_{ta["source_tag"]}.xml'
+        
+        write_sources(src_xml, Path(srcs_folder,source_file))
+        
         configfile = Path(target_folder, ta["config_file"])
-        logfile = Path(target_folder, "jobs", f'{ta["solution_id"]}.log')
+        logfile = Path(target_folder, "jobs", f'{ta["source_tag"]}.log')
 
         try:
+
+            cmd = ['cp',str(Path(srcs_folder,source_file)),str(Path(srcs_folder,'source_model.xml'))]
+            print(f'cmd 0: {cmd}')
+            subprocess.check_call(cmd)
 
             #oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
             cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
@@ -152,7 +163,7 @@ class BuilderTask():
 
             last_task = get_last_task()
 
-            output_path = Path(WORK_PATH, ta["work_folder"], "output", ta["solution_id"])
+            output_path = Path(WORK_PATH, ta["work_folder"], "output", ta["source_tag"])
 
             #get the job ID
 
@@ -160,11 +171,15 @@ class BuilderTask():
             oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
             cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
             """
-            cmd = ['oq', 'engine', '--export-outputs', str(output_path)]
+            cmd = ['oq', 'engine', '--export-outputs', str(last_task), str(output_path)]
             print(f'cmd 2: {cmd}')
             subprocess.check_call(cmd)
 
-            cmd = ["cp", f"/home/openquake/oqdata/calc_{last_task}.hdf5", str(output_path)]
+             #TODO need envvar here
+            # OPENQUAKE_DATA_FOLDER = "/home/openquake/oqdata/" # docker
+            OPENQUAKE_DATA_FOLDER = "/home/chrisdc/oqdata/" # w/o docker
+
+            cmd = ["cp", f"{OPENQUAKE_DATA_FOLDER}calc_{last_task}.hdf5", str(output_path)]
             print(f'cmd 3: {cmd}')
 
             subprocess.check_call(cmd)
