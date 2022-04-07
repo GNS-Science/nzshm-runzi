@@ -163,7 +163,7 @@ class BuilderTask():
 
             last_task = get_last_task()
 
-            output_path = Path(WORK_PATH, ta["work_folder"], "output", ta["solution_id"])
+            output_path = Path(WORK_PATH, ta["work_folder"], "output", ta["source_tag"])
 
             #get the job ID
 
@@ -171,7 +171,7 @@ class BuilderTask():
             oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
             cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
             """
-            cmd = ['oq', 'engine', '--export-outputs', str(output_path)]
+            cmd = ['oq', 'engine', '--export-outputs', str(last_task), str(output_path)]
             print(f'cmd 2: {cmd}')
             subprocess.check_call(cmd)
 
