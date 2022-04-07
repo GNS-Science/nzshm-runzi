@@ -50,7 +50,8 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
                 scaling_relationship, scaling_recalc_mag,
                 deformation_model,
                 scaling_c_val,
-                initial_solution_id
+                initial_solution_id,
+                mfd_min_mag,
                 )\
             in itertools.product(
                 args['rounds'], args['completion_energies'], args['max_inversion_times'],
@@ -64,7 +65,8 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
                 args['scaling_relationships'], args['scaling_recalc_mags'],
                 args['deformation_models'],
                 args.get('scaling_c_vals', [None]),
-                args.get('initial_solution_ids', [None])
+                args.get('initial_solution_ids', [None]),
+                args.get('mfd_min_mags',[None])
                 ):
 
             task_count +=1
@@ -84,6 +86,7 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
                 mfd_mag_gt_5=mfd_mag_gt_5,
                 mfd_b_value=mfd_b_value,
                 mfd_transition_mag=mfd_transition_mag,
+                mfd_min_mag=mfd_min_mag,
 
                 mfd_uncertainty_weight=mfd_uncertainty_weight,
                 mfd_uncertainty_power=mfd_uncertainty_power,
