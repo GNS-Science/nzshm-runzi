@@ -63,28 +63,18 @@ def write_sources(xml_str, filepath):
 def archive(source_path, output_zip):
     '''
     zip contents of source path and return the full archive path.
+    handles both single file and a folder
     '''
     zip = zipfile.ZipFile(output_zip, 'w')
-
-    for root, dirs, files in os.walk(source_path):
-        for file in files:
-            filename = str(PurePath(root, file))
-            arcname = str(filename).replace(source_path, '')
-            zip.write(filename, arcname )
+    if os.path.isfile(source_path):
+        zip.write(source_path, PurePath(source_path).name )
+    else:
+        for root, dirs, files in os.walk(source_path):
+            for file in files:
+                filename = str(PurePath(root, file))
+                arcname = str(filename).replace(source_path, '')
+                zip.write(filename, arcname )
     return output_zip
-
-
-# def CDC_unpack_sources(ta, source_path):
-#     namelist = []
-#     for solution_id,file_name in zip(ta['solution_ids'],ta['file_names']):
-#         print('=============')
-#         print('solution_id:',solution_id)
-#         print('file_name:',file_name)
-#         print('=============')
-#         with zipfile.ZipFile(Path(WORK_PATH, "downloads", solution_id, file_name), 'r') as zip_ref:
-#             zip_ref.extractall(source_path)
-#             namelist += zip_ref.namelist()
-#     return namelist
 
 
 def explode_config_template(config_info, working_path: str):
@@ -103,7 +93,9 @@ def explode_config_template(config_info, working_path: str):
         return config_folder
 
 
-def execute_openquake(configfile, logfile):
+def execute_openquake(configfile, logfile, task_id):
+
+    task_id = task_id or "DUMMY_TASK_ID"
 
     oq_result = dict()
 
@@ -159,7 +151,7 @@ def execute_openquake(configfile, logfile):
         print(f'cmd 2: {cmd}')
         subprocess.check_call(cmd)
 
-        oq_result['csv_archive'] = archive(Path(output_path), Path(WORK_PATH, 'oq_csv_archive.zip'))
+        oq_result['csv_archive'] = archive(Path(output_path), Path(WORK_PATH, f'openquake_csv_archive-{task_id}.zip'))
 
         #oq_result['csv_archive'] = "output_path"
         #cmd = ["cp", f"/home/openquake/oqdata/calc_{last_task}.hdf5", str(output_path)]
@@ -168,14 +160,13 @@ def execute_openquake(configfile, logfile):
 
         OQDATA = "/home/openquake/oqdata"
         hdf5_file = f"calc_{last_task}.hdf5"
-        oq_result['hdf5_archive'] = archive(Path(OQDATA, hdf5_file), Path(WORK_PATH, 'oq_hdf5_archive.zip'))
+        oq_result['hdf5_archive'] = archive(Path(OQDATA, hdf5_file), Path(WORK_PATH, f'openquake_hdf5_archive-{task_id}.zip'))
 
-        #Not need for API
+        # No need for API
         # write_meta(Path(work_folder, 'metadata.json'), task_arguments, job_arguments)
 
     except Exception as err:
         print(f"err: {err}")
-
 
     return oq_result
 
@@ -222,6 +213,8 @@ class BuilderTask():
         log.info(f"ta['sources']['nrml_ids'] {[nrml_id for nrml_id in ta['sources']['nrml_ids'].values()]}")
 
         ## Create the OpenquakeHazardTask, with task details
+
+        task_id = None
         if self.use_api:
 
             #create the configuration from the template
@@ -272,7 +265,7 @@ class BuilderTask():
         print(src_xml)
         write_sources(src_xml, Path(sources_folder, 'source_model.xml'))
 
-        # Do the heavy lifting in openquake , passing the config
+        # Do the heavy lifting in openquake, passing the config
         for itm in config_template_info['meta']:
             if itm['k'] == "config_filename":
                 config_filename = itm['v']
@@ -280,8 +273,7 @@ class BuilderTask():
 
         config_file = Path(config_folder, config_filename)
         logfile = Path(work_folder, f'openquake.log')
-
-        oq_result = execute_openquake(config_file, logfile)
+        oq_result = execute_openquake(config_file, logfile, task_id)
 
         if self.use_api:
 
