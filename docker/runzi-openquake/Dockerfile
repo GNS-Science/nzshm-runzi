@@ -27,7 +27,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 
 RUN git fetch
-RUN git checkout feature/48-oq-hazard-part2
+RUN git checkout feature/90-new-ucerf-parser
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 

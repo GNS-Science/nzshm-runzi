@@ -26,7 +26,7 @@ class OpenquakeHazardConfig(object):
                   input: {
                       created: $created
                       source_models: $source_models
-                      archive: $archive_id
+                      template_archive: $archive_id
                   }
               )
               {
@@ -70,7 +70,7 @@ class OpenquakeHazardConfig(object):
             ... on OpenquakeHazardConfig{
               created
               source_models { id }
-              archive {
+              template_archive {
                 id
                 file_name
                 file_url

@@ -27,10 +27,49 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 WORKER_POOL_SIZE = 1
 USE_API = True
 
+<<<<<<< HEAD
 def build_tasks(new_gt_id, args, task_type, model_type):
 
     scripts = []
     for script_file in build_nrml_tasks(new_gt_id, task_type, model_type, args):
+=======
+def schedule_tasks(scripts):
+
+    def call_script(script_name):
+        print("call_script with:", script_name)
+        try:
+            if CLUSTER_MODE:
+                check_call(['qsub', script_name])
+            else:
+                check_call(['bash', script_name])
+        except Exception as err:
+            print(f"check_call err: {err}")
+
+    if CLUSTER_MODE == EnvMode['LOCAL']:
+        print('task count: ', len(scripts))
+        pool = Pool(WORKER_POOL_SIZE)
+        pool.map(call_script, scripts)
+        pool.close()
+        pool.join()
+
+    elif CLUSTER_MODE == EnvMode['AWS']:
+
+        batch_client = boto3.client(
+            service_name='batch',
+            region_name='us-east-1',
+            endpoint_url='https://batch.us-east-1.amazonaws.com')
+
+        for script_or_config in scripts:
+            print('AWS_CONFIG: ', script_or_config)
+            res = batch_client.submit_job(**script_or_config)
+            print(res)
+
+
+def build_tasks(new_gt_id, args, task_type, model_type,toshi_api):
+
+    scripts = []
+    for script_file in build_hazard_tasks(new_gt_id, task_type, model_type, toshi_api, args):
+>>>>>>> main
         print('scheduling: ', script_file)
         scripts.append(script_file)
 
@@ -65,7 +104,12 @@ if __name__ == "__main__":
     args = dict(
         rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km
         investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years
+<<<<<<< HEAD
         general_tasks = ["R2VuZXJhbFRhc2s6MjQ4ODdRTkhH"] # GTs that produced some inversion solutions to convert
+=======
+        general_tasks = ["R2VuZXJhbFRhc2s6MTAwMzA5"],
+        prefix = 'hik'
+>>>>>>> main
     )
 
     args_list = []
@@ -73,7 +117,7 @@ if __name__ == "__main__":
         args_list.append(dict(k=key, v=value))
 
     task_type = SubtaskType.SOLUTION_TO_NRML
-    model_type = 'CRUSTAL'
+    model_type = 'SUBDUCTION'
 
     if USE_API:
         #create new task in toshi_api
@@ -90,7 +134,7 @@ if __name__ == "__main__":
 
     print("GENERAL_TASK_ID:", new_gt_id)
 
-    tasks = build_tasks(new_gt_id, args, task_type, model_type)
+    tasks = build_tasks(new_gt_id, args, task_type, model_type,toshi_api)
 
     toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
 

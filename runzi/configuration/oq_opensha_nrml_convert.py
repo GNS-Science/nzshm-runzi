@@ -12,14 +12,19 @@ from dateutil.tz import tzutc
 from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config
+from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 
-import runzi.execute.openquake_hazard_task
+import runzi.execute.oq_hazard_task
 import runzi.execute.oq_opensha_convert_task
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
+<<<<<<< HEAD
 def build_nrml_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments):
+=======
+def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: str, toshi_api, subtask_arguments):
+>>>>>>> main
     task_count = 0
     factory_class = get_factory(CLUSTER_MODE)
 
@@ -46,13 +51,14 @@ def build_nrml_tasks(general_task_id: str, subtask_type: SubtaskType, model_type
                 tectonic_region_type = "Subduction Interface"
 
             task_arguments = dict(
-                rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km
-                investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years
+                rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km #TODO get from run_oq_convert_solution.py
+                investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years #TODO get from run_oq_convert_solution.py
                 tectonic_region_type = tectonic_region_type,
                 solution_id = str(solution_info['id']),
                 file_name = solution_info['info']['file_name'],
                 model_type=model_type,
-                general_task=source_gt_id
+                general_task=source_gt_id,
+                prefix=subtask_arguments['prefix']
                 )
 
             print(task_arguments)

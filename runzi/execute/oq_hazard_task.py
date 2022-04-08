@@ -2,13 +2,13 @@
 import argparse
 import json
 
-
 import os
 import io
 import zipfile
 import subprocess
 import requests
 import platform
+import logging
 
 from pathlib import Path, PurePath
 from importlib import import_module
@@ -18,6 +18,20 @@ from dateutil.tz import tzutc
 from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
 from nshm_toshi_client.task_relation import TaskRelation
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
+from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
+
+
+logging.basicConfig(level=logging.INFO)
+
+loglevel = logging.INFO
+logging.getLogger('py4j.java_gateway').setLevel(loglevel)
+logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
+logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
+logging.getLogger('urllib3').setLevel(loglevel)
+logging.getLogger('botocore').setLevel(loglevel)
+logging.getLogger('git.cmd').setLevel(loglevel)
+
+log = logging.getLogger(__name__)
 
 def build_sources_xml(sources_list):
     template = """
@@ -46,17 +60,6 @@ def write_sources(xml_str, filepath):
     with open(filepath, 'w') as mf:
         mf.write(xml_str)
 
-# def write_meta(filepath, task_arguments, job_arguments):
-#     meta = dict(
-#         solution_id = task_arguments["solution_id"],
-#         general_task_id = job_arguments['general_task_id'],
-#         meta =  dict(task_arguments=task_arguments, job_arguments=job_arguments))
-
-#     with open(filepath, 'a') as mf:
-#         mf.write( json.dumps(meta, indent=4) )
-#         mf.write( ",\n")
-
-
 def archive(source_path, output_zip):
     '''
     zip contents of source path and return the full archive path.
@@ -70,10 +73,19 @@ def archive(source_path, output_zip):
             zip.write(filename, arcname )
     return output_zip
 
-def unpack_sources(ta, source_path):
-    with zipfile.ZipFile(Path(WORK_PATH, "downloads", ta['nrml_id'], ta["file_name"]), 'r') as zip_ref:
-        zip_ref.extractall(source_path)
-        return zip_ref.namelist()
+
+# def CDC_unpack_sources(ta, source_path):
+#     namelist = []
+#     for solution_id,file_name in zip(ta['solution_ids'],ta['file_names']):
+#         print('=============')
+#         print('solution_id:',solution_id)
+#         print('file_name:',file_name)
+#         print('=============')
+#         with zipfile.ZipFile(Path(WORK_PATH, "downloads", solution_id, file_name), 'r') as zip_ref:
+#             zip_ref.extractall(source_path)
+#             namelist += zip_ref.namelist()
+#     return namelist
+
 
 def explode_config_template(config_info, working_path: str):
     config_folder = Path(working_path, "config")
@@ -135,7 +147,6 @@ def execute_openquake(configfile, logfile):
             return task
 
         last_task = get_last_task()
-
         output_path = Path(WORK_PATH, ta["work_folder"], "output", ta["solution_id"])
 
         #get the job ID
@@ -162,7 +173,6 @@ def execute_openquake(configfile, logfile):
         #Not need for API
         # write_meta(Path(work_folder, 'metadata.json'), task_arguments, job_arguments)
 
-
     except Exception as err:
         print(f"err: {err}")
 
@@ -179,6 +189,25 @@ class BuilderTask():
         headers={"x-api-key":API_KEY}
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+
+    def unpack_sources(self, ta, source_path):
+        """download and extract the sources"""
+
+        namelist = []
+        for src_name, nrml_id in ta['sources']['nrml_ids'].items():
+
+            log.info(f"get src : {src_name} {nrml_id}")
+
+            gen = get_output_file_id(self._toshi_api, nrml_id)
+
+            source_nrml = download_files(self._toshi_api, gen, str(WORK_PATH), overwrite=False)
+            log.info(f"source_nrml: {source_nrml}")
+
+            with zipfile.ZipFile(source_nrml[nrml_id]['filepath'], 'r') as zip_ref:
+                zip_ref.extractall(source_path)
+                namelist += zip_ref.namelist()
+        return namelist
+
 
     def run(self, task_arguments, job_arguments):
         # Run the task....
@@ -221,17 +250,19 @@ class BuilderTask():
 
         work_folder = ja['working_path']
 
+        # TODO this doesn't work if we don't use the API!!
         # get the configuration_archive, we created above (maybe don't need the API for this step)
-        config_template_info = self._toshi_api.openquake_hazard_config.get_config(config_id)['archive']
+        #config_template_info = self._toshi_api.file.get_download_url(ta['config_archive_id'])
+        config_template_info = self._toshi_api.get_file_detail(ta['config_archive_id'])
+
         print(config_template_info)
 
         #unpack the templates
         config_folder = explode_config_template(config_template_info, work_folder)
 
-        # Expect the download of sources will have occurred already in prepare_inputs
         # sources are the InversionSolutionNRML XML file(s) to include in the sources list
         sources_folder = Path(config_folder, 'sources')
-        sources_list = unpack_sources(ta, sources_folder)
+        sources_list = self.unpack_sources(ta, sources_folder)
         print(f'sources_list: {sources_list}')
 
         # now the customised source_models.xml file must be written into the local configuration

@@ -169,6 +169,7 @@ class ToshiApi(ToshiClientBase):
               file_name
               file_size
               meta {k v}
+              file_url
             }
           }
         }'''
