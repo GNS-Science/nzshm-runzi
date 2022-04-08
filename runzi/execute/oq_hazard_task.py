@@ -72,7 +72,7 @@ def archive(source_path, output_zip):
         for root, dirs, files in os.walk(source_path):
             for file in files:
                 filename = str(PurePath(root, file))
-                arcname = str(filename).replace(source_path, '')
+                arcname = filename.replace(str(source_path), '')
                 zip.write(filename, arcname )
     return output_zip
 
@@ -106,14 +106,13 @@ def execute_openquake(configfile, logfile, task_id):
         oq_result['csv_archive'].touch()
         oq_result['hdf5_archive'].touch()
         return oq_result
+
     try:
 
         #oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
         cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
-
-        print(f'cmd 1: {cmd}')
-
-        #subprocess.check_call(cmd)
+        log.info(f'cmd 1: {cmd}')
+        subprocess.check_call(cmd)
 
         def get_last_task():
             """
@@ -138,36 +137,27 @@ def execute_openquake(configfile, logfile, task_id):
 
             return task
 
+        #get the job ID
         last_task = get_last_task()
         output_path = Path(WORK_PATH, "output")
-
-        #get the job ID
 
         """
         oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
         cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
         """
-        cmd = ['oq', 'engine', '--export-outputs', last_task, str(output_path)]
-        print(f'cmd 2: {cmd}')
+        cmd = ['oq', 'engine', '--export-outputs', str(last_task), str(output_path)]
+        log.info(f'cmd 2: {cmd}')
         subprocess.check_call(cmd)
-
         oq_result['csv_archive'] = archive(Path(output_path), Path(WORK_PATH, f'openquake_csv_archive-{task_id}.zip'))
-
-        #oq_result['csv_archive'] = "output_path"
-        #cmd = ["cp", f"/home/openquake/oqdata/calc_{last_task}.hdf5", str(output_path)]
-        #print(f'cmd 3: {cmd}')
-        #subprocess.check_call(cmd)
 
         OQDATA = "/home/openquake/oqdata"
         hdf5_file = f"calc_{last_task}.hdf5"
         oq_result['hdf5_archive'] = archive(Path(OQDATA, hdf5_file), Path(WORK_PATH, f'openquake_hdf5_archive-{task_id}.zip'))
 
-        # No need for API
-        # write_meta(Path(work_folder, 'metadata.json'), task_arguments, job_arguments)
-
     except Exception as err:
         log.error(f"err: {err}")
 
+    log.info(f"oq_result {oq_result}")
     return oq_result
 
 class BuilderTask():
@@ -275,7 +265,6 @@ class BuilderTask():
         logfile = Path(work_folder, f'openquake.log')
         oq_result = execute_openquake(config_file, logfile, task_id)
 
-        log.info(f"oq_result {oq_result}")
 
         if self.use_api:
 
@@ -299,7 +288,7 @@ class BuilderTask():
                     state = "DONE"))
 
         t1 = dt.datetime.utcnow()
-        print("Task took %s secs" % (t1-t0).total_seconds())
+        log.info("Task took %s secs" % (t1-t0).total_seconds())
 
 if __name__ == "__main__":
 
