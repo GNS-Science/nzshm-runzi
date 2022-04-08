@@ -38,114 +38,228 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
         jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
         task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
 
-    for (rid, rupture_set_info) in rupture_sets.items():
-        for (_round, completion_energy, max_inversion_time,
-                mfd_equality_weight, mfd_inequality_weight,
-                slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight,
-                mfd_mag_gt_5, mfd_b_value, mfd_transition_mag,
-                selection_interval_secs, threads_per_selector, averaging_threads, averaging_interval_secs,
-                non_negativity_function, perturbation_function,
-                mfd_uncertainty_weight, mfd_uncertainty_power,
-                mfd_uncertainty_scalar,
-                scaling_relationship, scaling_recalc_mag,
-                deformation_model,
-                scaling_c_val,
-                initial_solution_id,
-                mfd_min_mag,
-                )\
-            in itertools.product(
-                args['rounds'], args['completion_energies'], args['max_inversion_times'],
-                args['mfd_equality_weights'], args['mfd_inequality_weights'],
-                args['slip_rate_weighting_types'], args['slip_rate_normalized_weights'], args['slip_rate_unnormalized_weights'],
-                args['mfd_mag_gt_5s'], args['mfd_b_values'], args['mfd_transition_mags'],
-                args['selection_interval_secs'], args['threads_per_selectors'], args['averaging_threads'], args['averaging_interval_secs'],
-                args['non_negativity_functions'], args['perturbation_functions'],
-                args['mfd_uncertainty_weights'], args['mfd_uncertainty_powers'],
-                args['mfd_uncertainty_scalars'],
-                args['scaling_relationships'], args['scaling_recalc_mags'],
-                args['deformation_models'],
-                args.get('scaling_c_vals', [None]),
-                args.get('initial_solution_ids', [None]),
-                args.get('mfd_min_mags',[None])
-                ):
+    if args.get('b_and_n'):
+        for b_and_n in args['b_and_n']:
+            for (rid, rupture_set_info) in rupture_sets.items():
+                for (_round, completion_energy, max_inversion_time,
+                        mfd_equality_weight, mfd_inequality_weight,
+                        slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight,
+                        mfd_mag_gt_5, mfd_b_value, mfd_transition_mag,
+                        selection_interval_secs, threads_per_selector, averaging_threads, averaging_interval_secs,
+                        non_negativity_function, perturbation_function,
+                        mfd_uncertainty_weight, mfd_uncertainty_power,
+                        mfd_uncertainty_scalar,
+                        scaling_relationship, scaling_recalc_mag,
+                        deformation_model,
+                        scaling_c_val,
+                        initial_solution_id,
+                        mfd_min_mag,
+                        )\
+                    in itertools.product(
+                        args['rounds'], args['completion_energies'], args['max_inversion_times'],
+                        args['mfd_equality_weights'], args['mfd_inequality_weights'],
+                        args['slip_rate_weighting_types'], args['slip_rate_normalized_weights'], args['slip_rate_unnormalized_weights'],
+                        [b_and_n['N']], [b_and_n['b']], args['mfd_transition_mags'],
+                        args['selection_interval_secs'], args['threads_per_selectors'], args['averaging_threads'], args['averaging_interval_secs'],
+                        args['non_negativity_functions'], args['perturbation_functions'],
+                        args['mfd_uncertainty_weights'], args['mfd_uncertainty_powers'],
+                        args['mfd_uncertainty_scalars'],
+                        args['scaling_relationships'], args['scaling_recalc_mags'],
+                        args['deformation_models'],
+                        args.get('scaling_c_vals', [None]),
+                        args.get('initial_solution_ids', [None]),
+                        args.get('mfd_min_mags',[None])
+                        ):
 
-            task_count +=1
+                    task_count +=1
 
-            task_arguments = dict(
-                round = _round,
-                config_type = 'subduction',
-                rupture_set_file_id=rupture_set_info['id'],
-                rupture_set=rupture_set_info['filepath'],
-                completion_energy=completion_energy,
-                max_inversion_time=max_inversion_time,
-                mfd_equality_weight=mfd_equality_weight,
-                mfd_inequality_weight=mfd_inequality_weight,
-                slip_rate_weighting_type=slip_rate_weighting_type,
-                slip_rate_normalized_weight=slip_rate_normalized_weight,
-                slip_rate_unnormalized_weight=slip_rate_unnormalized_weight,
-                mfd_mag_gt_5=mfd_mag_gt_5,
-                mfd_b_value=mfd_b_value,
-                mfd_transition_mag=mfd_transition_mag,
-                mfd_min_mag=mfd_min_mag,
+                    task_arguments = dict(
+                        round = _round,
+                        config_type = 'subduction',
+                        rupture_set_file_id=rupture_set_info['id'],
+                        rupture_set=rupture_set_info['filepath'],
+                        completion_energy=completion_energy,
+                        max_inversion_time=max_inversion_time,
+                        mfd_equality_weight=mfd_equality_weight,
+                        mfd_inequality_weight=mfd_inequality_weight,
+                        slip_rate_weighting_type=slip_rate_weighting_type,
+                        slip_rate_normalized_weight=slip_rate_normalized_weight,
+                        slip_rate_unnormalized_weight=slip_rate_unnormalized_weight,
+                        mfd_mag_gt_5=mfd_mag_gt_5,
+                        mfd_b_value=mfd_b_value,
+                        mfd_transition_mag=mfd_transition_mag,
+                        mfd_min_mag=mfd_min_mag,
 
-                mfd_uncertainty_weight=mfd_uncertainty_weight,
-                mfd_uncertainty_power=mfd_uncertainty_power,
-                mfd_uncertainty_scalar=mfd_uncertainty_scalar,
+                        mfd_uncertainty_weight=mfd_uncertainty_weight,
+                        mfd_uncertainty_power=mfd_uncertainty_power,
+                        mfd_uncertainty_scalar=mfd_uncertainty_scalar,
 
-                #New config arguments for Simulated Annealing ...
-                selection_interval_secs=selection_interval_secs,
-                threads_per_selector=threads_per_selector,
-                averaging_threads=averaging_threads,
-                averaging_interval_secs=averaging_interval_secs,
-                non_negativity_function=non_negativity_function,
-                perturbation_function=perturbation_function,
+                        #New config arguments for Simulated Annealing ...
+                        selection_interval_secs=selection_interval_secs,
+                        threads_per_selector=threads_per_selector,
+                        averaging_threads=averaging_threads,
+                        averaging_interval_secs=averaging_interval_secs,
+                        non_negativity_function=non_negativity_function,
+                        perturbation_function=perturbation_function,
 
-                scaling_relationship=scaling_relationship,
-                scaling_recalc_mag=scaling_recalc_mag,
-                deformation_model=deformation_model,
+                        scaling_relationship=scaling_relationship,
+                        scaling_recalc_mag=scaling_recalc_mag,
+                        deformation_model=deformation_model,
 
-                scaling_c_val=scaling_c_val,
-                initial_solution_id=initial_solution_id
-                )
+                        scaling_c_val=scaling_c_val,
+                        initial_solution_id=initial_solution_id,
 
-            job_arguments = dict(
-                task_id = task_count,
-                # round = round,
-                java_threads = int(threads_per_selector) * int(averaging_threads),
-                jvm_heap_max = JVM_HEAP_MAX,
-                java_gateway_port=task_factory.get_next_port(),
-                working_path=str(WORK_PATH),
-                root_folder=OPENSHA_ROOT,
-                general_task_id=general_task_id,
-                use_api = USE_API
-                )
+                        b_and_n = str(b_and_n)
+                        )
 
-            if CLUSTER_MODE == EnvMode['AWS']:
+                    job_arguments = dict(
+                        task_id = task_count,
+                        # round = round,
+                        java_threads = int(threads_per_selector) * int(averaging_threads),
+                        jvm_heap_max = JVM_HEAP_MAX,
+                        java_gateway_port=task_factory.get_next_port(),
+                        working_path=str(WORK_PATH),
+                        root_folder=OPENSHA_ROOT,
+                        general_task_id=general_task_id,
+                        use_api = USE_API
+                        )
 
-                job_name = f"Runzi-automation-subduction_inversions-{task_count}"
-                config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
+                    if CLUSTER_MODE == EnvMode['AWS']:
 
-                yield get_ecs_job_config(job_name, rupture_set_info['id'], config_data,
-                    toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
-                    task_module=inversion_solution_builder_task.__name__,
-                    time_minutes=int(max_inversion_time), memory=30720, vcpu=4)
+                        job_name = f"Runzi-automation-subduction_inversions-{task_count}"
+                        config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
 
-            else:
-                #write a config
-                task_factory.write_task_config(task_arguments, job_arguments)
+                        yield get_ecs_job_config(job_name, rupture_set_info['id'], config_data,
+                            toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
+                            task_module=inversion_solution_builder_task.__name__,
+                            time_minutes=int(max_inversion_time), memory=30720, vcpu=4)
 
-                script = task_factory.get_task_script()
+                    else:
+                        #write a config
+                        task_factory.write_task_config(task_arguments, job_arguments)
 
-                script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
-                with open(script_file_path, 'w') as f:
-                    f.write(script)
+                        script = task_factory.get_task_script()
 
-                #make file executable
-                st = os.stat(script_file_path)
-                os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
+                        script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
+                        with open(script_file_path, 'w') as f:
+                            f.write(script)
 
-                yield str(script_file_path)
-                #return
+                        #make file executable
+                        st = os.stat(script_file_path)
+                        os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
+
+                        yield str(script_file_path)
+
+    else:
+
+        for (rid, rupture_set_info) in rupture_sets.items():
+            for (_round, completion_energy, max_inversion_time,
+                    mfd_equality_weight, mfd_inequality_weight,
+                    slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight,
+                    mfd_mag_gt_5, mfd_b_value, mfd_transition_mag,
+                    selection_interval_secs, threads_per_selector, averaging_threads, averaging_interval_secs,
+                    non_negativity_function, perturbation_function,
+                    mfd_uncertainty_weight, mfd_uncertainty_power,
+                    mfd_uncertainty_scalar,
+                    scaling_relationship, scaling_recalc_mag,
+                    deformation_model,
+                    scaling_c_val,
+                    initial_solution_id,
+                    mfd_min_mag,
+                    )\
+                in itertools.product(
+                    args['rounds'], args['completion_energies'], args['max_inversion_times'],
+                    args['mfd_equality_weights'], args['mfd_inequality_weights'],
+                    args['slip_rate_weighting_types'], args['slip_rate_normalized_weights'], args['slip_rate_unnormalized_weights'],
+                    args['mfd_mag_gt_5s'], args['mfd_b_values'], args['mfd_transition_mags'],
+                    args['selection_interval_secs'], args['threads_per_selectors'], args['averaging_threads'], args['averaging_interval_secs'],
+                    args['non_negativity_functions'], args['perturbation_functions'],
+                    args['mfd_uncertainty_weights'], args['mfd_uncertainty_powers'],
+                    args['mfd_uncertainty_scalars'],
+                    args['scaling_relationships'], args['scaling_recalc_mags'],
+                    args['deformation_models'],
+                    args.get('scaling_c_vals', [None]),
+                    args.get('initial_solution_ids', [None]),
+                    args.get('mfd_min_mags',[None])
+                    ):
+
+                task_count +=1
+
+                task_arguments = dict(
+                    round = _round,
+                    config_type = 'subduction',
+                    rupture_set_file_id=rupture_set_info['id'],
+                    rupture_set=rupture_set_info['filepath'],
+                    completion_energy=completion_energy,
+                    max_inversion_time=max_inversion_time,
+                    mfd_equality_weight=mfd_equality_weight,
+                    mfd_inequality_weight=mfd_inequality_weight,
+                    slip_rate_weighting_type=slip_rate_weighting_type,
+                    slip_rate_normalized_weight=slip_rate_normalized_weight,
+                    slip_rate_unnormalized_weight=slip_rate_unnormalized_weight,
+                    mfd_mag_gt_5=mfd_mag_gt_5,
+                    mfd_b_value=mfd_b_value,
+                    mfd_transition_mag=mfd_transition_mag,
+                    mfd_min_mag=mfd_min_mag,
+
+                    mfd_uncertainty_weight=mfd_uncertainty_weight,
+                    mfd_uncertainty_power=mfd_uncertainty_power,
+                    mfd_uncertainty_scalar=mfd_uncertainty_scalar,
+
+                    #New config arguments for Simulated Annealing ...
+                    selection_interval_secs=selection_interval_secs,
+                    threads_per_selector=threads_per_selector,
+                    averaging_threads=averaging_threads,
+                    averaging_interval_secs=averaging_interval_secs,
+                    non_negativity_function=non_negativity_function,
+                    perturbation_function=perturbation_function,
+
+                    scaling_relationship=scaling_relationship,
+                    scaling_recalc_mag=scaling_recalc_mag,
+                    deformation_model=deformation_model,
+
+                    scaling_c_val=scaling_c_val,
+                    initial_solution_id=initial_solution_id
+                    )
+
+                job_arguments = dict(
+                    task_id = task_count,
+                    # round = round,
+                    java_threads = int(threads_per_selector) * int(averaging_threads),
+                    jvm_heap_max = JVM_HEAP_MAX,
+                    java_gateway_port=task_factory.get_next_port(),
+                    working_path=str(WORK_PATH),
+                    root_folder=OPENSHA_ROOT,
+                    general_task_id=general_task_id,
+                    use_api = USE_API
+                    )
+
+                if CLUSTER_MODE == EnvMode['AWS']:
+
+                    job_name = f"Runzi-automation-subduction_inversions-{task_count}"
+                    config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
+
+                    yield get_ecs_job_config(job_name, rupture_set_info['id'], config_data,
+                        toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
+                        task_module=inversion_solution_builder_task.__name__,
+                        time_minutes=int(max_inversion_time), memory=30720, vcpu=4)
+
+                else:
+                    #write a config
+                    task_factory.write_task_config(task_arguments, job_arguments)
+
+                    script = task_factory.get_task_script()
+
+                    script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
+                    with open(script_file_path, 'w') as f:
+                        f.write(script)
+
+                    #make file executable
+                    st = os.stat(script_file_path)
+                    os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
+
+                    yield str(script_file_path)
+                    #return
 
 
 # if __name__ == "__main__":
