@@ -109,11 +109,11 @@ def execute_openquake(configfile, logfile, task_id):
     try:
 
         #oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
-        #cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
+        cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
 
         print(f'cmd 1: {cmd}')
 
-        subprocess.check_call(cmd)
+        #subprocess.check_call(cmd)
 
         def get_last_task():
             """
@@ -147,7 +147,7 @@ def execute_openquake(configfile, logfile, task_id):
         oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
         cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
         """
-        cmd = ['oq', 'engine', '--export-outputs', str(output_path)]
+        cmd = ['oq', 'engine', '--export-outputs', last_task, str(output_path)]
         print(f'cmd 2: {cmd}')
         subprocess.check_call(cmd)
 
