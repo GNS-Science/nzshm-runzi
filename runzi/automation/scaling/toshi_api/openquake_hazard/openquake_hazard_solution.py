@@ -36,9 +36,9 @@ class OpenquakeHazardSolution(object):
               {
                 ok
                 openquake_hazard_solution { id
-                    config { archive { file_name }}
-                    csv_archive { file_name }
-                    hdf5_archive { file_name }
+                    # config { template_archive { file_name }}
+                    # csv_archive { file_name }
+                    # hdf5_archive { file_name }
                 }
               }
             }'''

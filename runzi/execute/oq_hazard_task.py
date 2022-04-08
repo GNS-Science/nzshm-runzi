@@ -219,13 +219,15 @@ class BuilderTask():
             "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version"
             }
 
+        log.info(f"ta['sources']['nrml_ids'] {[nrml_id for nrml_id in ta['sources']['nrml_ids'].values()]}")
+
         ## Create the OpenquakeHazardTask, with task details
         if self.use_api:
 
             #create the configuration from the template
             archive_id = ta['config_archive_id']
             config_id = self._toshi_api.openquake_hazard_config.create_config(
-                [ta['nrml_id']],        # list [NRML source IDS],
+                [nrml_id for nrml_id in ta['sources']['nrml_ids'].values()],        # list [NRML source IDS],
                 archive_id) # config_archive_template file
 
             #create the backref from the archive file to the configuration
