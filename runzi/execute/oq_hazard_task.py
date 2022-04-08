@@ -109,7 +109,7 @@ def execute_openquake(configfile, logfile, task_id):
     try:
 
         #oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
-        cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
+        #cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
 
         print(f'cmd 1: {cmd}')
 
@@ -139,7 +139,7 @@ def execute_openquake(configfile, logfile, task_id):
             return task
 
         last_task = get_last_task()
-        output_path = Path(WORK_PATH, ta["work_folder"], "output", ta["solution_id"])
+        output_path = Path(WORK_PATH, "output")
 
         #get the job ID
 
@@ -166,7 +166,7 @@ def execute_openquake(configfile, logfile, task_id):
         # write_meta(Path(work_folder, 'metadata.json'), task_arguments, job_arguments)
 
     except Exception as err:
-        print(f"err: {err}")
+        log.error(f"err: {err}")
 
     return oq_result
 
@@ -274,6 +274,8 @@ class BuilderTask():
         config_file = Path(config_folder, config_filename)
         logfile = Path(work_folder, f'openquake.log')
         oq_result = execute_openquake(config_file, logfile, task_id)
+
+        log.info(f"oq_result {oq_result}")
 
         if self.use_api:
 
