@@ -19,7 +19,7 @@ from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
 from nshm_toshi_client.task_relation import TaskRelation
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
-
+from runzi.util import archive
 
 logging.basicConfig(level=logging.INFO)
 
@@ -59,22 +59,6 @@ def build_sources_xml(sources_list):
 def write_sources(xml_str, filepath):
     with open(filepath, 'w') as mf:
         mf.write(xml_str)
-
-def archive(source_path, output_zip):
-    '''
-    zip contents of source path and return the full archive path.
-    handles both single file and a folder
-    '''
-    zip = zipfile.ZipFile(output_zip, 'w')
-    if os.path.isfile(source_path):
-        zip.write(source_path, PurePath(source_path).name )
-    else:
-        for root, dirs, files in os.walk(source_path):
-            for file in files:
-                filename = str(PurePath(root, file))
-                arcname = filename.replace(str(source_path), '')
-                zip.write(filename, arcname )
-    return output_zip
 
 
 def explode_config_template(config_info, working_path: str):
