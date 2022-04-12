@@ -57,7 +57,6 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
 
             job_arguments = dict(
                 task_id = task_count,
-                working_path = str(WORK_PATH),
                 general_task_id = general_task_id,
                 use_api = USE_API,
                 )

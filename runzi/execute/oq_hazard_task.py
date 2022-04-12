@@ -150,7 +150,6 @@ class BuilderTask():
     def __init__(self, job_args):
 
         self.use_api = job_args.get('use_api', False)
-        self._output_folder = PurePath(job_args.get('working_path'))
 
         headers={"x-api-key":API_KEY}
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
@@ -218,7 +217,7 @@ class BuilderTask():
             gt_conn = self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
             print(f"created task_relationship: {gt_conn} for at: {task_id} on GT: {job_arguments['general_task_id']}")
 
-        work_folder = ja['working_path']
+        work_folder = WORK_PATH
 
         # TODO this doesn't work if we don't use the API!!
         # get the configuration_archive, we created above (maybe don't need the API for this step)
@@ -249,7 +248,6 @@ class BuilderTask():
         config_file = Path(config_folder, config_filename)
         logfile = Path(work_folder, f'openquake.log')
         oq_result = execute_openquake(config_file, logfile, task_id)
-
 
         if self.use_api:
 

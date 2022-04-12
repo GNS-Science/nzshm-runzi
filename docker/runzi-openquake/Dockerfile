@@ -46,5 +46,8 @@ RUN pip install -e .
 
 USER openquake
 
+ENV NZSHM22_TOSHI_API_ENABLED=1
+ENV NZSHM22_SCRIPT_WORK_PATH=/WORKING
+
 CMD ["python3 /app/nzshm-runzi/runzi/cli/cli.py"]
 ENTRYPOINT ["/bin/bash", "-c"]

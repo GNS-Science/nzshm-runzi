@@ -49,27 +49,22 @@ if __name__ == "__main__":
     # If using API give this task a descriptive setting...
 
     TASK_TITLE = "Openquake Hazard calcs "
-    TASK_DESCRIPTION = """first run locally """
+    TASK_DESCRIPTION = """3 individual models & 1 combining all 3 models"""
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     args = dict(
-# <<<<<<< HEAD
-#         #config_files = ["many-sites_3-periods_vs30-475.ini", "4-sites_many-periods_vs30-475.ini"],
-#         config_archive_ids = ['RmlsZToxOA=='], # a Toshi File containing zipped configuration
-#         #TODO: These are the GTs producing NRMLS from one or more Inversion GTS (is this a good approach??....)
-#         #it's convenient because inf the config & run stages the file_utils has all it needs here
-#         general_tasks = ["R2VuZXJhbFRhc2s6Nzg="] #"R2VuZXJhbFRhc2s6MTAwMTk2", "R2VuZXJhbFRhc2s6MTAwMjA2"]
-# =======
         config_archive_ids = ["RmlsZToxMDAzNTc="], #LOCAL'RmlsZToxOA=='], # a Toshi File containing zipped configuration
         source_combos = [
-            # {'tag':'combined','nrml_ids':{
-            #     'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
-            # {'tag':'crustal_only','nrml_ids':{
-            #     'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
+            {'tag':'combined','nrml_ids':{
+                 'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
+                 'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ==",
+                 'bg': 'RmlsZToxMDA0ODg='}},
+            {'tag':'crustal_only','nrml_ids':{
+                 'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
             {'tag':'hik_only','nrml_ids':{'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
-            #{'tag': 'bg_only', 'nrml_ids': {'bg': 'RmlsZToxMDA0ODg='}},
+            {'tag': 'bg_only', 'nrml_ids': {'bg': 'RmlsZToxMDA0ODg='}},
         ]
     )
 
