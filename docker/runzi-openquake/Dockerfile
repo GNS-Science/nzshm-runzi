@@ -23,6 +23,10 @@ RUN pip install pytest
 
 # Install Runzi TODO:is this only for these test configs ??
 WORKDIR /app
+COPY script/container_task.sh .
+RUN chmod +x container_task.sh
+
+WORKDIR /app
 RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 
@@ -30,10 +34,6 @@ RUN git fetch
 RUN git checkout feature/89-integrate-openquake-and-toshiapi
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
-
-## Install Kirans grin2oq.py script
-# WORKDIR /app
-# ADD src/grin2oq.py .
 
 RUN chown openquake /WORKING
 

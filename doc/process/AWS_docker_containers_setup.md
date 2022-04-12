@@ -22,11 +22,19 @@ $ $(aws ecr get-login --no-include-email --region us-east-1)
 
 
 # Create ECR repoo
-$ aws ecr create-repository --repository-name nzshm22/runzi-opensha
+$ aws ecr create-repository --repository-name nzshm22/runzi-opensha # or nzshm22/runzi-runzi-openquake
 
 # push image into AWS ECR
+$ export AWS_ACCT=461564345538
+
+## OPENSHA
 $ docker tag nzshm22/runzi-opensha ${AWS_ACCT}.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:latest
-$ docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha
+$ docker push ${AWS_ACCT}.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha
+
+## OPENQUAKE
+$ docker tag nzshm22/runzi-openquake ${AWS_ACCT}.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:latest
+$ docker push ${AWS_ACCT}.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake
+
 
 #run the job
 $ aws batch submit-job --cli-input-json "$(<task-specs/job-submit-002.json)"

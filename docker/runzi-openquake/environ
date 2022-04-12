@@ -13,4 +13,4 @@ PYTHON_PREP_MODULE=runzi.execute.prepare_inputs
 
 #PER TASK ARGS....
 
-PYTHON_TASK_MODULE=runzi.execute.some_runzi_task_here
+PYTHON_TASK_MODULE=runzi.execute.oq_hazard_task
