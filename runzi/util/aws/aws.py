@@ -55,7 +55,8 @@ def get_secret(secret_name, region_name):
             return base64.b64decode(get_secret_value_response['SecretBinary'])
 
 
-def get_ecs_job_config(job_name, toshi_file_id, config, toshi_api_url, toshi_s3_url, toshi_report_bucket, task_module, time_minutes, memory, vcpu):
+def get_ecs_job_config(job_name, toshi_file_id, config, toshi_api_url, toshi_s3_url,
+    toshi_report_bucket, task_module, time_minutes, memory, vcpu, job_definition="Fargate-runzi-opensha-JD"):
 
     assert vcpu in  [0.25, 0.5, 1, 2, 4]
     assert memory in [
@@ -70,7 +71,7 @@ def get_ecs_job_config(job_name, toshi_file_id, config, toshi_api_url, toshi_s3_
     return {
         "jobName": job_name,
         "jobQueue": "BasicFargate_Q",
-        "jobDefinition": "Fargate-runzi-opensha-JD",
+        "jobDefinition": job_definition,
         "containerOverrides": {
             "command": [
                 "-s",

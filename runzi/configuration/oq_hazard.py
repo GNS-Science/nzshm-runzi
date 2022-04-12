@@ -33,108 +33,10 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
     factory_task = runzi.execute.oq_hazard_task
     task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
-# <<<<<<< HEAD
-#     for source_gt_id in subtask_arguments['general_tasks']:
-
-#         file_generator = get_output_file_ids(toshi_api, source_gt_id)
-#         solution_nrmls = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False,
-#                         skip_download=(CLUSTER_MODE == EnvMode['AWS']))
-
-#         for config_archive_id in subtask_arguments["config_archive_ids"]:
-#             for (sid, nrml_info) in solution_nrmls.items():
-
-#                 task_count +=1
-
-#                 task_arguments = dict(
-#                     nrml_id = nrml_info['id'], #One NRML, what about multiple NRMLs
-#                     file_name = nrml_info['info']['file_name'],
-#                     config_archive_id = config_archive_id, #File archive object
-#                     upstream_general_task=source_gt_id,
-#                     model_type = model_type.name
-#                     )
-
-#                 print(task_arguments)
-
-#                 job_arguments = dict(
-#                     task_id = task_count,
-#                     working_path = str(WORK_PATH),
-#                     general_task_id = general_task_id,
-#                     use_api = USE_API,
-#                     )
-
-#                 if CLUSTER_MODE == EnvMode['AWS']:
-#                     job_name = f"Runzi-automation-oq-convert-solution-{task_count}"
-#                     config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
-
-#                     #TODO: This is commented out until it supports new oq docker image
-#                     # yield get_ecs_job_config(job_name,
-#                     #     nrml_info['id'], config_data,
-#                     #     toshi_api_url=API_URL, toshi_s3_url=None, toshi_report_bucket=None,
-#                     #     task_module=runzi.execute.oq_opensha_convert_task.__name__,
-#                     #     time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4)
-
-#                 else:
-#                     #write a config
-#                     task_factory.write_task_config(task_arguments, job_arguments)
-#                     script = task_factory.get_task_script()
-
-#                     script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
-#                     with open(script_file_path, 'w') as f:
-#                         f.write(script)
-
-#                     #make file executable
-#                     st = os.stat(script_file_path)
-#                     os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
-
-#                     yield str(script_file_path)
-# =======
-
-    #for config_file in subtask_arguments['config_files']:
     for config_archive_id in subtask_arguments["config_archive_ids"]:
         for sources in subtask_arguments['source_combos']:
 
-            # file_generators = []
-            # source_names = []
-            # for src_name,nrml_id in sources['nrml_ids'].items():
-            #     file_generators.append(get_output_file_id(toshi_api, nrml_id))
-            #     source_names.append(src_name)
-
-            # solutions = download_files(toshi_api, chain(*file_generators), str(WORK_PATH), overwrite=False,
-            #                     skip_download=(CLUSTER_MODE == EnvMode['AWS']))
-
-            # print(solutions)
-
-            # nrml_sources = []
-            # for key, value in solutions.iteritems():
-            #     nrml_sources.append(dict(
-            #         nrml_id=key,
-            #         file_name=value['info']['file_name'],
-            #         prefix
-            #         ))
-
-
-            # sids = [str(solution_info['id']) for solution_info in solutions.values()]
-            # file_names = [solution_info['info']['file_name'] for solution_info in solutions.values()]
-
             task_count +=1
-
-            # # CDC version
-            # task_arguments = dict(
-            #     solution_ids = sids, #BUT are these actually the NRMLs rather than the SIDs?
-            #     file_names = file_names,
-            #     config_file = "WAS config_file" + config_archive_id,
-            #     work_folder = "WAS subtask_arguments['work_folder']",
-            #     source_tag = sources['tag'],
-            #     source_names = source_names #THESE are the prefixs for each source_nrml
-            #     )
-
-            # print('')
-            # print('task arguments CDC')
-            # print('==========================')
-            # print(task_arguments)
-            # print('==========================')
-            # print('')
-
             task_arguments = dict(
                 # nrml_id = nrml_info['id'], #One NRML, what about multiple NRMLs
                 # file_name = nrml_info['info']['file_name'],
@@ -162,12 +64,12 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 job_name = f"Runzi-automation-oq-convert-solution-{task_count}"
                 config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
 
-                #TODO: This is commented out until it supports new oq docker image
-                # yield get_ecs_job_config(job_name,
-                #     solution_info['id'], config_data,
-                #     toshi_api_url=API_URL, toshi_s3_url=None, toshi_report_bucket=None,
-                #     task_module=runzi.execute.oq_opensha_convert_task.__name__,
-                #     time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4)
+                yield get_ecs_job_config(job_name,
+                    solution_info['id'], config_data,
+                    toshi_api_url=API_URL, toshi_s3_url=None, toshi_report_bucket=None,
+                    task_module=runzi.execute.oq_opensha_convert_task.__name__,
+                    time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4,
+                    job_definition="Fargate-runzi-openquake-JD")
 
             else:
                 #write a config

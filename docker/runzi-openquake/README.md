@@ -48,7 +48,7 @@ docker run -u root -it --rm \
 
 ```
 docker run -it --rm -u root \
---net=host \
+--net=host --env-file environ \
 -v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
 -v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
 -v $(pwd)/examples:/WORKING/examples \

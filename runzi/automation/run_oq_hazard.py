@@ -1,10 +1,6 @@
 #!python3
 """
-This script produces tasks in either AWS, PBS or LOCAL that convert an opensha InversionSolution
-into source NRML XML files
-
- -  InversionSolution
- - A GT containing Inversion Solutions
+This script produces tasks in either AWS, PBS or LOCAL that run OpenquakeHazard
 
 """
 import logging
@@ -22,8 +18,7 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
-HAZARD_MAX_TIME = 15
-# USE_API = True
+HAZARD_MAX_TIME = 36*60 #minutes
 
 def build_tasks(new_gt_id, args, task_type, model_type):
 
@@ -69,16 +64,13 @@ if __name__ == "__main__":
 #         general_tasks = ["R2VuZXJhbFRhc2s6Nzg="] #"R2VuZXJhbFRhc2s6MTAwMTk2", "R2VuZXJhbFRhc2s6MTAwMjA2"]
 # =======
         config_archive_ids = ["RmlsZToxMDAzNTc="], #LOCAL'RmlsZToxOA=='], # a Toshi File containing zipped configuration
-        # config_files = ["many-sites_3-periods_vs30-475.ini"],
-        # work_folder = "examples/18_SWRG_INIT",
-        #TODO: it is currently up to the user to make sure each nrml id has a unique prefix
         source_combos = [
-            {'tag':'combined','nrml_ids':{
-                'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
-            {'tag':'crustal_only','nrml_ids':{
-                'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
-            {'tag':'hik_only','nrml_ids':{
-                'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}}
+            # {'tag':'combined','nrml_ids':{
+            #     'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
+            # {'tag':'crustal_only','nrml_ids':{
+            #     'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
+            {'tag':'hik_only','nrml_ids':{'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
+            #{'tag': 'bg_only', 'nrml_ids': {'bg': 'RmlsZToxMDA0ODg='}},
         ]
     )
 
