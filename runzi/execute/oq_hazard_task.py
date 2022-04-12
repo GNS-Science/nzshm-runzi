@@ -14,6 +14,7 @@ from pathlib import Path, PurePath
 from importlib import import_module
 import datetime as dt
 from dateutil.tz import tzutc
+import urllib.parse
 
 from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
 from nshm_toshi_client.task_relation import TaskRelation

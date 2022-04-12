@@ -3,6 +3,7 @@
 common function to schedule tasks as needed for given environment
 """
 
+import boto3
 from subprocess import check_call
 from multiprocessing.dummy import Pool
 

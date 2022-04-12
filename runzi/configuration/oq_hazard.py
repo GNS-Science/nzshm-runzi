@@ -20,7 +20,7 @@ from runzi.automation.scaling.file_utils import download_files, get_output_file_
 import runzi.execute.oq_hazard_task
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
-    API_KEY, API_URL, CLUSTER_MODE, EnvMode )
+    API_KEY, API_URL, CLUSTER_MODE, EnvMode, S3_URL, S3_REPORT_BUCKET)
 
 HAZARD_MAX_TIME = 36*60 #minutes
 
@@ -63,12 +63,12 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 )
 
             if CLUSTER_MODE == EnvMode['AWS']:
-                job_name = f"Runzi-automation-oq-convert-solution-{task_count}"
+                job_name = f"Runzi-automation-oq-hazard-{task_count}"
                 config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
 
                 yield get_ecs_job_config(job_name,
                     'N/A', config_data,
-                    toshi_api_url=API_URL, toshi_s3_url=None, toshi_report_bucket=None,
+                    toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
                     task_module=runzi.execute.oq_hazard_task.__name__,
                     time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4,
                     job_definition="Fargate-runzi-openquake-JD")
