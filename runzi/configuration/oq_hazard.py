@@ -65,9 +65,9 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
 
                 yield get_ecs_job_config(job_name,
-                    solution_info['id'], config_data,
+                    'N/A', config_data,
                     toshi_api_url=API_URL, toshi_s3_url=None, toshi_report_bucket=None,
-                    task_module=runzi.execute.oq_opensha_convert_task.__name__,
+                    task_module=runzi.execute.oq_hazard_task.__name__,
                     time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4,
                     job_definition="Fargate-runzi-openquake-JD")
 
