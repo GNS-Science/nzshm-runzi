@@ -22,6 +22,8 @@ import runzi.execute.oq_hazard_task
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
+HAZARD_MAX_TIME = 36*60 #minutes
+
 def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments):
     task_count = 0
 

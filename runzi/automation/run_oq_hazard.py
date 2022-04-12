@@ -18,7 +18,6 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
-HAZARD_MAX_TIME = 36*60 #minutes
 
 def build_tasks(new_gt_id, args, task_type, model_type):
 
