@@ -49,22 +49,33 @@ if __name__ == "__main__":
     # If using API give this task a descriptive setting...
 
     TASK_TITLE = "Openquake Hazard calcs "
-    TASK_DESCRIPTION = """3 individual models & 1 combining all 3 models"""
+    TASK_DESCRIPTION = """IMT sanity test/demo 2"""
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     args = dict(
-        config_archive_ids = ["RmlsZToxMDAzNTc="], #LOCAL'RmlsZToxOA=='], # a Toshi File containing zipped configuration
+        config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
+            "RmlsZToxMDE4MDQ=", #4-sites-many TEST RmlsZToxMDAzNTc=
+            "RmlsZToxMDE4MDY=", #PROD Wgn_005-10-300.ini RmlsZToxMDE4MDM= is BAD , PROD # TEST RmlsZToxMDA1MzA="
+            "RmlsZToxMDE4MDc=", #PROD Wgn_005-10-50.ini
+            "RmlsZToxMDE4MDg=", #PROD Wgn_005-4-300.ini
+            "RmlsZToxMDE4MDk=", #PROD Wgn_005-4-50.ini
+            ],
         source_combos = [
-            {'tag':'combined','nrml_ids':{
-                 'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
-                 'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ==",
-                 'bg': 'RmlsZToxMDA0ODg='}},
-            {'tag':'crustal_only','nrml_ids':{
-                 'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
-            {'tag':'hik_only','nrml_ids':{'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
-            {'tag': 'bg_only', 'nrml_ids': {'bg': 'RmlsZToxMDA0ODg='}},
+            # {'tag':'combined','nrml_ids':{
+            #      'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
+            #      'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ==",
+            #      'bg': 'RmlsZToxMDA0ODg='}},
+            #{'tag':'crustal_only','nrml_ids':{
+            #     'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
+            #{'tag':'hik_only','nrml_ids':{'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
+            # {'tag': 'bg_only', 'nrml_ids': {'bg': 'RmlsZToxMDA0ODg='}},
+            {'tag': 'combined', 'nrml_ids': {
+              'crustal': "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mw==", #PROD "b_and_n": "{'tag': 'N = 3.5, b=0.913', PROD
+              'hik': "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMQ==",     #PROD "b_and_n": "{'b': 1.009, 'N': 25.6}"
+              'bg': "RmlsZToxMDE4MDI=" #BG_Kiran_fADDTOT346ave_Test4 unscaled BG TEST RmlsZToxMDA1MzU=
+            }}
         ]
     )
 

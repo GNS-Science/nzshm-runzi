@@ -14,13 +14,15 @@ $ docker build . -t nzshm22/runzi-opensha
 
 # to force new git pull etc
 $ docker build . --no-cache -t nzshm22/runzi-opensha
+```
 
-
+```
 # get credential
 $ aws ecr get-login
 $ $(aws ecr get-login --no-include-email --region us-east-1)
+```
 
-
+```
 # Create ECR repoo
 $ aws ecr create-repository --repository-name nzshm22/runzi-opensha # or nzshm22/runzi-runzi-openquake
 
