@@ -180,10 +180,19 @@ class BuilderTask():
                 .setSlipRateConstraint(ta['slip_rate_weighting_type'],
                     float(ta['slip_rate_normalized_weight']),
                     float(ta['slip_rate_unnormalized_weight']))\
-                .setGutenbergRichterMFD(
+                
+            if ta['mfd_min_mag']:
+                inversion_runner.setGutenbergRichterMFD(
+                    float(ta['mfd_mag_gt_5']),
+                    float(ta['mfd_b_value']),
+                    float(ta['mfd_transition_mag']),
+                    float(ta['mfd_min_mag']))
+            else:
+                inversion_runner.setGutenbergRichterMFD(
                     float(ta['mfd_mag_gt_5']),
                     float(ta['mfd_b_value']),
                     float(ta['mfd_transition_mag']))
+
             if ta.get('mfd_uncertainty_weight'):
                 inversion_runner.setUncertaintyWeightedMFDWeights(
                     float(ta['mfd_uncertainty_weight']),
