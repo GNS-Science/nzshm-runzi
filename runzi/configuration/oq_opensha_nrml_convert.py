@@ -20,11 +20,8 @@ import runzi.execute.oq_opensha_convert_task
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-<<<<<<< HEAD
 def build_nrml_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments):
-=======
-def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: str, toshi_api, subtask_arguments):
->>>>>>> main
+
     task_count = 0
     factory_class = get_factory(CLUSTER_MODE)
 

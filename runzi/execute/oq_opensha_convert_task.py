@@ -76,13 +76,6 @@ class BuilderTask():
 
         def convert(config):
 
-            output_zip = Path(self._output_folder, ta["file_name"].replace('.zip', '_nrml.zip'))
-
-            # if SPOOF_HAZARD:
-            #     print("convert skipping SPOOF=True")
-            #     os.touch(output_zip)
-            #     return output_zip
-
             dip_sd = config['rupture_sampling_distance_km']
             strike_sd = dip_sd
             source_id = config['solution_id'].replace('=', '_')
@@ -104,12 +97,12 @@ class BuilderTask():
             print(f'Created output in: {self._output_folder}')
 
             # zip this and return the archive path
-            #output_zip = Path(self._output_folder, ta["file_name"].replace('.zip', '_nrml.zip'))
+            output_zip = Path(self._output_folder, ta["file_name"].replace('.zip', '_nrml.zip'))
             print(f'output: {output_zip}')
-            zip = zipfile.ZipFile(output_zip, 'a')
+            zfile = zipfile.ZipFile(output_zip, 'a')
             for filename in list(Path(self._output_folder).glob(f'{source_id}*.xml')):
                 arcname = str(filename).replace(str(self._output_folder), '')
-                zip.write(filename, arcname )
+                zfile.write(filename, arcname )
                 print(f'archived {filename} as {arcname}')
 
             return output_zip
