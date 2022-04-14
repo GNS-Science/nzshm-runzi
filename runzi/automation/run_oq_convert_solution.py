@@ -16,6 +16,7 @@ from subprocess import check_call
 from multiprocessing.dummy import Pool
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
+from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.configuration.oq_opensha_nrml_convert import build_nrml_tasks
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
@@ -73,7 +74,7 @@ if __name__ == "__main__":
         args_list.append(dict(k=key, v=value))
 
     task_type = SubtaskType.SOLUTION_TO_NRML
-    model_type = 'SUBDUCTION'
+    model_type = ModelType.SUBDUCTION
 
     if USE_API:
         #create new task in toshi_api

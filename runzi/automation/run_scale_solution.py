@@ -13,7 +13,7 @@ from dateutil.tz import tzutc
 
 from itertools import chain
 
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
+from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
 
@@ -134,7 +134,8 @@ if __name__ == "__main__":
     #scales = [0.49, 1.63]
     scales = [0.587, 1.419, 2, 3]
     # scales = [0.587]
-    model_type = 'crustal'
+    model_type = ModelType.CRUSTAL
+    subtask_type = SubtaskType.SCALE_SOLUTION
 
 
     file_generators = []
@@ -167,8 +168,8 @@ if __name__ == "__main__":
             description=TASK_DESCRIPTION
             )\
             .set_argument_list(args_list)\
-            .set_subtask_type('SCALE_SOLUTION')\
-            .set_model_type(model_type.upper()) #TODO what goes here? Can I get it from the source solution?
+            .set_subtask_type(subtask_type)\
+            .set_model_type(model_type) 
 
         GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
 
