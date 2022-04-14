@@ -6,24 +6,6 @@ import io
 from pathlib import Path
 log = logging.getLogger(__name__)
 
-sample_conf = """
-[general]
-calculation_mode = disaggregation
-
-[logic_tree]
-
-number_of_logic_tree_samples = 0
-
-[site_params]
-sites = 174.7762 -41.2865
-foo=bar
-
-
-[calculation]
-intensity_measure_types_and_levels = {"SA(0.5)": logscale(0.005, 4.00, 30)}
-
-"""
-
 SITES = dict(
     WLG = {"sites": "174.7762 -41.2865"},
     NZ4 = {"sites_csv": "nz_towns_4.csv"},
@@ -109,18 +91,37 @@ class OpenquakeConfig():
 
 if __name__ == "__main__":
 
-    samp = io.StringIO(sample_conf)
-    nc = OpenquakeConfig(samp)\
+    sample_conf = """
+    [general]
+    calculation_mode = disaggregation
+
+    [logic_tree]
+
+    number_of_logic_tree_samples = 0
+
+    [site_params]
+    sites = 174.7762 -41.2865
+    foo=bar
+
+
+    [calculation]
+    intensity_measure_types_and_levels = {"SA(0.5)": logscale(0.005, 4.00, 30)}
+
+    """
+    sample = io.StringIO(sample_conf) #fake file for demo
+
+    nc = OpenquakeConfig(sample)\
         .set_sites('NZ4')\
         .set_disaggregation(True, {"num_rlz_disagg": 0})
 
     measures = ['PGA', 'SA(0.5)']
-    levels = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0]
+    levels0 = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0]
     levels1 = 'logscale(0.005, 4.00, 30)'
+
     nc.set_iml(measures, levels1)
     nc.set_vs30(355)
 
-    out = io.StringIO()
+    out = io.StringIO() #aother fake file
     nc.write(out)
 
     out.seek(0)
