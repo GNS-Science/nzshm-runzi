@@ -15,11 +15,16 @@ from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 class SubtaskType(Enum):
     RUPTURE_SET = 10
     INVERSION = 20
-    HAZARD = 30
+    HAZARD = 30 #Todo maybe DEPRECATED ?
     REPORT = 40
     SCALE_SOLUTION = 50
     SOLUTION_TO_NRML = 60
-    OPENSHA_HAZARD = 70
+    OPENQUAKE_HAZARD = 70
+
+class ModelType(Enum):
+    CRUSTAL = 10
+    SUBDUCTION = 20
+    COMPOSITE = 30
 
 
 class CreateGeneralTaskArgs(object):
@@ -49,14 +54,18 @@ class CreateGeneralTaskArgs(object):
         self._arguments['meta'] = meta_list
         return self
 
-    def set_subtask_type(self, subtask_type):
-        assert subtask_type in [name for name, n  in SubtaskType.__members__.items()]
-        self._arguments['subtask_type'] = subtask_type
+    def set_subtask_type(self, subtask_type: SubtaskType):
+        assert subtask_type.name in [name for name, n  in SubtaskType.__members__.items()]
+        self._arguments['subtask_type'] = subtask_type.name
         return self
 
-    def set_model_type(self, model_type):
-        assert model_type in ['CRUSTAL', 'SUBDUCTION']
-        self._arguments['model_type'] = model_type
+    def set_model_type(self, model_type: ModelType):
+        try:
+            assert model_type.name in [name for name, n  in ModelType.__members__.items()]
+        except:
+            print(f'model_type {model_type} not found in {ModelType}')
+            raise
+        self._arguments['model_type'] = model_type.name
         return self
 
     def as_dict(self):

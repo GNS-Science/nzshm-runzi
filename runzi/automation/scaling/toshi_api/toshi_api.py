@@ -13,9 +13,10 @@ from nshm_toshi_client.toshi_task_file import ToshiTaskFile
 
 from .inversion_solution import InversionSolution
 from .scaled_inversion_solution import ScaledInversionSolution
-from .general_task import GeneralTask, CreateGeneralTaskArgs, SubtaskType
+from .general_task import GeneralTask, CreateGeneralTaskArgs, SubtaskType, ModelType
 from .automation_task import AutomationTask
 from .inversion_solution_nrml import InversionSolutionNrml
+from .openquake_hazard import OpenquakeHazardConfig, OpenquakeHazardTask, OpenquakeHazardSolution
 
 class ToshiApi(ToshiClientBase):
 
@@ -26,13 +27,16 @@ class ToshiApi(ToshiClientBase):
         self.file = ToshiFile(url, s3_url, auth_token, with_schema_validation, headers)
         self.task_file = ToshiTaskFile(url, auth_token, with_schema_validation, headers)
 
-        #set up the handler for inversion_solution operations
+        #set up the handlers ...
         self.scaled_inversion_solution = ScaledInversionSolution(self)
         self.inversion_solution = InversionSolution(self)
         self.general_task = GeneralTask(self)
         self.automation_task = AutomationTask(self)
         self.table = Table(self)
         self.inversion_solution_nrml = InversionSolutionNrml(self)
+        self.openquake_hazard_task = OpenquakeHazardTask(self)
+        self.openquake_hazard_config = OpenquakeHazardConfig(self)
+        self.openquake_hazard_solution = OpenquakeHazardSolution(self)
 
     def get_general_task_subtask_files(self, id):
         return self.get_subtask_files(id)
@@ -165,6 +169,7 @@ class ToshiApi(ToshiClientBase):
               file_name
               file_size
               meta {k v}
+              file_url
             }
           }
         }'''

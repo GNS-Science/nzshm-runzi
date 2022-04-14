@@ -9,7 +9,7 @@ import datetime as dt
 from dateutil.tz import tzutc
 
 
-from runzi.automation.scaling.toshi_api import SubtaskType
+from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
@@ -20,7 +20,8 @@ import runzi.execute.oq_opensha_convert_task
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: str, toshi_api, subtask_arguments):
+def build_nrml_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments):
+
     task_count = 0
     factory_class = get_factory(CLUSTER_MODE)
 
@@ -41,9 +42,9 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             # # logic tree for the ground-motion characterisation
             # # Use "Subduction Interface" or "Active Shallow Crust"
             # tectonic_region_type = "Subduction Interface"
-            if model_type == "CRUSTAL":
+            if model_type == ModelType.CRUSTAL:
                 tectonic_region_type = "Active Shallow Crust"
-            elif model_type == "SUBDUCTION":
+            elif model_type == ModelType.SUBDUCTION:
                 tectonic_region_type = "Subduction Interface"
 
             task_arguments = dict(

@@ -49,8 +49,8 @@ class PythonTaskFactory():
 
 class PythonAWSTaskFactory(PythonTaskFactory):
 
-    def __init__(self, root_path, working_path,  python_script_module, **kwargs):
-        super().__init__(root_path, working_path,  python_script_module, **kwargs)
+    def __init__(self, working_path,  python_script_module, **kwargs):
+        super().__init__(working_path,  python_script_module, **kwargs)
 
 
 class PythonPBSTaskFactory(PythonTaskFactory):

@@ -1,0 +1,16 @@
+environ
+
+NZSHM22_TOSHI_API_ENABLED=1
+NZSHM22_TOSHI_API_KEY=
+NZSHM22_TOSHI_API_URL=https://i7gz6msaa2.execute-api.ap-southeast-2.amazonaws.com/test/graphql
+NZSHM22_TOSHI_S3_URL=https://nzshm22-toshi-api-test.s3.amazonaws.com
+
+NZSHM22_SCRIPT_WORK_PATH=/WORKING
+
+NZSHM22_SCRIPT_CLUSTER_MODE=LOCAL
+
+PYTHON_PREP_MODULE=runzi.execute.prepare_inputs
+
+#PER TASK ARGS....
+
+PYTHON_TASK_MODULE=runzi.execute.oq_hazard_task

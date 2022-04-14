@@ -1,10 +1,6 @@
 #!python3
 """
-This script produces tasks in either AWS, PBS or LOCAL that convert an opensha InversionSolution
-into source NRML XML files
-
- -  InversionSolution
- - A GT containing Inversion Solutions
+This script produces tasks in either AWS, PBS or LOCAL that run OpenquakeHazard
 
 """
 import logging
@@ -12,51 +8,16 @@ import pwd
 import os
 import datetime as dt
 from dateutil.tz import tzutc
-from subprocess import check_call
-from multiprocessing.dummy import Pool
 
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
+from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
 from runzi.configuration.oq_hazard import build_hazard_tasks
-
+from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
-HAZARD_MAX_TIME = 15
-USE_API = True
-
-def schedule_tasks(scripts):
-
-    def call_script(script_name):
-        print("call_script with:", script_name)
-        try:
-            if CLUSTER_MODE:
-                check_call(['qsub', script_name])
-            else:
-                check_call(['bash', script_name])
-        except Exception as err:
-            print(f"check_call err: {err}")
-
-    if CLUSTER_MODE == EnvMode['LOCAL']:
-        print('task count: ', len(scripts))
-        pool = Pool(WORKER_POOL_SIZE)
-        pool.map(call_script, scripts)
-        pool.close()
-        pool.join()
-
-    elif CLUSTER_MODE == EnvMode['AWS']:
-
-        batch_client = boto3.client(
-            service_name='batch',
-            region_name='us-east-1',
-            endpoint_url='https://batch.us-east-1.amazonaws.com')
-
-        for script_or_config in scripts:
-            print('AWS_CONFIG: ', script_or_config)
-            res = batch_client.submit_job(**script_or_config)
-            print(res)
 
 def build_tasks(new_gt_id, args, task_type, model_type):
 
@@ -83,26 +44,38 @@ if __name__ == "__main__":
 
     log = logging.getLogger(__name__)
 
-    USE_API = False
     new_gt_id = None
 
-    # #If using API give this task a descriptive setting...
+    # If using API give this task a descriptive setting...
 
-    TASK_TITLE = "A produce some NRML configs from "
-    TASK_DESCRIPTION = """first run locally """
+    TASK_TITLE = "Openquake Hazard calcs "
+    TASK_DESCRIPTION = """IMT sanity test/demo 2"""
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     args = dict(
-        # config_files = ["many-sites_3-periods_vs30-475.ini", "4-sites_many-periods_vs30-475.ini"],
-        config_files = ["many-sites_3-periods_vs30-475.ini"],
-        work_folder = "examples/18_SWRG_INIT",
-        #TODO: it is currently up to the user to make sure each nrml id has a unique prefix
+        config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
+            "RmlsZToxMDE4MDQ=", #4-sites-many TEST RmlsZToxMDAzNTc=
+            "RmlsZToxMDE4MDY=", #PROD Wgn_005-10-300.ini RmlsZToxMDE4MDM= is BAD , PROD # TEST RmlsZToxMDA1MzA="
+            "RmlsZToxMDE4MDc=", #PROD Wgn_005-10-50.ini
+            "RmlsZToxMDE4MDg=", #PROD Wgn_005-4-300.ini
+            "RmlsZToxMDE4MDk=", #PROD Wgn_005-4-50.ini
+            ],
         source_combos = [
-            {'tag':'combined','nrml_ids':{'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
-            {'tag':'crustal_only','nrml_ids':{'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
-            {'tag':'hik_only','nrml_ids':{'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}}
+            # {'tag':'combined','nrml_ids':{
+            #      'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
+            #      'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ==",
+            #      'bg': 'RmlsZToxMDA0ODg='}},
+            #{'tag':'crustal_only','nrml_ids':{
+            #     'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
+            #{'tag':'hik_only','nrml_ids':{'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
+            # {'tag': 'bg_only', 'nrml_ids': {'bg': 'RmlsZToxMDA0ODg='}},
+            {'tag': 'combined', 'nrml_ids': {
+              'crustal': "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mw==", #PROD "b_and_n": "{'tag': 'N = 3.5, b=0.913', PROD
+              'hik': "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMQ==",     #PROD "b_and_n": "{'b': 1.009, 'N': 25.6}"
+              'bg': "RmlsZToxMDE4MDI=" #BG_Kiran_fADDTOT346ave_Test4 unscaled BG TEST RmlsZToxMDA1MzU=
+            }}
         ]
     )
 
@@ -110,28 +83,28 @@ if __name__ == "__main__":
     for key, value in args.items():
         args_list.append(dict(k=key, v=value))
 
-    task_type = SubtaskType.HAZARD
-    model_type = 'CRUSTAL' #TODO not used
+    task_type = SubtaskType.OPENQUAKE_HAZARD
+    model_type = ModelType.COMPOSITE
 
-    # if USE_API:
-    #     #create new task in toshi_api
-    #     gt_args = CreateGeneralTaskArgs(
-    #         agent_name=pwd.getpwuid(os.getuid()).pw_name,
-    #         title=TASK_TITLE,
-    #         description=TASK_DESCRIPTION
-    #         )\
-    #         .set_argument_list(args_list)\
-    #         .set_subtask_type(task_type.name)\
-    #         .set_model_type(model_type)
+    if USE_API:
 
-    #     new_gt_id = toshi_api.general_task.create_task(gt_args)
+        #create new task in toshi_api
+        gt_args = CreateGeneralTaskArgs(
+            agent_name=pwd.getpwuid(os.getuid()).pw_name,
+            title=TASK_TITLE,
+            description=TASK_DESCRIPTION
+            )\
+            .set_argument_list(args_list)\
+            .set_subtask_type(task_type)\
+            .set_model_type(model_type)
+
+        new_gt_id = toshi_api.general_task.create_task(gt_args)
 
     print("GENERAL_TASK_ID:", new_gt_id)
 
     tasks = build_tasks(new_gt_id, args, task_type, model_type)
 
     # toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
-
     print('worker count: ', WORKER_POOL_SIZE)
 
     print( tasks )
