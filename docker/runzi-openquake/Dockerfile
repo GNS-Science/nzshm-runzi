@@ -31,7 +31,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 
 RUN git fetch
-RUN git checkout feature/89-integrate-openquake-and-toshiapi
+RUN git checkout feature/96-site-config
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 

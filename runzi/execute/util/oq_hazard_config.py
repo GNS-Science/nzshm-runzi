@@ -73,7 +73,7 @@ class OpenquakeConfig():
             print("openquake librarys are not available, skipping set_vs30 ")
             return self
 
-        sect = self.config.get_section('site_params')
+        sect = self.config['site_params']
         #Clean up old settings
         for setting in ['reference_vs30_type', 'reference_vs30_value',
             'reference_depth_to_1pt0km_per_sec', 'reference_depth_to_2pt5km_per_sec']:
@@ -81,8 +81,8 @@ class OpenquakeConfig():
 
         sect['reference_vs30_type'] = 'measured'
         sect['reference_vs30_value'] = str(vs30)
-        sect['reference_depth_to_1pt0km_per_sec'] = str(calculate_z1pt0(vs30))
-        sect['reference_depth_to_2pt5km_per_sec'] = str(calculate_z2pt5_ngaw2(vs30))
+        sect['reference_depth_to_1pt0km_per_sec'] = str(round(calculate_z1pt0(vs30), 0))
+        sect['reference_depth_to_2pt5km_per_sec'] = str(round(calculate_z2pt5_ngaw2(vs30), 1))
         return self
 
     def write(self, tofile):
