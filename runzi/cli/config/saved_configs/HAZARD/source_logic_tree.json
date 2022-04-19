@@ -1,0 +1,36 @@
+{
+"task_args": {
+
+    "logic_trees": [
+        {"tag": "test logic tree 1","branches": [
+            {"name":"branch A",
+                "weight":0.5,
+                "source_ids":{
+                    "c_N7.8_b_1.111_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0MA==",
+                    "h_N25.6_b0.942_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMg==",
+                    "bg": "RmlsZToxMDE4MDI="
+                    }
+                },
+            {"name":"branch B",
+                "weight":0.5,
+                "source_ids":{
+                    "c_N3.5_b0.913_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mw==",
+                    "h_N25.6_b1.009_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMQ==",
+                    "bg": "RmlsZToxMDE4MDI="
+                    }
+                }
+            ]
+        }
+    ]
+}
+}
+
+
+            
+
+
+
+
+
+
+

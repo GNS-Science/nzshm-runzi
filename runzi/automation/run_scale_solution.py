@@ -107,10 +107,10 @@ if __name__ == "__main__":
     log = logging.getLogger(__name__)
 
     # If you wish to oversolution_ide something in the main config, do so here ..
-    WORKER_POOL_SIZE = 1
+    WORKER_POOL_SIZE = 2
     USE_API = True
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "Hikurangi Scaled Inverions, scale = 0.587"
+    TASK_TITLE = "Hikurangi LTB004. Scaled 0.67, 1.41"
     TASK_DESCRIPTION = """
     
     """
@@ -121,20 +121,14 @@ if __name__ == "__main__":
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     source_solution_ids = [
-        #"SW52ZXJzaW9uU29sdXRpb246MTAwMDQ5",
-        #"SW52ZXJzaW9uU29sdXRpb246MTAwMDUw",
-        #"SW52ZXJzaW9uU29sdXRpb246MTAwMDU2"
-        #"R2VuZXJhbFRhc2s6MTAwMTA2",
-        "R2VuZXJhbFRhc2s6MTAwMDEz",
-        #"SW52ZXJzaW9uU29sdXRpb246MTAwMjQ4",
-        #"SW52ZXJzaW9uU29sdXRpb246MTAwMjUw",
-        #"SW52ZXJzaW9uU29sdXRpb246MTAwMjUy"
+        "R2VuZXJhbFRhc2s6MTAwMjQx",
     ]
-    #scales = [0.5,2.0]
-    #scales = [0.49, 1.63]
-    scales = [0.587, 1.419, 2, 3]
-    # scales = [0.587]
-    model_type = 'crustal'
+
+    # scales = [0.49, 1.63]
+    # scales = [0.61, 1.34]
+    scales = [0.67, 1.41]
+
+    model_type = 'subduction'
 
 
     file_generators = []
