@@ -97,7 +97,6 @@ class BuilderTask():
             print(f'Created output in: {self._output_folder}')
 
             # zip this and return the archive path
-            #TODO if zip already exists, will add files rather than replace
             output_zip = Path(self._output_folder, ta["file_name"].replace('.zip', '_nrml.zip')) 
             print(f'output: {output_zip}')
             zfile = zipfile.ZipFile(output_zip, 'w')
