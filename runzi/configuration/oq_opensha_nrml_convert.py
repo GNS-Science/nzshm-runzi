@@ -51,8 +51,8 @@ def build_nrml_tasks(general_task_id: str, subtask_type: SubtaskType, model_type
             tectonic_region_type = "Subduction Interface"
 
         task_arguments = dict(
-            rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km #TODO get from run_oq_convert_solution.py
-            investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years #TODO get from run_oq_convert_solution.py
+            rupture_sampling_distance_km = subtask_arguments['rupture_sampling_distance_km'], # Unit of measure for the rupture sampling: km 
+            investigation_time_years = subtask_arguments['investigation_time_years'], # Unit of measure for the `investigation_time`: years 
             tectonic_region_type = tectonic_region_type,
             solution_id = str(solution_info['id']),
             file_name = solution_info['info']['file_name'],
@@ -61,7 +61,7 @@ def build_nrml_tasks(general_task_id: str, subtask_type: SubtaskType, model_type
             )
 
         print(task_arguments)
-
+        
         job_arguments = dict(
             task_id = task_count,
             working_path = str(WORK_PATH),
@@ -77,7 +77,7 @@ def build_nrml_tasks(general_task_id: str, subtask_type: SubtaskType, model_type
                 solution_info['id'], config_data,
                 toshi_api_url=API_URL, toshi_s3_url=None, toshi_report_bucket=None,
                 task_module=runzi.execute.oq_opensha_convert_task.__name__,
-                time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4) #TODO not defined
+                time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4) #TODO HAZARD_MAX_TIME not defined
 
         else:
             #write a config
