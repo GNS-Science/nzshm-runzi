@@ -25,7 +25,7 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 # If you wish to override something in the main config, do so here ..
-WORKER_POOL_SIZE = 1 #TODO this doesn't seem to override the config
+WORKER_POOL_SIZE = 4 
 USE_API = True
 
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
-    tectonic_type = 'CRU'
+    tectonic_type = 'TEST'
 
     if tectonic_type == 'HIK':
         TASK_TITLE = "Hikurangi Scaled NRMLs"
@@ -123,6 +123,16 @@ if __name__ == "__main__":
             "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDk4",
             "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTA0"
         ]
+    elif tectonic_type == 'TEST':
+        TASK_TITLE = "Test NRMLs"
+        model_type = ModelType.SUBDUCTION
+        input_ids = [
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNDk5",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNTA3",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNTEw",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNTEz",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNTE1"
+        ]
 
     args = dict(
         rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km #TODO: this is not used, value is hard coded in the configuration module
@@ -160,7 +170,7 @@ if __name__ == "__main__":
 
     print('worker count: ', WORKER_POOL_SIZE) 
 
-    schedule_tasks(tasks)
+    schedule_tasks(tasks,WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())

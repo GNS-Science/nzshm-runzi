@@ -9,7 +9,10 @@ from multiprocessing.dummy import Pool
 
 from runzi.automation.scaling.local_config import (WORKER_POOL_SIZE, CLUSTER_MODE, EnvMode )
 
-def schedule_tasks(scripts):
+def schedule_tasks(scripts,worker_pool_size=None):
+
+    if not(worker_pool_size):
+        worker_pool_size = WORKER_POOL_SIZE
 
     def call_script(script_name):
         print("call_script with:", script_name)
@@ -23,7 +26,7 @@ def schedule_tasks(scripts):
 
     if CLUSTER_MODE == EnvMode['LOCAL']:
         print('task count: ', len(scripts))
-        pool = Pool(WORKER_POOL_SIZE)
+        pool = Pool(worker_pool_size)
         pool.map(call_script, scripts)
         pool.close()
         pool.join()
