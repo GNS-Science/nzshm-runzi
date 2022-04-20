@@ -12,12 +12,25 @@ SITES = dict(
     NZ34 = {"sites_csv": "nz_towns_34.csv"},
     GRD1 = {"sites_csv": "NZ_whole_country_10k.csv"})
 
+# DEFAULT_DISAGG = dict(
+#     poes_disagg = 0.002,
+#     mag_bin_width = 0.25,
+#     distance_bin_width = 1.0,
+#     coordinate_bin_width = 5.0,
+#     num_epsilon_bins = 1)
+
+
+#Sanjay new values
 DEFAULT_DISAGG = dict(
-    poes_disagg = 0.002,
+    max_sites_disagg = 1,
+    poes_disagg = "0.002105 0.000404",
     mag_bin_width = 0.25,
-    distance_bin_width = 1.0,
-    coordinate_bin_width = 5.0,
-    num_epsilon_bins = 1)
+    distance_bin_width = 10,
+    coordinate_bin_width = 1,
+    num_epsilon_bins = 4,
+    disagg_outputs = "Mag_Dist Mag_Dist_Eps TRT"
+    )
+
 
 class OpenquakeConfig():
 

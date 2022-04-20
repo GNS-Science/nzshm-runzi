@@ -1,7 +1,8 @@
 # Dockerfile
 # Extend base image
 # needs openquake/engine >= 3.13.0
-FROM openquake/engine:nightly
+#nightly
+FROM openquake/engine:latest
 
 USER root
 RUN apt-get update

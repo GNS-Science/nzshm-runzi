@@ -54,29 +54,67 @@ if __name__ == "__main__":
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
+    era_measures = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)',
+        'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)']
+    era_levels = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+        1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0]
+
     args = dict(
         config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
-            "RmlsZToxMDE4MDQ=", #4-sites-many TEST RmlsZToxMDAzNTc=
-            "RmlsZToxMDE4MDY=", #PROD Wgn_005-10-300.ini RmlsZToxMDE4MDM= is BAD , PROD # TEST RmlsZToxMDA1MzA="
-            "RmlsZToxMDE4MDc=", #PROD Wgn_005-10-50.ini
-            "RmlsZToxMDE4MDg=", #PROD Wgn_005-4-300.ini
-            "RmlsZToxMDE4MDk=", #PROD Wgn_005-4-50.ini
+            'RmlsZToxOA=='
+            #"RmlsZToxMDE4MDQ=", #4-sites-many TEST RmlsZToxMDAzNTc=
+            # "RmlsZToxMDE4MDY=", #PROD Wgn_005-10-300.ini RmlsZToxMDE4MDM= is BAD , PROD # TEST RmlsZToxMDA1MzA="
+            # "RmlsZToxMDE4MDc=", #PROD Wgn_005-10-50.ini
+            # "RmlsZToxMDE4MDg=", #PROD Wgn_005-4-300.ini
+            # "RmlsZToxMDE4MDk=", #PROD Wgn_005-4-50.ini
             ],
-        source_combos = [
-            # {'tag':'combined','nrml_ids':{
-            #      'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
-            #      'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ==",
-            #      'bg': 'RmlsZToxMDA0ODg='}},
-            #{'tag':'crustal_only','nrml_ids':{
-            #     'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
-            #{'tag':'hik_only','nrml_ids':{'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
-            # {'tag': 'bg_only', 'nrml_ids': {'bg': 'RmlsZToxMDA0ODg='}},
-            {'tag': 'combined', 'nrml_ids': {
-              'crustal': "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mw==", #PROD "b_and_n": "{'tag': 'N = 3.5, b=0.913', PROD
-              'hik': "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMQ==",     #PROD "b_and_n": "{'b': 1.009, 'N': 25.6}"
-              'bg': "RmlsZToxMDE4MDI=" #BG_Kiran_fADDTOT346ave_Test4 unscaled BG TEST RmlsZToxMDA1MzU=
-            }}
-        ]
+        # source_combos = [
+        #     # {'tag':'combined','nrml_ids':{
+        #     #   'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
+        #     #   'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ==",
+        #     #   'bg': 'RmlsZToxMDA0ODg='}},
+        #     #{'tag':'crustal_only','nrml_ids':{
+        #     #   'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
+        #     #{'tag':'hik_only','nrml_ids':{'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
+        #     {'tag': 'bg_only', 'nrml_ids': {'bg': 'RmlsZToxMDA0ODg='}},
+        #     # {'tag': 'combined', 'nrml_ids': {
+        #     #   'crustal': "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mw==", #PROD "b_and_n": "{'tag': 'N = 3.5, b=0.913', PROD
+        #     #   'hik': "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMQ==",     #PROD "b_and_n": "{'b': 1.009, 'N': 25.6}"
+        #     #   'bg': "RmlsZToxMDE4MDI=" #BG_Kiran_fADDTOT346ave_Test4 unscaled BG TEST RmlsZToxMDA1MzU=
+        #     #   #'slab': "ABBBV"
+        #     #   #'puy' : "ABCB"
+        #     # }}
+        #     ],
+        logic_tree_permutations = [
+            {
+                "CR": {
+                    "CR_N7.8_b_1.111_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NA==",
+                    "CR_N7.8_b_1.111_s2": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NQ==",
+                    "CR_N3.5_b0.913_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
+                    #"CR_N3.5_b0.913_s2": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Nw=="
+                    },
+                "HK": {
+                    "HK_N25.6_b0.942_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OA==",
+                    "HK_N25.6_b1.009_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ==",
+                    #"HK_N25.6_b1.009_s12": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM1MA=="
+                },
+                "BG": {
+                    "bgA": "RmlsZToxMDE4MDI="
+                },
+                "PY": {
+                    "PY_N": "RmlsZToxMDE4MDA="
+                }
+            },
+            #MORE of these ....
+        ],
+        intensity_specs = [
+            {"tag": "lite", "measures": ['PGA', 'SA(0.5)', 'SA(1.0)'], "levels": 'logscale(0.005, 4.00, 30)' },
+            {"tag": "fixed", "measures": era_measures, "levels": era_levels},
+            {"tag": "max10-300", "measures": era_measures, "levels": 'logscale(0.005, 10.00, 300)'}],
+        vs30s = [ 455, ],
+        location_codes = ['WLG', 'NZ4', 'NZ34'],
+        disagg_confs = [{'enabled': False, 'config': {}},
+            {'enabled': True, 'config': {}}]
     )
 
     args_list = []

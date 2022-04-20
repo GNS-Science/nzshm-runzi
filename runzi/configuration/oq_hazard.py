@@ -35,8 +35,22 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
     factory_task = runzi.execute.oq_hazard_task
     task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
-    for config_archive_id in subtask_arguments["config_archive_ids"]:
-        for sources in subtask_arguments['source_combos']:
+
+    for (config_archive_id,
+        #logic_tree_permutation,
+        intensity_spec,
+        vs30,
+        location_code,
+        disagg_conf
+        )\
+        in itertools.product(
+            subtask_arguments["config_archive_ids"],
+            #subtask_arguments['logic_tree_permutations'],
+            subtask_arguments['intensity_specs'],
+            subtask_arguments['vs30s'],
+            subtask_arguments['location_codes'],
+            subtask_arguments['disagg_confs']
+            ):
 
             task_count +=1
             task_arguments = dict(
@@ -45,7 +59,11 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 config_archive_id = config_archive_id, #File archive object
                 #upstream_general_task=source_gt_id,
                 model_type = model_type.name,
-                sources = sources
+                logic_tree_permutations = subtask_arguments['logic_tree_permutations'],
+                intensity_spec = intensity_spec,
+                vs30 = vs30,
+                location_code = location_code,
+                disagg_conf = disagg_conf,
                 )
 
             print('')
