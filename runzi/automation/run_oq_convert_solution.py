@@ -138,8 +138,6 @@ if __name__ == "__main__":
         rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km 
         investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years 
         input_ids = input_ids
-        # general_tasks = ["R2VuZXJhbFRhc2s6MjQ4ODdRTkhH"], # GTs that produced some inversion solutions to convert
-        # prefix = 'hik'
     )
 
     args_list = []
