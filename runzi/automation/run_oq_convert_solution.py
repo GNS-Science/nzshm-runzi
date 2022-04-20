@@ -16,6 +16,7 @@ from subprocess import check_call
 from multiprocessing.dummy import Pool
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
+from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.configuration.oq_opensha_nrml_convert import build_nrml_tasks
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
@@ -24,13 +25,13 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 # If you wish to override something in the main config, do so here ..
-WORKER_POOL_SIZE = 1
+WORKER_POOL_SIZE = 1 #TODO this doesn't seem to override the config
 USE_API = True
 
 
-def build_tasks(new_gt_id, args, task_type, model_type):
+def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     scripts = []
-    for script_file in build_nrml_tasks(new_gt_id, task_type, model_type, args):
+    for script_file in build_nrml_tasks(new_gt_id, task_type, model_type, args, toshi_api):
         print('scheduling: ', script_file)
         scripts.append(script_file)
     return scripts
@@ -55,17 +56,80 @@ if __name__ == "__main__":
 
     # #If using API give this task a descriptive setting...
 
-    TASK_TITLE = "A produce some NRML configs from "
+    
     TASK_DESCRIPTION = """first run locally """
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
+    tectonic_type = 'CRU'
+
+    if tectonic_type == 'HIK':
+        TASK_TITLE = "Hikurangi Scaled NRMLs"
+        model_type = ModelType.SUBDUCTION
+        input_ids = [
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTA2",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTA4",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTE0",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTE2",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTIy",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTI0",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTMw",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTM0",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTM2",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTQy",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTQ0",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTUw",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTEw",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTEy",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTE4",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTIw",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTI2",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTI5",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTMy",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTM4",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTQw",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTQ2",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTQ4",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTU0",
+        ]
+    elif tectonic_type == 'PUY':
+        TASK_TITLE = "Puysegur Scaled NRMLs"
+        model_type = ModelType.SUBDUCTION
+        input_ids = [
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDY4",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDY2"
+        ]
+    elif tectonic_type == 'CRU':
+        TASK_TITLE = "Crustal Scaled NRMLs"
+        model_type = ModelType.CRUSTAL
+        input_ids = [
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDcw",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDc2",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDc4",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDgy",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDg4",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDkw",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDk0",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTAw",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTAy",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDcy",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDc0",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDgw",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDg0",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDg2",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDky",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDk2",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDk4",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTA0"
+        ]
+
     args = dict(
-        rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km
-        investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years
-        general_tasks = ["R2VuZXJhbFRhc2s6MjQ4ODdRTkhH"], # GTs that produced some inversion solutions to convert
-        prefix = 'hik'
+        rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km #TODO: this is not used, value is hard coded in the configuration module
+        investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years #TODO: this is not used, value is hard coded in the configuration module
+        input_ids = input_ids
+        # general_tasks = ["R2VuZXJhbFRhc2s6MjQ4ODdRTkhH"], # GTs that produced some inversion solutions to convert
+        # prefix = 'hik'
     )
 
     args_list = []
@@ -73,7 +137,7 @@ if __name__ == "__main__":
         args_list.append(dict(k=key, v=value))
 
     task_type = SubtaskType.SOLUTION_TO_NRML
-    model_type = 'SUBDUCTION'
+    
 
     if USE_API:
         #create new task in toshi_api
@@ -83,7 +147,7 @@ if __name__ == "__main__":
             description=TASK_DESCRIPTION
             )\
             .set_argument_list(args_list)\
-            .set_subtask_type(task_type.name)\
+            .set_subtask_type(task_type)\
             .set_model_type(model_type)
 
         new_gt_id = toshi_api.general_task.create_task(gt_args)
@@ -94,7 +158,7 @@ if __name__ == "__main__":
 
     toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
 
-    print('worker count: ', WORKER_POOL_SIZE)
+    print('worker count: ', WORKER_POOL_SIZE) 
 
     schedule_tasks(tasks)
 

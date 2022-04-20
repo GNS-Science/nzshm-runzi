@@ -42,11 +42,12 @@ class BuilderTask():
 
         if self.use_api:
             #create new task in toshi_api
+            print(task_arguments)
             task_id = self._toshi_api.automation_task.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type="SCALE_SOLUTION", #TODO should I get this from the general task?
-                    model_type=task_arguments['config_type'].upper(),
+                    model_type=task_arguments['model_type'].upper(),
                     ),
                 arguments=task_arguments,
                 environment=environment

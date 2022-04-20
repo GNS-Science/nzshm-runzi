@@ -13,7 +13,7 @@ from dateutil.tz import tzutc
 
 from itertools import chain
 
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
+from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
 
@@ -48,7 +48,7 @@ def build_subset_tasks(general_task_id, source_solutions, args):
 
             task_arguments = dict(
                 scale = scale,
-                config_type=args['config_type']
+                model_type = args['model_type']
             )
 
             job_arguments = dict(
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     WORKER_POOL_SIZE = 2
     USE_API = True
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "Hikurangi LTB004. Scaled 0.67, 1.41"
+    
     TASK_DESCRIPTION = """
     
     """
@@ -120,17 +120,62 @@ if __name__ == "__main__":
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-    source_solution_ids = [
-        "R2VuZXJhbFRhc2s6MTAwMjQx",
-    ]
+    subtask_type = SubtaskType.SCALE_SOLUTION
 
-    # scales = [0.49, 1.63]
-    # scales = [0.61, 1.34]
-    scales = [0.67, 1.41]
+    tectonic_type = 'HIK'
 
-    model_type = 'subduction'
+    if tectonic_type == 'HIK':
+        TASK_TITLE = "Hikurangi. From LTB004 and LTB005. Scaled 0.54, 1.43"
+        model_type = ModelType.SUBDUCTION
+        source_solution_ids = [
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNTA1",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNTAy",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNTIy",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNjUx",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNjIw",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNjI2",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNzQx",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNzc4",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwODM5",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwODM2",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwOTI2",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwOTU4",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNzMy",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNTMx",
+        ]
+        scales = [0.54, 1.43]
+    elif tectonic_type == 'CRU':
+        TASK_TITLE = "Crustal. From LTB070. Scaled 0.51, 1.62"
+        model_type = ModelType.CRUSTAL
+        source_solution_ids = [
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTgw",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTg1",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTg2",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTg5",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTgx",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTkx",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTcz",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTk3",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTk1"
+        ]   
+        scales = [0.51, 1.62]
+    elif tectonic_type == 'PUY':
+        TASK_TITLE = "Puysegur. From LTB002. Scaled 0.61, 1.34"
+        model_type = ModelType.SUBDUCTION
+        source_solution_ids = [
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTE1"    
+        ]   
+        scales = [0.61, 1.34]
+    elif tectonic_type == 'TEST':
+        TASK_TITLE = "TEST"
+        model_type = ModelType.SUBDUCTION
+        source_solution_ids = [
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNDk5",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNTA3"
+        ]   
+        scales = [0.61, 1.34]
 
-
+    
     file_generators = []
     for file_id in source_solution_ids:
         """
@@ -138,13 +183,14 @@ if __name__ == "__main__":
          - file_generator = get_output_file_id(file_api, file_id)
          - file_generator = get_output_file_ids(general_api, upstream_task_id)
         """
-        file_generators.append(get_output_file_ids(toshi_api, file_id)) #for file by file ID
+        # file_generators.append(get_output_file_ids(toshi_api, file_id)) #for file by file ID
+        file_generators.append(get_output_file_id(toshi_api, file_id)) #for file by file ID
 
     source_solutions = download_files(toshi_api, chain(*file_generators), str(WORK_PATH), overwrite=False)
 
     args = dict(
         scales = scales,
-        config_type = model_type.lower() #TODO, do I need this?
+        model_type = model_type.name
     )
 
     args_list = []
@@ -161,8 +207,8 @@ if __name__ == "__main__":
             description=TASK_DESCRIPTION
             )\
             .set_argument_list(args_list)\
-            .set_subtask_type('SCALE_SOLUTION')\
-            .set_model_type(model_type.upper()) #TODO what goes here? Can I get it from the source solution?
+            .set_subtask_type(subtask_type)\
+            .set_model_type(model_type) 
 
         GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
 

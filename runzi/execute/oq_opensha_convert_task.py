@@ -48,7 +48,7 @@ class BuilderTask():
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type=SubtaskType.SOLUTION_TO_NRML.name,
-                    model_type=ta['model_type'].upper(),
+                    model_type=ta['model_type'], #TODO handle enums consistantly across all modules and all job types
                     ),
                 arguments=task_arguments,
                 environment=environment
@@ -97,7 +97,8 @@ class BuilderTask():
             print(f'Created output in: {self._output_folder}')
 
             # zip this and return the archive path
-            output_zip = Path(self._output_folder, ta["file_name"].replace('.zip', '_nrml.zip'))
+            #TODO if zip already exists, will add files rather than replace
+            output_zip = Path(self._output_folder, ta["file_name"].replace('.zip', '_nrml.zip')) 
             print(f'output: {output_zip}')
             zfile = zipfile.ZipFile(output_zip, 'a')
             for filename in list(Path(self._output_folder).glob(f'{source_id}*.xml')):
