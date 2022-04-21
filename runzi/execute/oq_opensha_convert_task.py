@@ -48,7 +48,7 @@ class BuilderTask():
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type=SubtaskType.SOLUTION_TO_NRML.name,
-                    model_type=ta['model_type'], #TODO handle enums consistantly across all modules and all job types
+                    model_type=ta['model_type'], 
                     ),
                 arguments=task_arguments,
                 environment=environment

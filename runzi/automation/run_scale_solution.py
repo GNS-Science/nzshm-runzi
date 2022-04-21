@@ -1,97 +1,38 @@
-import os
-import pwd
-import itertools
-import stat
-from pathlib import PurePath
-from subprocess import run
-from multiprocessing.dummy import Pool
-import boto3
-import logging
+#!python3
+"""
+This script produces tasks in either AWS, PBS or LOCAL that scale the rates of an opensha InversionSolution
 
+"""
+import logging
+import pwd
+import os
 import datetime as dt
 from dateutil.tz import tzutc
+from subprocess import check_call
+from multiprocessing.dummy import Pool
 
-from itertools import chain
+from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
+from runzi.automation.scaling.toshi_api.general_task import ModelType
+from runzi.configuration.scale_inversion_solution import build_scale_tasks
+from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
-from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
+from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
+    API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-from runzi.execute import scale_solution_task
-from runzi.util.aws import get_ecs_job_config
+# If you wish to override something in the main config, do so here ..
+#WORKER_POOL_SIZE = 2 
+WORKER_POOL_SIZE = None
+USE_API = True
 
-# Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
-    JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, EnvMode)
-
-INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
-#JAVA_THREADS = 4
-
-if CLUSTER_MODE == EnvMode['AWS']:
-    WORK_PATH='/WORKING'
-
-def build_subset_tasks(general_task_id, source_solutions, args):
-    
-    task_count = 0
-
-    factory_class = get_factory(CLUSTER_MODE)
-
-    task_factory = factory_class(OPENSHA_ROOT, WORK_PATH, scale_solution_task,
-        task_config_path=WORK_PATH )
-
-    for (src_sol_id, src_sol_info) in source_solutions.items():
-
-        for scale in args['scales']:
-            
-            task_count += 1
-
-            task_arguments = dict(
-                scale = scale,
-                model_type = args['model_type']
-            )
-
-            job_arguments = dict(
-                task_id = task_count,
-                source_solution_id = src_sol_id,
-                source_solution_info = src_sol_info,
-                working_path=str(WORK_PATH),
-                root_folder = OPENSHA_ROOT,
-                general_task_id=general_task_id,
-                use_api = USE_API,
-                java_gateway_port=task_factory.get_next_port(),
-                )
-
-            if CLUSTER_MODE == EnvMode['AWS']:
-                    pass
-                    # job_name = f"Runzi-automation-subduction_inversions-{task_count}"
-                    # config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
-
-                    # yield get_ecs_job_config(job_name, solution_info['id'], config_data,
-                    #     toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
-                    #     task_module=inversion_solution_builder_task.__name__,
-                    #     time_minutes=int(max_inversion_time), memory=30720, vcpu=4)
-
-            else:
-                #write a config
-                task_factory.write_task_config(task_arguments, job_arguments)
-
-                script = task_factory.get_task_script()
-
-                script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
-                with open(script_file_path, 'w') as f:
-                    f.write(script)
-
-                #make file executable
-                st = os.stat(script_file_path)
-                os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
-
-                yield str(script_file_path)
-                #return
-
-
+def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
+    scripts = []
+    for script_file in build_scale_tasks(new_gt_id, task_type, model_type, args, toshi_api):
+        print('scheduling: ', script_file)
+        scripts.append(script_file)
+    return scripts
 
 if __name__ == "__main__":
+
     t0 = dt.datetime.utcnow()
 
     logging.basicConfig(level=logging.INFO)
@@ -106,23 +47,19 @@ if __name__ == "__main__":
 
     log = logging.getLogger(__name__)
 
-    # If you wish to oversolution_ide something in the main config, do so here ..
-    WORKER_POOL_SIZE = 2
-    USE_API = True
-    #If using API give this task a descriptive setting...
-    
-    TASK_DESCRIPTION = """
-    
-    """
-
     GENERAL_TASK_ID = None
 
+    # #If using API give this task a descriptive setting...
+
+    
+    TASK_DESCRIPTION = """first run locally """
+
     headers={"x-api-key":API_KEY}
-    toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+    toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     subtask_type = SubtaskType.SCALE_SOLUTION
 
-    tectonic_type = 'HIK'
+    tectonic_type = 'TEST'
 
     if tectonic_type == 'HIK':
         TASK_TITLE = "Hikurangi. From LTB004 and LTB005. Scaled 0.54, 1.43"
@@ -175,22 +112,9 @@ if __name__ == "__main__":
         ]   
         scales = [0.61, 1.34]
 
-    
-    file_generators = []
-    for file_id in source_solution_ids:
-        """
-        CHOOSE ONE OF:
-         - file_generator = get_output_file_id(file_api, file_id)
-         - file_generator = get_output_file_ids(general_api, upstream_task_id)
-        """
-        # file_generators.append(get_output_file_ids(toshi_api, file_id)) #for file by file ID
-        file_generators.append(get_output_file_id(toshi_api, file_id)) #for file by file ID
-
-    source_solutions = download_files(toshi_api, chain(*file_generators), str(WORK_PATH), overwrite=False)
-
     args = dict(
         scales = scales,
-        model_type = model_type.name
+        source_solution_ids = source_solution_ids
     )
 
     args_list = []
@@ -214,33 +138,15 @@ if __name__ == "__main__":
 
     print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
 
-    scripts = []
-    for script_file in build_subset_tasks(GENERAL_TASK_ID, source_solutions, args):
-        scripts.append(script_file)
+    tasks = build_tasks(GENERAL_TASK_ID, args, subtask_type, model_type, toshi_api)
 
-    def call_script(script_name):
-        print("call_script with:", script_name)
-        if CLUSTER_MODE:
-            run(['qsub', script_name])
-        else:
-            run(['bash', script_name])
+    toshi_api.general_task.update_subtask_count(GENERAL_TASK_ID, len(tasks))
 
-    
-    MOCK_MODE = True
-    MOCK_MODE = False
-
-    print('task count: ', len(scripts))
     print('worker count: ', WORKER_POOL_SIZE)
 
-    if MOCK_MODE:
-        #call_script = mock.Mock(call_script)
-        assert 0
+    schedule_tasks(tasks,WORKER_POOL_SIZE)
 
-    pool = Pool(WORKER_POOL_SIZE)
-    pool.map(call_script, scripts)
-    pool.close()
-    pool.join()
-
+    print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
 
 

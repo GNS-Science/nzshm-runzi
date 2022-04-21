@@ -25,7 +25,7 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 # If you wish to override something in the main config, do so here ..
-WORKER_POOL_SIZE = 4 
+WORKER_POOL_SIZE = 1
 USE_API = True
 
 

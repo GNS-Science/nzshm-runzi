@@ -10,6 +10,7 @@ import uuid
 import time
 import datetime as dt
 from dateutil.tz import tzutc
+from runzi.automation.scaling.toshi_api.general_task import SubtaskType
 
 from solvis import *
 
@@ -25,11 +26,10 @@ class BuilderTask():
     def __init__(self, job_args):
 
         self.use_api = job_args.get('use_api', False)
-        self._output_folder = PurePath(WORK_PATH)
+        self._output_folder = PurePath(job_args.get('working_path'))
 
         if self.use_api:
             headers={"x-api-key":API_KEY}
-            # self._ruptgen_api = RuptureGenerationTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
             self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
             self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
@@ -46,8 +46,8 @@ class BuilderTask():
             task_id = self._toshi_api.automation_task.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
-                    task_type="SCALE_SOLUTION", #TODO should I get this from the general task?
-                    model_type=task_arguments['model_type'].upper(),
+                    task_type=SubtaskType.SCALE_SOLUTION.name,
+                    model_type=task_arguments['model_type'],
                     ),
                 arguments=task_arguments,
                 environment=environment
@@ -85,7 +85,7 @@ class BuilderTask():
             self._toshi_api.automation_task.complete_task(done_args, result['metrics'])
 
             #add the log files
-            pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
+            pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['task_id']}.log")
             self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
             #upload the task output
