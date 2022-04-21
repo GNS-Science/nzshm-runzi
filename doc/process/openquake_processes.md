@@ -19,5 +19,11 @@
    -  see `run_oq_convert_solutionhazard.py` below
 
 
+**Save an arbritrary file**
+
+```
+python3 runzi/automation/run_save_file_archive.py ~/Downloads/Floor_ADDTOT346ave-base.xml -t BG_Kiran_Floor_ADDTOT346ave-base
+```
+
 
 

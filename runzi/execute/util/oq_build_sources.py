@@ -80,7 +80,7 @@ def build_sources_xml(logic_tree_branches, source_file_mapping):
 
     for branch in logic_tree_branches:
             files = ""
-            branch_name = ", ".join([x[0] for x in branch])
+            branch_name = "|".join([x[0] for x in branch])
             for source_tuple in branch:
                 #print(source_tuple)
                 name, src_id = source_tuple
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     permutations = [
         {
             "CR": {
-                "CR_N2.3_b0.807_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA==",
+                "CR_N2.3_b0.807_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA=="
                 "CR_N8.0_b1.115_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Nw==",
                 "CR_N2.3_b0.807_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OQ==",
                 "CR_N3.7_b0.929_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ==",
@@ -114,11 +114,11 @@ if __name__ == "__main__":
                 "HTL_b0.97_N11.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Mw==",
                 "HTL_b1.3_N49.4_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Mg=="
             },
-            # "BG": {
-            #     "floor_addtot346ave": "FILL IN THE BLANK"
-            # },
+            "BG": {
+                "BG_floor_addtot346ave": "RmlsZToxMDIyMzA="
+            },
             "PY": {
-                "P_b0.75, N3.4_C3.9_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="
+                "PY_b0.75_N3.4_C3.9_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="
             }
         },
         {
@@ -135,11 +135,11 @@ if __name__ == "__main__":
                 "HTL_b1.3_N49.4_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3NQ==",
                 "HTL_b0.97_N11.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3NA=="
             },
-            # "BG": {
-            #     #"floor_addtot346ave": "FILL IN THE BLANK"
-            # },
+            "BG": {
+                "BG_floor_addtot346ave": "RmlsZToxMDIyMzA="
+            },
             "PY": {
-                "P_b0.75_N3.4_C3.9_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="
+                "PY_b0.75_N3.4_C3.9_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="
             }
         }
     ]
