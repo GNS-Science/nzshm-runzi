@@ -1,0 +1,79 @@
+{
+"task_args" : {
+   "permutations" : [
+    {
+        "tag": "scaled up", "weight": 0.25,
+        "permute" : [
+            {   "group": "CRU",
+                "members" : [
+                    {"tag": "CrustalA", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYxNQ=="},
+                    {"tag": "CrustalB", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYxNg=="},
+                    {"tag": "CrustalC", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYxNw=="},
+                    {"tag": "CrustalD", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYxOA=="}
+                ]
+            },
+            {   "group": "HIK",
+                "members" : [
+                    {"tag": "HikA", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYwNw=="},
+                    {"tag": "HikB", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYwNQ=="},
+                    {"tag": "HikC", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYwNg=="}
+                ]
+            }
+        ]
+    },
+
+    {
+        "tag": "scaled down", "weight": 0.25,
+        "permute" : [
+            {   "group": "CRU",
+                "members" : [
+                    {"tag": "CrustalE", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYyMg=="},
+                    {"tag": "CrustalF", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYxOQ=="},
+                    {"tag": "CrustalG", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYyMQ=="},
+                    {"tag": "CrustalH", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYyMA=="}
+                ]
+            },
+            {   "group": "HIK",
+                "members" : [
+                    {"tag": "HikD", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYwOA=="},
+                    {"tag": "HikE", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYwOQ=="},
+                    {"tag": "HikF", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYxMA=="}
+                ]
+            }
+        ]
+    },
+
+    {
+        "tag": "unscaled", "weight": 0.5,
+        "permute" : [
+            {   "group": "CRU",
+                "members" : [
+                    {"tag": "CrustalI", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYxMQ=="},
+                    {"tag": "CrustalJ", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYxMg=="},
+                    {"tag": "CrustalK", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYxNA=="},
+                    {"tag": "CrustalL", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYxMw=="}
+                ]
+            },
+            {   "group": "HIK",
+                "members" : [
+                    {"tag": "HikG", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDU5OQ=="},
+                    {"tag": "HikH", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYwMA=="},
+                    {"tag": "HikI", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDYwMQ=="}
+                ]
+            }
+        ]
+    }
+
+    ]
+}
+}
+
+
+            
+
+
+
+
+
+
+
