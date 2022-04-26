@@ -96,53 +96,158 @@ def build_sources_xml(logic_tree_branches, source_file_mapping):
 if __name__ == "__main__":
     from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 
+    # permutations = [
+    #     {
+    #         "CR": {
+    #             "CR_N2.3_b0.807_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA=="
+    #             "CR_N8.0_b1.115_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Nw==",
+    #             "CR_N2.3_b0.807_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OQ==",
+    #             "CR_N3.7_b0.929_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ==",
+    #             "CR_N3.7_b0.929_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Mw==",
+    #             "CR_N8.0_b1.115_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4NQ=="
+    #             },
+    #         "HK": {
+    #             "HTC_b1.112_N22.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2NA==",
+    #             "HTC_b0.97_N11.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Ng==",
+    #             "HTC_b1.3_N49.4_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3MQ==",
+    #             "HTL_b1.112_N22.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3MA==",
+    #             "HTL_b0.97_N11.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Mw==",
+    #             "HTL_b1.3_N49.4_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Mg=="
+    #         },
+    #         "BG": {
+    #             "BG_floor_addtot346ave": "RmlsZToxMDIyMzA="
+    #         },
+    #         "PY": {
+    #             "PY_b0.75_N3.4_C3.9_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="
+    #         }
+    #     },
+    #     {
+    #         "CR": {
+    #             "CR_N8.0_b1.115_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA==",
+    #             "CR_N2.3_b0.807_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Mg==",
+    #             "CR_N3.7_b0.929_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4NA=="
+    #             },
+    #         "HK": {
+    #             "HTC_b1.112_N22.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Nw==",
+    #             "HTC_b1.3_N49.4_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2NQ==",
+    #             "HTC_b0.97_N11.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2OA==",
+    #             "HTL_b1.112_N22.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2OQ==",
+    #             "HTL_b1.3_N49.4_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3NQ==",
+    #             "HTL_b0.97_N11.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3NA=="
+    #         },
+    #         "BG": {
+    #             "BG_floor_addtot346ave": "RmlsZToxMDIyMzA="
+    #         },
+    #         "PY": {
+    #             "PY_b0.75_N3.4_C3.9_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="
+    #         }
+    #     }
+    # ]
+
+
+
     permutations = [
         {
             "CR": {
-                "CR_N2.3_b0.807_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA=="
+                "CR_N8.0_b1.115_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA==",
+                "CR_N2.3_b0.807_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA==",
                 "CR_N8.0_b1.115_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Nw==",
                 "CR_N2.3_b0.807_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OQ==",
                 "CR_N3.7_b0.929_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ==",
                 "CR_N3.7_b0.929_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Mw==",
+                "CR_N2.3_b0.807_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Mg==",
+                "CR_N3.7_b0.929_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4NA==",
                 "CR_N8.0_b1.115_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4NQ=="
                 },
             "HK": {
                 "HTC_b1.112_N22.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2NA==",
+                "HTC_b1.112_N22.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Nw==",
+                "HTC_b1.3_N49.4_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2NQ==",
                 "HTC_b0.97_N11.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Ng==",
+                "HTC_b0.97_N11.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2OA==",
                 "HTC_b1.3_N49.4_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3MQ==",
+                "HTL_b1.112_N22.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2OQ==",
                 "HTL_b1.112_N22.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3MA==",
                 "HTL_b0.97_N11.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Mw==",
-                "HTL_b1.3_N49.4_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Mg=="
+                "HTL_b1.3_N49.4_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3NQ==",
+                "HTL_b1.3_N49.4_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Mg==",
+                "HTL_b0.97_N11.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3NA=="
             },
             "BG": {
-                "BG_floor_addtot346ave": "RmlsZToxMDIyMzA="
+                "floor_addtot346ave": "RmlsZToxMDIyMzA="
             },
             "PY": {
-                "PY_b0.75_N3.4_C3.9_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="
+                "P_b0.75_N3.4_C3.9_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="
             }
         },
         {
             "CR": {
-                "CR_N8.0_b1.115_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA==",
-                "CR_N2.3_b0.807_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Mg==",
-                "CR_N3.7_b0.929_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4NA=="
+                "CR_N8.0_b1.115_C4.3_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMg==",
+                "CR_N8.0_b1.115_C4.1_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNQ==",
+                "CR_N2.3_b0.807_C4.2_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNg==",
+                "CR_N2.3_b0.807_C4.1_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMw==",
+                "CR_N3.7_b0.929_C4.1_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNA==",
+                "CR_N3.7_b0.929_C4.2_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNw==",
+                "CR_N2.3_b0.807_C4.3_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxOQ==",
+                "CR_N8.0_b1.115_C4.2_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMA==",
+                "CR_N3.7_b0.929_C4.3_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMw=="
                 },
             "HK": {
-                "HTC_b1.112_N22.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Nw==",
-                "HTC_b1.3_N49.4_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2NQ==",
-                "HTC_b0.97_N11.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2OA==",
-                "HTL_b1.112_N22.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2OQ==",
-                "HTL_b1.3_N49.4_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3NQ==",
-                "HTL_b0.97_N11.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3NA=="
+                "HTC_b1.112_N22.6_C4_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Ng==",
+                "HTC_b1.3_N49.4_C4.1_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4OA==",
+                "HTC_b1.112_N22.6_C4.1_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5MA==",
+                "HTC_b0.97_N11.6_C4_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Nw==",
+                "HTC_b0.97_N11.6_C4.1_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4OQ==",
+                "HTL_b1.112_N22.6_C4.1_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5MQ==",
+                "HTC_b1.3_N49.4_C4_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5Mg==",
+                "HTL_b1.112_N22.6_C4_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5NQ==",
+                "HTL_b0.97_N11.6_C4_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5Ng==",
+                "HTL_b1.3_N49.4_C4_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5Mw==",
+                "HTL_b1.3_N49.4_C4.1_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5NA==",
+                "HTL_b0.97_N11.6_C4.1_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5Nw=="
             },
             "BG": {
-                "BG_floor_addtot346ave": "RmlsZToxMDIyMzA="
+                "floor_addtot346ave": "RmlsZToxMDIyMzA="
             },
             "PY": {
-                "PY_b0.75_N3.4_C3.9_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="
+                "P_b0.75_N3.4_C3.9_s0.61": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMA=="
+            }
+        },
+        {
+            "CR": {
+                "CR_N2.3_b0.807_C4.2_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxOA==",
+                "CR_N8.0_b1.115_C4.3_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMQ==",
+                "CR_N8.0_b1.115_C4.1_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMg==",
+                "CR_N3.7_b0.929_C4.2_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNA==",
+                "CR_N2.3_b0.807_C4.1_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNg==",
+                "CR_N3.7_b0.929_C4.1_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyOA==",
+                "CR_N3.7_b0.929_C4.3_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNQ==",
+                "CR_N2.3_b0.807_C4.3_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNw==",
+                "CR_N8.0_b1.115_C4.2_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyOQ=="
+                },
+            "HK": {
+                "HTC_b1.112_N22.6_C4_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5OQ==",
+                "HTC_b1.3_N49.4_C4.1_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwMQ==",
+                "HTC_b1.112_N22.6_C4.1_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwMw==",
+                "HTC_b0.97_N11.6_C4_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5OA==",
+                "HTC_b0.97_N11.6_C4.1_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwMA==",
+                "HTL_b1.112_N22.6_C4.1_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwMg==",
+                "HTC_b1.3_N49.4_C4_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwNA==",
+                "HTL_b1.112_N22.6_C4_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwNw==",
+                "HTL_b0.97_N11.6_C4_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwOA==",
+                "HTL_b1.3_N49.4_C4_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwNQ==",
+                "HTL_b1.3_N49.4_C4.1_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwNg==",
+                "HTL_b0.97_N11.6_C4.1_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwOQ=="
+            },
+            "BG": {
+                "floor_addtot346ave": "RmlsZToxMDIyMzA="
+            },
+            "PY": {
+                "P_b0.75_N3.4_C3.9_s1.34": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMQ=="
             }
         }
     ]
+
     logging.basicConfig(level=logging.INFO)
     sources_folder = Path(WORK_PATH, 'sources')
     source_file_mapping = SourceModelLoader(API_URL, API_KEY, S3_URL).unpack_sources(permutations, sources_folder)
@@ -152,8 +257,12 @@ if __name__ == "__main__":
 
     print("LTB:", len(ltbs), ltbs[0])
 
-    nrml = build_sources_xml(ltbs, source_file_mapping)
-    print(nrml)
+    nrml = build_sources_xml(ltbs[:100], source_file_mapping)
+
+    with open("source_model.xml", 'w') as f:
+        f.write(nrml)
+
+    print('Done!')
 
 
     # task_args = {
