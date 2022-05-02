@@ -12,8 +12,8 @@ WORKER_POOL_SIZE = 2
 if __name__ == "__main__":
 
     task = 'test all'
-    task = 'test convert only'
-    scale = False
+    # task = 'test convert only'
+    scale = True
 
 
     if task == 'test all':

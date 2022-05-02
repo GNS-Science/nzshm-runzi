@@ -56,6 +56,9 @@ class InversionSolutionNrml(object):
                       file_name: $file_name
                       file_size: $file_size
                       created: $created
+
+                      ##META##
+
                   }
               )
               {
@@ -65,6 +68,10 @@ class InversionSolutionNrml(object):
             }
             '''
 
+        if meta:
+            query = query.replace("##META##", kvl_to_graphql('meta', meta))
+
+        
         filedata = open(filepath, 'rb')
         digest = base64.b64encode(md5(filedata.read()).digest()).decode()
         filedata.seek(0) #important!
@@ -76,6 +83,6 @@ class InversionSolutionNrml(object):
           produced_by=produced_by, source_solution=source_solution, created=created)
 
         executed = self.api.run_query(query, variables)
-        print("executed", executed)
+        # print("executed", executed)
         post_url = json.loads(executed['create_inversion_solution_nrml']['inversion_solution_nrml']['post_url'])
         return (executed['create_inversion_solution_nrml']['inversion_solution_nrml']['id'], post_url)

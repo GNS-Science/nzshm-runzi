@@ -14,6 +14,8 @@ from runzi.automation.scaling.toshi_api.general_task import SubtaskType
 
 from solvis import *
 
+from runzi.automation.scaling.file_utils import get_file_meta
+
 from nshm_toshi_client.task_relation import TaskRelation
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL)
@@ -91,9 +93,29 @@ class BuilderTask():
             #upload the task output
             meta = task_arguments.copy()
             meta['source_solution_id'] = job_arguments.get('source_solution_id')
+
+            #append the source solution meta data as json string
+            source_solution_id = job_arguments.get('source_solution_id'),
+            source_meta = get_file_meta(self._toshi_api, source_solution_id)
+
+            # I treid to package the source meta data as a json string but graphql
+            #  doesn't support namespaces and doesn't allow specail characters like ':' in the names.
+            # There may be a workaround here https://stackoverflow.com/questions/37059523/graphql-get-all-fields-from-nested-json-object 
+            # but this may require large changes to our schema
+            # for now I have unpacked the source meta data and prefixed with 'source_'
+            # NB: also breaks graphql to use str(source_meta) as the '{' is reserved, as well
+            # CDC
+            #
+            # source_meta_json = json.dumps(source_meta)
+            # meta['source_meta'] = source_meta_json
+            
+            for k,v in source_meta.items():
+                source_key = 'SOURCE_' + k
+                meta[source_key] = v
+            
             inversion_id = self._toshi_api.scaled_inversion_solution.upload_inversion_solution(task_id,
                 filepath=result['scaled_solution'],
-                source_solution_id=job_arguments.get('source_solution_id'),
+                source_solution_id=source_solution_id,
                 meta=meta, metrics=result['metrics'])
             print("created scaled inversion solution: ", inversion_id)
 

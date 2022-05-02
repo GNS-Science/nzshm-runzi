@@ -15,6 +15,8 @@ from dateutil.tz import tzutc
 
 from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
 
+from runzi.automation.scaling.file_utils import get_file_meta
+
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL)
 from nshm_toshi_client.task_relation import TaskRelation #TODO deprecate
 
@@ -116,11 +118,17 @@ class BuilderTask():
         if self.use_api:
 
             #upload the task output
+            meta = task_arguments.copy()
+            source_meta = get_file_meta(self._toshi_api, input_file_id)
+            for k,v in source_meta.items():
+                source_key = 'SOURCE_' + k
+                meta[source_key] = v
+
             nrml_id = self._toshi_api.inversion_solution_nrml.upload_inversion_solution_nrml(
                 task_id,
                 source_solution_id=input_file_id,
                 filepath=output_zip,
-                meta=task_arguments, metrics=None)
+                meta=meta, metrics=None)
 
             print("created nrml: ", nrml_id)
 
