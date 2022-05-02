@@ -31,8 +31,8 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
         scripts.append(script_file)
     return scripts
 
-if __name__ == "__main__":
-
+def run(source_solution_ids, scales,model_type: ModelType, 
+        TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL_SIZE):
     t0 = dt.datetime.utcnow()
 
     logging.basicConfig(level=logging.INFO)
@@ -49,68 +49,10 @@ if __name__ == "__main__":
 
     GENERAL_TASK_ID = None
 
-    # #If using API give this task a descriptive setting...
-
-    
-    TASK_DESCRIPTION = """first run locally """
-
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     subtask_type = SubtaskType.SCALE_SOLUTION
-
-    tectonic_type = 'TEST'
-
-    if tectonic_type == 'HIK':
-        TASK_TITLE = "Hikurangi. From LTB004 and LTB005. Scaled 0.54, 1.43"
-        model_type = ModelType.SUBDUCTION
-        source_solution_ids = [
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNTA1",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNTAy",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNTIy",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNjUx",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNjIw",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNjI2",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNzQx",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNzc4",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwODM5",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwODM2",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwOTI2",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwOTU4",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNzMy",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNTMx",
-        ]
-        scales = [0.54, 1.43]
-    elif tectonic_type == 'CRU':
-        TASK_TITLE = "Crustal. From LTB070. Scaled 0.51, 1.62"
-        model_type = ModelType.CRUSTAL
-        source_solution_ids = [
-            "SW52ZXJzaW9uU29sdXRpb246MTAxMTgw",
-            "SW52ZXJzaW9uU29sdXRpb246MTAxMTg1",
-            "SW52ZXJzaW9uU29sdXRpb246MTAxMTg2",
-            "SW52ZXJzaW9uU29sdXRpb246MTAxMTg5",
-            "SW52ZXJzaW9uU29sdXRpb246MTAxMTgx",
-            "SW52ZXJzaW9uU29sdXRpb246MTAxMTkx",
-            "SW52ZXJzaW9uU29sdXRpb246MTAxMTcz",
-            "SW52ZXJzaW9uU29sdXRpb246MTAxMTk3",
-            "SW52ZXJzaW9uU29sdXRpb246MTAxMTk1"
-        ]   
-        scales = [0.51, 1.62]
-    elif tectonic_type == 'PUY':
-        TASK_TITLE = "Puysegur. From LTB002. Scaled 0.61, 1.34"
-        model_type = ModelType.SUBDUCTION
-        source_solution_ids = [
-            "SW52ZXJzaW9uU29sdXRpb246MTAxMTE1"    
-        ]   
-        scales = [0.61, 1.34]
-    elif tectonic_type == 'TEST':
-        TASK_TITLE = "TEST"
-        model_type = ModelType.SUBDUCTION
-        source_solution_ids = [
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNDk5",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNTA3"
-        ]   
-        scales = [0.61, 1.34]
 
     args = dict(
         scales = scales,
@@ -149,4 +91,54 @@ if __name__ == "__main__":
     print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
 
+    return GENERAL_TASK_ID
 
+if __name__ == "__main__":
+
+    # #If using API give this task a descriptive setting...
+    TASK_DESCRIPTION = """first run locally """
+    
+    tectonic_type = 'TEST'
+
+    if tectonic_type == 'HIK':
+        TASK_TITLE = "Hikurangi. From LTB007 and LTB008. Scaled 0.54, 1.43"
+        model_type = ModelType.SUBDUCTION
+        source_solution_ids = [
+            "SW52ZXJzaW9uU29sdXRpb246MTAyNTAw",
+            "SW52ZXJzaW9uU29sdXRpb246MTAyMjk5",
+            "SW52ZXJzaW9uU29sdXRpb246MTAyNTU1",
+            "SW52ZXJzaW9uU29sdXRpb246MTAyNzI2"
+        ]
+        scales = [0.54, 1.43]
+    elif tectonic_type == 'CRU':
+        TASK_TITLE = "Crustal. From LTB070. Scaled 0.51, 1.62"
+        model_type = ModelType.CRUSTAL
+        source_solution_ids = [
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTgw",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTg1",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTg2",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTg5",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTgx",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTkx",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTcz",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTk3",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTk1"
+        ]   
+        scales = [0.51, 1.62]
+    elif tectonic_type == 'PUY':
+        TASK_TITLE = "Puysegur. From LTB002. Scaled 0.61, 1.34"
+        model_type = ModelType.SUBDUCTION
+        source_solution_ids = [
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTE1"    
+        ]   
+        scales = [0.61, 1.34]
+    elif tectonic_type == 'TEST':
+        TASK_TITLE = "TEST"
+        model_type = ModelType.SUBDUCTION
+        source_solution_ids = [
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNDk5",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwNTA3"
+        ]   
+        scales = [0.61, 1.34]
+
+    run(source_solution_ids, scales,model_type, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)

@@ -36,7 +36,9 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
         scripts.append(script_file)
     return scripts
 
-if __name__ == "__main__":
+
+def run(scaled_solution_ids, model_type: ModelType,
+        TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL_SIZE):
 
     t0 = dt.datetime.utcnow()
 
@@ -54,44 +56,70 @@ if __name__ == "__main__":
 
     GENERAL_TASK_ID = None
 
-    # #If using API give this task a descriptive setting...
-
-    
-    TASK_DESCRIPTION = """first run locally """
-
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
+
+    args = dict(
+        rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km 
+        investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years 
+        input_ids = scaled_solution_ids
+    )
+
+    args_list = []
+    for key, value in args.items():
+        args_list.append(dict(k=key, v=value))
+
+    task_type = SubtaskType.SOLUTION_TO_NRML
+
+
+    if USE_API:
+        #create new task in toshi_api
+        gt_args = CreateGeneralTaskArgs(
+            agent_name=pwd.getpwuid(os.getuid()).pw_name,
+            title=TASK_TITLE,
+            description=TASK_DESCRIPTION
+            )\
+            .set_argument_list(args_list)\
+            .set_subtask_type(task_type)\
+            .set_model_type(model_type)
+
+        new_gt_id = toshi_api.general_task.create_task(gt_args)
+
+    print("GENERAL_TASK_ID:", new_gt_id)
+
+    tasks = build_tasks(new_gt_id, args, task_type, model_type,toshi_api)
+
+    toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
+
+    print('worker count: ', WORKER_POOL_SIZE) 
+
+    schedule_tasks(tasks,WORKER_POOL_SIZE)
+
+    print("GENERAL_TASK_ID:", new_gt_id)
+    print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+
+    return new_gt_id
+
+
+if __name__ == "__main__":
+
+    TASK_DESCRIPTION = """first run locally """
+    # #If using API give this task a descriptive setting...
 
     tectonic_type = 'TEST'
 
     if tectonic_type == 'HIK':
-        TASK_TITLE = "Hikurangi Scaled NRMLs"
+        TASK_TITLE = "Hikurangi Scaled NRMLs LTB007 and LTB008"
         model_type = ModelType.SUBDUCTION
         input_ids = [
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTA2",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTA4",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTE0",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTE2",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTIy",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTI0",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTMw",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTM0",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTM2",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTQy",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTQ0",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTUw",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTEw",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTEy",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTE4",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTIw",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTI2",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTI5",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTMy",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTM4",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTQw",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTQ2",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTQ4",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTU0",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTM1",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTM2",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTM4",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTQw",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTQy",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTQ0",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTQ2",
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTQ4"
         ]
     elif tectonic_type == 'PUY':
         TASK_TITLE = "Puysegur Scaled NRMLs"
@@ -133,43 +161,7 @@ if __name__ == "__main__":
             "SW52ZXJzaW9uU29sdXRpb246MTAwNTEz",
             "SW52ZXJzaW9uU29sdXRpb246MTAwNTE1"
         ]
-
-    args = dict(
-        rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km 
-        investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years 
-        input_ids = input_ids
-    )
-
-    args_list = []
-    for key, value in args.items():
-        args_list.append(dict(k=key, v=value))
-
-    task_type = SubtaskType.SOLUTION_TO_NRML
-    
-
-    if USE_API:
-        #create new task in toshi_api
-        gt_args = CreateGeneralTaskArgs(
-            agent_name=pwd.getpwuid(os.getuid()).pw_name,
-            title=TASK_TITLE,
-            description=TASK_DESCRIPTION
-            )\
-            .set_argument_list(args_list)\
-            .set_subtask_type(task_type)\
-            .set_model_type(model_type)
-
-        new_gt_id = toshi_api.general_task.create_task(gt_args)
-
-    print("GENERAL_TASK_ID:", new_gt_id)
-
-    tasks = build_tasks(new_gt_id, args, task_type, model_type,toshi_api)
-
-    toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
-
-    print('worker count: ', WORKER_POOL_SIZE) 
-
-    schedule_tasks(tasks,WORKER_POOL_SIZE)
-
-    print("GENERAL_TASK_ID:", new_gt_id)
-    print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+        
+        
+        run(input_ids, model_type, TASK_TITLE, TASK_DESCRIPTION, WORKER_POOL_SIZE)
 
