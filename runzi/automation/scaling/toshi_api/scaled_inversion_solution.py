@@ -68,7 +68,7 @@ class ScaledInversionSolution(object):
         #if mfd_table:
         #    qry = qry.replace("##MFD_TABLE##", f'mfd_table_id: "{mfd_table}"')
 
-        print(qry)
+        # print(qry)
 
         filedata = open(filepath, 'rb')
         digest = base64.b64encode(md5(filedata.read()).digest()).decode()
