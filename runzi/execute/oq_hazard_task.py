@@ -4,7 +4,7 @@ import json
 
 import os
 import io
-import zipfile
+# import zipfile
 import subprocess
 import requests
 import platform
@@ -19,8 +19,10 @@ import urllib.parse
 from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
 from nshm_toshi_client.task_relation import TaskRelation
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
-from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
+
 from runzi.util import archive
+from runzi.execute.util import ( OpenquakeConfig, build_sources_xml,
+    get_logic_tree_file_ids, get_logic_tree_branches )
 
 logging.basicConfig(level=logging.INFO)
 
@@ -34,33 +36,9 @@ logging.getLogger('git.cmd').setLevel(loglevel)
 
 log = logging.getLogger(__name__)
 
-def build_sources_xml(sources_list):
-    template = """
-<nrml xmlns:gml="http://www.opengis.net/gml"
-      xmlns="http://openquake.org/xmlns/nrml/0.5">
-    <logicTree logicTreeID="Combined">
-        <logicTreeBranchSet uncertaintyType="sourceModel" branchSetID="BS-NONCE1">
-            <logicTreeBranch branchID="Combined">
-                <uncertaintyModel>
-<!-- INSERT_SOURCE_FILE_LIST -->
-                </uncertaintyModel>
-                <uncertaintyWeight>1.0</uncertaintyWeight>
-            </logicTreeBranch>
-        </logicTreeBranchSet>
-    </logicTree>
-</nrml>
-"""
-    insert = " " * 16 #coz some indentation is nice
-    for filepath in sources_list:
-        insert += f"{filepath}\n"
-
-    template = template.replace('<!-- INSERT_SOURCE_FILE_LIST -->', insert)
-    return template
-
 def write_sources(xml_str, filepath):
     with open(filepath, 'w') as mf:
         mf.write(xml_str)
-
 
 def explode_config_template(config_info, working_path: str):
     config_folder = Path(working_path, "config")
@@ -155,23 +133,28 @@ class BuilderTask():
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
-    def unpack_sources(self, ta, source_path):
-        """download and extract the sources"""
+    # def unpack_sources(self, ta, source_path):
+    #     """download and extract the sources"""
 
-        namelist = []
-        for src_name, nrml_id in ta['sources']['nrml_ids'].items():
+    #     sources = dict()
+    #     # for src_name, nrml_id in ta['sources']['nrml_ids'].items():
 
-            log.info(f"get src : {src_name} {nrml_id}")
+    #     for branch in ta['logic_tree']['branches']:
+    #         for src_name, nrml_id in branch['sources']['source_ids'].items():
+    #             if nrml_id in sources.keys():
+    #                 continue
 
-            gen = get_output_file_id(self._toshi_api, nrml_id)
+    #             log.info(f"get src : {src_name} {nrml_id}")
 
-            source_nrml = download_files(self._toshi_api, gen, str(WORK_PATH), overwrite=False)
-            log.info(f"source_nrml: {source_nrml}")
+    #             gen = get_output_file_id(self._toshi_api, nrml_id)
 
-            with zipfile.ZipFile(source_nrml[nrml_id]['filepath'], 'r') as zip_ref:
-                zip_ref.extractall(source_path)
-                namelist += zip_ref.namelist()
-        return namelist
+    #             source_nrml = download_files(self._toshi_api, gen, str(WORK_PATH), overwrite=False)
+    #             log.info(f"source_nrml: {source_nrml}")
+
+    #             with zipfile.ZipFile(source_nrml[nrml_id]['filepath'], 'r') as zip_ref:
+    #                 zip_ref.extractall(source_path)
+    #                 sources[nrml_id] = {'source_name': src_name, 'sources' : zip_ref.namelist()}
+    #     return sources
 
 
     def run(self, task_arguments, job_arguments):
@@ -230,22 +213,48 @@ class BuilderTask():
         config_folder = explode_config_template(config_template_info, work_folder)
 
         # sources are the InversionSolutionNRML XML file(s) to include in the sources list
+        id_list = get_logic_tree_file_ids(task_args['logic_tree_permutations'])
+
         sources_folder = Path(config_folder, 'sources')
         sources_list = self.unpack_sources(ta, sources_folder)
         print(f'sources_list: {sources_list}')
 
         # now the customised source_models.xml file must be written into the local configuration
-        src_xml = build_sources_xml(sources_list)
+        #src_xml = build_sources_xml(sources_list)
+        #print("ID lists:", list(id_list))
+        #TODO build a map whlie downloading the files
+
+        ltbs = [ltb for ltb in get_logic_tree_branches(task_args['logic_tree_permutations'])]
+
+        print("LTB:", len(ltbs), ltbs[0])
+
+        nrml = build_sources_xml(ltbs, source_file_mapping)
+
+
         print(src_xml)
         write_sources(src_xml, Path(sources_folder, 'source_model.xml'))
 
-        # Do the heavy lifting in openquake, passing the config
+        #prepare the config
         for itm in config_template_info['meta']:
             if itm['k'] == "config_filename":
                 config_filename = itm['v']
                 break
 
         config_file = Path(config_folder, config_filename)
+        def modify_config(config_file, task_arguments):
+            ta = task_arguments
+            config = OpenquakeConfig(open(config_file))\
+                .set_sites(ta['location_code'])\
+                .set_disaggregation(enable = ta['disagg_conf']['enabled'],
+                    settings = ta['disagg_conf']['config'])\
+                .set_iml(ta['intensity_spec']['measures'],
+                    ta['intensity_spec']['levels'])\
+                .set_vs30(ta['vs30'])
+            config.write(open(config_file, 'w'))
+            return
+
+        modify_config(config_file, task_arguments)
+
         logfile = Path(work_folder, f'openquake.log')
         oq_result = execute_openquake(config_file, logfile, task_id)
 
@@ -261,6 +270,8 @@ class BuilderTask():
             # save the hazard solution
             solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
                 config_id, csv_archive_id, hdf5_archive_id, produced_by=task_id)
+
+            # TODO bundle and save the as-run configuration file(s)
 
             # update the OpenquakeHazardTask
             self._toshi_api.openquake_hazard_task.complete_task(

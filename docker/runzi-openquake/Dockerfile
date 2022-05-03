@@ -1,9 +1,14 @@
 # Dockerfile
 # Extend base image
 # needs openquake/engine >= 3.13.0
-FROM openquake/engine:nightly
+#nightly
+FROM openquake/engine:latest
 
 USER root
+
+ADD nzshm-oq-engine-main/openquake/hazardlib/scalerel/cscaling.py /opt/openquake/lib/python3.8/site-packages/openquake/hazardlib/scalerel
+
+
 RUN apt-get update
 RUN apt-get install git -y
 RUN apt-get install nano
@@ -31,7 +36,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 
 RUN git fetch
-RUN git checkout feature/89-integrate-openquake-and-toshiapi
+RUN git checkout feature/96-site-config
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 
