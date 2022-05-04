@@ -25,11 +25,11 @@ VERSION = '0.2.1'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-'GitPython==3.1.11',
-'gql==2.0.0',
-'py4j==0.10.9.1',
-'python-dateutil==2.8.1',
-'pytz',
+# 'GitPython==3.1.11',
+# 'gql==2.0.0',
+# 'py4j==0.10.9.1',
+# 'python-dateutil==2.8.1',
+# 'pytz',
 #'numpy',
 #'matplotlib',
 # 'git+https://github.com/GNS-Science/nshm-toshi-client#egg=nshm_toshi_client'
