@@ -22,9 +22,10 @@ class InversionSolutionNrml(object):
         assert isinstance(api, ToshiClientBase)
 
     def upload_inversion_solution_nrml(self, task_id, source_solution_id, filepath,
+        predecessors=None,
         meta=None,  metrics=None):
         filepath = PurePath(filepath)
-        file_id, post_url = self._create_inversion_solution_nrml(filepath, task_id, source_solution_id, meta, metrics)
+        file_id, post_url = self._create_inversion_solution_nrml(filepath, task_id, source_solution_id, predecessors, meta, metrics)
         self.upload_content(post_url, filepath)
 
         #link file to task in role
@@ -44,10 +45,10 @@ class InversionSolutionNrml(object):
         log.debug(f'response {response}')
         response.raise_for_status()
 
-    def _create_inversion_solution_nrml(self, filepath, produced_by, source_solution,  meta=None, metrics=None):
+    def _create_inversion_solution_nrml(self, filepath, produced_by, source_solution, predecessors=None, meta=None, metrics=None):
         """test helper"""
         query = '''
-            mutation ($source_solution: ID!, $digest: String!, $file_name: String!, $file_size: Int!, $created: DateTime!) {
+            mutation ($source_solution: ID!, $digest: String!, $file_name: String!, $file_size: Int!, $created: DateTime!, $predecessors: [PredecessorInput]) {
               create_inversion_solution_nrml(
                   input: {
                       source_solution: $source_solution
@@ -56,6 +57,8 @@ class InversionSolutionNrml(object):
                       file_name: $file_name
                       file_size: $file_size
                       created: $created
+                      predecessors: $predecessors
+
 
                       ##META##
 
@@ -80,7 +83,7 @@ class InversionSolutionNrml(object):
 
         created = dt.datetime.now(tzutc()).isoformat()
         variables = dict(digest=digest, file_name=filepath.parts[-1], file_size=size,
-          produced_by=produced_by, source_solution=source_solution, created=created)
+          produced_by=produced_by, source_solution=source_solution, created=created, predecessors=predecessors)
 
         executed = self.api.run_query(query, variables)
         # print("executed", executed)

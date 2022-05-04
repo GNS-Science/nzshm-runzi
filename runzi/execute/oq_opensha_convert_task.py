@@ -115,20 +115,26 @@ class BuilderTask():
         t1 = dt.datetime.utcnow()
         print("Conversion took %s secs" % (t1-t0).total_seconds())
 
-        if self.use_api:
+        if self.use_api:    
 
             #upload the task output
-            meta = task_arguments.copy()
-            source_meta = get_file_meta(self._toshi_api, input_file_id)
-            for k,v in source_meta.items():
-                source_key = 'SOURCE_' + k
-                meta[source_key] = v
+                        
+            # get the predecessors
+            source_solution_id = task_arguments['solution_id']
+            predecessors = [dict(id=source_solution_id,depth=-1),]
+            source_predecessors = self._toshi_api.get_predecessors(source_solution_id) 
+
+            if source_predecessors:
+                for predecessor in source_predecessors:
+                    predecessor['depth'] += -1
+                    predecessors.append(predecessor)
 
             nrml_id = self._toshi_api.inversion_solution_nrml.upload_inversion_solution_nrml(
                 task_id,
                 source_solution_id=input_file_id,
                 filepath=output_zip,
-                meta=meta, metrics=None)
+                predecessors=predecessors,
+                meta=task_arguments, metrics=None)
 
             print("created nrml: ", nrml_id)
 

@@ -98,7 +98,7 @@ if __name__ == "__main__":
     # #If using API give this task a descriptive setting...
     TASK_DESCRIPTION = """first run locally """
     
-    tectonic_type = 'TEST'
+    tectonic_type = 'TEST2'
 
     if tectonic_type == 'HIK':
         TASK_TITLE = "Hikurangi. From LTB007 and LTB008. Scaled 0.54, 1.43"
@@ -140,5 +140,13 @@ if __name__ == "__main__":
             "SW52ZXJzaW9uU29sdXRpb246MTAwNTA3"
         ]   
         scales = [0.61, 1.34]
+
+    elif tectonic_type == 'TEST2':
+        TASK_TITLE = "TEST predecessors"
+        model_type = ModelType.SUBDUCTION
+        source_solution_ids = [
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAwODEy",
+        ]   
+        scales = [0.61,]
 
     run(source_solution_ids, scales,model_type, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)

@@ -11,9 +11,7 @@ WORKER_POOL_SIZE = 2
 
 if __name__ == "__main__":
 
-    task = 'test all'
-    # task = 'test convert only'
-    scale = True
+    task = 'test all 2'
 
 
     if task == 'test all':
@@ -26,7 +24,17 @@ if __name__ == "__main__":
             "SW52ZXJzaW9uU29sdXRpb246MTAwNTA3"
         ]   
         scales = [0.61, 1.34]
+    elif task == 'test all 2':
+        scale = True
+        task_title = "TEST inv --> scale --> NRML workflow"
+        TASK_DESCRIPTION = """first run locally """
+        model_type = ModelType.SUBDUCTION
+        source_solution_ids = [
+            "SW52ZXJzaW9uU29sdXRpb246MTAwODYx"
+        ]   
+        scales = [0.61,]
     elif task == 'test convert only':
+        scale = False
         task_title = "TEST convert only"
         TASK_DESCRIPTION = """first run locally """
         model_type = ModelType.SUBDUCTION

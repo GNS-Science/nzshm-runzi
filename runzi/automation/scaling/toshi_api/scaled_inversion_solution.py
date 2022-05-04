@@ -19,9 +19,9 @@ class ScaledInversionSolution(object):
         self.api = api
         assert isinstance(api, ToshiClientBase)
 
-    def upload_inversion_solution(self, task_id, filepath, source_solution_id, mfd_table=None, meta=None,  metrics=None):
+    def upload_inversion_solution(self, task_id, filepath, source_solution_id, mfd_table=None, meta=None, predecessors=None, metrics=None):
         filepath = PurePath(filepath)
-        file_id, post_url = self._create_inversion_solution(filepath, task_id, source_solution_id, mfd_table, meta, metrics)
+        file_id, post_url = self._create_inversion_solution(filepath, task_id, source_solution_id, mfd_table, meta, predecessors, metrics)
         self.upload_content(post_url, filepath)
 
         #link file to task in role
@@ -41,9 +41,9 @@ class ScaledInversionSolution(object):
         log.debug(f'response {response}')
         response.raise_for_status()
 
-    def _create_inversion_solution(self, filepath, produced_by, source_solution_id, mfd_table=None, meta=None, metrics=None):
+    def _create_inversion_solution(self, filepath, produced_by, source_solution_id, mfd_table=None, meta=None, predecessors=None, metrics=None):
         qry = '''
-            mutation ($source_solution: ID!, $created: DateTime!, $digest: String!, $file_name: String!, $file_size: Int!, $produced_by: ID!) {
+            mutation ($source_solution: ID!, $created: DateTime!, $digest: String!, $file_name: String!, $file_size: Int!, $produced_by: ID!, $predecessors: [PredecessorInput]) {
               create_scaled_inversion_solution(input: {
                   source_solution: $source_solution
                   created: $created
@@ -51,6 +51,7 @@ class ScaledInversionSolution(object):
                   file_name: $file_name
                   file_size: $file_size
                   produced_by: $produced_by
+                  predecessors: $predecessors
 
                   ##META##
 
@@ -80,7 +81,7 @@ class ScaledInversionSolution(object):
 
         created = dt.utcnow().isoformat() + 'Z'
         variables = dict(source_solution=source_solution_id, digest=digest, file_name=filepath.parts[-1], file_size=size,
-          produced_by=produced_by, mfd_table=mfd_table, created=created)
+          produced_by=produced_by, mfd_table=mfd_table, created=created, predecessors=predecessors)
 
         #result = self.api.client.execute(qry, variable_values = variables)
         #print(result)
@@ -113,3 +114,5 @@ class ScaledInversionSolution(object):
 
         executed = self.api.run_query(qry, dict(solution_id=solution_id))
         return executed['node']
+
+    

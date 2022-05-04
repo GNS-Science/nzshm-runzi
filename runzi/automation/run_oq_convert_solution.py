@@ -155,11 +155,12 @@ if __name__ == "__main__":
         TASK_TITLE = "Test NRMLs"
         model_type = ModelType.SUBDUCTION
         input_ids = [
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNDk5",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNTA3",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNTEw",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNTEz",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNTE1"
+            # "SW52ZXJzaW9uU29sdXRpb246MTAwNDk5",
+            # "SW52ZXJzaW9uU29sdXRpb246MTAwNTA3",
+            # "SW52ZXJzaW9uU29sdXRpb246MTAwNTEw",
+            # "SW52ZXJzaW9uU29sdXRpb246MTAwNTEz",
+            # "SW52ZXJzaW9uU29sdXRpb246MTAwNTE1"
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAwODYz"
         ]
         
         

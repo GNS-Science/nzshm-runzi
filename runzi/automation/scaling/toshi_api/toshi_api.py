@@ -201,9 +201,26 @@ class ToshiApi(ToshiClientBase):
         executed = self.run_query(qry, input_variables)
         return executed['node']
 
+    def get_predecessors(self,id):
+            
+      pred_qry = '''
+        query pred ($id:ID!) {
+          node (id: $id) {
+            ... on PredecessorsInterface {
+              predecessors {
+                id, depth
+              }
+            }
+          }
+        }'''
+      print(pred_qry)
+
+      input_variables = dict(id=id)
+      executed = self.run_query(pred_qry, input_variables)
+      return executed['node']['predecessors']
 
 
-
+    
 class Table(object):
 
     def __init__(self, api):
