@@ -289,8 +289,10 @@ class BuilderTask():
             self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
             #upload the task output
+            predecessors = [dict(id=task_arguments['rupture_set_file_id'],depth=-1),]
+
             inversion_id = self._toshi_api.inversion_solution.upload_inversion_solution(task_id, filepath=output_file,
-                meta=task_arguments, metrics=metrics)
+                meta=task_arguments, predecessors=predecessors, metrics=metrics)
             log.info(f"created inversion solution: {inversion_id}")
 
             # Get the MFD tables...

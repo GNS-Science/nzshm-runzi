@@ -83,6 +83,20 @@ def get_output_file_id(file_api, single_file_id):
 
     return
 
+def get_file_meta(file_api, single_file_id):
+
+    api_result = file_api.get_file_detail(single_file_id)
+    # return api_result.get('meta')
+    res = dict()
+
+    if api_result.get('meta'):
+        for kv in api_result['meta']:
+            res[kv['k']] = kv['v']
+        return res
+    else:
+        return None
+    
+
 
 def get_download_info(file_api, file_infos):
     """

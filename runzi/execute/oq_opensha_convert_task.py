@@ -15,6 +15,8 @@ from dateutil.tz import tzutc
 
 from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
 
+from runzi.automation.scaling.file_utils import get_file_meta
+
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL)
 from nshm_toshi_client.task_relation import TaskRelation #TODO deprecate
 
@@ -48,7 +50,7 @@ class BuilderTask():
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type=SubtaskType.SOLUTION_TO_NRML.name,
-                    model_type=ta['model_type'].upper(),
+                    model_type=ta['model_type'], 
                     ),
                 arguments=task_arguments,
                 environment=environment
@@ -97,9 +99,9 @@ class BuilderTask():
             print(f'Created output in: {self._output_folder}')
 
             # zip this and return the archive path
-            output_zip = Path(self._output_folder, ta["file_name"].replace('.zip', '_nrml.zip'))
+            output_zip = Path(self._output_folder, ta["file_name"].replace('.zip', '_nrml.zip')) 
             print(f'output: {output_zip}')
-            zfile = zipfile.ZipFile(output_zip, 'a')
+            zfile = zipfile.ZipFile(output_zip, 'w')
             for filename in list(Path(self._output_folder).glob(f'{source_id}*.xml')):
                 arcname = str(filename).replace(str(self._output_folder), '')
                 zfile.write(filename, arcname )
@@ -113,13 +115,25 @@ class BuilderTask():
         t1 = dt.datetime.utcnow()
         print("Conversion took %s secs" % (t1-t0).total_seconds())
 
-        if self.use_api:
+        if self.use_api:    
 
             #upload the task output
+                        
+            # get the predecessors
+            source_solution_id = task_arguments['solution_id']
+            predecessors = [dict(id=source_solution_id,depth=-1),]
+            source_predecessors = self._toshi_api.get_predecessors(source_solution_id) 
+
+            if source_predecessors:
+                for predecessor in source_predecessors:
+                    predecessor['depth'] += -1
+                    predecessors.append(predecessor)
+
             nrml_id = self._toshi_api.inversion_solution_nrml.upload_inversion_solution_nrml(
                 task_id,
                 source_solution_id=input_file_id,
                 filepath=output_zip,
+                predecessors=predecessors,
                 meta=task_arguments, metrics=None)
 
             print("created nrml: ", nrml_id)

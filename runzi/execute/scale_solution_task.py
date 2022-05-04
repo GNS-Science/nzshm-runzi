@@ -10,8 +10,11 @@ import uuid
 import time
 import datetime as dt
 from dateutil.tz import tzutc
+from runzi.automation.scaling.toshi_api.general_task import SubtaskType
 
 from solvis import *
+
+from runzi.automation.scaling.file_utils import get_file_meta
 
 from nshm_toshi_client.task_relation import TaskRelation
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -25,11 +28,10 @@ class BuilderTask():
     def __init__(self, job_args):
 
         self.use_api = job_args.get('use_api', False)
-        self._output_folder = PurePath(WORK_PATH)
+        self._output_folder = PurePath(job_args.get('working_path'))
 
         if self.use_api:
             headers={"x-api-key":API_KEY}
-            # self._ruptgen_api = RuptureGenerationTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
             self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
             self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
@@ -42,11 +44,12 @@ class BuilderTask():
 
         if self.use_api:
             #create new task in toshi_api
+            print(task_arguments)
             task_id = self._toshi_api.automation_task.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
-                    task_type="SCALE_SOLUTION", #TODO should I get this from the general task?
-                    model_type=task_arguments['config_type'].upper(),
+                    task_type=SubtaskType.SCALE_SOLUTION.name,
+                    model_type=task_arguments['model_type'],
                     ),
                 arguments=task_arguments,
                 environment=environment
@@ -84,17 +87,27 @@ class BuilderTask():
             self._toshi_api.automation_task.complete_task(done_args, result['metrics'])
 
             #add the log files
-            pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
+            pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['task_id']}.log")
             self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
-            #upload the task output
-            meta = task_arguments.copy()
-            meta['source_solution_id'] = job_arguments.get('source_solution_id')
+            # get the predecessors
+            source_solution_id = job_arguments.get('source_solution_id')
+            predecessors = [dict(id=source_solution_id,depth=-1),]
+            
+            source_predecessors = self._toshi_api.get_predecessors(source_solution_id) 
+
+            if source_predecessors:
+                for predecessor in source_predecessors:
+                    predecessor['depth'] += -1
+                predecessors.append(predecessor)
+
             inversion_id = self._toshi_api.scaled_inversion_solution.upload_inversion_solution(task_id,
                 filepath=result['scaled_solution'],
-                source_solution_id=job_arguments.get('source_solution_id'),
-                meta=meta, metrics=result['metrics'])
+                source_solution_id=source_solution_id,
+                predecessors=predecessors,
+                meta=task_arguments, metrics=result['metrics'])
             print("created scaled inversion solution: ", inversion_id)
+
 
 
         t1 = dt.datetime.utcnow()

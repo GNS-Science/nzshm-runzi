@@ -6,7 +6,7 @@ from subprocess import check_call
 from multiprocessing.dummy import Pool
 
 from runzi.configuration.crustal_inversions import build_crustal_tasks
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
+from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
 from runzi.util.aws import get_secret
 
@@ -27,8 +27,8 @@ def run_crustal_inversion(config):
     GENERAL_TASK_ID = config._general_task_id
     MOCK_MODE = config._mock_mode
     file_id = config._file_id
-    MODEL_TYPE = config._model_type
-    SUBTASK_TYPE = config._subtask_type
+    MODEL_TYPE = ModelType[config._model_type]
+    SUBTASK_TYPE = SubtaskType[config._subtask_type]
 
     global WORK_PATH, API_KEY
     if CLUSTER_MODE == EnvMode['AWS']:
