@@ -1,7 +1,9 @@
 FROM adoptopenjdk/openjdk11:alpine-jre
 LABEL Chris Chamberlain <chrisbc@artisan.co.nz>
 RUN apk add --no-cache curl tar bash procps \
-	python3 py3-pip git ttf-dejavu
+	python3 py3-pip git ttf-dejavu \
+	build-base \
+	python3-dev
 
 ARG FATJAR_TAG
 
@@ -19,8 +21,8 @@ WORKDIR /app/nzshm-runzi
 RUN git fetch
 RUN git checkout fix/update-requirements
 
-RUN pip3 install --no-binary :all: -r requirements.txt
-RUN pip3 install --no-binary :all: -e .
+RUN pip3 install -r requirements.txt
+RUN pip3 install -e .
 
 ENV NZSHM22_TOSHI_API_ENABLED=1
 ENV NZSHM22_SCRIPT_WORK_PATH=/WORKING
