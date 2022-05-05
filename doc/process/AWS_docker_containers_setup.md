@@ -60,7 +60,7 @@ make sure Dockerfile has correct runzi branch
 
 ```
 #EG
-export FATJAR_TAG=227-hk-slip-models_v2
+export FATJAR_TAG=234-deformation-models
 docker build . --build-arg FATJAR_TAG=${FATJAR_TAG} --no-cache
 ```
 
