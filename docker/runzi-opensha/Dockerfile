@@ -1,7 +1,9 @@
 FROM adoptopenjdk/openjdk11:alpine-jre
 LABEL Chris Chamberlain <chrisbc@artisan.co.nz>
 RUN apk add --no-cache curl tar bash procps \
-	python3 py3-pip git ttf-dejavu
+	python3 py3-pip git ttf-dejavu \
+	build-base \
+	python3-dev
 
 ARG FATJAR_TAG
 
@@ -17,7 +19,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/iterate-rupture-sets
+RUN git checkout fix/update-requirements
 
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
