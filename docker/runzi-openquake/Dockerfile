@@ -2,11 +2,11 @@
 # Extend base image
 # needs openquake/engine >= 3.13.0
 #nightly
-FROM openquake/engine:latest
+FROM openquake/engine:nightly
 
 USER root
 
-ADD nzshm-oq-engine-main/openquake/hazardlib/scalerel/cscaling.py /opt/openquake/lib/python3.8/site-packages/openquake/hazardlib/scalerel
+#ADD nzshm-oq-engine-main/openquake/hazardlib/scalerel/cscaling.py /opt/openquake/lib/python3.8/site-packages/openquake/hazardlib/scalerel
 
 
 RUN apt-get update
@@ -36,7 +36,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 
 RUN git fetch
-RUN git checkout feature/96-site-config
+RUN git checkout feature/96-site-config-rebased
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 

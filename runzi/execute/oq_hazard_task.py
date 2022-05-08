@@ -251,7 +251,6 @@ class BuilderTask():
                     ta['intensity_spec']['levels'])\
                 .set_vs30(ta['vs30'])
             config.write(open(config_file, 'w'))
-            return
 
         modify_config(config_file, task_arguments)
 
@@ -259,6 +258,8 @@ class BuilderTask():
         oq_result = execute_openquake(config_file, logfile, task_id)
 
         if self.use_api:
+
+            # TODO: bundle up the sources and modified config for possible re-runs
 
             # save the two output archives
             csv_archive_id, post_url = self._toshi_api.file.create_file(oq_result['csv_archive'])
