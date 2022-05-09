@@ -8,8 +8,8 @@ log = logging.getLogger(__name__)
 
 SITES = dict(
     WLG = {"sites": "174.7762 -41.2865"},
-    NZ4 = {"sites_model_file": "site_model_nz_4.csv"},
-    NZ34 = {"sites_model_file": "site_model_nz_34.csv"},
+    NZ4 = {"site_model_file": "site_model_nz_4.csv"},
+    NZ34 = {"site_model_file": "site_model_nz_34.csv"},
     GRD1 = {"sites_csv": "NZ_whole_country_10k.csv"})
 
 #Sanjay new values

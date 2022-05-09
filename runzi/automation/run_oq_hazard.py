@@ -41,6 +41,7 @@ if __name__ == "__main__":
     logging.getLogger('urllib3').setLevel(loglevel)
     logging.getLogger('botocore').setLevel(loglevel)
     logging.getLogger('git.cmd').setLevel(loglevel)
+    logging.getLogger('gql.transport').setLevel(logging.WARN)
 
     log = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ if __name__ == "__main__":
     # If using API give this task a descriptive setting...
 
     TASK_TITLE = "Openquake Hazard calcs "
-    TASK_DESCRIPTION = """IMT sanity test/demo 2"""
+    TASK_DESCRIPTION = """SRWG 02, improved openquake performance, more measure"""
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
@@ -61,118 +62,72 @@ if __name__ == "__main__":
 
     args = dict(
         config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
-            #'RmlsZToxOA=='
-            # "RmlsZToxMDE4MDQ=", #4-sites-many TEST RmlsZToxMDAzNTc=
-            # "RmlsZToxMDE4MDY=", #PROD Wgn_005-10-300.ini RmlsZToxMDE4MDM= is BAD , PROD # TEST RmlsZToxMDA1MzA="
-            # "RmlsZToxMDE4MDc=", #PROD Wgn_005-10-50.ini
-            # "RmlsZToxMDE4MDg=", #PROD Wgn_005-4-300.ini
-            #"RmlsZToxMDE4MDk=", #PROD Wgn_005-4-50.ini
-            "RmlsZToxMDAzNTc="
+            "RmlsZToxMDQyOTc=",   #SRWG_02 TEST  "RmlsZToxMDAzNTc="
             ],
-        # source_combos = [
-        #     # {'tag':'combined','nrml_ids':{
-        #     #   'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
-        #     #   'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ==",
-        #     #   'bg': 'RmlsZToxMDA0ODg='}},
-        #     #{'tag':'crustal_only','nrml_ids':{
-        #     #   'crustal':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng=="}},
-        #     #{'tag':'hik_only','nrml_ids':{'hik':"SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ=="}},
-        #     {'tag': 'bg_only', 'nrml_ids': {'bg': 'RmlsZToxMDA0ODg='}},
-        #     # {'tag': 'combined', 'nrml_ids': {
-        #     #   'crustal': "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Mw==", #PROD "b_and_n": "{'tag': 'N = 3.5, b=0.913', PROD
-        #     #   'hik': "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDMzMQ==",     #PROD "b_and_n": "{'b': 1.009, 'N': 25.6}"
-        #     #   'bg': "RmlsZToxMDE4MDI=" #BG_Kiran_fADDTOT346ave_Test4 unscaled BG TEST RmlsZToxMDA1MzU=
-        #     #   #'slab': "ABBBV"
-        #     #   #'puy' : "ABCB"
-        #     # }}
-        #     ],
-        # logic_tree_permutations = [
-        #     {
-        #         "CR": {
-        #             "CR_N7.8_b_1.111_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NA==",
-        #             "CR_N7.8_b_1.111_s2": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NQ==",
-        #             "CR_N3.5_b0.913_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
-        #             #"CR_N3.5_b0.913_s2": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Nw=="
-        #             },
-        #         "HK": {
-        #             "HK_N25.6_b0.942_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OA==",
-        #             "HK_N25.6_b1.009_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ==",
-        #             #"HK_N25.6_b1.009_s12": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM1MA=="
-        #         },
-        #         "BG": {
-        #             "bgA": "RmlsZToxMDE4MDI="
-        #         },
-        #         "PY": {
-        #             "PY_N": "RmlsZToxMDE4MDA="
-        #         }
-        #     },
-        #     #MORE of these ....
-        # ],
-
-        # logic_tree_permutations = [
-        #     {
-        #         "tag": "all rate combinations", "weight": 1.0,
-        #         "permute" : [
-        #             {   "group": "HIK",
-        #                 "members" : [
-        #                     {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 0.5, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk0OQ=="},
-        #                     {"tag": "HTC_b1.078_N22.8_C4.1_s1", "weight": 0.5, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MA=="},
-        #                     # {"tag": "HTL_b0.957_N16.5_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MQ=="},
-        #                     # {"tag": "HTL_b1.078_N22.8_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mg=="},
-        #                     # {"tag": "HTC_b0.957_N16.5_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mw=="},
-        #                     # {"tag": "HTC_b0.957_N16.5_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NA=="},
-        #                     # {"tag": "HTC_b1.078_N22.8_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NQ=="},
-        #                     # {"tag": "HTC_b1.078_N22.8_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Ng=="},
-        #                     # {"tag": "HTL_b0.957_N16.5_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Nw=="},
-        #                     # {"tag": "HTL_b0.957_N16.5_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OA=="},
-        #                     # {"tag": "HTL_b1.078_N22.8_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OQ=="},
-        #                     # {"tag": "HTL_b1.078_N22.8_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk2MA=="}
-        #                 ]
-        #             },
-        #             {   "group": "PUY",
-        #                 "members" : [
-        #                     {"tag": "P_b0.75_N3.4_C3.9_s1", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="}
-        #                 ]
-        #             },
-        #             {   "group": "CRU",
-        #                 "members" : [
-        #                     {"tag": "CR_N8.0_b1.115_C4.3_s1", "weight": 0.5, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA=="},
-        #                     {"tag": "CR_N2.3_b0.807_C4.2_s1", "weight": 0.5, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA=="},
-        #                     # {"tag": "CR_N3.7_b0.929_C4.2_s1", "weight": 0.35, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ=="},
-        #                     # {"tag": "CR_N8.0_b1.115_C4.3_s0.51", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMg=="},
-        #                     # {"tag": "CR_N2.3_b0.807_C4.2_s0.51", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNg=="},
-        #                     # {"tag": "CR_N3.7_b0.929_C4.2_s0.51", "weight": 0.075, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNw=="},
-        #                     # {"tag": "CR_N2.3_b0.807_C4.2_s1.62", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxOA=="},
-        #                     # {"tag": "CR_N8.0_b1.115_C4.3_s1.62", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMQ=="},
-        #                     # {"tag": "CR_N3.7_b0.929_C4.2_s1.62", "weight": 0.075, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNA=="}
-        #                 ]
-        #             },
-        #             {   "group": "BG",
-        #                 "members" : [
-        #                     {"tag": "floor_addtot346ave", "weight":1.0, "toshi_id": "RmlsZToxMDIyMzA="}
-        #                 ]
-        #             }
-        #         ]
-        #     }
-        # ],
         logic_tree_permutations = [
             {
                 "tag": "all rate combinations", "weight": 1.0,
                 "permute" : [
                     {   "group": "HIK",
                         "members" : [
-                            {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDg2Nw==" }
-                            ]
+                            {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk0OQ=="},
+                            {"tag": "HTC_b1.078_N22.8_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MA=="},
+                            {"tag": "HTL_b0.957_N16.5_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MQ=="},
+                            {"tag": "HTL_b1.078_N22.8_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mg=="},
+                            {"tag": "HTC_b0.957_N16.5_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mw=="},
+                            {"tag": "HTC_b0.957_N16.5_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NA=="},
+                            {"tag": "HTC_b1.078_N22.8_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NQ=="},
+                            {"tag": "HTC_b1.078_N22.8_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Ng=="},
+                            {"tag": "HTL_b0.957_N16.5_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Nw=="},
+                            {"tag": "HTL_b0.957_N16.5_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OA=="},
+                            {"tag": "HTL_b1.078_N22.8_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OQ=="},
+                            {"tag": "HTL_b1.078_N22.8_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk2MA=="}
+                        ]
+                    },
+                    {   "group": "PUY",
+                        "members" : [
+                            {"tag": "P_b0.75_N3.4_C3.9_s1", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="}
+                        ]
+                    },
+                    {   "group": "CRU",
+                        "members" : [
+                            {"tag": "CR_N8.0_b1.115_C4.3_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA=="},
+                            {"tag": "CR_N2.3_b0.807_C4.2_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA=="},
+                            {"tag": "CR_N3.7_b0.929_C4.2_s1", "weight": 0.35, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ=="},
+                            {"tag": "CR_N8.0_b1.115_C4.3_s0.51", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMg=="},
+                            {"tag": "CR_N2.3_b0.807_C4.2_s0.51", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNg=="},
+                            {"tag": "CR_N3.7_b0.929_C4.2_s0.51", "weight": 0.075, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNw=="},
+                            {"tag": "CR_N2.3_b0.807_C4.2_s1.62", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxOA=="},
+                            {"tag": "CR_N8.0_b1.115_C4.3_s1.62", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMQ=="},
+                            {"tag": "CR_N3.7_b0.929_C4.2_s1.62", "weight": 0.075, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNA=="}
+                        ]
+                    },
+                    {   "group": "BG",
+                        "members" : [
+                            {"tag": "floor_addtot346ave", "weight":1.0, "toshi_id": "RmlsZToxMDQyOTY="}
+                        ]
                     }
                 ]
             }
         ],
+        # logic_tree_permutations = [
+        #     {
+        #         "tag": "all rate combinations", "weight": 1.0,
+        #         "permute" : [
+        #             {   "group": "HIK",
+        #                 "members" : [
+        #                     {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDg2Nw==" }
+        #                     ]
+        #             }
+        #         ]
+        #     }
+        # ],
         intensity_specs = [
             {"tag": "lite", "measures": ['PGA', 'SA(0.5)', 'SA(1.0)'], "levels": 'logscale(0.005, 4.00, 30)' },
-            # {"tag": "fixed", "measures": era_measures, "levels": era_levels},
-            # {"tag": "max10-300", "measures": era_measures, "levels": 'logscale(0.005, 10.00, 300)'}
+            {"tag": "fixed", "measures": era_measures, "levels": era_levels},
+            #{"tag": "max10-300", "measures": era_measures, "levels": 'logscale(0.001, 10.00, 300)'}
         ],
-        vs30s = [ 455, ],
+        vs30s = [ 150, 200, 250, 300, 350, 400, 450, 750 ],
         location_codes = ['NZ4', 'NZ34'],
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}

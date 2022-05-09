@@ -34,6 +34,7 @@ logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
 logging.getLogger('urllib3').setLevel(loglevel)
 logging.getLogger('botocore').setLevel(loglevel)
 logging.getLogger('git.cmd').setLevel(loglevel)
+logging.getLogger('gql.transport').setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
 
@@ -192,22 +193,14 @@ class BuilderTask():
         #unpack the templates
         config_folder = explode_config_template(config_template_info, work_folder)
 
-
-
         sources_folder = Path(config_folder, 'sources')
 
         source_file_mapping = SourceModelLoader().unpack_sources(ta['logic_tree_permutations'], sources_folder)
         #print(f'sources_list: {sources_list}')
 
         # now the customised source_models.xml file must be written into the local configuration
-        #src_xml = build_sources_xml(sources_list)
-        #print("ID lists:", list(id_list))
-        #TODO build a map whlie downloading the files
-
         ltbs = [ltb for ltb in get_logic_tree_branches(ta['logic_tree_permutations'])]
-
         print("LTB:", len(ltbs), ltbs[0])
-
         src_xml = build_sources_xml(ltbs, source_file_mapping)
         src_xml_file = Path(sources_folder, 'source_model.xml')
         write_sources(src_xml, src_xml_file)
