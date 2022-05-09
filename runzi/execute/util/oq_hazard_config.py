@@ -8,17 +8,9 @@ log = logging.getLogger(__name__)
 
 SITES = dict(
     WLG = {"sites": "174.7762 -41.2865"},
-    NZ4 = {"sites_csv": "nz_towns_4.csv"},
-    NZ34 = {"sites_csv": "nz_towns_34.csv"},
+    NZ4 = {"sites_model_file": "site_model_nz_4.csv"},
+    NZ34 = {"sites_model_file": "site_model_nz_34.csv"},
     GRD1 = {"sites_csv": "NZ_whole_country_10k.csv"})
-
-# DEFAULT_DISAGG = dict(
-#     poes_disagg = 0.002,
-#     mag_bin_width = 0.25,
-#     distance_bin_width = 1.0,
-#     coordinate_bin_width = 5.0,
-#     num_epsilon_bins = 1)
-
 
 #Sanjay new values
 DEFAULT_DISAGG = dict(
@@ -30,7 +22,6 @@ DEFAULT_DISAGG = dict(
     num_epsilon_bins = 4,
     disagg_outputs = "Mag_Dist Mag_Dist_Eps TRT"
     )
-
 
 class OpenquakeConfig():
 
@@ -46,10 +37,11 @@ class OpenquakeConfig():
         #destroy any existing site configs
         self.config['site_params'].pop('sites', None)
         self.config['site_params'].pop('sites_csv', None)
+        self.config['site_params'].pop('site_model_file', None)
         self.config.pop('geometry', None)
+
         key, value = list(SITES[site_key].items())[0]
-        self.config.add_section('geometry')
-        self.config['geometry'][key] = value
+        self.config['site_params'][key] = value
         return self
 
     def set_disaggregation(self, enable: bool, values: dict = None):

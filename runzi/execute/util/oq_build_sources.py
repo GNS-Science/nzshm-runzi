@@ -9,6 +9,7 @@ from lxml import etree
 from lxml.builder import ElementMaker # lxml only !
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
+from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH)
 
 log = logging.getLogger(__name__)
 
@@ -23,13 +24,13 @@ def get_logic_tree_file_ids(ltb_groups):
     for group in ltb_groups: #List
         for sources in get_ltb(group):
             for source in sources:
-                ids.add( source )
+                ids.add( source[:2] )
     return list(ids)
 
 def get_ltb(group):
     """NEW object-syle config"""
     for obj in group['permute']:
-        yield [(source['tag'], source['toshi_id']) for source in obj['members']]
+        yield [(source['tag'], source['toshi_id'], source['weight']) for source in obj['members']]
 
 def get_logic_tree_branches(ltb_groups):
     for group in ltb_groups: #List
@@ -38,9 +39,9 @@ def get_logic_tree_branches(ltb_groups):
 
 class SourceModelLoader():
 
-    def __init__(self, api_url, api_key, s3_url):
-        headers={"x-api-key":api_key}
-        self._toshi_api = ToshiApi(api_url, s3_url, None, with_schema_validation=True, headers=headers)
+    def __init__(self):
+        headers={"x-api-key":API_KEY}
+        self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     def unpack_sources(self, logic_tree_branch_permutations, source_path):
         """download and extract the sources"""
@@ -73,8 +74,8 @@ class SourceModelLoader():
 
 def build_sources_xml(logic_tree_branches, source_file_mapping):
 
-    weight = 1/len(logic_tree_branches)
-
+    #weight = 1/len(logic_tree_branches)
+    total_branch_weight = 0
     E = ElementMaker(namespace="http://openquake.org/xmlns/nrml/0.5",
                       nsmap={"gml" : "http://www.opengis.net/gml", None:"http://openquake.org/xmlns/nrml/0.5"})
     NRML = E.nrml
@@ -90,12 +91,19 @@ def build_sources_xml(logic_tree_branches, source_file_mapping):
     for branch in logic_tree_branches:
             files = ""
             branch_name = "|".join([x[0] for x in branch])
+            branch_weight = 1.0
             for source_tuple in branch:
                 #print(source_tuple)
-                name, src_id = source_tuple
+                name, src_id, wt = source_tuple
                 files += "\t".join(source_file_mapping[src_id]['sources']) + "\t"
-            ltb = LTB( UM(files), UW(str(weight)), branchID=branch_name)
+                branch_weight *= wt #
+            #branch_weight = round(branch_weight, 10)
+            total_branch_weight += branch_weight
+            ltb = LTB( UM(files), UW(str(branch_weight)), branchID=branch_name)
             ltbs.append(ltb)
+
+    print(f'total_branch_weight: {total_branch_weight}')
+    assert round(total_branch_weight, 8) == 1.0
 
     nrml = NRML( LT( LTBL( ltbs, branchingLevelID="1" ), logicTreeID = "Combined"))
     return etree.tostring(nrml, pretty_print=True).decode()
@@ -516,47 +524,96 @@ if __name__ == "__main__":
 
 
     #27_TAG_CONFIG
+    # permutations = [
+    #     {
+    #         "tag": "all rate combinations", "weight": 1.0,
+    #         "permute" : [
+    #             {   "group": "HIK",
+    #                 "members" : [
+    #                     {"tag": "HTC_b0.957_N16.5_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk0OQ=="},
+    #                     {"tag": "HTC_b1.078_N22.8_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MA=="},
+    #                     {"tag": "HTL_b0.957_N16.5_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MQ=="},
+    #                     {"tag": "HTL_b1.078_N22.8_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mg=="},
+    #                     {"tag": "HTC_b0.957_N16.5_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mw=="},
+    #                     {"tag": "HTC_b0.957_N16.5_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NA=="},
+    #                     {"tag": "HTC_b1.078_N22.8_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NQ=="},
+    #                     {"tag": "HTC_b1.078_N22.8_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Ng=="},
+    #                     {"tag": "HTL_b0.957_N16.5_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Nw=="},
+    #                     {"tag": "HTL_b0.957_N16.5_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OA=="},
+    #                     {"tag": "HTL_b1.078_N22.8_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OQ=="},
+    #                     {"tag": "HTL_b1.078_N22.8_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk2MA=="}
+    #                 ]
+    #             },
+    #             {   "group": "PUY",
+    #                 "members" : [
+    #                     {"tag": "P_b0.75_N3.4_C3.9_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="}
+    #                 ]
+    #             },
+    #             {   "group": "CRU",
+    #                 "members" : [
+    #                     {"tag": "CR_N8.0_b1.115_C4.3_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA=="},
+    #                     {"tag": "CR_N2.3_b0.807_C4.2_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA=="},
+    #                     {"tag": "CR_N3.7_b0.929_C4.2_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ=="},
+    #                     {"tag": "CR_N8.0_b1.115_C4.3_s0.51", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMg=="},
+    #                     {"tag": "CR_N2.3_b0.807_C4.2_s0.51", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNg=="},
+    #                     {"tag": "CR_N3.7_b0.929_C4.2_s0.51", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNw=="},
+    #                     {"tag": "CR_N2.3_b0.807_C4.2_s1.62", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxOA=="},
+    #                     {"tag": "CR_N8.0_b1.115_C4.3_s1.62", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMQ=="},
+    #                     {"tag": "CR_N3.7_b0.929_C4.2_s1.62", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNA=="}
+    #                 ]
+    #             },
+    #             {   "group": "BG",
+    #                 "members" : [
+    #                     {"tag": "floor_addtot346ave", "toshi_id": "RmlsZToxMDIyMzA="}
+    #                 ]
+    #             }
+    #         ]
+    #     }
+    # ]
+
+
+    #NN-weighting
     permutations = [
         {
             "tag": "all rate combinations", "weight": 1.0,
             "permute" : [
                 {   "group": "HIK",
                     "members" : [
-                        {"tag": "HTC_b0.957_N16.5_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk0OQ=="},
-                        {"tag": "HTC_b1.078_N22.8_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MA=="},
-                        {"tag": "HTL_b0.957_N16.5_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MQ=="},
-                        {"tag": "HTL_b1.078_N22.8_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mg=="},
-                        {"tag": "HTC_b0.957_N16.5_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mw=="},
-                        {"tag": "HTC_b0.957_N16.5_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NA=="},
-                        {"tag": "HTC_b1.078_N22.8_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NQ=="},
-                        {"tag": "HTC_b1.078_N22.8_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Ng=="},
-                        {"tag": "HTL_b0.957_N16.5_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Nw=="},
-                        {"tag": "HTL_b0.957_N16.5_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OA=="},
-                        {"tag": "HTL_b1.078_N22.8_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OQ=="},
-                        {"tag": "HTL_b1.078_N22.8_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk2MA=="}
+                        {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk0OQ=="},
+                        {"tag": "HTC_b1.078_N22.8_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MA=="},
+                        {"tag": "HTL_b0.957_N16.5_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MQ=="},
+                        {"tag": "HTL_b1.078_N22.8_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mg=="},
+                        {"tag": "HTC_b0.957_N16.5_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mw=="},
+                        {"tag": "HTC_b0.957_N16.5_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NA=="},
+                        {"tag": "HTC_b1.078_N22.8_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NQ=="},
+                        {"tag": "HTC_b1.078_N22.8_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Ng=="},
+                        {"tag": "HTL_b0.957_N16.5_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Nw=="},
+                        {"tag": "HTL_b0.957_N16.5_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OA=="},
+                        {"tag": "HTL_b1.078_N22.8_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OQ=="},
+                        {"tag": "HTL_b1.078_N22.8_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk2MA=="}
                     ]
                 },
                 {   "group": "PUY",
                     "members" : [
-                        {"tag": "P_b0.75_N3.4_C3.9_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="}
+                        {"tag": "P_b0.75_N3.4_C3.9_s1", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="}
                     ]
                 },
                 {   "group": "CRU",
                     "members" : [
-                        {"tag": "CR_N8.0_b1.115_C4.3_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA=="},
-                        {"tag": "CR_N2.3_b0.807_C4.2_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA=="},
-                        {"tag": "CR_N3.7_b0.929_C4.2_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ=="},
-                        {"tag": "CR_N8.0_b1.115_C4.3_s0.51", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMg=="},
-                        {"tag": "CR_N2.3_b0.807_C4.2_s0.51", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNg=="},
-                        {"tag": "CR_N3.7_b0.929_C4.2_s0.51", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNw=="},
-                        {"tag": "CR_N2.3_b0.807_C4.2_s1.62", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxOA=="},
-                        {"tag": "CR_N8.0_b1.115_C4.3_s1.62", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMQ=="},
-                        {"tag": "CR_N3.7_b0.929_C4.2_s1.62", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNA=="}
+                        {"tag": "CR_N8.0_b1.115_C4.3_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA=="},
+                        {"tag": "CR_N2.3_b0.807_C4.2_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA=="},
+                        {"tag": "CR_N3.7_b0.929_C4.2_s1", "weight": 0.35, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ=="},
+                        {"tag": "CR_N8.0_b1.115_C4.3_s0.51", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMg=="},
+                        {"tag": "CR_N2.3_b0.807_C4.2_s0.51", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNg=="},
+                        {"tag": "CR_N3.7_b0.929_C4.2_s0.51", "weight": 0.075, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNw=="},
+                        {"tag": "CR_N2.3_b0.807_C4.2_s1.62", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxOA=="},
+                        {"tag": "CR_N8.0_b1.115_C4.3_s1.62", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMQ=="},
+                        {"tag": "CR_N3.7_b0.929_C4.2_s1.62", "weight": 0.075, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNA=="}
                     ]
                 },
                 {   "group": "BG",
                     "members" : [
-                        {"tag": "floor_addtot346ave", "toshi_id": "RmlsZToxMDIyMzA="}
+                        {"tag": "floor_addtot346ave", "weight":1.0, "toshi_id": "RmlsZToxMDIyMzA="}
                     ]
                 }
             ]

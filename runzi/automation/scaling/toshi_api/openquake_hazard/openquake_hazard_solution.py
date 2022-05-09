@@ -19,11 +19,12 @@ class OpenquakeHazardSolution(object):
         self.api = api
         assert isinstance(api, ToshiClientBase)
 
-    def create_solution(self, config_id, csv_archive_id, hdf5_archive_id, produced_by):
+    def create_solution(self, config_id, csv_archive_id, hdf5_archive_id, produced_by, predecessors, modconf_id, task_args_id):
 
         qry = '''
             mutation ($created: DateTime!, $config_id: ID!, $csv_archive_id: ID!,
-            $hdf5_archive_id: ID!, $produced_by:ID!){
+            $hdf5_archive_id: ID!, $produced_by:ID!, $predecessors: [PredecessorInput],
+            $modified_config_id: ID!, $task_args_id: ID!){
               create_openquake_hazard_solution(
                   input: {
                       created: $created
@@ -31,19 +32,19 @@ class OpenquakeHazardSolution(object):
                       csv_archive: $csv_archive_id
                       hdf5_archive: $hdf5_archive_id
                       produced_by: $produced_by
+                      predecessors: $predecessors
+                      modified_config: $modified_config_id
+                      task_args: $task_args_id
                   }
               )
               {
                 ok
-                openquake_hazard_solution { id
-                    # config { template_archive { file_name }}
-                    # csv_archive { file_name }
-                    # hdf5_archive { file_name }
-                }
+                openquake_hazard_solution { id }
               }
             }'''
         variables = dict(created=dt.datetime.now(tzutc()).isoformat(), config_id = config_id,
-          csv_archive_id=csv_archive_id, hdf5_archive_id=hdf5_archive_id, produced_by=produced_by)
+          csv_archive_id=csv_archive_id, hdf5_archive_id=hdf5_archive_id, produced_by=produced_by,
+          predecessors=predecessors, modified_config_id = modconf_id, task_args_id = task_args_id)
 
         executed = self.api.run_query(qry, variables)
 

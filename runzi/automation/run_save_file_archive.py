@@ -27,7 +27,7 @@ def create_archive(filename, working_path):
     """
     verify source and if OK return the path to the zipped contents
     """
-    log.info(f"create_configuration_archive {filename}.zip in working_path={working_path}")
+    log.info(f"create_archive {filename}.zip in working_path={working_path}")
     if Path(filename).exists():
         return archive(filename, Path(working_path, f"{Path(filename).name}.zip"))
     else:
