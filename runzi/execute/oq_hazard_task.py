@@ -65,7 +65,7 @@ def execute_openquake(configfile, task_no, toshi_task_id):
     toshi_task_id = toshi_task_id or "DUMMY_toshi_TASK_ID"
     output_path = Path(WORK_PATH, f"output_{task_no}")
     logfile = Path(output_path, f'openquake.{task_no}.log')
-    outpath.mkdir()
+    output_path.mkdir()
 
     oq_result = dict()
 
@@ -121,7 +121,7 @@ def execute_openquake(configfile, task_no, toshi_task_id):
         oq_result['csv_archive'] = archive(output_path, Path(WORK_PATH, f'openquake_csv_archive-{toshi_task_id}.zip'))
 
         #clean up export outputs
-        shutil.rmtree(out_path)
+        shutil.rmtree(output_path)
 
         OQDATA = "/home/openquake/oqdata"
         hdf5_file = f"calc_{last_task}.hdf5"
