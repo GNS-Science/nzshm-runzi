@@ -9,6 +9,7 @@ import subprocess
 import requests
 import platform
 import logging
+import shutil
 
 from pathlib import Path, PurePath
 from importlib import import_module
@@ -16,6 +17,7 @@ import datetime as dt
 from dateutil.tz import tzutc
 import urllib.parse
 import itertools
+
 
 from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
 from nshm_toshi_client.task_relation import TaskRelation
@@ -58,16 +60,18 @@ def explode_config_template(config_info, working_path: str):
         return config_folder
 
 
-def execute_openquake(configfile, logfile, task_id):
+def execute_openquake(configfile, task_no, toshi_task_id):
 
-    task_id = task_id or "DUMMY_TASK_ID"
+    toshi_task_id = toshi_task_id or "DUMMY_toshi_TASK_ID"
+    output_path = Path(WORK_PATH, f"output_{task_no}")
+    logfile = Path(output_path, f'openquake.{task_no}.log')
 
     oq_result = dict()
 
     if SPOOF_HAZARD:
         print("execute_openquake skipping SPOOF=True")
-        oq_result['csv_archive']=Path(f"{configfile}.csv_archive.zip")
-        oq_result['hdf5_archive']=Path(f"{configfile}.hdf5_archive.zip")
+        oq_result['csv_archive']=Path(f"spoof-{task_no}.csv_archive.zip")
+        oq_result['hdf5_archive']=Path(f"spoof-{task_no}.hdf5_archive.zip")
         oq_result['csv_archive'].touch()
         oq_result['hdf5_archive'].touch()
         return oq_result
@@ -104,7 +108,7 @@ def execute_openquake(configfile, logfile, task_id):
 
         #get the job ID
         last_task = get_last_task()
-        output_path = Path(WORK_PATH, "output")
+
 
         """
         oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
@@ -113,11 +117,14 @@ def execute_openquake(configfile, logfile, task_id):
         cmd = ['oq', 'engine', '--export-outputs', str(last_task), str(output_path)]
         log.info(f'cmd 2: {cmd}')
         subprocess.check_call(cmd)
-        oq_result['csv_archive'] = archive(Path(output_path), Path(WORK_PATH, f'openquake_csv_archive-{task_id}.zip'))
+        oq_result['csv_archive'] = archive(output_path, Path(WORK_PATH, f'openquake_csv_archive-{toshi_task_id}.zip'))
+
+        #clean up export outputs
+        shutil.rmtree(out_path)
 
         OQDATA = "/home/openquake/oqdata"
         hdf5_file = f"calc_{last_task}.hdf5"
-        oq_result['hdf5_archive'] = archive(Path(OQDATA, hdf5_file), Path(WORK_PATH, f'openquake_hdf5_archive-{task_id}.zip'))
+        oq_result['hdf5_archive'] = archive(Path(OQDATA, hdf5_file), Path(WORK_PATH, f'openquake_hdf5_archive-{toshi_task_id}.zip'))
 
     except Exception as err:
         log.error(f"err: {err}")
@@ -149,7 +156,6 @@ class BuilderTask():
         id_list = get_logic_tree_file_ids(ta['logic_tree_permutations'])
 
         log.info(f"sources: {id_list}")
-
         ## Create the OpenquakeHazardTask, with task details
 
         task_id = None
@@ -225,8 +231,7 @@ class BuilderTask():
 
         modify_config(config_file, task_arguments)
 
-        logfile = Path(work_folder, f'openquake.log')
-        oq_result = execute_openquake(config_file, logfile, task_id)
+        oq_result = execute_openquake(config_file, ja['task_id'], task_id)
 
         if self.use_api:
 

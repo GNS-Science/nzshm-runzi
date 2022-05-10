@@ -5,7 +5,7 @@ and save this as a ToshiAPI File object
 
 inputs:-
  - a folder path where the inputs are available
- - all the files to clone in a self contained folder structure, whihc will be sip archived
+ - all the files to clone in a self contained folder structure, which will be zip archived
  - the name of the configuration file for `oq engine --run CONFIG_FILENAME`
  - meta data as key-value pairs
 
