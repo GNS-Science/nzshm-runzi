@@ -44,8 +44,8 @@ def write_sources(xml_str, filepath):
     with open(filepath, 'w') as mf:
         mf.write(xml_str)
 
-def explode_config_template(config_info, working_path: str):
-    config_folder = Path(working_path, "config")
+def explode_config_template(config_info, working_path: str, task_no: int):
+    config_folder = Path(working_path, "config_{task_no}")
 
     r1 = requests.get(config_info['file_url'])
     file_path = Path(working_path, config_info['file_name'])
@@ -65,6 +65,7 @@ def execute_openquake(configfile, task_no, toshi_task_id):
     toshi_task_id = toshi_task_id or "DUMMY_toshi_TASK_ID"
     output_path = Path(WORK_PATH, f"output_{task_no}")
     logfile = Path(output_path, f'openquake.{task_no}.log')
+    outpath.mkdir()
 
     oq_result = dict()
 
@@ -197,7 +198,7 @@ class BuilderTask():
         print(config_template_info)
 
         #unpack the templates
-        config_folder = explode_config_template(config_template_info, work_folder)
+        config_folder = explode_config_template(config_template_info, work_folder, ja['task_id'])
 
         sources_folder = Path(config_folder, 'sources')
 
