@@ -42,6 +42,7 @@ class BuilderTask():
         
         report_builder = ReportBuilder()
         report_builder.setName(report_name)
+        report_builder.setPlotTypes(['hcurve','uhs'])
         report_builder.setHazardArchive(ta['file_path'])
         report_builder.setOutputPath(str(hazard_report_folder))
 

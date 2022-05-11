@@ -59,7 +59,7 @@ def run(hazard_ids, WORKER_POOL_SIZE):
 if __name__ == "__main__":
 
     hazard_ids = [
-        "ABC"
+        "T3BlbnF1YWtlSGF6YXJkVGFzazoxMDEwNDA="
     ]
 
     run(hazard_ids, WORKER_POOL_SIZE)
