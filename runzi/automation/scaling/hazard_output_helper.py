@@ -1,3 +1,4 @@
+from distutils.util import execute
 import os
 import requests
 from pathlib import Path, PurePath
@@ -40,6 +41,8 @@ class HazardOutputHelper():
 
     def download_csv(self, hazard_soln_id, dest_folder, skip_existing=False):
 
+        #TODO this does nothing
+
         downloads = dict()
         
 
@@ -67,5 +70,36 @@ class HazardOutputHelper():
         hdf_info =  executed['node']['hdf5_archive']
 
         return hdf_info
+
+
+    def get_hazard_ids_from_gt(self,gt_id):
+
+        qry = '''
+        query oqhaztask ($id:ID!) {
+            node (id: $id) {
+         	... on OpenquakeHazardTask {
+                hazard_solution {
+                id
+                }
+              }
+            }
+        }'''
+        
+        api_result = self.api.get_general_task_subtasks(gt_id)
+        edges = api_result['children']['edges']
+
+        hazard_soln_ids = []
+        for edge in edges:
+            subtask_id = edge['node']['child']['id']
+            input_variables = dict(id=subtask_id)
+            executed = self.api.run_query(qry, input_variables)
+            if executed['node']['hazard_solution']:
+                hazard_soln_ids.append(executed['node']['hazard_solution']['id'])
+        
+        return hazard_soln_ids        
+        
+
+       
+
     
         

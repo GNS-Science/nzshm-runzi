@@ -8,6 +8,7 @@ from itertools import chain
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
+from runzi.automation.scaling.hazard_output_helper import HazardOutputHelper
 
 import runzi.execute.oq_hazard_report_task
 
@@ -22,22 +23,26 @@ def build_hazard_report_tasks(subtask_arguments, toshi_api: ToshiApi):
     factory_task = runzi.execute.oq_hazard_report_task
     task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
-    file_generators = []
-    for input_id in subtask_arguments['hazard_ids']:
-        file_generators.append(get_output_file_id(toshi_api, input_id)) #for file by file ID
+    # file_generators = []
+    # for hazard_soln_id in subtask_arguments['hazard_ids']:
+    #     file_generators.append(get_output_file_id(toshi_api, input_id)) #for file by file ID
 
-    source_solutions = download_files(toshi_api, chain(*file_generators), str(WORK_PATH), overwrite=False,
-        skip_download=(CLUSTER_MODE == EnvMode['AWS']))
+    # source_solutions = download_files(toshi_api, chain(*file_generators), str(WORK_PATH), overwrite=False,
+    #     skip_download=(CLUSTER_MODE == EnvMode['AWS']))
 
-    for (hazard_id, hazard_info) in source_solutions.items():
+    hazard_helper = HazardOutputHelper(toshi_api)
+    hazard_solutions = hazard_helper.download_hdf(subtask_arguments['hazard_ids'],str(WORK_PATH)) 
+
+    for (hdf_id, hazard_info) in hazard_solutions.items():
 
         task_count += 1
 
         task_arguments = dict(
-            file_id = hazard_id,
-            file_path = hazard_info['filepath']
+            file_id = hdf_id,
+            file_path = hazard_info['filepath'],
+            hazard_id = hazard_info['hazard_id']
         )
-
+        
         print(task_arguments)
 
         job_arguments = dict(
@@ -68,3 +73,4 @@ def build_hazard_report_tasks(subtask_arguments, toshi_api: ToshiApi):
             os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
             yield str(script_file_path)
+

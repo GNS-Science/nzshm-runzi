@@ -12,6 +12,9 @@ from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.configuration.oq_hazard_report import build_hazard_report_tasks
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
+from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
+    API_KEY, API_URL, CLUSTER_MODE, EnvMode )
+
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -48,6 +51,7 @@ def run(hazard_ids, WORKER_POOL_SIZE):
     )
 
     tasks = build_tasks(args, toshi_api)
+    print(tasks)
 
     print('worker count: ', WORKER_POOL_SIZE)
 
@@ -59,7 +63,8 @@ def run(hazard_ids, WORKER_POOL_SIZE):
 if __name__ == "__main__":
 
     hazard_ids = [
-        "T3BlbnF1YWtlSGF6YXJkVGFzazoxMDEwNDA="
+        # "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAxMDQx" #TEST
+        "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAyMDQ5" #PROD
     ]
 
     run(hazard_ids, WORKER_POOL_SIZE)
