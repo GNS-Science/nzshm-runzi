@@ -35,10 +35,11 @@ class BuilderTask():
 
         ta, ja = task_arguments, job_arguments
 
-        hazard_report_folder = Path(self._output_folder, ta['file_id'], 'hazard_report')
+        hazard_report_folder = Path(self._output_folder, ta['hazard_id'], 'hazard_report')
         hazard_report_folder.mkdir(parents=True, exist_ok=True)
+        print('hazard_report_folder',hazard_report_folder)
 
-        report_name = f'Hazard Diagnostics: {ta["file_id"]}'
+        report_name = f'Hazard Diagnostics: {ta["hazard_id"]}'
         
         report_builder = ReportBuilder()
         report_builder.setName(report_name)
@@ -73,4 +74,5 @@ if __name__ == "__main__":
     # print(config)
     task = BuilderTask(config['job_arguments'])
     task.run(**config)
-    upload_to_bucket(config['task_arguments']['file_id'], S3_REPORT_BUCKET)
+    upload_to_bucket(config['task_arguments']['hazard_id'], S3_REPORT_BUCKET,root_path='openquake/DATA')
+    
