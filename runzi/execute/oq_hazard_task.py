@@ -45,7 +45,7 @@ def write_sources(xml_str, filepath):
         mf.write(xml_str)
 
 def explode_config_template(config_info, working_path: str, task_no: int):
-    config_folder = Path(working_path, "config_{task_no}")
+    config_folder = Path(working_path, f"config_{task_no}")
 
     r1 = requests.get(config_info['file_url'])
     file_path = Path(working_path, config_info['file_name'])
@@ -227,7 +227,8 @@ class BuilderTask():
                     values = ta['disagg_conf']['config'])\
                 .set_iml(ta['intensity_spec']['measures'],
                     ta['intensity_spec']['levels'])\
-                .set_vs30(ta['vs30'])
+                .set_vs30(ta['vs30'])\
+                .set_rupture_mesh_spacing(ta['rupture_mesh_spacing'])
             config.write(open(config_file, 'w'))
 
         modify_config(config_file, task_arguments)

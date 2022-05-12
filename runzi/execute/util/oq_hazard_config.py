@@ -10,7 +10,9 @@ SITES = dict(
     WLG = {"sites": "174.7762 -41.2865"},
     NZ4 = {"site_model_file": "site_model_nz_4.csv"},
     NZ34 = {"site_model_file": "site_model_nz_34.csv"},
-    GRD1 = {"sites_csv": "NZ_whole_country_10k.csv"})
+    GRD1 = {"sites_csv": "NZ_whole_country_10k.csv"},
+    CDC = {"sites": "174.77 -36.87\n174.78 -41.3\n170.5 -45.87\n170.17 -43.35"} #AKL, WLG, DND, WHO =FransJosef WHO
+    )
 
 #Sanjay new values
 DEFAULT_DISAGG = dict(
@@ -29,10 +31,12 @@ class OpenquakeConfig():
         self.config = configparser.ConfigParser()
         self.config.read_file(config)
 
-    def set_sites(self, site_key: str):
-        """
+    def set_rupture_mesh_spacing(self, rupture_mesh_spacing):
+        """We can assume an erf section exists..."""
+        self.config['erf']['rupture_mesh_spacing'] = str(rupture_mesh_spacing)
+        return self
 
-        """
+    def set_sites(self, site_key: str):
         assert site_key in SITES.keys()
         #destroy any existing site configs
         self.config['site_params'].pop('sites', None)
@@ -57,7 +61,6 @@ class OpenquakeConfig():
         return self
 
     def set_iml(self, measures: list, levels: object):
-
         self.config['calculation'].pop('intensity_measure_types_and_levels', None)
 
         new_iml = '{'
@@ -68,10 +71,7 @@ class OpenquakeConfig():
         self.config['calculation']['intensity_measure_types_and_levels '] = new_iml
         return self
 
-
-
     def set_vs30(self, vs30):
-
         try:
             from openquake.commands.prepare_site_model import calculate_z1pt0, calculate_z2pt5_ngaw2
         except:
@@ -104,6 +104,8 @@ if __name__ == "__main__":
 
     number_of_logic_tree_samples = 0
 
+    [erf]
+
     [site_params]
     sites = 174.7762 -41.2865
     foo=bar
@@ -127,6 +129,7 @@ if __name__ == "__main__":
 
     nc.set_iml(_4_sites_measures, _4_sites_levels)
     nc.set_vs30(250)
+    nc.set_rupture_mesh_spacing(42)
 
     out = io.StringIO() #aother fake file
     nc.write(out)
