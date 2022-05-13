@@ -31,7 +31,17 @@ def build_hazard_report_tasks(subtask_arguments, toshi_api: ToshiApi):
     #     skip_download=(CLUSTER_MODE == EnvMode['AWS']))
 
     hazard_helper = HazardOutputHelper(toshi_api)
-    hazard_solutions = hazard_helper.download_hdf(subtask_arguments['hazard_ids'],str(WORK_PATH)) 
+
+    hazard_soln_ids = []
+    if subtask_arguments.get('gt_ids'):
+        for gt_id in subtask_arguments.get('gt_ids'):
+            hazard_soln_ids = hazard_helper.get_hazard_ids_from_gt(gt_id)
+    if subtask_arguments.get('hazard_ids'):
+        hazard_soln_ids += subtask_arguments.get('hazard_ids')
+    
+    # remove duplicates
+    hazard_soln_ids = list(dict.fromkeys(hazard_soln_ids))
+    hazard_solutions = hazard_helper.download_hdf(hazard_soln_ids,str(WORK_PATH)) 
 
     for (hdf_id, hazard_info) in hazard_solutions.items():
 
@@ -43,8 +53,6 @@ def build_hazard_report_tasks(subtask_arguments, toshi_api: ToshiApi):
             hazard_id = hazard_info['hazard_id']
         )
         
-        print(task_arguments)
-
         job_arguments = dict(
             task_id = task_count,
             )
@@ -73,4 +81,6 @@ def build_hazard_report_tasks(subtask_arguments, toshi_api: ToshiApi):
             os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
             yield str(script_file_path)
+
+        
 

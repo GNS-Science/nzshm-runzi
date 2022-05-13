@@ -6,6 +6,7 @@ This script produces tasks in either AWS, PBS or LOCAL to produce a hazard repor
 
 import logging
 import datetime as dt
+from operator import gt
 
 from runzi.automation.scaling.toshi_api import ToshiApi
 
@@ -27,7 +28,7 @@ def build_tasks(args, toshi_api):
     return scripts
 
 
-def run(hazard_ids, WORKER_POOL_SIZE):
+def run(WORKER_POOL_SIZE, hazard_ids=None,gt_ids=None):
 
     t0 = dt.datetime.utcnow()
 
@@ -47,7 +48,8 @@ def run(hazard_ids, WORKER_POOL_SIZE):
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     args = dict(
-        hazard_ids = hazard_ids
+        hazard_ids = hazard_ids,
+        gt_ids = gt_ids
     )
 
     tasks = build_tasks(args, toshi_api)
@@ -67,4 +69,7 @@ if __name__ == "__main__":
         "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAyMDQ5" #PROD
     ]
 
-    run(hazard_ids, WORKER_POOL_SIZE)
+    gt_ids = ['R2VuZXJhbFRhc2s6MTAyMDIz']
+
+    # run(WORKER_POOL_SIZE,gt_ids=gt_ids)
+    run(WORKER_POOL_SIZE,gt_ids=gt_ids)

@@ -13,8 +13,9 @@ class HazardOutputHelper():
     def download_hdf(self, hazard_soln_ids, dest_folder, overwrite=False):
         
         downloads = dict()
-
+ 
         for hazard_soln_id in hazard_soln_ids:
+
             file_info = self.get_hdf_info(hazard_soln_id)
 
             folder = Path(dest_folder, 'downloads', hazard_soln_id)
@@ -28,7 +29,7 @@ class HazardOutputHelper():
 
             if not overwrite and os.path.isfile(file_path):
                 print(f"Skip DL for existing file: {file_path}")
-                return downloads
+                continue
 
             r1 = requests.get(file_info['file_url'])
             with open(str(file_path), 'wb') as f:
