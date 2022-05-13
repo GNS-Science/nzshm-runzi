@@ -47,8 +47,10 @@ docker run -u root -it --rm \
 ### for linux only - with localstack ...
 
 ```
+# --oom-kill-disable
+
 docker run -it --rm -u root \
---memory=40g --memory-swap=40g --oom-kill-disable \
+--memory=55g --memory-swap=55g \
 --net=host --env-file environ \
 -v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
 -v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
