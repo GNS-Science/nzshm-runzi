@@ -63,7 +63,8 @@ if __name__ == "__main__":
     args = dict(
         config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
             # "RmlsZToxMDQyOTc=",   #SRWG_02 TEST
-            "RmlsZToxMDA5MDM="
+            # "RmlsZToxMDA5MDM=" #TEST NZ34
+            "RmlsZToxMDEwMDk=" #TEST CONFIG 29_mesh
             ],
         # logic_tree_permutations = [
         #     {
@@ -129,7 +130,7 @@ if __name__ == "__main__":
             #{"tag": "max10-300", "measures": era_measures, "levels": 'logscale(0.001, 10.00, 300)'}
         ],
         vs30s = [250],# 250, 300, 350, 400, 450, 750 ],
-        location_codes = ['CDC'],
+        location_codes = ['NZ6'],
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
         ],

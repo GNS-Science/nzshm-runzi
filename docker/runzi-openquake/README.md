@@ -7,7 +7,7 @@ a docker image tha integrates Openquake, the opensha converter, and RUnzi
 # BUILD
 
 ```
-## previous builds: be0d236ec1b7, be4454febbb1, faf0b58d2ed3
+## previous builds: be0d236ec1b7, be4454febbb1, faf0b58d2ed3, a0127da93445
 docker pull openquake/engine:nightly
 docker build . --no-cache -t nzshm22/runzi-openquake:nightly
 ```

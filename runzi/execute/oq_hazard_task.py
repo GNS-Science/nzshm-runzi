@@ -65,14 +65,17 @@ def execute_openquake(configfile, task_no, toshi_task_id):
     toshi_task_id = toshi_task_id or "DUMMY_toshi_TASK_ID"
     output_path = Path(WORK_PATH, f"output_{task_no}")
     logfile = Path(output_path, f'openquake.{task_no}.log')
+
+    if output_path.exists():
+        shutil.rmtree(output_path)
     output_path.mkdir()
 
     oq_result = dict()
 
     if SPOOF_HAZARD:
         print("execute_openquake skipping SPOOF=True")
-        oq_result['csv_archive']=Path(f"spoof-{task_no}.csv_archive.zip")
-        oq_result['hdf5_archive']=Path(f"spoof-{task_no}.hdf5_archive.zip")
+        oq_result['csv_archive']=Path(WORK_PATH, f"spoof-{task_no}.csv_archive.zip")
+        oq_result['hdf5_archive']=Path(WORK_PATH, f"spoof-{task_no}.hdf5_archive.zip")
         oq_result['csv_archive'].touch()
         oq_result['hdf5_archive'].touch()
         return oq_result

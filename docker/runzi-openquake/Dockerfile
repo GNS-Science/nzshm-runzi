@@ -6,9 +6,6 @@ FROM openquake/engine:nightly
 
 USER root
 
-#ADD nzshm-oq-engine-main/openquake/hazardlib/scalerel/cscaling.py /opt/openquake/lib/python3.8/site-packages/openquake/hazardlib/scalerel
-
-
 RUN apt-get update
 RUN apt-get install git -y
 RUN apt-get install nano

@@ -11,8 +11,8 @@ SITES = dict(
     NZ4 = {"site_model_file": "site_model_nz_4.csv"},
     NZ34 = {"site_model_file": "site_model_nz_34.csv"},
     GRD1 = {"sites_csv": "NZ_whole_country_10k.csv"},
-    CDC = {"sites": "174.77 -36.87\n174.78 -41.3\n170.5 -45.87\n170.17 -43.35"} #AKL, WLG, DND, WHO =FransJosef WHO
-    )
+    NZ6 =  {"site_model_file": "site_model_test.csv"}
+)
 
 #Sanjay new values
 DEFAULT_DISAGG = dict(
@@ -34,6 +34,7 @@ class OpenquakeConfig():
     def set_rupture_mesh_spacing(self, rupture_mesh_spacing):
         """We can assume an erf section exists..."""
         self.config['erf']['rupture_mesh_spacing'] = str(rupture_mesh_spacing)
+        #self.config['erf']['complex_fault_mesh_spacing'] = str(rupture_mesh_spacing) #CDC thinks this is only for complex
         return self
 
     def set_sites(self, site_key: str):
