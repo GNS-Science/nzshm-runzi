@@ -15,9 +15,12 @@
 5. convert to NRML
 
 ### Subduction Inversion Source
-1. Run inversion
-2. Scale rates for scaling of N (on top of step 3)
-3. convert to NRML
+1. Scale rates for coupling and min mag
+    - current min mag = 8
+2. Run inversion for multiple noise realizations
+3. Average noise realizations
+3. Scale rates for scaling of N (on top of step 3)
+4. convert to NRML
 
 ### Distributed Seismicity
 1. Create rates for (N,b) combination
