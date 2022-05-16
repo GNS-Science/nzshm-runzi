@@ -35,7 +35,7 @@ def build_hazard_report_tasks(subtask_arguments, toshi_api: ToshiApi):
     hazard_soln_ids = []
     if subtask_arguments.get('gt_ids'):
         for gt_id in subtask_arguments.get('gt_ids'):
-            hazard_soln_ids += hazard_helper.get_hazard_ids_from_gt(gt_id)
+            hazard_soln_ids += list(hazard_helper.get_hazard_ids_from_gt(gt_id).keys())
     if subtask_arguments.get('hazard_ids'):
         hazard_soln_ids += subtask_arguments.get('hazard_ids')
     
