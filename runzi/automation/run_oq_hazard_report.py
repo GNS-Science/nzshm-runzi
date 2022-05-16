@@ -69,7 +69,10 @@ if __name__ == "__main__":
         "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAyMDQ5" #PROD
     ]
 
-    gt_ids = ['R2VuZXJhbFRhc2s6MTAyMDIz']
+    # gt_ids = ['R2VuZXJhbFRhc2s6MTAyMDIz'] #PROD
+    gt_ids = ['R2VuZXJhbFRhc2s6MTAxMDY2'] #TEST
+
+    plot_types = ['hcurve','uhs']
 
     # run(WORKER_POOL_SIZE,gt_ids=gt_ids)
     run(WORKER_POOL_SIZE,gt_ids=gt_ids)

@@ -89,15 +89,20 @@ class HazardOutputHelper():
         api_result = self.api.get_general_task_subtasks(gt_id)
         edges = api_result['children']['edges']
 
-        hazard_soln_ids = []
+        hazard_solns = {}
         for edge in edges:
             subtask_id = edge['node']['child']['id']
+            
+            args = {}
+            for kv in edge['node']['child']['arguments']:
+                args.update(dict([tuple(kv.values()),]))
+
             input_variables = dict(id=subtask_id)
             executed = self.api.run_query(qry, input_variables)
             if executed['node']['hazard_solution']:
-                hazard_soln_ids.append(executed['node']['hazard_solution']['id'])
+                hazard_solns[(executed['node']['hazard_solution']['id'])] = args
         
-        return hazard_soln_ids        
+        return hazard_solns
         
 
        
