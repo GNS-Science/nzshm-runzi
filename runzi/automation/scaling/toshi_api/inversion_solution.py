@@ -43,7 +43,7 @@ class InversionSolution(object):
 
     def _create_inversion_solution(self, filepath, produced_by, mfd_table=None, meta=None, predecessors=None, metrics=None):
         qry = '''
-            mutation ($created: DateTime!, $digest: String!, $file_name: String!, $file_size: Int!, $produced_by: ID!, $predecessors: [PredecessorInput]) {
+            mutation ($created: DateTime!, $digest: String!, $file_name: String!, $file_size: BigInt!, $produced_by: ID!, $predecessors: [PredecessorInput]) {
               create_inversion_solution(input: {
                   created: $created
                   md5_digest: $digest
