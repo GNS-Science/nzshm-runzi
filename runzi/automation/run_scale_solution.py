@@ -31,7 +31,8 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
         scripts.append(script_file)
     return scripts
 
-def run(source_solution_ids, scales,model_type: ModelType, 
+def run(source_solution_ids, scales,polygon_scale, polygon_max_mag,
+        model_type: ModelType, 
         TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL_SIZE):
     t0 = dt.datetime.utcnow()
 
@@ -56,6 +57,8 @@ def run(source_solution_ids, scales,model_type: ModelType,
 
     args = dict(
         scales = scales,
+        polygon_scale=polygon_scale,
+        polygon_max_mag=polygon_max_mag,
         source_solution_ids = source_solution_ids
     )
 
@@ -98,7 +101,7 @@ if __name__ == "__main__":
     # #If using API give this task a descriptive setting...
     TASK_DESCRIPTION = """first run locally """
     
-    tectonic_type = 'TEST2'
+    tectonic_type = 'TEST'
 
     if tectonic_type == 'HIK':
         TASK_TITLE = "Hikurangi. From LTB007 and LTB008. Scaled 0.54, 1.43"
@@ -133,20 +136,27 @@ if __name__ == "__main__":
         ]   
         scales = [0.61, 1.34]
     elif tectonic_type == 'TEST':
-        TASK_TITLE = "TEST"
-        model_type = ModelType.SUBDUCTION
+        TASK_TITLE = "TEST polygon scale"
+        model_type = ModelType.CRUSTAL
         source_solution_ids = [
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNDk5",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNTA3"
+            "SW52ZXJzaW9uU29sdXRpb246MTAwMjcw"
         ]   
-        scales = [0.61, 1.34]
+        scales = [0.61, 1.0, 1.34]
+        polygon_scale = 0.8
+        polygon_max_mag = 8
 
     elif tectonic_type == 'TEST2':
-        TASK_TITLE = "TEST predecessors"
-        model_type = ModelType.SUBDUCTION
+        TASK_TITLE = "TEST polygon scale (None)"
+        model_type = ModelType.CRUSTAL
         source_solution_ids = [
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAwODEy",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwMjcw"
         ]   
-        scales = [0.61,]
+        scales = [0.61, 1.0, 1.34]
+        polygon_scale = None
+        polygon_max_mag = None
 
-    run(source_solution_ids, scales,model_type, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
+   
+
+    run(source_solution_ids, scales, polygon_scale, polygon_max_mag, model_type,
+        TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
+
