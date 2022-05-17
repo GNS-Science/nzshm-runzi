@@ -48,7 +48,7 @@ class InversionSolutionNrml(object):
     def _create_inversion_solution_nrml(self, filepath, produced_by, source_solution, predecessors=None, meta=None, metrics=None):
         """test helper"""
         query = '''
-            mutation ($source_solution: ID!, $digest: String!, $file_name: String!, $file_size: Int!, $created: DateTime!, $predecessors: [PredecessorInput]) {
+            mutation ($source_solution: ID!, $digest: String!, $file_name: String!, $file_size: BigInt!, $created: DateTime!, $predecessors: [PredecessorInput]) {
               create_inversion_solution_nrml(
                   input: {
                       source_solution: $source_solution
