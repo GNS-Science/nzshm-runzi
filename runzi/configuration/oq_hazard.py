@@ -37,7 +37,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
 
 
     for (config_archive_id,
-        #logic_tree_permutation,
+        logic_tree_permutations,
         intensity_spec,
         vs30,
         location_code,
@@ -46,7 +46,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
         )\
         in itertools.product(
             subtask_arguments["config_archive_ids"],
-            #subtask_arguments['logic_tree_permutations'],
+            subtask_arguments['logic_tree_permutations'],
             subtask_arguments['intensity_specs'],
             subtask_arguments['vs30s'],
             subtask_arguments['location_codes'],
@@ -61,7 +61,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 config_archive_id = config_archive_id, #File archive object
                 #upstream_general_task=source_gt_id,
                 model_type = model_type.name,
-                logic_tree_permutations = subtask_arguments['logic_tree_permutations'],
+                logic_tree_permutations = logic_tree_permutations,
                 intensity_spec = intensity_spec,
                 vs30 = vs30,
                 location_code = location_code,

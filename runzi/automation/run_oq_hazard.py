@@ -127,6 +127,7 @@ if __name__ == "__main__":
         # ],
         #],
         logic_tree_permutations = [
+            [
             {
                 "tag": "jump_max_distance_1KM", "weight": 1.0,
                 "permute" : [
@@ -137,6 +138,7 @@ if __name__ == "__main__":
                     }
                 ]
             },
+            ],[
             {
                 "tag": "jump_max_distance_3KM", "weight": 1.0,
                 "permute" : [
@@ -147,6 +149,7 @@ if __name__ == "__main__":
                     }
                 ]
             },
+            ],[
             {
                 "tag": "jump_max_distance_5KM", "weight": 1.0,
                 "permute" : [
@@ -157,6 +160,7 @@ if __name__ == "__main__":
                     }
                 ]
             },
+            ],[
             {
                 "tag": "jump_max_distance_15KM", "weight": 1.0,
                 "permute" : [
@@ -166,7 +170,8 @@ if __name__ == "__main__":
                         ]
                     }
                 ]
-            },
+            }
+            ]
         ],
         intensity_specs = [
             # {"tag": "lite", "measures": ['PGA', 'SA(0.5)', 'SA(1.0)'], "levels": 'logscale(0.005, 4.00, 30)' },
