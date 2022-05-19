@@ -50,7 +50,7 @@ if __name__ == "__main__":
     # If using API give this task a descriptive setting...
 
     TASK_TITLE = "Openquake Hazard calcs "
-    TASK_DESCRIPTION = """SRWG 02, rerun extend measures"""
+    TASK_DESCRIPTION = """BG seiemsicity by tectonic region"""
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
@@ -62,11 +62,14 @@ if __name__ == "__main__":
 
     args = dict(
         config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
-            # "RmlsZToxMDQyOTc=", #PROD NZ34_SRWG_02
-            "RmlsZToxMDQ1MDk=",   #PROD RmlsZToxMDQ1MDk=
+            "RmlsZToxMDQyOTc=", #PROD NZ34_SRWG_02
+            # "RmlsZToxMDQ1MDk=",   #PROD RmlsZToxMDQ1MDk=
             # "RmlsZToxMDA5MDM="  #TEST NZ34 SRWG_02
             # "RmlsZToxMDEwMDk="   #TEST CONFIG 29_mesh
             ],
+        """
+        SRWG 02
+        """
         # logic_tree_permutations = [
         #     {
         #         "tag": "all rate combinations", "weight": 1.0,
@@ -113,6 +116,11 @@ if __name__ == "__main__":
         #         ]
         #     }
         # ],
+
+
+        """
+        Single Hikurangi
+        """
         # logic_tree_permutations = [
         #     {
         #         "tag": "all rate combinations", "weight": 1.0,
@@ -126,60 +134,168 @@ if __name__ == "__main__":
         #     }
         # ],
         #],
-        logic_tree_permutations = [
+
+        """
+        max_jummp_distance - multiple logic_tree_permutations
+        """
+        # logic_tree_permutations = [
+        #     [
+        #     {
+        #         "tag": "jump_max_distance_1KM", "weight": 1.0,
+        #         "permute" : [
+        #             {   "group": "CRUSTAL",
+        #                 "members" : [
+        #                     {"tag": "CR_1km", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU0MA==" }
+        #                     ]
+        #             }
+        #         ]
+        #     },
+        #     ],[
+        #     {
+        #         "tag": "jump_max_distance_3KM", "weight": 1.0,
+        #         "permute" : [
+        #             {   "group": "CRUSTAL",
+        #                 "members" : [
+        #                     {"tag": "CR_3km", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU3OA==" }
+        #                 ]
+        #             }
+        #         ]
+        #     },
+        #     ],[
+        #     {
+        #         "tag": "jump_max_distance_5KM", "weight": 1.0,
+        #         "permute" : [
+        #             {   "group": "CRUSTAL",
+        #                 "members" : [
+        #                     {"tag": "CR_3km", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU0MQ==" }
+        #                 ]
+        #             }
+        #         ]
+        #     },
+        #     ],[
+        #     {
+        #         "tag": "jump_max_distance_15KM", "weight": 1.0,
+        #         "permute" : [
+        #             {   "group": "CRUSTAL",
+        #                 "members" : [
+        #                     {"tag": "CR_15km", "weight": 1.0, "toshi_id": "SSW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU0Mg==" }
+        #                 ]
+        #             }
+        #         ]
+        #     }
+        #     ]
+        # ],
+        """
+        BG seiemsicity by tectonic region
+        TODO: upload BG files to ToshiAPI and subsitute ToshiID
+        """
+        logic_tree_permutations : [
             [
             {
-                "tag": "jump_max_distance_1KM", "weight": 1.0,
+                "tag": "all sources, no polygons", "weight": 1.0,
                 "permute" : [
-                    {   "group": "CRUSTAL",
+                    {   "group": "HIK",
                         "members" : [
-                            {"tag": "CR_1km", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU0MA==" }
-                            ]
-                    }
-                ]
-            },
-            ],[
-            {
-                "tag": "jump_max_distance_3KM", "weight": 1.0,
-                "permute" : [
-                    {   "group": "CRUSTAL",
+                            {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
+                        ]
+                    },
+                    {   "group": "PUY",
                         "members" : [
-                            {"tag": "CR_3km", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU3OA==" }
+                            {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
+                        ]
+                    },
+                    {   "group": "CRU",
+                        "members" : [
+                            {"tag": "Crustal-no-poly", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU3OQ=="}
+                        ]
+                    },
+                    {   "group": "BG-CRU",
+                        "members" : [
+                            {"tag": "BG-Crustal-no-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjE="}
+                        ]
+                    },
+                    {   "group": "BG-HIK",
+                        "members" : [
+                            {"tag": "BG-Hikurangi", "weight":1.0,
+                            "toshi_id": "RmlsZToxMDQ4NjI="}
                         ]
                     }
                 ]
-            },
-            ],[
-            {
-                "tag": "jump_max_distance_5KM", "weight": 1.0,
+            }],
+            [{
+                "tag": "all sources, with polygons", "weight": 1.0,
                 "permute" : [
-                    {   "group": "CRUSTAL",
+                    {   "group": "HIK",
                         "members" : [
-                            {"tag": "CR_3km", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU0MQ==" }
+                            {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
+                        ]
+                    },
+                    {   "group": "PUY",
+                        "members" : [
+                            {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
+                        ]
+                    },
+                    {   "group": "CRU",
+                        "members" : [
+                            {"tag": "Crustal-with-poly", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MA=="}
+                        ]
+                    },
+                    {   "group": "BG-CRU",
+                        "members" : [
+                            {"tag": "BG-Crustal-with-poly", "weight":1.0,
+                            "toshi_id": "RmlsZToxMDQ4NjM="}
+                        ]
+                    },
+                    {   "group": "BG-HIK",
+                        "members" : [
+                            {"tag": "BG-Hikurangi", "weight":1.0,
+                            "toshi_id": "RmlsZToxMDQ4NjI="}
                         ]
                     }
                 ]
-            },
-            ],[
-            {
-                "tag": "jump_max_distance_15KM", "weight": 1.0,
+            }],
+            [{
+                "tag": "crustal only, no polygons", "weight": 1.0,
                 "permute" : [
-                    {   "group": "CRUSTAL",
+                    {   "group": "CRU",
                         "members" : [
-                            {"tag": "CR_15km", "weight": 1.0, "toshi_id": "SSW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU0Mg==" }
+                            {"tag": "Crustal-no-poly", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU3OQ=="}
+                        ]
+                    },
+                    {   "group": "BG-CRU",
+                        "members" : [
+                            {"tag": "BG-Crustal-no-poly", "weight":1.0,
+                            "toshi_id": "RmlsZToxMDQ4NjE="}
                         ]
                     }
                 ]
-            }
-            ]
-        ],
+            }],
+            [{
+                "tag": "crustal only, with polygons", "weight": 1.0,
+                "permute" : [
+                    {   "group": "CRU",
+                        "members" : [
+                            {"tag": "Crustal-with-poly", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MA=="}
+                        ]
+                    },
+                    {   "group": "BG-CRU",
+                        "members" : [
+                            {"tag": "BG-Crustal-with-poly", "weight":1.0,
+                            "toshi_id": "RmlsZToxMDQ4NjM="}
+                        ]
+                    }
+                ]
+            }]
+
+        ]
         intensity_specs = [
             # {"tag": "lite", "measures": ['PGA', 'SA(0.5)', 'SA(1.0)'], "levels": 'logscale(0.005, 4.00, 30)' },
             # {"tag": "lite", "measures": ['PGA', 'SA(0.5)', 'SA(1.0)'], "levels": 'logscale(0.005, 4.00, 30)' },
             {"tag": "fixed", "measures": era_measures, "levels": era_levels},
             #{"tag": "max10-300", "measures": era_measures, "levels": 'logscale(0.001, 5.00, 100)'}
+            {"tag": "super-max", "measures": ['SA(0.5)'], "levels": 'logscale(0.001, 10.0, 300)'}
         ],
-        vs30s = [250, 250, 300, 350, 400, 450, 750 ],
+        vs30s = [250, 300, 350, 400, 450, 750 ],
         location_codes = ['NZ34'], # NZ6, WLG
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
