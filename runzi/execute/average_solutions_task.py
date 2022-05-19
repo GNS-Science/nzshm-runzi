@@ -43,7 +43,7 @@ class BuilderTask():
             task_id = self._toshi_api.automation_task.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
-                    task_type=SubtaskType.SCALE_SOLUTION.name,
+                    task_type=SubtaskType.AGGREGATE_SOLUTION.name,
                     model_type=task_arguments['model_type'],
                     ),
                 arguments=task_arguments,
@@ -101,7 +101,7 @@ class BuilderTask():
                 aggregation_fn='MEAN',
                 predecessors=predecessors,
                 meta=meta, metrics=result['metrics'])
-            print("created scaled inversion solution: ", inversion_id)
+            print("created averaged inversion solution: ", inversion_id)
 
         t1 = dt.datetime.utcnow()
         print("Report took %s secs" % (t1-t0).total_seconds())

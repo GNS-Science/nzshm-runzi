@@ -44,7 +44,7 @@ def run(source_solution_groups, model_type, TASK_TITLE, TASK_DESCRIPTION , WORKE
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
-    subtask_type = SubtaskType.SCALE_SOLUTION
+    subtask_type = SubtaskType.AGGREGATE_SOLUTION
 
     args = dict(
         source_solution_groups = source_solution_groups

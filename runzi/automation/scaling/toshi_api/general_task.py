@@ -20,6 +20,7 @@ class SubtaskType(Enum):
     SCALE_SOLUTION = 50
     SOLUTION_TO_NRML = 60
     OPENQUAKE_HAZARD = 70
+    AGGREGATE_SOLUTION = 80
 
 class ModelType(Enum):
     CRUSTAL = 10
