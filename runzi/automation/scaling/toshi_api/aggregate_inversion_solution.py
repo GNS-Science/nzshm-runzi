@@ -13,15 +13,15 @@ import logging
 log = logging.getLogger(__name__)
 #logging.basicConfig(level=logging.DEBUG)
 
-class ScaledInversionSolution(object):
+class AggregateInversionSolution(object):
 
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)
 
-    def upload_inversion_solution(self, task_id, filepath, source_solution_id, mfd_table=None, meta=None, predecessors=None, metrics=None):
+    def upload_inversion_solution(self, task_id, filepath, source_solution_ids, aggregation_fn, mfd_table=None, meta=None, predecessors=None, metrics=None):
         filepath = PurePath(filepath)
-        file_id, post_url = self._create_inversion_solution(filepath, task_id, source_solution_id, mfd_table, meta, predecessors, metrics)
+        file_id, post_url = self._create_inversion_solution(filepath, task_id, source_solution_ids, aggregation_fn, mfd_table, meta, predecessors, metrics)
         self.upload_content(post_url, filepath)
 
         #link file to task in role
@@ -41,11 +41,13 @@ class ScaledInversionSolution(object):
         log.debug(f'response {response}')
         response.raise_for_status()
 
-    def _create_inversion_solution(self, filepath, produced_by, source_solution_id, mfd_table=None, meta=None, predecessors=None, metrics=None):
+    def _create_inversion_solution(self, filepath, produced_by, source_solution_ids, aggregation_fn, mfd_table=None, meta=None, predecessors=None, metrics=None):
         qry = '''
-            mutation ($source_solution: ID!, $created: DateTime!, $digest: String!, $file_name: String!, $file_size: BigInt!, $produced_by: ID!, $predecessors: [PredecessorInput]) {
-              create_scaled_inversion_solution(input: {
-                  source_solution: $source_solution
+            mutation ($source_solutions: [ID!], $created: DateTime!, $digest: String!, $file_name: String!, 
+                  $file_size: BigInt!, $produced_by: ID!, $predecessors: [PredecessorInput], $aggregation_fn: AggregationFn!) {
+              create_aggregate_inversion_solution(input: {
+                  source_solutions: $source_solutions
+                  aggregation_fn: $aggregation_fn
                   created: $created
                   md5_digest: $digest
                   file_name: $file_name
@@ -80,7 +82,7 @@ class ScaledInversionSolution(object):
         filedata.close()
 
         created = dt.utcnow().isoformat() + 'Z'
-        variables = dict(source_solution=source_solution_id, digest=digest, file_name=filepath.parts[-1], file_size=size,
+        variables = dict(source_solutions=source_solution_ids, aggregation_fn=aggregation_fn, digest=digest, file_name=filepath.parts[-1], file_size=size,
           produced_by=produced_by, mfd_table=mfd_table, created=created, predecessors=predecessors)
 
         #result = self.api.client.execute(qry, variable_values = variables)
@@ -93,7 +95,7 @@ class ScaledInversionSolution(object):
 
 
     
-    def get_solution(self, solution_id): #TODO fix this qiery ...on ScaledInversionSolution
+    def get_solution(self, solution_id): #TODO fix this qiery ...on AggregateInversionSolution
 
         qry = '''
         query get_sol_tables ($solution_id: ID!) {

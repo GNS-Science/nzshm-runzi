@@ -16,6 +16,7 @@ from .scaled_inversion_solution import ScaledInversionSolution
 from .general_task import GeneralTask, CreateGeneralTaskArgs, SubtaskType, ModelType
 from .automation_task import AutomationTask
 from .inversion_solution_nrml import InversionSolutionNrml
+from .aggregate_inversion_solution import AggregateInversionSolution
 from .openquake_hazard import OpenquakeHazardConfig, OpenquakeHazardTask, OpenquakeHazardSolution
 
 class ToshiApi(ToshiClientBase):
