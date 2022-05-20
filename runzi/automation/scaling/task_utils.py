@@ -8,36 +8,21 @@ def _get_model_type(id, toshi_api):
         __typename
         }
     }'''
-
     input_variables = dict(id=id)
     typename = toshi_api.run_query(qry, input_variables)['node']['__typename']
-    
-    if typename == 'InversionSolution':
-        qry = '''
-        query invsoln ($id:ID!) {
-            node (id: $id) {
-                ... on InversionSolution {
-                    produced_by_id
-                }
-            }
-        }'''
 
-        input_variables = dict(id=id)
-        auto_id = toshi_api.run_query(qry, input_variables)['node']['produced_by_id']
-    elif typename == 'ScaledInversionSolution':
-        qry = '''
-            query scaledinvsoln ($id:ID!) {
-                node (id: $id) {
-                    ... on ScaledInversionSolution {
-                    produced_by { id }
-                    }
-                }
-            }'''
-        input_variables = dict(id=id)
-        auto_id = toshi_api.run_query(qry, input_variables)['node']['produced_by']['id']
-    else:
-        raise Exception(f'typename must be InversionSolution or ScaledInversionSolution, {typename} given')
-    
+    qry = '''
+    query invsoln ($id:ID!) {
+        node (id: $id) {
+            ... on TYPENAME {
+                produced_by { ... on Node{id} }
+            }
+        }
+    }'''
+    qry = qry.replace('TYPENAME',typename)
+    input_variables = dict(id=id)
+    auto_id = toshi_api.run_query(qry, input_variables)['node']['produced_by']['id']
+
     qry = '''
     query autotask ($id:ID!) {
         node (id: $id) {

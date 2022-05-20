@@ -112,7 +112,6 @@ if __name__ == "__main__":
 
     if tectonic_type == 'HIK':
         TASK_TITLE = "Hikurangi. From LTB007 and LTB008. Scaled 0.54, 1.43"
-        model_type = ModelType.SUBDUCTION
         source_solution_ids = [
             "SW52ZXJzaW9uU29sdXRpb246MTAyNTAw",
             "SW52ZXJzaW9uU29sdXRpb246MTAyMjk5",
@@ -122,7 +121,6 @@ if __name__ == "__main__":
         scales = [0.54, 1.43]
     elif tectonic_type == 'CRU':
         TASK_TITLE = "Crustal. From LTB070. Scaled 0.51, 1.62"
-        model_type = ModelType.CRUSTAL
         source_solution_ids = [
             "SW52ZXJzaW9uU29sdXRpb246MTAxMTgw",
             "SW52ZXJzaW9uU29sdXRpb246MTAxMTg1",
@@ -137,14 +135,12 @@ if __name__ == "__main__":
         scales = [0.51, 1.62]
     elif tectonic_type == 'PUY':
         TASK_TITLE = "Puysegur. From LTB002. Scaled 0.61, 1.34"
-        model_type = ModelType.SUBDUCTION
         source_solution_ids = [
             "SW52ZXJzaW9uU29sdXRpb246MTAxMTE1"    
         ]   
         scales = [0.61, 1.34]
     elif tectonic_type == 'TEST':
         TASK_TITLE = "TEST polygon scale"
-        model_type = ModelType.CRUSTAL
         source_solution_ids = [
             "SW52ZXJzaW9uU29sdXRpb246MTAwMjcw"
         ]   
@@ -154,7 +150,6 @@ if __name__ == "__main__":
 
     elif tectonic_type == 'TEST2':
         TASK_TITLE = "TEST polygon scale (None)"
-        model_type = ModelType.CRUSTAL
         source_solution_ids = [
             "SW52ZXJzaW9uU29sdXRpb246MTAwMjcw"
         ]   
@@ -163,7 +158,6 @@ if __name__ == "__main__":
         polygon_max_mag = None
     elif tectonic_type == 'TEST_SCALED':
         TASK_TITLE = "TEST polygon scale"
-        model_type = ModelType.CRUSTAL
         source_solution_ids = [
             "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAwNTky"
         ]   
