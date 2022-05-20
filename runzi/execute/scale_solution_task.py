@@ -70,7 +70,9 @@ class BuilderTask():
         result = self.scaleRuptureRates(
             job_arguments.get('source_solution_info').get('filepath'),
             task_id,
-            task_arguments.get('scale')
+            task_arguments.get('scale'),
+            task_arguments.get('polygon_scale'),
+            task_arguments.get('polygon_max_mag')
         )
 
 
@@ -114,7 +116,7 @@ class BuilderTask():
         print("Report took %s secs" % (t1-t0).total_seconds())
 
 
-    def scaleRuptureRates(self, in_solution_filepath,task_id,scale):
+    def scaleRuptureRates(self, in_solution_filepath,task_id,scale,polygon_scale=None,polygon_max_mag=None):
 
         soln = InversionSolution().from_archive(in_solution_filepath)
 
@@ -125,7 +127,12 @@ class BuilderTask():
         rates = ra.copy()*scale
         indices = ri.copy()
 
-        #all other props are derived from these ones
+        #apply polygon rates
+        if polygon_scale and polygon_max_mag:
+            mag_ind = rr['Magnitude'] <= polygon_max_mag
+            rates.loc[mag_ind,'Annual Rate']  = rates[mag_ind]['Annual Rate'] * polygon_scale
+
+        #all other props are derived from these 
         scaled_soln =  InversionSolution()
         scaled_soln.set_props(rates, ruptures, indices, soln.fault_sections.copy())
 

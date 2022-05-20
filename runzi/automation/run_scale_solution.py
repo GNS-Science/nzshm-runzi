@@ -15,6 +15,7 @@ from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, 
 from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.configuration.scale_inversion_solution import build_scale_tasks
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
+from runzi.automation.scaling.task_utils import get_model_type
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
@@ -31,7 +32,12 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
         scripts.append(script_file)
     return scripts
 
-def run(source_solution_ids, scales,model_type: ModelType, 
+
+
+    
+
+
+def run(source_solution_ids, scales,polygon_scale, polygon_max_mag,
         TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL_SIZE):
     t0 = dt.datetime.utcnow()
 
@@ -52,10 +58,14 @@ def run(source_solution_ids, scales,model_type: ModelType,
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
+    model_type = get_model_type(source_solution_ids,toshi_api)
+
     subtask_type = SubtaskType.SCALE_SOLUTION
 
     args = dict(
         scales = scales,
+        polygon_scale=polygon_scale,
+        polygon_max_mag=polygon_max_mag,
         source_solution_ids = source_solution_ids
     )
 
@@ -98,11 +108,10 @@ if __name__ == "__main__":
     # #If using API give this task a descriptive setting...
     TASK_DESCRIPTION = """first run locally """
     
-    tectonic_type = 'TEST2'
+    tectonic_type = 'TEST_SCALED'
 
     if tectonic_type == 'HIK':
         TASK_TITLE = "Hikurangi. From LTB007 and LTB008. Scaled 0.54, 1.43"
-        model_type = ModelType.SUBDUCTION
         source_solution_ids = [
             "SW52ZXJzaW9uU29sdXRpb246MTAyNTAw",
             "SW52ZXJzaW9uU29sdXRpb246MTAyMjk5",
@@ -112,7 +121,6 @@ if __name__ == "__main__":
         scales = [0.54, 1.43]
     elif tectonic_type == 'CRU':
         TASK_TITLE = "Crustal. From LTB070. Scaled 0.51, 1.62"
-        model_type = ModelType.CRUSTAL
         source_solution_ids = [
             "SW52ZXJzaW9uU29sdXRpb246MTAxMTgw",
             "SW52ZXJzaW9uU29sdXRpb246MTAxMTg1",
@@ -127,26 +135,37 @@ if __name__ == "__main__":
         scales = [0.51, 1.62]
     elif tectonic_type == 'PUY':
         TASK_TITLE = "Puysegur. From LTB002. Scaled 0.61, 1.34"
-        model_type = ModelType.SUBDUCTION
         source_solution_ids = [
             "SW52ZXJzaW9uU29sdXRpb246MTAxMTE1"    
         ]   
         scales = [0.61, 1.34]
     elif tectonic_type == 'TEST':
-        TASK_TITLE = "TEST"
-        model_type = ModelType.SUBDUCTION
+        TASK_TITLE = "TEST polygon scale"
         source_solution_ids = [
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNDk5",
-            "SW52ZXJzaW9uU29sdXRpb246MTAwNTA3"
+            "SW52ZXJzaW9uU29sdXRpb246MTAwMjcw"
         ]   
-        scales = [0.61, 1.34]
+        scales = [0.61, 1.0, 1.34]
+        polygon_scale = 0.8
+        polygon_max_mag = 8
 
     elif tectonic_type == 'TEST2':
-        TASK_TITLE = "TEST predecessors"
-        model_type = ModelType.SUBDUCTION
+        TASK_TITLE = "TEST polygon scale (None)"
         source_solution_ids = [
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAwODEy",
+            "SW52ZXJzaW9uU29sdXRpb246MTAwMjcw"
         ]   
-        scales = [0.61,]
+        scales = [0.61, 1.0, 1.34]
+        polygon_scale = None
+        polygon_max_mag = None
+    elif tectonic_type == 'TEST_SCALED':
+        TASK_TITLE = "TEST polygon scale"
+        source_solution_ids = [
+            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAwNTky"
+        ]   
+        scales = [0.61, 1.0, 1.34]
+        polygon_scale = 0.8
+        polygon_max_mag = 8
+        
 
-    run(source_solution_ids, scales,model_type, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
+    run(source_solution_ids, scales, polygon_scale, polygon_max_mag, 
+        TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
+

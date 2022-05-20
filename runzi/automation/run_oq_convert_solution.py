@@ -20,6 +20,7 @@ from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.configuration.oq_opensha_nrml_convert import build_nrml_tasks
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
+from runzi.automation.scaling.task_utils import get_model_type
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
@@ -37,7 +38,7 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-def run(scaled_solution_ids, model_type: ModelType,
+def run(scaled_solution_ids, 
         TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL_SIZE):
 
     t0 = dt.datetime.utcnow()
@@ -58,6 +59,8 @@ def run(scaled_solution_ids, model_type: ModelType,
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
+
+    model_type = get_model_type(scaled_solution_ids,toshi_api)
 
     args = dict(
         rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km 
@@ -164,5 +167,5 @@ if __name__ == "__main__":
         ]
         
         
-        run(input_ids, model_type, TASK_TITLE, TASK_DESCRIPTION, WORKER_POOL_SIZE)
+    run(input_ids, TASK_TITLE, TASK_DESCRIPTION, WORKER_POOL_SIZE)
 

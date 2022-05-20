@@ -44,6 +44,8 @@ def build_scale_tasks(general_task_id: str, subtask_type: SubtaskType, model_typ
 
             task_arguments = dict(
                 scale = scale,
+                polygon_scale = subtask_arguments['polygon_scale'],
+                polygon_max_mag = subtask_arguments['polygon_max_mag'],
                 model_type = model_type.name
             )
 
