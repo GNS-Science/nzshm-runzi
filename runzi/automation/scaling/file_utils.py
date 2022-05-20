@@ -58,7 +58,7 @@ def get_output_file_id(file_api, single_file_id):
     api_result = file_api.get_file_detail(single_file_id)
     fault_model = ""
     max_jump_distance = ""
-
+    
     print("FN:", api_result)
     if api_result['file_name'][-3:] == "zip":
         res = dict(id = api_result['id'],
