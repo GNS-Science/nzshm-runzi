@@ -38,6 +38,7 @@ class ToshiApi(ToshiClientBase):
         self.openquake_hazard_task = OpenquakeHazardTask(self)
         self.openquake_hazard_config = OpenquakeHazardConfig(self)
         self.openquake_hazard_solution = OpenquakeHazardSolution(self)
+        self.aggregate_inversion_solution = AggregateInversionSolution(self)
 
     def get_general_task_subtask_files(self, id):
         return self.get_subtask_files(id)
