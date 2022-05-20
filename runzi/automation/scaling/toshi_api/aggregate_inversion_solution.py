@@ -89,9 +89,9 @@ class AggregateInversionSolution(object):
         #print(result)
         executed = self.api.run_query(qry, variables)
         #print("executed", executed)
-        post_url = json.loads(executed['create_scaled_inversion_solution']['solution']['post_url'])
+        post_url = json.loads(executed['create_aggregate_inversion_solution']['solution']['post_url'])
 
-        return (executed['create_scaled_inversion_solution']['solution']['id'], post_url)
+        return (executed['create_aggregate_inversion_solution']['solution']['id'], post_url)
 
 
     
