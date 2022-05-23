@@ -1,5 +1,7 @@
+from hashlib import new
 import os
 import stat
+import base64
 from pathlib import PurePath
 
 from itertools import chain
@@ -24,6 +26,8 @@ def build_average_tasks(general_task_id: str, task_type: SubtaskType, model_type
         
         task_count += 1
 
+        common_rupture_set = get_common_rupture_set(source_solution_ids,toshi_api)
+      
         file_generators = []
         for input_id in source_solution_ids:
             file_generators.append(get_output_file_id(toshi_api, input_id)) #for file by file ID
@@ -41,8 +45,8 @@ def build_average_tasks(general_task_id: str, task_type: SubtaskType, model_type
                 working_path=str(WORK_PATH),
                 general_task_id=general_task_id,
                 use_api = USE_API,
+                common_rupture_set=common_rupture_set
                 )
-
         
         if CLUSTER_MODE == EnvMode['AWS']:
                     pass
@@ -63,4 +67,67 @@ def build_average_tasks(general_task_id: str, task_type: SubtaskType, model_type
         
 
 
+def get_common_rupture_set(source_solution_ids,toshi_api):
+
+    rupture_set_id = ''
+    for source_solution_id in source_solution_ids:
+
+        new_rupture_set_id = get_rupture_set_id(source_solution_id,toshi_api)
+        if not rupture_set_id:
+            rupture_set_id = new_rupture_set_id
+        else:
+            if new_rupture_set_id == rupture_set_id:
+                continue
+            else:
+                raise Exception(f'source objects {source_solution_ids} do not have consistant rupture sets')
     
+    return rupture_set_id
+
+        
+
+
+def get_rupture_set_id(source_solution_id,toshi_api):
+
+    # I'm going to assume we can always use predecessors, 
+    # it should always be the case in the future and backwards 
+    # compatability is a bit of a pain to write
+
+    rupture_set_id = get_rupture_set_from_predecessors(source_solution_id,toshi_api)
+    
+    if not rupture_set_id:
+        raise Exception(f'cannot find rupture set for {source_solution_id}')
+
+    return rupture_set_id
+        
+
+        
+def get_rupture_set_from_predecessors(source_solution_id,toshi_api):
+    
+    rupture_set_id = ''
+    
+    # it's possible there are multiple oldest predecessors (if for some reason the user is 
+    # calculating the average of average), so check them all
+    # I'm assuming that if typename is 'File' then the object is a rupture set
+    predecessors = toshi_api.get_predecessors(source_solution_id)
+    
+    if predecessors:
+        oldest_depth = min( [pred['depth'] for pred in predecessors] )
+        oldest_ids = [pred['id'] for pred in predecessors if pred['depth'] == oldest_depth]
+        
+        
+        for id in oldest_ids:
+            if (is_rupture_set(id)) and (not rupture_set_id):
+                rupture_set_id = id
+            elif is_rupture_set(id):
+                if rupture_set_id == id:
+                    continue
+                else:
+                    raise Exception(f'object with ID {source_solution_id} comes from multiple rupture sets')
+
+    return rupture_set_id
+
+
+def is_rupture_set(id):
+    return "'File:" in str(base64.b64decode(id))
+
+

@@ -86,15 +86,37 @@ def run(source_solution_groups, model_type, TASK_TITLE, TASK_DESCRIPTION , WORKE
 
 if __name__ == "__main__":
 
-    TASK_DESCRIPTION = 'TEST'
+    TASK_DESCRIPTION = 'TEST_RUP_SETS'
 
     if TASK_DESCRIPTION == 'TEST':
         TASK_TITLE = "TEST averaging"
         model_type = ModelType.SUBDUCTION
         source_solution_groups = [
             ["SW52ZXJzaW9uU29sdXRpb246MTAwNDk5","SW52ZXJzaW9uU29sdXRpb246MTAwNTA3","SW52ZXJzaW9uU29sdXRpb246MTAwNTEw","SW52ZXJzaW9uU29sdXRpb246MTAwNTEz"],
-            ["SW52ZXJzaW9uU29sdXRpb246MTAwNTE1", "SW52ZXJzaW9uU29sdXRpb246MTAwNTE2", "SW52ZXJzaW9uU29sdXRpb246MTAwNTE3", "SW52ZXJzaW9uU29sdXRpb246MTAwNTIw"]
+            ["SW52ZXJzaW9uU29sdXRpb246MTAwNTE1", "SW52ZXJzaW9uU29sdXRpb246MTAwNTE2", "SW52ZXJzaW9uU29sdXRpb246MTAwNTE3", "SW52ZXJzaW9uU29sdXRpb246MTAwNTIw"],
+
         ]
+    if TASK_DESCRIPTION == 'TEST_PRED':
+        TASK_TITLE = "TEST averaging with predecessors"
+        model_type = ModelType.SUBDUCTION
+        source_solution_groups = [
+            ["U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAwODYz","U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAwODYz"]
+        ]
+
+    if TASK_DESCRIPTION == 'TEST_RUP_SETS':
+        TASK_TITLE = "TEST averaging with retrieving rupture sets"
+        model_type = ModelType.SUBDUCTION
+        source_solution_groups = [
+            ["SW52ZXJzaW9uU29sdXRpb246MTAxMTA4","SW52ZXJzaW9uU29sdXRpb246MTAxMTEx"]
+        ]
+    if TASK_DESCRIPTION == 'TEST_RUP_SETS_DIFF':
+        TASK_TITLE = "TEST averaging with retrieving rupture sets (should fail, they are not consistent)"
+        model_type = ModelType.SUBDUCTION
+        source_solution_groups = [
+            ["SW52ZXJzaW9uU29sdXRpb246MTAxMTA4","SW52ZXJzaW9uU29sdXRpb246MTAxMTE2"]
+        ]
+
+
     #TODO take advantage of auto type feature
 
     run(source_solution_groups,model_type, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)

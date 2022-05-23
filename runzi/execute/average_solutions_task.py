@@ -99,6 +99,7 @@ class BuilderTask():
                 filepath=result['averaged_solution'],
                 source_solution_ids=source_solution_ids,
                 aggregation_fn='MEAN',
+                common_rupture_set=job_arguments['common_rupture_set'],
                 predecessors=predecessors,
                 meta=meta, metrics=result['metrics'])
             print("created averaged inversion solution: ", inversion_id)
