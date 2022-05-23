@@ -3,6 +3,7 @@
 import itertools
 import logging
 from pathlib import Path
+import collections
 
 import zipfile
 from lxml import etree
@@ -19,18 +20,23 @@ log = logging.getLogger(__name__)
 #     for gk, gv in group.items():
 #         yield list(gv.items())
 
+# Using a named tuple make the data much easier to work with...
+# this is where we change source_model to use toshi_id
+LogicTreeBranch = collections.namedtuple('LogicTreeBranch', 'tag toshi_id weight')
+
+
 def get_logic_tree_file_ids(ltb_groups):
     ids = set()
     for group in ltb_groups: #List
         for sources in get_ltb(group):
             for source in sources:
-                ids.add( source[:2] )
+                ids.add( (source.tag, source.toshi_id ))
     return list(ids)
 
 def get_ltb(group):
     """NEW object-syle config"""
     for obj in group['permute']:
-        yield [(source['tag'], source['toshi_id'], source['weight']) for source in obj['members']]
+        yield [LogicTreeBranch(tag=source['tag'], toshi_id=source['toshi_id'], weight=source['weight']) for source in obj['members']]
 
 def get_logic_tree_branches(ltb_groups):
     for group in ltb_groups: #List
@@ -90,13 +96,13 @@ def build_sources_xml(logic_tree_branches, source_file_mapping):
 
     for branch in logic_tree_branches:
             files = ""
-            branch_name = "|".join([x[0] for x in branch])
+            branch_name = "|".join([ltb.toshi_id for ltb in branch])
             branch_weight = 1.0
-            for source_tuple in branch:
-                #print(source_tuple)
-                name, src_id, wt = source_tuple
-                files += "\t".join(source_file_mapping[src_id]['sources']) + "\t"
-                branch_weight *= wt #
+            for ltb in branch:
+                #print(ltb)
+                #name, src_id, wt = source_tuple
+                files += "\t".join(source_file_mapping[ltb.toshi_id]['sources']) + "\t"
+                branch_weight *= ltb.weight
             #branch_weight = round(branch_weight, 10)
             total_branch_weight += branch_weight
             ltb = LTB( UM(files), UW(str(branch_weight)), branchID=branch_name)
@@ -623,7 +629,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
     sources_folder = Path(WORK_PATH, 'sources')
-    source_file_mapping = SourceModelLoader(API_URL, API_KEY, S3_URL).unpack_sources(permutations, sources_folder)
+    source_file_mapping = SourceModelLoader().unpack_sources(permutations, sources_folder)
     # print(source_file_mapping)
 
     ltbs = [ltb for ltb in get_logic_tree_branches(permutations)]
