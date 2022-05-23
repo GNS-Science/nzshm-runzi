@@ -1,12 +1,18 @@
+from operator import mod
 import pwd
 import logging
 import os
 import datetime as dt
+from pyexpat import model
+from statistics import mode
 
 from runzi.configuration.average_inversion_solutions import build_average_tasks
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
 from runzi.automation.scaling.toshi_api.general_task import ModelType
+from runzi.automation.scaling.task_utils import get_model_type
+
+
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
@@ -23,7 +29,7 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
         scripts.append(script_file)
     return scripts
 
-def run(source_solution_groups, model_type, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE):
+def run(source_solution_groups, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE):
 
     t0 = dt.datetime.utcnow()
 
@@ -43,6 +49,18 @@ def run(source_solution_groups, model_type, TASK_TITLE, TASK_DESCRIPTION , WORKE
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
+
+    model_type = None
+    for source_solution_ids in source_solution_groups:
+        new_model_type = get_model_type(source_solution_ids,toshi_api)
+        if (not model_type):
+            model_type = new_model_type
+        else:
+            if new_model_type is model_type:
+                continue
+            else:
+                raise Exception(f'model types are not all the same for source solution groups {source_solution_groups}')
+
 
     subtask_type = SubtaskType.AGGREGATE_SOLUTION
 
@@ -113,11 +131,11 @@ if __name__ == "__main__":
         TASK_TITLE = "TEST averaging with retrieving rupture sets (should fail, they are not consistent)"
         model_type = ModelType.SUBDUCTION
         source_solution_groups = [
-            ["SW52ZXJzaW9uU29sdXRpb246MTAxMTA4","SW52ZXJzaW9uU29sdXRpb246MTAxMTE2"]
+            # ["SW52ZXJzaW9uU29sdXRpb246MTAxMTA4","SW52ZXJzaW9uU29sdXRpb246MTAxMTE2"]
+            ["SW52ZXJzaW9uU29sdXRpb246MTAxMTA4","SW52ZXJzaW9uU29sdXRpb246MTAxMTEx"],
+            ["SW52ZXJzaW9uU29sdXRpb246MTAxMTE2","SW52ZXJzaW9uU29sdXRpb246MTAxMTE2"]
         ]
 
 
-    #TODO take advantage of auto type feature
-
-    run(source_solution_groups,model_type, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
+    run(source_solution_groups, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
 
