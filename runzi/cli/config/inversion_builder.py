@@ -63,4 +63,5 @@ class CrustalConfig(InversionConfig):
         self._sans_slip_rate_factor = []
         self._mfd_uncertainty_scalar = []
         self._enable_tvz_mfd = []
+        self._spatial_seis_pdf = []
 

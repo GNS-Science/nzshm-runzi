@@ -1,0 +1,56 @@
+{
+  "config_version": "3.4",
+  "job_args": {
+    "worker_pool_size": 1,
+    "jvm_heap_max": 30,
+    "java_threads": 16,
+    "use_api": true,
+    "general_task_id": "",
+    "mock_mode": false
+  },
+  "general_args": {
+    "unique_id": "TTB067",
+    "subtask_type": "INVERSION",
+    "model_type": "CRUSTAL",
+    "file_id": "RmlsZToxMDEyOQ==",
+    "task_title": "NZSHM Test Tree Branch run TTB067 test set spatial seis pdf",
+    "task_description": " test set spatial seis pdf"
+   },
+  "task_args": {
+    "rounds": ["0"],
+    "completion_energies": ["0.0"],
+    "max_inversion_times": ["10"],
+    "deformation_models": ["FAULT_MODEL"],
+    "initial_solution_ids": [""],
+    "scaling_c": [
+        {"tag": "MED", "dip": 4.2, "strike": 4.2}
+    ],
+    "b_and_n": [
+        {"tag":"N = 2.4, b=0.811", "enable_tvz_mfd": false,"b": 0.811, "N": 2.4}
+      ],
+    "constraint_wts" : [
+        {"tag": "UCT M(0,0.1)_S(0,0)_Psmth(0)","reweight": true, "mfd_pow": 0.0001, "mfd_unc_scalar": 0.1, "sr_scaling": 0, "sr_use_scaling": 0,"paleo_smoothing": 1e0}
+    ],
+    "mfd_transition_mags": [7.85],
+    "mag_ranges": [
+        {"min_mag_sans": 6.8, "min_mag_tvz": 6.8, "max_mag_sans": 10.0, "max_mag_tvz": 10.0}
+    ],
+    "slip_rate_factors": [{"tag": "Sans 0.9 TVZ 0.7", "slip_factor_sans":0.9, "slip_factor_tvz":0.7}],
+    "max_mag_types": ["MANIPULATE_MFD"],
+    "slip_rate_weighting_types": ["BOTH"],
+    "slip_rate_weights": [null],
+    "slip_uncertainty_scaling_factors": [null],
+    "selection_interval_secs": ["1"],
+    "threads_per_selector": ["4"],
+    "averaging_threads": ["4"],
+    "averaging_interval_secs": ["30"],
+    "non_negativity_function": ["TRY_ZERO_RATES_OFTEN"],
+    "perturbation_function": ["EXPONENTIAL_SCALE"],
+    "cooling_schedules": ["FAST_SA"],
+    "scaling_relationships": ["SIMPLE_CRUSTAL"],
+    "scaling_recalc_mags": ["True"],
+    "paleo_rate_constraints": ["GEOLOGIC_SLIP_NO_TVZ"],
+    "paleo_probability_models": ["NZSHM22_C_42"],
+    "spatial_seis_pdfs": ["","NZSHM22_1246","NZSHM22_1346"]
+  }
+}
