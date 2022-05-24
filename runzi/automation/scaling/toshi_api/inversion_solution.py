@@ -49,7 +49,7 @@ class InversionSolution(object):
                   md5_digest: $digest
                   file_name: $file_name
                   file_size: $file_size
-                  produced_by_id: $produced_by
+                  produced_by: $produced_by
                   predecessors: $predecessors
 
                   ##MFD_TABLE##
