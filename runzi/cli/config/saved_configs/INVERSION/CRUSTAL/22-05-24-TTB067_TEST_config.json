@@ -1,7 +1,7 @@
 {
   "config_version": "3.4",
   "job_args": {
-    "worker_pool_size": 1,
+    "worker_pool_size": 2,
     "jvm_heap_max": 30,
     "java_threads": 16,
     "use_api": true,
@@ -12,7 +12,7 @@
     "unique_id": "TTB067",
     "subtask_type": "INVERSION",
     "model_type": "CRUSTAL",
-    "file_id": "RmlsZToxMDEyOQ==",
+    "file_id": "RmlsZToxMDAwNjk=",
     "task_title": "NZSHM Test Tree Branch run TTB067 test set spatial seis pdf",
     "task_description": " test set spatial seis pdf"
    },

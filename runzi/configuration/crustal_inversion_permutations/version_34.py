@@ -73,7 +73,7 @@ def branch_permutations_generator_34(args, rupture_set_info):
                                 args.get('initial_solution_ids', [None,]),
                                 args['cooling_schedules'],
                                 [slip_rate_factors['slip_factor_sans']],[slip_rate_factors['slip_factor_tvz']],
-                                args.get('spatial_seis_pdfs')
+                                args.get('spatial_seis_pdfs', [None,])
                                 ):
                                     task_arguments = dict(
                                         round = _round,
@@ -236,6 +236,8 @@ if __name__ == '__main__':
         #Paleo
         paleo_rate_constraints = ["GEOLOGIC_SLIP_1_0"],
         paleo_probability_models = ["UCERF3_PLUS_PT5"],
+
+        spatial_seis_pdfs = ['foobar','']
         )
     #print( json.dumps(args))
 
@@ -250,7 +252,7 @@ if __name__ == '__main__':
     print('-----------')
     print('\n')
 
-    rupture_set_info = dict(id=0, filepath='')
+    rupture_set_info = dict(id=0, filepath='',info={'max_jump_distance':15})
     count = 0
     for p in branch_permutations_generator_34(args, rupture_set_info):
         #print(p)
