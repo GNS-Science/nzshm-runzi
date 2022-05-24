@@ -46,7 +46,7 @@ class AggregateInversionSolution(object):
     def _create_inversion_solution(self, filepath, produced_by, source_solution_ids, aggregation_fn, common_rupture_set, 
                                     mfd_table=None, meta=None, predecessors=None, metrics=None):
         qry = '''
-            mutation ($source_solutions: [ID!], $created: DateTime!, $digest: String!, $file_name: String!, 
+            mutation ($source_solutions: [ID]!, $created: DateTime!, $digest: String!, $file_name: String!, 
                   $file_size: BigInt!, $produced_by: ID!, $common_rupture_set: ID!, $predecessors: [PredecessorInput], $aggregation_fn: AggregationFn!) {
               create_aggregate_inversion_solution(input: {
                   source_solutions: $source_solutions
