@@ -106,65 +106,18 @@ def run(scaled_solution_ids,
 
 if __name__ == "__main__":
 
-    TASK_DESCRIPTION = """first run locally """
+    TASK_DESCRIPTION = """Max Jump distance 1,3,5,10,15km"""
     # #If using API give this task a descriptive setting...
 
-    tectonic_type = 'TEST'
-
-    if tectonic_type == 'HIK':
-        TASK_TITLE = "Hikurangi Scaled NRMLs LTB007 and LTB008"
-        model_type = ModelType.SUBDUCTION
-        input_ids = [
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTM1",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTM2",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTM4",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTQw",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTQy",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTQ0",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTQ2",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyOTQ4"
-        ]
-    elif tectonic_type == 'PUY':
-        TASK_TITLE = "Puysegur Scaled NRMLs"
-        model_type = ModelType.SUBDUCTION
-        input_ids = [
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDY4",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDY2"
-        ]
-    elif tectonic_type == 'CRU':
-        TASK_TITLE = "Crustal Scaled NRMLs"
-        model_type = ModelType.CRUSTAL
-        input_ids = [
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDcw",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDc2",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDc4",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDgy",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDg4",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDkw",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDk0",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTAw",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTAy",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDcy",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDc0",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDgw",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDg0",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDg2",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDky",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDk2",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMDk4",
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAyMTA0"
-        ]
-    elif tectonic_type == 'TEST':
-        TASK_TITLE = "Test NRMLs"
-        model_type = ModelType.SUBDUCTION
-        input_ids = [
-            # "SW52ZXJzaW9uU29sdXRpb246MTAwNDk5",
-            # "SW52ZXJzaW9uU29sdXRpb246MTAwNTA3",
-            # "SW52ZXJzaW9uU29sdXRpb246MTAwNTEw",
-            # "SW52ZXJzaW9uU29sdXRpb246MTAwNTEz",
-            # "SW52ZXJzaW9uU29sdXRpb246MTAwNTE1"
-            "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTAwODYz"
-        ]
+   
+    TASK_TITLE = "Max Jump Distance NRMLs"
+    input_ids = [
+       "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA0OTY0",
+       "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA0OTY2",
+       "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA0OTY4",
+       "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA0OTcw",
+       "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA0OTcy"
+    ]
         
         
     run(input_ids, TASK_TITLE, TASK_DESCRIPTION, WORKER_POOL_SIZE)
