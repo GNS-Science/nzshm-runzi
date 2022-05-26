@@ -104,7 +104,7 @@ class BuilderTask():
             inversion_runner = self._gateway.entry_point.getCrustalInversionRunner()
 
             if ta.get('spatial_seis_pdf'):
-                inversion_runner.setSpatialSeisPDF(ta.get('spatial_seis_pdf'))
+                inversion_runner.setSpatialSeisPDF(str(ta.get('spatial_seis_pdf')))
 
             inversion_runner.setDeformationModel(ta['deformation_model'])
             inversion_runner.setGutenbergRichterMFD(
