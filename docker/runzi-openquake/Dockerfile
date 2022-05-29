@@ -18,10 +18,8 @@ RUN pip install tqdm
 RUN pip install numba
 RUN pip install pytest
 
-# AND for now we're mapping in the code like so `docker run  -it --rm -v $(pwd)/../../../ucerf:/app/ucerf`
-# AND then running pip install -e . in the ucerf folder to test
-
-#USER openquake
+# The new AWS hazard store script ...
+RUN pip install toshi_hazard_store
 
 # Install Runzi TODO:is this only for these test configs ??
 WORKDIR /app
@@ -42,6 +40,8 @@ RUN chown openquake /WORKING
 # Install Marcos Converter
 # git@gitlab.openquake.org:hazard/converters/ucerf.git
 # we'll use ADD for now as the repo is not public
+# AND for now we're mapping in the code like so `docker run  -it --rm -v $(pwd)/../../../ucerf:/app/ucerf`
+# AND then running pip install -e . in the ucerf folder to test
 ADD ucerf3-updates /app/ucerf
 WORKDIR /app/ucerf
 RUN pip install -e .

@@ -112,6 +112,7 @@ def execute_openquake(configfile, task_no, toshi_task_id):
 
         #get the job ID
         last_task = get_last_task()
+        oq_result['oq_calc_id'] = last_task
 
 
         """
@@ -291,6 +292,12 @@ class BuilderTask():
                     duration = (dt.datetime.utcnow() - t0).total_seconds(),
                     result = "SUCCESS",
                     state = "DONE"))
+
+            # run the store_hazard job
+            if not SPOOF_HAZARD:
+                cmd = ['store_hazard', str(oq_result['oq_calc_id']), solution_id]
+                log.info(f'store_hazard: {cmd}')
+                subprocess.check_call(cmd)
 
         t1 = dt.datetime.utcnow()
         log.info("Task took %s secs" % (t1-t0).total_seconds())

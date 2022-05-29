@@ -19,6 +19,9 @@ NZSHM22_TOSHI_API_ENABLED
 NZSHM22_TOSHI_API_URL 		#default http://127.0.0.1:5000/graphql")  http://host.docker.internal/5000/graphql etc
 NZSHM22_TOSHI_S3_URL 		#default http://localhost:4569")
 
+DEPLOYMENT_STAGE=TEST #PROD
+REGION=ap-southeast-2 #sydney
+
 # RUN
 
 ## Minimum local only...
@@ -62,6 +65,8 @@ docker run -it --rm -u root \
 -e NZSHM22_TOSHI_API_KEY \
 -e NZSHM22_SCRIPT_CLUSTER_MODE \
 -e NZSHM22_SCRIPT_WORKER_POOL_SIZE=1 \
+-e DEPLOYMENT_STAGE=PROD \
+-e REGION=ap-southeast-2 \
 nzshm22/runzi-openquake:nightly \
 -s bash
 ```
