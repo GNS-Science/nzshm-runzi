@@ -50,7 +50,7 @@ if __name__ == "__main__":
     # If using API give this task a descriptive setting...
 
     TASK_TITLE = "Openquake Hazard calcs "
-    TASK_DESCRIPTION = """Re-run Hikurange to check new hazard_store feature"""
+    TASK_DESCRIPTION = """Max jump distances with background and subduction sources."""
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
@@ -66,8 +66,8 @@ if __name__ == "__main__":
             # "RmlsZToxMDQ1MDk=",   #PROD RmlsZToxMDQ1MDk=
             # "RmlsZToxMDA5MDM="  #TEST NZ34 SRWG_02
             # "RmlsZToxMDEwMDk="   #TEST CONFIG 29_mesh
-            "RmlsZToxMDExNTY=", #New TEST CONFIG w Rotorua TAG = None
-            # "RmlsZToxMDYxOTA=" #New PROD CONFIG w Rotorua TAG = NZ35
+            # "RmlsZToxMDExNTY=", #New TEST CONFIG w Rotorua TAG = None
+            "RmlsZToxMDYxOTA=" #New PROD CONFIG w Rotorua TAG = NZ35
             ],
         # """
         # SRWG 02
@@ -121,20 +121,20 @@ if __name__ == "__main__":
         # """
         # Single Hikurangi TEST
         # """
-        logic_tree_permutations = [
-            [
-                {
-                    "tag": "all rate combinations", "weight": 1.0,
-                    "permute" : [
-                        {   "group": "HIK",
-                            "members" : [
-                                {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDg2Nw==" }
-                                ]
-                        }
-                    ]
-                }
-            ],
-        ],
+        # logic_tree_permutations = [
+        #     [
+        #         {
+        #             "tag": "all rate combinations", "weight": 1.0,
+        #             "permute" : [
+        #                 {   "group": "HIK",
+        #                     "members" : [
+        #                         {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDg2Nw==" }
+        #                         ]
+        #                 }
+        #             ]
+        #         }
+        #     ],
+        # ],
         # """
         # # max_jump_distance - multiple logic_tree_permutations
         # # """
@@ -287,6 +287,164 @@ if __name__ == "__main__":
         #     #     ]
         #     # }]
         # ],
+
+        # """
+        # max_jump_distance - multiple logic_tree_permutations
+        # RmlsZToxMDQ4NjM= : Floor_AddoptiEEPAScomb-CRU_plyadj_b0.93_N5.10.xml
+        # RmlsZToxMDQ4NjI= : Floor_AddoptiEEPAScomb-INT_hiktlck_b1.08_N23.00.xml
+        # """
+        logic_tree_permutations = [
+            [{
+                "tag": "all sources, with polygons", "weight": 1.0,
+                "permute" : [
+                    {   "group": "HIK",
+                        "members" : [
+                            {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
+                        ]
+                    },
+                    {   "group": "PUY",
+                        "members" : [
+                            {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
+                        ]
+                    },
+                    {   "group": "CRU",
+                        "members" : [
+                            {"tag": "1km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Mw=="}
+                        ]
+                    },
+                    {   "group": "BG-CRU",
+                        "members" : [
+                            {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
+                        ]
+                    },
+                    {   "group": "BG-HIK",
+                        "members" : [
+                            {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
+                        ]
+                    }
+                ]
+            }],
+            [{
+                "tag": "all sources, with polygons", "weight": 1.0,
+                "permute" : [
+                    {   "group": "HIK",
+                        "members" : [
+                            {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
+                        ]
+                    },
+                    {   "group": "PUY",
+                        "members" : [
+                            {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
+                        ]
+                    },
+                    {   "group": "CRU",
+                        "members" : [
+                            {"tag": "3km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Ng=="}
+                        ]
+                    },
+                    {   "group": "BG-CRU",
+                        "members" : [
+                            {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
+                        ]
+                    },
+                    {   "group": "BG-HIK",
+                        "members" : [
+                            {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
+                        ]
+                    }
+                ]
+            }],
+            [{
+                "tag": "all sources, with polygons", "weight": 1.0,
+                "permute" : [
+                    {   "group": "HIK",
+                        "members" : [
+                            {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
+                        ]
+                    },
+                    {   "group": "PUY",
+                        "members" : [
+                            {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
+                        ]
+                    },
+                    {   "group": "CRU",
+                        "members" : [
+                            {"tag": "5km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Nw=="}
+                        ]
+                    },
+                    {   "group": "BG-CRU",
+                        "members" : [
+                            {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
+                        ]
+                    },
+                    {   "group": "BG-HIK",
+                        "members" : [
+                            {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
+                        ]
+                    }
+                ]
+            }],
+            [{
+                "tag": "all sources, with polygons", "weight": 1.0,
+                "permute" : [
+                    {   "group": "HIK",
+                        "members" : [
+                            {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
+                        ]
+                    },
+                    {   "group": "PUY",
+                        "members" : [
+                            {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
+                        ]
+                    },
+                    {   "group": "CRU",
+                        "members" : [
+                            {"tag": "10km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3NQ=="}
+                        ]
+                    },
+                    {   "group": "BG-CRU",
+                        "members" : [
+                            {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
+                        ]
+                    },
+                    {   "group": "BG-HIK",
+                        "members" : [
+                            {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
+                        ]
+                    }
+                ]
+            }],
+            [{
+                "tag": "all sources, with polygons", "weight": 1.0,
+                "permute" : [
+                    {   "group": "HIK",
+                        "members" : [
+                            {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
+                        ]
+                    },
+                    {   "group": "PUY",
+                        "members" : [
+                            {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
+                        ]
+                    },
+                    {   "group": "CRU",
+                        "members" : [
+                            {"tag": "15km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3NA=="}
+                        ]
+                    },
+                    {   "group": "BG-CRU",
+                        "members" : [
+                            {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
+                        ]
+                    },
+                    {   "group": "BG-HIK",
+                        "members" : [
+                            {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
+                        ]
+                    }
+                ]
+            }]
+        ],
         intensity_specs = [
             # {"tag": "lite", "measures": ['PGA', 'SA(0.5)', 'SA(1.0)'], "levels": 'logscale(0.005, 4.00, 30)' },
             # {"tag": "lite", "measures": ['PGA', 'SA(0.5)', 'SA(1.0)'], "levels": 'logscale(0.005, 4.00, 30)' },
@@ -294,7 +452,7 @@ if __name__ == "__main__":
             #{"tag": "max10-300", "measures": era_measures, "levels": 'logscale(0.001, 5.00, 100)'}
             # {"tag": "super-max", "measures": ['SA(0.5)'], "levels": 'logscale(0.001, 10.0, 300)'}
         ],
-        vs30s = [250, 300, 350], # 350, 400, 450, 750 ],
+        vs30s = [250, 300, 350, 400, 450, 750 ],
         location_codes = ['NZ34'], # NZ6, WLG
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
