@@ -19,7 +19,8 @@ RUN pip install numba
 RUN pip install pytest
 
 # The new AWS hazard store script ...
-RUN pip install toshi_hazard_store
+RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@c0c7af0095272870e8a7ab84c08654fdca01f430#egg=toshi-hazard-store
+# RUN pip install toshi_hazard_store
 
 # Install Runzi TODO:is this only for these test configs ??
 WORKDIR /app

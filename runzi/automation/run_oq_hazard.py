@@ -62,10 +62,12 @@ if __name__ == "__main__":
 
     args = dict(
         config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
-            "RmlsZToxMDQyOTc=", #PROD NZ34_SRWG_02
+            # "RmlsZToxMDQyOTc=", #PROD NZ34_SRWG_02 DONT USE- DUPLICATE TMZ
             # "RmlsZToxMDQ1MDk=",   #PROD RmlsZToxMDQ1MDk=
             # "RmlsZToxMDA5MDM="  #TEST NZ34 SRWG_02
             # "RmlsZToxMDEwMDk="   #TEST CONFIG 29_mesh
+            "RmlsZToxMDExNTY=", #New TEST CONFIG w Rotorua TAG = None
+            # "RmlsZToxMDYxOTA=" #New PROD CONFIG w Rotorua TAG = NZ35
             ],
         # """
         # SRWG 02
@@ -117,7 +119,7 @@ if __name__ == "__main__":
         #     }]
         # ],
         # """
-        # Single Hikurangi
+        # Single Hikurangi TEST
         # """
         logic_tree_permutations = [
             [
@@ -133,7 +135,7 @@ if __name__ == "__main__":
                 }
             ],
         ],
-        # """
+        """
         # max_jump_distance - multiple logic_tree_permutations
         # """
         # logic_tree_permutations = [
@@ -293,7 +295,7 @@ if __name__ == "__main__":
             #{"tag": "max10-300", "measures": era_measures, "levels": 'logscale(0.001, 5.00, 100)'}
             # {"tag": "super-max", "measures": ['SA(0.5)'], "levels": 'logscale(0.001, 10.0, 300)'}
         ],
-        vs30s = [250, 300,], # 350, 400, 450, 750 ],
+        vs30s = [250, 300, 350], # 350, 400, 450, 750 ],
         location_codes = ['NZ34'], # NZ6, WLG
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}

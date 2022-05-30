@@ -31,7 +31,9 @@ class OpenquakeHazardConfig(object):
               )
               {
                 ok
-                config { id, created, source_models { id } }
+                config { id, created, source_models {
+                  ... on Node { id } }
+                }
               }
             }
         '''
