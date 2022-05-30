@@ -135,9 +135,9 @@ if __name__ == "__main__":
                 }
             ],
         ],
-        """
-        # max_jump_distance - multiple logic_tree_permutations
         # """
+        # # max_jump_distance - multiple logic_tree_permutations
+        # # """
         # logic_tree_permutations = [
         #     [
         #     {
@@ -286,7 +286,6 @@ if __name__ == "__main__":
         #     #         }
         #     #     ]
         #     # }]
-
         # ],
         intensity_specs = [
             # {"tag": "lite", "measures": ['PGA', 'SA(0.5)', 'SA(1.0)'], "levels": 'logscale(0.005, 4.00, 30)' },
