@@ -38,23 +38,36 @@ def build_hazard_report_tasks(subtask_arguments, toshi_api: ToshiApi):
             hazard_soln_ids += list(hazard_helper.get_hazard_ids_from_gt(gt_id).keys())
     if subtask_arguments.get('hazard_ids'):
         hazard_soln_ids += subtask_arguments.get('hazard_ids')
+
+    use_hdf5 = subtask_arguments['use_hdf5']
     
     # remove duplicates
     hazard_soln_ids = list(dict.fromkeys(hazard_soln_ids))
-    hazard_solutions = hazard_helper.download_hdf(hazard_soln_ids,str(WORK_PATH)) 
+    if use_hdf5:
+        hazard_solutions = hazard_helper.download_hdf(hazard_soln_ids,str(WORK_PATH)) 
+    else: # create a dummy dict
+        hazard_solutions = {}
+        for hazard_id in hazard_soln_ids:
+            hazard_solutions[hazard_id] = dict(hazard_id=hazard_id)
 
     for (hdf_id, hazard_info) in hazard_solutions.items():
 
         task_count += 1
 
-        task_arguments = dict(
-            file_id = hdf_id,
-            file_path = hazard_info['filepath'],
-            hazard_id = hazard_info['hazard_id']
-        )
+        if use_hdf5:
+            task_arguments = dict(
+                file_id = hdf_id,
+                file_path = hazard_info['filepath'],
+                hazard_id = hazard_info['hazard_id']
+            )
+        else:
+            task_arguments = dict(
+                hazard_id = hazard_info['hazard_id']
+            )
         
         job_arguments = dict(
             task_id = task_count,
+            use_hdf5 = subtask_arguments['use_hdf5']
             )
 
         if CLUSTER_MODE == EnvMode['AWS']:
