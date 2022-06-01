@@ -18,6 +18,9 @@ RUN pip install tqdm
 RUN pip install numba
 RUN pip install pytest
 
+#TEMP until this is in GEM repo
+ADD stafford_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
+
 # The new AWS hazard store script ...
 #RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@7301edca650859b138b3a84dd7409d27873b7285#egg=toshi-hazard-store
 RUN pip install toshi_hazard_store

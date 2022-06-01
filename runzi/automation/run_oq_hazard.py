@@ -20,7 +20,6 @@ from runzi.CONFIG.OQ.crustal_N_sensivity_ltb import logic_tree_permutations
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
-USE_API = False
 
 def build_tasks(new_gt_id, args, task_type, model_type):
 
@@ -53,7 +52,7 @@ if __name__ == "__main__":
     # If using API give this task a descriptive setting...
 
     TASK_TITLE = "Openquake Hazard calcs "
-    TASK_DESCRIPTION = """Max jump distances with background and subduction sources."""
+    TASK_DESCRIPTION = """Crustal N sensitivity"""
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
@@ -70,7 +69,8 @@ if __name__ == "__main__":
             # "RmlsZToxMDA5MDM="  #TEST NZ34 SRWG_02
             # "RmlsZToxMDEwMDk="   #TEST CONFIG 29_mesh
             # "RmlsZToxMDExNTY=", #New TEST CONFIG w Rotorua TAG = None
-            "RmlsZToxMDYxOTA=" #New PROD CONFIG w Rotorua TAG = NZ35
+            #"RmlsZToxMDYxOTA=" #PROD CONFIG w Rotorua TAG = NZ35
+            "RmlsZToxMDY1NzE=" #PROD + backbone
             ],
         # NEW FORM
         # makes better use of python
