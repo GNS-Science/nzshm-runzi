@@ -287,159 +287,182 @@ if __name__ == "__main__":
         #     #     ]
         #     # }]
         # ],
-
         # """
         # max_jump_distance - multiple logic_tree_permutations
         # RmlsZToxMDQ4NjM= : Floor_AddoptiEEPAScomb-CRU_plyadj_b0.93_N5.10.xml
         # RmlsZToxMDQ4NjI= : Floor_AddoptiEEPAScomb-INT_hiktlck_b1.08_N23.00.xml
         # """
+        # logic_tree_permutations = [
+        #     [{
+        #         "tag": "all sources, with polygons", "weight": 1.0,
+        #         "permute" : [
+        #             {   "group": "HIK",
+        #                 "members" : [
+        #                     {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
+        #                 ]
+        #             },
+        #             {   "group": "PUY",
+        #                 "members" : [
+        #                     {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
+        #                 ]
+        #             },
+        #             {   "group": "CRU",
+        #                 "members" : [
+        #                     {"tag": "1km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Mw=="}
+        #                 ]
+        #             },
+        #             {   "group": "BG-CRU",
+        #                 "members" : [
+        #                     {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
+        #                 ]
+        #             },
+        #             {   "group": "BG-HIK",
+        #                 "members" : [
+        #                     {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
+        #                 ]
+        #             }
+        #         ]
+        #     }],
+        #     [{
+        #         "tag": "all sources, with polygons", "weight": 1.0,
+        #         "permute" : [
+        #             {   "group": "HIK",
+        #                 "members" : [
+        #                     {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
+        #                 ]
+        #             },
+        #             {   "group": "PUY",
+        #                 "members" : [
+        #                     {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
+        #                 ]
+        #             },
+        #             {   "group": "CRU",
+        #                 "members" : [
+        #                     {"tag": "3km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Ng=="}
+        #                 ]
+        #             },
+        #             {   "group": "BG-CRU",
+        #                 "members" : [
+        #                     {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
+        #                 ]
+        #             },
+        #             {   "group": "BG-HIK",
+        #                 "members" : [
+        #                     {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
+        #                 ]
+        #             }
+        #         ]
+        #     }],
+        #     [{
+        #         "tag": "all sources, with polygons", "weight": 1.0,
+        #         "permute" : [
+        #             {   "group": "HIK",
+        #                 "members" : [
+        #                     {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
+        #                 ]
+        #             },
+        #             {   "group": "PUY",
+        #                 "members" : [
+        #                     {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
+        #                 ]
+        #             },
+        #             {   "group": "CRU",
+        #                 "members" : [
+        #                     {"tag": "5km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Nw=="}
+        #                 ]
+        #             },
+        #             {   "group": "BG-CRU",
+        #                 "members" : [
+        #                     {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
+        #                 ]
+        #             },
+        #             {   "group": "BG-HIK",
+        #                 "members" : [
+        #                     {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
+        #                 ]
+        #             }
+        #         ]
+        #     }],
+        #     [{
+        #         "tag": "all sources, with polygons", "weight": 1.0,
+        #         "permute" : [
+        #             {   "group": "HIK",
+        #                 "members" : [
+        #                     {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
+        #                 ]
+        #             },
+        #             {   "group": "PUY",
+        #                 "members" : [
+        #                     {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
+        #                 ]
+        #             },
+        #             {   "group": "CRU",
+        #                 "members" : [
+        #                     {"tag": "10km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3NQ=="}
+        #                 ]
+        #             },
+        #             {   "group": "BG-CRU",
+        #                 "members" : [
+        #                     {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
+        #                 ]
+        #             },
+        #             {   "group": "BG-HIK",
+        #                 "members" : [
+        #                     {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
+        #                 ]
+        #             }
+        #         ]
+        #     }],
+        #     [{
+        #         "tag": "all sources, with polygons", "weight": 1.0,
+        #         "permute" : [
+        #             {   "group": "HIK",
+        #                 "members" : [
+        #                     {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
+        #                 ]
+        #             },
+        #             {   "group": "PUY",
+        #                 "members" : [
+        #                     {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
+        #                 ]
+        #             },
+        #             {   "group": "CRU",
+        #                 "members" : [
+        #                     {"tag": "15km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3NA=="}
+        #                 ]
+        #             },
+        #             {   "group": "BG-CRU",
+        #                 "members" : [
+        #                     {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
+        #                 ]
+        #             },
+        #             {   "group": "BG-HIK",
+        #                 "members" : [
+        #                     {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
+        #                 ]
+        #             }
+        #         ]
+        #     }]
+        # ],
+        # NEW FORM
+        # makes better use of python
         logic_tree_permutations = [
             [{
                 "tag": "all sources, with polygons", "weight": 1.0,
                 "permute" : [
                     {   "group": "HIK",
                         "members" : [
-                            {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
+                            {"tag": "Hikurangi TC b=1.07, C=4.0, s=.75", "weight": 1.0, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ==","bg_id":"RmlsZToxMDQ4NjI="}
                         ]
                     },
                     {   "group": "PUY",
                         "members" : [
-                            {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
+                            {"tag": "Puysegur b=0.712, C=3.9, s=0.4", "weight":1.0, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg==" "bg_id": None}
                         ]
                     },
                     {   "group": "CRU",
                         "members" : [
-                            {"tag": "1km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Mw=="}
-                        ]
-                    },
-                    {   "group": "BG-CRU",
-                        "members" : [
-                            {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
-                        ]
-                    },
-                    {   "group": "BG-HIK",
-                        "members" : [
-                            {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
-                        ]
-                    }
-                ]
-            }],
-            [{
-                "tag": "all sources, with polygons", "weight": 1.0,
-                "permute" : [
-                    {   "group": "HIK",
-                        "members" : [
-                            {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
-                        ]
-                    },
-                    {   "group": "PUY",
-                        "members" : [
-                            {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
-                        ]
-                    },
-                    {   "group": "CRU",
-                        "members" : [
-                            {"tag": "3km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Ng=="}
-                        ]
-                    },
-                    {   "group": "BG-CRU",
-                        "members" : [
-                            {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
-                        ]
-                    },
-                    {   "group": "BG-HIK",
-                        "members" : [
-                            {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
-                        ]
-                    }
-                ]
-            }],
-            [{
-                "tag": "all sources, with polygons", "weight": 1.0,
-                "permute" : [
-                    {   "group": "HIK",
-                        "members" : [
-                            {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
-                        ]
-                    },
-                    {   "group": "PUY",
-                        "members" : [
-                            {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
-                        ]
-                    },
-                    {   "group": "CRU",
-                        "members" : [
-                            {"tag": "5km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Nw=="}
-                        ]
-                    },
-                    {   "group": "BG-CRU",
-                        "members" : [
-                            {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
-                        ]
-                    },
-                    {   "group": "BG-HIK",
-                        "members" : [
-                            {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
-                        ]
-                    }
-                ]
-            }],
-            [{
-                "tag": "all sources, with polygons", "weight": 1.0,
-                "permute" : [
-                    {   "group": "HIK",
-                        "members" : [
-                            {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
-                        ]
-                    },
-                    {   "group": "PUY",
-                        "members" : [
-                            {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
-                        ]
-                    },
-                    {   "group": "CRU",
-                        "members" : [
-                            {"tag": "10km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3NQ=="}
-                        ]
-                    },
-                    {   "group": "BG-CRU",
-                        "members" : [
-                            {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
-                        ]
-                    },
-                    {   "group": "BG-HIK",
-                        "members" : [
-                            {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
-                        ]
-                    }
-                ]
-            }],
-            [{
-                "tag": "all sources, with polygons", "weight": 1.0,
-                "permute" : [
-                    {   "group": "HIK",
-                        "members" : [
-                            {"tag": "Hikurangi", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ=="}
-                        ]
-                    },
-                    {   "group": "PUY",
-                        "members" : [
-                            {"tag": "Puysegur", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg=="}
-                        ]
-                    },
-                    {   "group": "CRU",
-                        "members" : [
-                            {"tag": "15km-max-jump", "weight": 1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3NA=="}
-                        ]
-                    },
-                    {   "group": "BG-CRU",
-                        "members" : [
-                            {"tag": "BG-Crustal-with-poly", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjM="}
-                        ]
-                    },
-                    {   "group": "BG-HIK",
-                        "members" : [
-                            {"tag": "BG-Hikurangi", "weight":1.0, "toshi_id": "RmlsZToxMDQ4NjI="}
+                            {"tag": "Crustal b=xxx, s=1.0", "weight": 1.0, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Mw==","bg_id":"RmlsZToxMDQ4NjM="}
                         ]
                     }
                 ]
@@ -452,7 +475,7 @@ if __name__ == "__main__":
             #{"tag": "max10-300", "measures": era_measures, "levels": 'logscale(0.001, 5.00, 100)'}
             # {"tag": "super-max", "measures": ['SA(0.5)'], "levels": 'logscale(0.001, 10.0, 300)'}
         ],
-        vs30s = [250, 300, 350, 400, 450, 750 ],
+        vs30s = [250, ], #300, 350, 400, 450, 750 ],
         location_codes = ['NZ34'], # NZ6, WLG
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
