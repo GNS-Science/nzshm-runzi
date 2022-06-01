@@ -129,6 +129,7 @@ class BuilderTask():
 
         #apply polygon rates
         if polygon_scale and polygon_max_mag:
+            print('scale polygons')
             mag_ind = rr['Magnitude'] <= polygon_max_mag
             rates.loc[mag_ind,'Annual Rate']  = rates[mag_ind]['Annual Rate'] * polygon_scale
 

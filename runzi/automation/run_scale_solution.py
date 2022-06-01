@@ -37,8 +37,9 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     
 
 
-def run(source_solution_ids, scales,polygon_scale, polygon_max_mag,
-        TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL_SIZE):
+def run(source_solution_ids, scales,
+        TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL_SIZE,
+        polygon_scale=None, polygon_max_mag=None):
     t0 = dt.datetime.utcnow()
 
     logging.basicConfig(level=logging.INFO)
@@ -109,19 +110,44 @@ if __name__ == "__main__":
     TASK_DESCRIPTION = """scale all max jump distance inversions for polygons"""
     
     
-    TASK_TITLE = "max jump distance poly scale"
+    # TASK_TITLE = "Hikurangi Noise Averages"
+    # source_solution_ids = [
+    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzE4",
+    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzIy",
+    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzI0",
+    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzI4",
+    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzMy",
+    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzQw",
+    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzQ0",
+    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzM4",
+    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzQz",
+    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzQ2"
+    # ]   
+    # scales = [0.75, 1.0, 1.28]
+
+    # TASK_TITLE = "Scaling Puysegur Inversions"
+    # source_solution_ids = [
+    #     "SW52ZXJzaW9uU29sdXRpb246MTA1NTY1",
+    # ]
+    # scales = [0.4, 1.0, 1.63]
+
+    TASK_TITLE = "Scaling Crustal (geologic slip)"
     source_solution_ids = [
-        "SW52ZXJzaW9uU29sdXRpb246MTAwMTg4",
-        "SW52ZXJzaW9uU29sdXRpb246MTAwMjMw",
-        "SW52ZXJzaW9uU29sdXRpb246MTAwMjA4",
-        "SW52ZXJzaW9uU29sdXRpb246MTAwMTkx",
-        "SW52ZXJzaW9uU29sdXRpb246MTAwMjAw"
-    ]   
-    scales = [1.0,]
+        "SW52ZXJzaW9uU29sdXRpb246MTA2MDQ1",
+        "SW52ZXJzaW9uU29sdXRpb246MTA2MDM3",
+        "SW52ZXJzaW9uU29sdXRpb246MTA2MDQz",
+        "SW52ZXJzaW9uU29sdXRpb246MTA2MDUw",
+        "SW52ZXJzaW9uU29sdXRpb246MTA2MDU1",
+        "SW52ZXJzaW9uU29sdXRpb246MTA2MDYy"
+    ]
+    scales = [0.657, 1.0, 1.305, 1.608]
     polygon_scale = 0.8
     polygon_max_mag = 8
         
+    # run(source_solution_ids, scales,
+    #     TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
 
-    run(source_solution_ids, scales, polygon_scale, polygon_max_mag, 
-        TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
+    run(source_solution_ids, scales, 
+        TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE,
+          polygon_scale=polygon_scale, polygon_max_mag=polygon_max_mag)
 
