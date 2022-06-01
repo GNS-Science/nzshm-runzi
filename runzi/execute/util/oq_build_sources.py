@@ -21,8 +21,8 @@ log = logging.getLogger(__name__)
 #         yield list(gv.items())
 
 # Using a named tuple make the data much easier to work with...
-# this is where we change source_model to use toshi_id
-LogicTreeBranch = collections.namedtuple('LogicTreeBranch', 'tag toshi_id weight')
+# this is where we change source_model to use ~toshi_id~ (now inv_iod and bg_id)
+LogicTreeBranch = collections.namedtuple('LogicTreeBranch', 'tag inv_id bg_id weight')
 
 
 def get_logic_tree_file_ids(ltb_groups):
@@ -30,13 +30,16 @@ def get_logic_tree_file_ids(ltb_groups):
     for group in ltb_groups: #List
         for sources in get_ltb(group):
             for source in sources:
-                ids.add( (source.tag, source.toshi_id ))
+                if source.inv_id:
+                    ids.add( (source.tag, source.inv_id))
+                if source.bg_id:
+                    ids.add( (source.tag, source.bg_id))
     return list(ids)
 
 def get_ltb(group):
     """NEW object-syle config"""
     for obj in group['permute']:
-        yield [LogicTreeBranch(tag=source['tag'], toshi_id=source['toshi_id'], weight=source['weight']) for source in obj['members']]
+        yield [LogicTreeBranch(**source) for source in obj['members']]
 
 def get_logic_tree_branches(ltb_groups):
     for group in ltb_groups: #List
@@ -68,6 +71,10 @@ class SourceModelLoader():
 
             gen = get_output_file_id(self._toshi_api, nrml_id)
 
+            # g = list(gen)
+            # print(g)
+            # assert 0
+
             source_nrml = download_files(self._toshi_api, gen, str(WORK_PATH), overwrite=False)
             log.info(f"source_nrml: {source_nrml}")
 
@@ -94,14 +101,25 @@ def build_sources_xml(logic_tree_branches, source_file_mapping):
 
     ltbs = LTBS(uncertaintyType="sourceModel", branchSetID="BS-NONCE1")
 
+    def get_branch_sources(ltb):
+        bs = ""
+        if ltb.inv_id:
+            bs += ltb.inv_id
+        if ltb.bg_id:
+            bs += f"|{ltb.bg_id}"
+        return bs
+
     for branch in logic_tree_branches:
             files = ""
-            branch_name = "|".join([ltb.toshi_id for ltb in branch])
+            branch_name = "|".join([get_branch_sources(ltb) for ltb in branch])
             branch_weight = 1.0
             for ltb in branch:
                 #print(ltb)
                 #name, src_id, wt = source_tuple
-                files += "\t".join(source_file_mapping[ltb.toshi_id]['sources']) + "\t"
+                if ltb.inv_id:
+                    files += "\t".join(source_file_mapping[ltb.inv_id]['sources']) + "\t"
+                if ltb.bg_id:
+                    files += "\t".join(source_file_mapping[ltb.bg_id]['sources']) + "\t"
                 branch_weight *= ltb.weight
             #branch_weight = round(branch_weight, 10)
             total_branch_weight += branch_weight
@@ -579,62 +597,88 @@ if __name__ == "__main__":
 
 
     #NN-weighting
-    permutations = [
-        {
-            "tag": "all rate combinations", "weight": 1.0,
-            "permute" : [
-                {   "group": "HIK",
-                    "members" : [
-                        {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk0OQ=="},
-                        {"tag": "HTC_b1.078_N22.8_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MA=="},
-                        {"tag": "HTL_b0.957_N16.5_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MQ=="},
-                        {"tag": "HTL_b1.078_N22.8_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mg=="},
-                        {"tag": "HTC_b0.957_N16.5_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mw=="},
-                        {"tag": "HTC_b0.957_N16.5_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NA=="},
-                        {"tag": "HTC_b1.078_N22.8_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NQ=="},
-                        {"tag": "HTC_b1.078_N22.8_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Ng=="},
-                        {"tag": "HTL_b0.957_N16.5_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Nw=="},
-                        {"tag": "HTL_b0.957_N16.5_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OA=="},
-                        {"tag": "HTL_b1.078_N22.8_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OQ=="},
-                        {"tag": "HTL_b1.078_N22.8_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk2MA=="}
-                    ]
-                },
-                {   "group": "PUY",
-                    "members" : [
-                        {"tag": "P_b0.75_N3.4_C3.9_s1", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="}
-                    ]
-                },
-                {   "group": "CRU",
-                    "members" : [
-                        {"tag": "CR_N8.0_b1.115_C4.3_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA=="},
-                        {"tag": "CR_N2.3_b0.807_C4.2_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA=="},
-                        {"tag": "CR_N3.7_b0.929_C4.2_s1", "weight": 0.35, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ=="},
-                        {"tag": "CR_N8.0_b1.115_C4.3_s0.51", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMg=="},
-                        {"tag": "CR_N2.3_b0.807_C4.2_s0.51", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNg=="},
-                        {"tag": "CR_N3.7_b0.929_C4.2_s0.51", "weight": 0.075, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNw=="},
-                        {"tag": "CR_N2.3_b0.807_C4.2_s1.62", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxOA=="},
-                        {"tag": "CR_N8.0_b1.115_C4.3_s1.62", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMQ=="},
-                        {"tag": "CR_N3.7_b0.929_C4.2_s1.62", "weight": 0.075, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNA=="}
-                    ]
-                },
-                {   "group": "BG",
-                    "members" : [
-                        {"tag": "floor_addtot346ave", "weight":1.0, "toshi_id": "RmlsZToxMDIyMzA="}
-                    ]
-                }
-            ]
-        }
-    ]
+    # permutations = [
+    #     {
+    #         "tag": "all rate combinations", "weight": 1.0,
+    #         "permute" : [
+    #             {   "group": "HIK",
+    #                 "members" : [
+    #                     {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk0OQ=="},
+    #                     {"tag": "HTC_b1.078_N22.8_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MA=="},
+    #                     {"tag": "HTL_b0.957_N16.5_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MQ=="},
+    #                     {"tag": "HTL_b1.078_N22.8_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mg=="},
+    #                     {"tag": "HTC_b0.957_N16.5_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mw=="},
+    #                     {"tag": "HTC_b0.957_N16.5_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NA=="},
+    #                     {"tag": "HTC_b1.078_N22.8_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NQ=="},
+    #                     {"tag": "HTC_b1.078_N22.8_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Ng=="},
+    #                     {"tag": "HTL_b0.957_N16.5_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Nw=="},
+    #                     {"tag": "HTL_b0.957_N16.5_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OA=="},
+    #                     {"tag": "HTL_b1.078_N22.8_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OQ=="},
+    #                     {"tag": "HTL_b1.078_N22.8_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk2MA=="}
+    #                 ]
+    #             },
+    #             {   "group": "PUY",
+    #                 "members" : [
+    #                     {"tag": "P_b0.75_N3.4_C3.9_s1", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="}
+    #                 ]
+    #             },
+    #             {   "group": "CRU",
+    #                 "members" : [
+    #                     {"tag": "CR_N8.0_b1.115_C4.3_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA=="},
+    #                     {"tag": "CR_N2.3_b0.807_C4.2_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA=="},
+    #                     {"tag": "CR_N3.7_b0.929_C4.2_s1", "weight": 0.35, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ=="},
+    #                     {"tag": "CR_N8.0_b1.115_C4.3_s0.51", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMg=="},
+    #                     {"tag": "CR_N2.3_b0.807_C4.2_s0.51", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNg=="},
+    #                     {"tag": "CR_N3.7_b0.929_C4.2_s0.51", "weight": 0.075, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNw=="},
+    #                     {"tag": "CR_N2.3_b0.807_C4.2_s1.62", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxOA=="},
+    #                     {"tag": "CR_N8.0_b1.115_C4.3_s1.62", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMQ=="},
+    #                     {"tag": "CR_N3.7_b0.929_C4.2_s1.62", "weight": 0.075, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNA=="}
+    #                 ]
+    #             },
+    #             {   "group": "BG",
+    #                 "members" : [
+    #                     {"tag": "floor_addtot346ave", "weight":1.0, "toshi_id": "RmlsZToxMDIyMzA="}
+    #                 ]
+    #             }
+    #         ]
+    #     }
+    # ]
+
+
+    permutations =  [{
+        "tag": "all sources, with polygons", "weight": 1.0,
+        "permute" : [
+            {   "group": "HIK",
+                "members" : [
+                    {"tag": "Hikurangi TC b=1.07, C=4.0, s=.75", "weight": 0.5,
+                        "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ==", "bg_id":"RmlsZToxMDQ4NjI="},
+                    {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 0.5,
+                        "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk0OQ==", "bg_id":"RmlsZToxMDQyOTY="}
+                ]
+            },
+            {   "group": "PUY",
+                "members" : [
+                    {"tag": "Puysegur b=0.712, C=3.9, s=0.4", "weight":1.0,
+                     "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg==", "bg_id": None}
+                ]
+            },
+            {   "group": "CRU",
+                "members" : [
+                    {"tag": "Crustal b=xxx, s=1.0", "weight": 1.0,
+                        "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Mw==", "bg_id":"RmlsZToxMDQ4NjM="}
+                ]
+            }
+        ]
+    }]
 
 
     logging.basicConfig(level=logging.INFO)
     sources_folder = Path(WORK_PATH, 'sources')
     source_file_mapping = SourceModelLoader().unpack_sources(permutations, sources_folder)
-    # print(source_file_mapping)
 
     ltbs = [ltb for ltb in get_logic_tree_branches(permutations)]
 
-    print("LTB:", len(ltbs), ltbs[0])
+    # print("LTB:", len(ltbs), ltbs[0])
 
     nrml = build_sources_xml(ltbs, source_file_mapping)
 
@@ -642,74 +686,3 @@ if __name__ == "__main__":
         f.write(nrml)
 
     print('Done!')
-
-
-    # task_args = {
-    #     "logic_tree_permutations" : [
-    #         {
-    #             "CR": {
-    #                 "CR_N7.8_b_1.111_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NA==",
-    #                 "CR_N7.8_b_1.111_s2": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NQ==",
-    #                 "CR_N3.5_b0.913_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==",
-    #                 #"CR_N3.5_b0.913_s2": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Nw=="
-    #                 },
-    #             "HK": {
-    #                 "HK_N25.6_b0.942_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OA==",
-    #                 "HK_N25.6_b1.009_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ==",
-    #                 #"HK_N25.6_b1.009_s12": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM1MA=="
-    #             },
-    #             "BG": {
-    #                 "bgA": "RmlsZToxMDE4MDI="
-    #             },
-    #             "PY": {
-    #                 "PY_N": "RmlsZToxMDE4MDA="
-    #             }
-    #         },
-    #         #MORE of these ....
-    #     ]
-    # }
-
-    #this is produced by
-    # source_file_mapping = {
-    #     "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NA==" :
-    #     {
-    #         'source_name': 'CR_N7.8_b_1.111_s1',
-    #         'sources' : ['path/to/fileA', 'path/to/FileA1']
-    #     },
-    #     "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NQ==" :
-    #     {
-    #         'source_name': 'CR_N7.8_b_1.111_s1',
-    #         'sources' : ['path/to/fileB', 'path/to/FileB1']
-    #     },
-    #     "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0Ng==" :
-    #     {
-    #         'source_name': 'CR_N7.8_b_1.111_s1',
-    #         'sources' : ['path/to/fileC', 'path/to/FileC1']
-    #     },
-    #     "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OA==" :
-    #     {
-    #         'source_name': 'CR_N7.8_b_1.111_s1',
-    #         'sources' : ['path/to/fileD', 'path/to/FileD1']
-    #     },
-    #     "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0OQ==" :
-    #     {
-    #         'source_name': 'CR_N7.8_b_1.111_s2',
-    #         'sources' : ['path/to/fileE', 'path/to/FileE1']
-    #     },
-    #     "RmlsZToxMDE4MDI=" :
-    #     {
-    #         'source_name': 'BG',
-    #         'sources' : ['path/to/fileBG']
-    #     },
-    #     "RmlsZToxMDE4MDA=" :
-    #     {
-    #         'source_name': 'PY',
-    #         'sources' : ['path/to/filePY']
-    #     }
-
-    # }
-
-    # id_list = get_logic_tree_file_ids(task_args['logic_tree_permutations'])
-    # #print("ID lists:", list(id_list))
-    # #TODO build a map whlie downloading the files
-
