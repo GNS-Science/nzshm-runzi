@@ -16,7 +16,7 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-from runzi.CONFIG.OQ.crustal_N_sensivity_ltb import logic_tree_permutations
+from runzi.CONFIG.OQ.crustal_N_sensivity_ltb_min import logic_tree_permutations
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1

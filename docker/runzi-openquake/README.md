@@ -51,10 +51,11 @@ docker run -u root -it --rm \
 
 ```
 # --oom-kill-disable
+# --net=host ## WARNING this will confuse oq about whcih db server to work with
 
 docker run -it --rm -u root \
 --memory=55g --memory-swap=55g \
---net=host --env-file environ \
+--env-file environ \
 -v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
 -v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
 -v $(pwd)/examples:/WORKING/examples \
