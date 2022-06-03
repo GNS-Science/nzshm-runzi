@@ -5,21 +5,21 @@ logic_tree_permutations = [
 
            {   "group": "Hik",
                 "members" : [
-                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
+                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
                     
-                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
+                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
                     
-                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
+                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
                     
-                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
+                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
                     
                  ]
             },
@@ -44,21 +44,21 @@ logic_tree_permutations = [
 
             {   "group": "Hik",
                 "members" : [
-                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
+                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
 
-                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
+                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
 
-                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
+                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
 
-                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
+                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
 
                 ]
             },
@@ -84,24 +84,24 @@ logic_tree_permutations = [
 
             {   "group": "Hik",
                 "members" : [
-                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
+                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
 
 
-                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
+                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
 
 
-                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
+                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
 
 
-                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
+                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
 
                 ]
             },
@@ -129,27 +129,27 @@ logic_tree_permutations = [
 
             {   "group": "Hik",
                 "members" : [
-                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
+                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
 
 
 
-                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
+                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
 
 
 
 
-                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
+                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
 
 
-                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
+                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
 
                 ]
             },
@@ -176,27 +176,27 @@ logic_tree_permutations = [
 
             {   "group": "Hik",
                 "members" : [
-                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
+                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
                     
 
                     
-                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
+                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
                     
 
                     
 
-                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
+                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
                     
 
-                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
+                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
                     
                 ]
             },
@@ -223,27 +223,27 @@ logic_tree_permutations = [
 
             {   "group": "Hik",
                 "members" : [
-                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
+                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
                     
 
                     
-                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
+                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
                     
 
                     
 
-                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
+                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
                     
 
-                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
+                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
                     
                 ]
             },
@@ -270,27 +270,27 @@ logic_tree_permutations = [
 
             {   "group": "Hik",
                 "members" : [
-                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
+                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
                     
 
                     
-                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
+                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
                     
 
                     
 
-                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
+                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
                     
 
-                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
+                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
                     
                 ]
             },
@@ -317,27 +317,27 @@ logic_tree_permutations = [
 
             {   "group": "Hik",
                 "members" : [
-                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
+                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
                     
 
                     
-                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
+                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
                     
 
                     
 
-                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
+                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
                     
 
-                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
+                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
                     
                 ]
             },
@@ -365,27 +365,27 @@ logic_tree_permutations = [
 
             {   "group": "Hik",
                 "members" : [
-                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
+                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
                     
 
                     
-                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
+                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
                     
 
                     
 
-                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
+                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
                     
 
-                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
+                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
                     
                 ]
             },
@@ -412,27 +412,27 @@ logic_tree_permutations = [
 
             {   "group": "Hik",
                 "members" : [
-                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
+                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
                     
 
                     
-                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
+                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
                     
 
                     
 
-                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
+                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
                     
 
-                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
+                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
                     
                 ]
             },
@@ -459,27 +459,27 @@ logic_tree_permutations = [
 
             {   "group": "Hik",
                 "members" : [
-                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
+                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
                     
 
                     
-                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
+                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
                     
 
                     
 
-                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
+                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
                     
 
-                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
+                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
                     
                 ]
             },
@@ -507,27 +507,27 @@ logic_tree_permutations = [
 
             {   "group": "Hik",
                 "members" : [
-                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
-                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
+                    {"tag": "Hik TC, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NA==", "bg_id":"RmlsZToxMDY1MzM="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2NQ==", "bg_id":"RmlsZToxMDY1NDA="},
+                    {"tag": "Hik TC, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ2Ng==", "bg_id":"RmlsZToxMDY1Mzg="},
                     
 
                     
-                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
-                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
+                    {"tag": "Hik TC, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MA==", "bg_id":"RmlsZToxMDY1MjY="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3MQ==", "bg_id":"RmlsZToxMDY1Mjk="},
+                    {"tag": "Hik TC, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3Mg==", "bg_id":"RmlsZToxMDY1Mjc="},
                     
 
                     
 
-                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
-                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
+                    {"tag": "Hik TL, b1.067, C4.1, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ3OQ==", "bg_id":"RmlsZToxMDY1MzQ="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MA==", "bg_id":"RmlsZToxMDY1Mzk="},
+                    {"tag": "Hik TL, b1.067, C4.1, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4MQ==", "bg_id":"RmlsZToxMDY1Mzc="},
                     
 
-                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
-                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.0833333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
+                    {"tag": "Hik TL, b0.942, C4.0, s0.75", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.0", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Ng==", "bg_id":"RmlsZToxMDY1MzA="},
+                    {"tag": "Hik TL, b0.942, C4.0, s1.28", "weight": 0.08333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNjQ4Nw==", "bg_id":"RmlsZToxMDY1Mjg="},
                     
                 ]
             },

@@ -7,6 +7,10 @@ import base64
 import urllib.parse
 from botocore.exceptions import ClientError
 import json
+import collections
+from typing import List
+
+BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')
 
 def get_secret(secret_name, region_name):
 
@@ -56,7 +60,9 @@ def get_secret(secret_name, region_name):
 
 
 def get_ecs_job_config(job_name, toshi_file_id, config, toshi_api_url, toshi_s3_url,
-    toshi_report_bucket, task_module, time_minutes, memory, vcpu, job_definition="Fargate-runzi-opensha-JD"):
+    toshi_report_bucket, task_module, time_minutes, memory, vcpu,
+    job_definition="Fargate-runzi-opensha-JD",
+    extra_env: List[BatchEnvironmentSetting] = None):
 
     assert vcpu in  [0.25, 0.5, 1, 2, 4]
     assert memory in [
@@ -68,7 +74,7 @@ def get_ecs_job_config(job_name, toshi_file_id, config, toshi_api_url, toshi_s3_
         18432, 19456, 20480, 21504, 22528, 23552, 24576, 25600, 26624, 27648, 28672, 29696, 30720 #value = 4
     ]
 
-    return {
+    config = {
         "jobName": job_name,
         "jobQueue": "BasicFargate_Q",
         "jobDefinition": job_definition,
@@ -131,3 +137,9 @@ def get_ecs_job_config(job_name, toshi_file_id, config, toshi_api_url, toshi_s3_
             "attemptDurationSeconds": (time_minutes * 60) + 1800
         }
     }
+
+    if extra_env:
+        for ex in extra_env:
+            config['containerOverrides']['environment'].append(dict(name=ex.name, value=ex.value))
+
+    return config

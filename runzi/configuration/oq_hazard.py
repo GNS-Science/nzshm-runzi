@@ -14,7 +14,7 @@ from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 
 from runzi.automation.scaling.python_task_factory import get_factory
-from runzi.util.aws import get_ecs_job_config
+from runzi.util.aws import get_ecs_job_config, BatchEnvironmentSetting
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 
 import runzi.execute.oq_hazard_task
@@ -35,6 +35,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
     factory_task = runzi.execute.oq_hazard_task
     task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
+    extra_env = [BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_STAGE", value="PROD")]
 
     for (config_archive_id,
         logic_tree_permutations,
@@ -91,7 +92,8 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                     toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
                     task_module=runzi.execute.oq_hazard_task.__name__,
                     time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4,
-                    job_definition="Fargate-runzi-openquake-JD")
+                    job_definition="Fargate-runzi-openquake-JD",
+                    extra_env = extra_env)
 
             else:
                 #write a config
