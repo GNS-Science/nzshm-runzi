@@ -6,6 +6,7 @@ inputs:-
  - a path to the source file
  - tag to include in meta data
  - For ToshiAPI pass the ENV settings for the intended environment (PROD,TEST LOCAL)
+ - option to use csv list produced by nz-oq-distseis/list_nrmls.py script.
 
 """
 import argparse
