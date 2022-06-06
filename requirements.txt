@@ -11,5 +11,4 @@ Pygments==2.10.0
 pyfiglet==0.8.post1
 boto3
 requests_toolbelt
-lxml
 

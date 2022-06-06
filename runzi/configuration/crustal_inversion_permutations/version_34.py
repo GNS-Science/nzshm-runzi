@@ -48,6 +48,7 @@ def branch_permutations_generator_34(args, rupture_set_info):
                                 initial_solution_id,
                                 cooling_schedule,
                                 sans_slip_rate_factor,tvz_slip_rate_factor,
+                                spatial_seis_pdf,
                                 )\
                             in itertools.product(
                                 args['rounds'], args['completion_energies'], args['max_inversion_times'],
@@ -71,7 +72,8 @@ def branch_permutations_generator_34(args, rupture_set_info):
                                 [scaling_c['dip']], [scaling_c['strike']],
                                 args.get('initial_solution_ids', [None,]),
                                 args['cooling_schedules'],
-                                [slip_rate_factors['slip_factor_sans']],[slip_rate_factors['slip_factor_tvz']]
+                                [slip_rate_factors['slip_factor_sans']],[slip_rate_factors['slip_factor_tvz']],
+                                args.get('spatial_seis_pdfs', [None,])
                                 ):
                                     task_arguments = dict(
                                         round = _round,
@@ -139,6 +141,8 @@ def branch_permutations_generator_34(args, rupture_set_info):
                                         scaling_c_val_dip_slip=scaling_c_val_dip_slip,
                                         scaling_c_val_strike_slip=scaling_c_val_strike_slip,
                                         initial_solution_id=initial_solution_id,
+
+                                        spatial_seis_pdf = spatial_seis_pdf,
 
                                         # Composite args (branch sets)
                                         # are required for ToshiUI filtering
@@ -232,6 +236,8 @@ if __name__ == '__main__':
         #Paleo
         paleo_rate_constraints = ["GEOLOGIC_SLIP_1_0"],
         paleo_probability_models = ["UCERF3_PLUS_PT5"],
+
+        spatial_seis_pdfs = ['foobar','']
         )
     #print( json.dumps(args))
 
@@ -246,7 +252,7 @@ if __name__ == '__main__':
     print('-----------')
     print('\n')
 
-    rupture_set_info = dict(id=0, filepath='')
+    rupture_set_info = dict(id=0, filepath='',info={'max_jump_distance':15})
     count = 0
     for p in branch_permutations_generator_34(args, rupture_set_info):
         #print(p)

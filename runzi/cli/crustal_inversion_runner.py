@@ -59,8 +59,6 @@ def run_crustal_inversion(config):
         rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
         print('file ID')
     
-    
-
 
     #add extra GT meta data gleaned from rupture_sets for TUI
     # TODO
