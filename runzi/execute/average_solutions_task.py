@@ -91,7 +91,7 @@ class BuilderTask():
                 if source_predecessors:
                     for predecessor in source_predecessors:
                         predecessor['depth'] += -1
-                    predecessors.append(predecessor)
+                        predecessors.append(predecessor)
 
             meta = task_arguments.copy()
             meta['source_solution_ids'] = source_solution_ids

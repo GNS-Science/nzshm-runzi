@@ -26,7 +26,7 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 # If you wish to override something in the main config, do so here ..
-WORKER_POOL_SIZE = 1
+WORKER_POOL_SIZE = 4
 USE_API = True
 
 
@@ -106,17 +106,90 @@ def run(scaled_solution_ids,
 
 if __name__ == "__main__":
 
-    TASK_DESCRIPTION = """Max Jump distance 1,3,5,10,15km"""
-    # #If using API give this task a descriptive setting...
+    # TASK_DESCRIPTION = """Hik Noise Avg"""
+    # TASK_TITLE = "Hikurangi Noise Averaged Models"
+    # input_ids = [
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzQ4",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzUy",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzU2",
 
-   
-    TASK_TITLE = "Max Jump Distance NRMLs"
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzYw",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzUw",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzU0",
+
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzU4",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzYy",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzY0",
+
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzY4",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzcy",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzc0",
+
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzY2",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzcw",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzc2",
+
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzgw",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzc5",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzgy",
+
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzg2",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzkw",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzg0",
+
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzg4",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzky",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzk2",
+
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzk0",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzk4",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDAy",
+
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDA2",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDAw",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDA0"
+    # ]
+
+    # TASK_DESCRIPTION = """Puysegur NRMLs"""
+    # TASK_TITLE = "Puysegur NRMLs"
+    # input_ids = [
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDA5",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDEw",
+    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDEy"
+    # ]
+
+    TASK_DESCRIPTION = """Crustal NRMLs"""
+    TASK_TITLE = "Crustal NRMLs"
     input_ids = [
-       "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA0OTY0",
-       "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA0OTY2",
-       "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA0OTY4",
-       "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA0OTcw",
-       "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA0OTcy"
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDE0",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDE4",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDIy",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDE2",
+
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDIw",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDI0",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDI2",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDMw",
+
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDM0",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDI4",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDMy",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDM2",
+
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDM4",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQy",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQ2",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQw",
+
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQ0",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQ4",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDUw",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDU0",
+
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDU4",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDUy",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDU2",
+        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDYw"
     ]
         
         

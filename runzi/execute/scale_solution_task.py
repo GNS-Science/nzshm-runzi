@@ -97,11 +97,15 @@ class BuilderTask():
             predecessors = [dict(id=source_solution_id,depth=-1),]
             
             source_predecessors = self._toshi_api.get_predecessors(source_solution_id) 
+            print('source_predecessors',source_predecessors)
 
             if source_predecessors:
                 for predecessor in source_predecessors:
+                    print('pred:',predecessor)
                     predecessor['depth'] += -1
-                predecessors.append(predecessor)
+                    predecessors.append(predecessor)
+
+            
 
             inversion_id = self._toshi_api.scaled_inversion_solution.upload_inversion_solution(task_id,
                 filepath=result['scaled_solution'],
@@ -129,6 +133,7 @@ class BuilderTask():
 
         #apply polygon rates
         if polygon_scale and polygon_max_mag:
+            print('scale polygons')
             mag_ind = rr['Magnitude'] <= polygon_max_mag
             rates.loc[mag_ind,'Annual Rate']  = rates[mag_ind]['Annual Rate'] * polygon_scale
 
