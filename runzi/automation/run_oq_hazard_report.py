@@ -28,7 +28,7 @@ def build_tasks(args, toshi_api):
     return scripts
 
 
-def run(WORKER_POOL_SIZE, hazard_ids=None,gt_ids=None):
+def run(WORKER_POOL_SIZE, hazard_ids=None,gt_ids=None, use_hdf5=False):
 
     t0 = dt.datetime.utcnow()
 
@@ -49,7 +49,8 @@ def run(WORKER_POOL_SIZE, hazard_ids=None,gt_ids=None):
 
     args = dict(
         hazard_ids = hazard_ids,
-        gt_ids = gt_ids
+        gt_ids = gt_ids,
+        use_hdf5 = use_hdf5
     )
 
     tasks = build_tasks(args, toshi_api)
@@ -69,10 +70,12 @@ if __name__ == "__main__":
         "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAyMDQ5" #PROD
     ]
 
-    # gt_ids = ['R2VuZXJhbFRhc2s6MTAyMDIz'] #PROD
-    gt_ids = ['R2VuZXJhbFRhc2s6MTAxMDY2'] #TEST
+    gt_ids = ['R2VuZXJhbFRhc2s6MTAyOTM0'] #PROD
+    # gt_ids = ['R2VuZXJhbFRhc2s6MTAxMDY2'] #TEST
 
     plot_types = ['hcurve','uhs']
 
+    use_hdf5 = False
+
     # run(WORKER_POOL_SIZE,gt_ids=gt_ids)
-    run(WORKER_POOL_SIZE,gt_ids=gt_ids)
+    run(WORKER_POOL_SIZE,gt_ids=gt_ids,use_hdf5=use_hdf5)
