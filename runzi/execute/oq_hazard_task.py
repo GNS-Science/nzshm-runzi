@@ -119,9 +119,9 @@ def execute_openquake(configfile, task_no, toshi_task_id):
         oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
         cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
         """
-        cmd = ['oq', 'engine', '--export-outputs', str(last_task), str(output_path), ">", "/dev/null"]
+        cmd = ['oq', 'engine', '--export-outputs', str(last_task), str(output_path)]
         log.info(f'cmd 2: {cmd}')
-        subprocess.check_call(cmd)
+        subprocess.check_call(cmd, stdout=subprocess.DEVNULL)
         oq_result['csv_archive'] = archive(output_path, Path(WORK_PATH, f'openquake_csv_archive-{toshi_task_id}.zip'))
 
         #clean up export outputs

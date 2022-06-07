@@ -16,7 +16,8 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-from runzi.CONFIG.OQ.crustal_N_sensivity_ltb_min import logic_tree_permutations
+#from runzi.CONFIG.OQ.crustal_N_sensivity_ltb_min import logic_tree_permutations
+from runzi.CONFIG.OQ.crustal_C_sensitivity_config_w_ids_trimmed import logic_tree_permutations
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -31,6 +32,7 @@ def build_tasks(new_gt_id, args, task_type, model_type):
     return scripts
 
 if __name__ == "__main__":
+
 
     t0 = dt.datetime.utcnow()
 
@@ -52,7 +54,7 @@ if __name__ == "__main__":
     # If using API give this task a descriptive setting...
 
     TASK_TITLE = "Openquake Hazard calcs "
-    TASK_DESCRIPTION = """Crustal N sensitivity"""
+    TASK_DESCRIPTION = """Crustal C sensitivity"""
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
@@ -74,7 +76,7 @@ if __name__ == "__main__":
             ],
         # NEW FORM
         # makes better use of python
-        logic_tree_permutations =  [logic_tree_permutations[10]],
+        logic_tree_permutations =  [logic_tree_permutations[0]],
         # logic_tree_permutations = [
         #     [{
         #         "tag": "all sources, with polygons", "weight": 1.0,
@@ -103,7 +105,7 @@ if __name__ == "__main__":
             #{"tag": "max10-300", "measures": era_measures, "levels": 'logscale(0.001, 5.00, 100)'}
             # {"tag": "super-max", "measures": ['SA(0.5)'], "levels": 'logscale(0.001, 10.0, 300)'}
         ],
-        vs30s = [450],# 250, #300, 350, 400, 450, 750 ],
+        vs30s = [750],# 250, #300, 350, 400, 450, 750 ],
         location_codes = ['NZ34'], # NZ6, WLG
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
