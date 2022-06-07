@@ -10,6 +10,7 @@ into source NRML XML files
 import logging
 import pwd
 import os
+import base64
 import datetime as dt
 from dateutil.tz import tzutc
 from subprocess import check_call
@@ -60,12 +61,20 @@ def run(scaled_solution_ids,
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
+    # if a GT id has been provided, unpack to get individual solution ids
+    source_solution_ids_list = []
+    for source_solution_id in scaled_solution_ids:
+        if 'GeneralTask' in str(base64.b64decode(source_solution_id)):
+            source_solution_ids_list += [out['id'] for out in get_output_file_ids(toshi_api, source_solution_id)]
+        else:
+            source_solution_ids_list += [source_solution_id]
+
     model_type = get_model_type(scaled_solution_ids,toshi_api)
 
     args = dict(
         rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km 
         investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years 
-        input_ids = scaled_solution_ids
+        input_ids = source_solution_ids_list
     )
 
     args_list = []
