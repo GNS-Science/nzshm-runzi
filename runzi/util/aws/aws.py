@@ -64,19 +64,23 @@ def get_ecs_job_config(job_name, toshi_file_id, config, toshi_api_url, toshi_s3_
     job_definition="Fargate-runzi-opensha-JD",
     extra_env: List[BatchEnvironmentSetting] = None):
 
-    assert vcpu in  [0.25, 0.5, 1, 2, 4]
-    assert memory in [
-        512, 1024, 2048, #value = 0.25
-        1024, 2048, 3072, 4096, # value = 0.5
-        2048, 3072, 4096, 5120, 6144, 7168,  8192, #value = 1
-        4096, 5120, 6144, 7168, 8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, #value = 2
-        8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, 17408,
-        18432, 19456, 20480, 21504, 22528, 23552, 24576, 25600, 26624, 27648, 28672, 29696, 30720 #value = 4
-    ]
+    if "Fargate" in job_definition:
+        assert vcpu in  [0.25, 0.5, 1, 2, 4]
+        assert memory in [
+            512, 1024, 2048, #value = 0.25
+            1024, 2048, 3072, 4096, # value = 0.5
+            2048, 3072, 4096, 5120, 6144, 7168,  8192, #value = 1
+            4096, 5120, 6144, 7168, 8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, #value = 2
+            8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, 17408,
+            18432, 19456, 20480, 21504, 22528, 23552, 24576, 25600, 26624, 27648, 28672, 29696, 30720, #value = 4
+            ]
+        job_queue = "BasicFargate_Q"
+    else:
+        job_queue = "BigLeverOnDemandEC2-job-queue" #"getting-started-jun7" #"BiggerLeverQueue"
 
     config = {
         "jobName": job_name,
-        "jobQueue": "BasicFargate_Q",
+        "jobQueue": job_queue,
         "jobDefinition": job_definition,
         "containerOverrides": {
             "command": [

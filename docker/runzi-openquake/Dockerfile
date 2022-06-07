@@ -22,7 +22,7 @@ RUN pip install pytest
 ADD stafford_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
 
 # The new AWS hazard store script ...
-RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@08da540a328ccc27b48c814c15a2f9880bade752#egg=toshi-hazard-store
+RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@50cfbf1a193d8d6e0878b7e67539d48c95859275#egg=toshi-hazard-store
 #RUN pip install toshi_hazard_store
 
 # Install Runzi TODO:is this only for these test configs ??

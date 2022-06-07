@@ -74,7 +74,7 @@ if __name__ == "__main__":
             ],
         # NEW FORM
         # makes better use of python
-        logic_tree_permutations =  logic_tree_permutations,
+        logic_tree_permutations =  [logic_tree_permutations[10]],
         # logic_tree_permutations = [
         #     [{
         #         "tag": "all sources, with polygons", "weight": 1.0,
@@ -103,7 +103,7 @@ if __name__ == "__main__":
             #{"tag": "max10-300", "measures": era_measures, "levels": 'logscale(0.001, 5.00, 100)'}
             # {"tag": "super-max", "measures": ['SA(0.5)'], "levels": 'logscale(0.001, 10.0, 300)'}
         ],
-        vs30s = [750],# 250, #300, 350, 400, 450, 750 ],
+        vs30s = [450],# 250, #300, 350, 400, 450, 750 ],
         location_codes = ['NZ34'], # NZ6, WLG
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
@@ -139,7 +139,6 @@ if __name__ == "__main__":
     # toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
-    assert 0
 
     schedule_tasks(tasks, WORKER_POOL_SIZE)
 
