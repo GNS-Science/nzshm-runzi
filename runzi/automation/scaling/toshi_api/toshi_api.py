@@ -62,7 +62,7 @@ class ToshiApi(ToshiClientBase):
                   title
                   description
                   created
-                  swept_arguments
+                  #swept_arguments
                   children {
                     #total_count
                     edges {
