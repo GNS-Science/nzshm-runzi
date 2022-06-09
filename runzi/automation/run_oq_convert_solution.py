@@ -69,7 +69,7 @@ def run(scaled_solution_ids,
         else:
             source_solution_ids_list += [source_solution_id]
 
-    model_type = get_model_type(scaled_solution_ids,toshi_api)
+    model_type = get_model_type(source_solution_ids_list,toshi_api)
 
     args = dict(
         rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km 
@@ -115,90 +115,11 @@ def run(scaled_solution_ids,
 
 if __name__ == "__main__":
 
-    # TASK_DESCRIPTION = """Hik Noise Avg"""
-    # TASK_TITLE = "Hikurangi Noise Averaged Models"
-    # input_ids = [
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzQ4",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzUy",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzU2",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzYw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzUw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzU0",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzU4",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzYy",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzY0",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzY4",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzcy",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzc0",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzY2",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzcw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzc2",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzgw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzc5",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzgy",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzg2",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzkw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzg0",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzg4",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzky",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzk2",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzk0",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzk4",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDAy",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDA2",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDAw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDA0"
-    # ]
-
-    # TASK_DESCRIPTION = """Puysegur NRMLs"""
-    # TASK_TITLE = "Puysegur NRMLs"
-    # input_ids = [
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDA5",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDEw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDEy"
-    # ]
-
+    
     TASK_DESCRIPTION = """Crustal NRMLs"""
-    TASK_TITLE = "Crustal NRMLs"
+    TASK_TITLE = "Hikurangi NRMLs from R2VuZXJhbFRhc2s6MTAzNTY4"
     input_ids = [
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDE0",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDE4",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDIy",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDE2",
-
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDIw",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDI0",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDI2",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDMw",
-
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDM0",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDI4",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDMy",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDM2",
-
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDM4",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQy",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQ2",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQw",
-
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQ0",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQ4",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDUw",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDU0",
-
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDU4",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDUy",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDU2",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDYw"
+       "R2VuZXJhbFRhc2s6MTAzNTY4",
     ]
         
         
