@@ -295,7 +295,8 @@ class BuilderTask():
 
             # run the store_hazard job
             if not SPOOF_HAZARD:
-                cmd = ['store_hazard', str(oq_result['oq_calc_id']), solution_id]
+                # options --new-version-only --create-tables --skip-rlzs --verbose
+                cmd = ['store_hazard', str(oq_result['oq_calc_id']), solution_id, '--verbose', '--new-version-only']
                 log.info(f'store_hazard: {cmd}')
                 subprocess.check_call(cmd)
 
