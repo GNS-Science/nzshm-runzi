@@ -22,7 +22,14 @@ import runzi.execute.oq_hazard_task
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode, S3_URL, S3_REPORT_BUCKET)
 
-HAZARD_MAX_TIME = 36*60 #minutes
+HAZARD_MAX_TIME = 240 #minutes
+
+BIGGER_LEVER = True
+##BL_CONF_0 = dict( job_def="BigLever_32GB_8VCPU_JD", job_queue="BigLever_32GB_8VCPU_JQ", mem=30000, cpu=8)
+BL_CONF_1 = dict( job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_32GB_8VCPU_v2_JQ", mem=30000, cpu=8)
+BL_CONF_0 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=380000, cpu=48) #r5.12xlarge or similar
+
+BIGGER_LEVER_CONF = BL_CONF_0
 
 def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments):
     task_count = 0
@@ -39,8 +46,6 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_STAGE", value="PROD"),
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_REGION", value="ap-southeast-2")
     ]
-
-    BIGGER_LEVER = True
 
     for (config_archive_id,
         logic_tree_permutations,
@@ -97,8 +102,11 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                         'N/A', config_data,
                         toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
                         task_module=runzi.execute.oq_hazard_task.__name__,
-                        time_minutes=int(HAZARD_MAX_TIME), memory=64000, vcpu=8,
-                        job_definition= "BigLeverOnDemandEC2-JD", # "BiggerLever-runzi-openquake-JD", #"getting-started-job-definition-jun7",
+                        time_minutes=int(HAZARD_MAX_TIME),
+                        memory=BIGGER_LEVER_CONF["mem"],
+                        vcpu=BIGGER_LEVER_CONF["cpu"],
+                        job_definition=BIGGER_LEVER_CONF["job_def"], # "BigLeverOnDemandEC2-JD", # "BiggerLever-runzi-openquake-JD", #"getting-started-job-definition-jun7",
+                        job_queue=BIGGER_LEVER_CONF["job_queue"],
                         extra_env = extra_env)
                 else:
                     yield get_ecs_job_config(job_name,

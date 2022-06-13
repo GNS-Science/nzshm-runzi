@@ -62,6 +62,7 @@ def get_secret(secret_name, region_name):
 def get_ecs_job_config(job_name, toshi_file_id, config, toshi_api_url, toshi_s3_url,
     toshi_report_bucket, task_module, time_minutes, memory, vcpu,
     job_definition="Fargate-runzi-opensha-JD",
+    job_queue="BasicFargate_Q",
     extra_env: List[BatchEnvironmentSetting] = None):
 
     if "Fargate" in job_definition:
@@ -74,9 +75,9 @@ def get_ecs_job_config(job_name, toshi_file_id, config, toshi_api_url, toshi_s3_
             8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, 17408,
             18432, 19456, 20480, 21504, 22528, 23552, 24576, 25600, 26624, 27648, 28672, 29696, 30720, #value = 4
             ]
-        job_queue = "BasicFargate_Q"
-    else:
-        job_queue = "BigLeverOnDemandEC2-job-queue" #"getting-started-jun7" #"BiggerLeverQueue"
+    #     job_queue = "BasicFargate_Q"
+    # else:
+    #     job_queue = "BigLeverOnDemandEC2-job-queue" #"getting-started-jun7" #"BiggerLeverQueue"
 
     config = {
         "jobName": job_name,
