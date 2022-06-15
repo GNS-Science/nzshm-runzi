@@ -29,14 +29,14 @@ BIGGER_LEVER = True
 ##BL_CONF_0 = dict( job_def="BigLever_32GB_8VCPU_JD", job_queue="BigLever_32GB_8VCPU_JQ", mem=30000, cpu=8)
 BL_CONF_1 = dict( job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_32GB_8VCPU_v2_JQ", mem=30000, cpu=8)
 BL_CONF_0 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=380000, cpu=48) #r5.12xlarge or similar
+BL_CONF_16_120 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=120000, cpu=16) #r5.12xlarge or similar
 
-BIGGER_LEVER_CONF = BL_CONF_0
-split_source_branches = True
+BIGGER_LEVER_CONF = BL_CONF_16_120
+SPLIT_SOURCE_BRANCHES = True
 
 factory_class = get_factory(CLUSTER_MODE)
 factory_task = runzi.execute.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
-
 
 def build_task(task_arguments, job_arguments, task_id, extra_env):
 
@@ -80,7 +80,7 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
         return str(script_file_path)
 
 
-def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments):
+def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments ):
     task_count = 0
 
     headers={"x-api-key":API_KEY}
@@ -139,7 +139,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 use_api = USE_API,
                 )
 
-            if not split_source_branches:
+            if not SPLIT_SOURCE_BRANCHES:
                 yield build_task(task_arguments, job_arguments, task_count, extra_env)
             else:
                 print(f'logic_tree_permutations: {logic_tree_permutations}')

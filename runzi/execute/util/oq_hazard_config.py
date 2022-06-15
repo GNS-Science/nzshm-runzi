@@ -31,6 +31,11 @@ class OpenquakeConfig():
         self.config = configparser.ConfigParser()
         self.config.read_file(config)
 
+    def set_ps_grid_spacing(self, value=30):
+        self.config.pop('ps_grid_spacing', None) # destroy any existing disagg settings
+        self.config['general']['ps_grid_spacing'] = str(value)
+        return self
+
     def set_rupture_mesh_spacing(self, rupture_mesh_spacing):
         """We can assume an erf section exists..."""
         self.config['erf']['rupture_mesh_spacing'] = str(rupture_mesh_spacing)
@@ -110,6 +115,7 @@ if __name__ == "__main__":
     [site_params]
     sites = 174.7762 -41.2865
     foo=bar
+    ps_grid_spacing = 10
 
 
     [calculation]
@@ -120,7 +126,8 @@ if __name__ == "__main__":
 
     nc = OpenquakeConfig(sample)\
         .set_sites('NZ4')\
-        .set_disaggregation(False, {"num_rlz_disagg": 0})
+        .set_disaggregation(False, {"num_rlz_disagg": 0})\
+        .set_ps_grid_spacing(20)
 
     measures = ['PGA', 'SA(0.5)']
     levels0 = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0]

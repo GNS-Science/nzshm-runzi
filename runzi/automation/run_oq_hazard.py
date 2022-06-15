@@ -18,8 +18,8 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 
 #from runzi.CONFIG.OQ.crustal_N_sensivity_ltb_min import logic_tree_permutations
 
-from runzi.CONFIG.OQ.crustal_C_sensitivity_config_w_ids_trimmed import logic_tree_permutations, gt_description
-#from runzi.CONFIG.OQ.hik_n_sensitivity_config import logic_tree_permutations, gt_description
+#from runzi.CONFIG.OQ.crustal_C_sensitivity_config_w_ids_trimmed import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.hik_n_sensitivity_config import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
