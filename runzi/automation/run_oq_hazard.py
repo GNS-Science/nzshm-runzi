@@ -18,8 +18,8 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 
 #from runzi.CONFIG.OQ.crustal_N_sensivity_ltb_min import logic_tree_permutations
 
-#from runzi.CONFIG.OQ.crustal_C_sensitivity_config_w_ids_trimmed import logic_tree_permutations, gt_description
-from runzi.CONFIG.OQ.hik_n_sensitivity_config import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.crustal_C_sensitivity_config_w_ids_trimmed import logic_tree_permutations, gt_description
+#from runzi.CONFIG.OQ.hik_n_sensitivity_config import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -143,6 +143,8 @@ if __name__ == "__main__":
     # toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
+
+    assert 0
 
     schedule_tasks(tasks, WORKER_POOL_SIZE)
 

@@ -46,6 +46,27 @@ def get_logic_tree_branches(ltb_groups):
         for ltb in itertools.product(*get_ltb(group)):
             yield ltb
 
+def single_permutation(permutations, task_id):
+    """
+    A helper function to slice up a permuations list into it components, and retrun each as a mini-permutation object.
+    Assumes that task_id relates to that length of the permutations passed in.
+    """
+
+    def single_source_branch_from(permutations, task_id):
+        ltbs = [ltb for ltb in get_logic_tree_branches(permutations)]
+        return ltbs[task_id]
+
+    new_permutations = { "tag": "", "weight": 1.0, "permute" : [] }
+
+    for member in single_source_branch_from(permutations, task_id):
+        obj = { "group": member.tag, "members" : [member._asdict()]}
+        new_permutations['permute'].append(obj)
+    return new_permutations
+
+
+
+
+
 class SourceModelLoader():
 
     def __init__(self):
@@ -53,7 +74,7 @@ class SourceModelLoader():
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     def unpack_sources(self, logic_tree_branch_permutations, source_path):
-        """download and extract the sources"""
+        """download and extract the sources."""
 
         sources = dict()
 
@@ -127,7 +148,7 @@ def build_sources_xml(logic_tree_branches, source_file_mapping):
             ltbs.append(ltb)
 
     print(f'total_branch_weight: {total_branch_weight}')
-    assert round(total_branch_weight, 8) == 1.0
+    # assert round(total_branch_weight, 8) == 1.0
 
     nrml = NRML( LT( LTBL( ltbs, branchingLevelID="1" ), logicTreeID = "Combined"))
     return etree.tostring(nrml, pretty_print=True).decode()
@@ -137,550 +158,50 @@ def build_sources_xml(logic_tree_branches, source_file_mapping):
 if __name__ == "__main__":
     from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 
-    # permutations = [
-    #     {
-    #         "CR": {
-    #             "CR_N2.3_b0.807_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA==",
-    #             "CR_N8.0_b1.115_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Nw==",
-    #             "CR_N2.3_b0.807_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OQ==",
-    #             "CR_N3.7_b0.929_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ==",
-    #             "CR_N3.7_b0.929_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Mw==",
-    #             "CR_N8.0_b1.115_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4NQ=="
-    #             },
-    #         "HK": {
-    #             "HTC_b1.112_N22.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2NA==",
-    #             "HTC_b0.97_N11.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Ng==",
-    #             "HTC_b1.3_N49.4_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3MQ==",
-    #             "HTL_b1.112_N22.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3MA==",
-    #             "HTL_b0.97_N11.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Mw==",
-    #             "HTL_b1.3_N49.4_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Mg=="
+    from runzi.CONFIG.OQ.hik_n_sensitivity_config import logic_tree_permutations, gt_description
+    # permutations =  [{
+    #     "tag": "all sources, with polygons", "weight": 1.0,
+    #     "permute" : [
+    #         {   "group": "HIK",
+    #             "members" : [
+    #                 {"tag": "Hikurangi TC b=1.07, C=4.0, s=.75", "weight": 0.5,
+    #                     "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ==", "bg_id":"RmlsZToxMDQ4NjI="},
+    #                 {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 0.5,
+    #                     "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk0OQ==", "bg_id":"RmlsZToxMDQyOTY="}
+    #             ]
     #         },
-    #         "BG": {
-    #             "BG_floor_addtot346ave": "RmlsZToxMDIyMzA="
+    #         {   "group": "PUY",
+    #             "members" : [
+    #                 {"tag": "Puysegur b=0.712, C=3.9, s=0.4", "weight":1.0,
+    #                  "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg==", "bg_id": None}
+    #             ]
     #         },
-    #         "PY": {
-    #             "PY_b0.75_N3.4_C3.9_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="
-    #         }
-    #     },
-    #     {
-    #         "CR": {
-    #             "CR_N8.0_b1.115_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA==",
-    #             "CR_N2.3_b0.807_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Mg==",
-    #             "CR_N3.7_b0.929_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4NA=="
-    #             },
-    #         "HK": {
-    #             "HTC_b1.112_N22.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Nw==",
-    #             "HTC_b1.3_N49.4_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2NQ==",
-    #             "HTC_b0.97_N11.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2OA==",
-    #             "HTL_b1.112_N22.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2OQ==",
-    #             "HTL_b1.3_N49.4_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3NQ==",
-    #             "HTL_b0.97_N11.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3NA=="
-    #         },
-    #         "BG": {
-    #             "BG_floor_addtot346ave": "RmlsZToxMDIyMzA="
-    #         },
-    #         "PY": {
-    #             "PY_b0.75_N3.4_C3.9_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="
-    #         }
-    #     }
-    # ]
-
-    # #SLT001
-    # permutations = [
-    #     {
-    #         "tag": "core model", "weight": 1.0,
-    #         "permute" : [
-    #             {
-    #                 "group": "HIK",
-    #                 "members" : [
-    #                     {"tag": "b0.97_N11.6_C4.0_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Ng=="}
-    #                 ]
-    #             }
-    #         ]
-    #     }
-    # ]
-
-
-    # #SLT002
-    # permutations = [
-    # {
-    #     "tag": "core model", "weight": 0.5,
-    #     "permute" : [
-    #         {   "group": "HIK",
+    #         {   "group": "CRU",
     #             "members" : [
-    #                 {"tag": "b0.97_N11.6_C4.0_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Ng=="}
+    #                 {"tag": "Crustal b=xxx, s=1.0", "weight": 1.0,
+    #                     "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Mw==", "bg_id":"RmlsZToxMDQ4NjM="}
     #             ]
     #         }
     #     ]
-    # },
+    # }]
 
-    # {
-    #     "tag": "C = 4.1", "weight": 0.5,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b0.97_N11.6_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2OA=="}
-    #             ]
-    #         }
-    #     ]
-    # }
+    permutations = logic_tree_permutations[0]
 
-    # ]
-
-
-    # #SLT003
-    # permutations = [
-
-    # {
-    #     "tag": "core model", "weight": 0.166,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b0.97_N11.6_C4.0_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Ng=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "core scaled down", "weight": 0.166,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b0.97_N11.6_C4.0_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Nw=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "core scaled up", "weight": 0.166,
-    #     "permute" : [
-
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b0.97_N11.6_C4.0_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5OA=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "b = 1.112", "weight": 0.166,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b1.112_N22.6_C4_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2NA=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "b = 1.112 scaled down", "weight": 0.166,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b1.112_N22.6_C4_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Ng=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "b = 1.112 scaled up", "weight": 0.17,
-    #     "permute" : [
-
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b1.112_N22.6_C4_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5OQ=="}
-    #             ]
-    #         }
-    #     ]
-    # }
-    # ]
-
-    # #SLT004b
-    # permutations = [
-
-    # {
-    #     "tag": "core model", "weight": 0.0833,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b0.97_N11.6_C4.0_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Ng=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "core scaled down", "weight": 0.0833,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b0.97_N11.6_C4.0_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Nw=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "core scaled up", "weight": 0.0833,
-    #     "permute" : [
-
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b0.97_N11.6_C4.0_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5OA=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "b = 1.112", "weight": 0.0833,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b1.112_N22.6_C4_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2NA=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "b = 1.112 scaled down", "weight": 0.0833,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b1.112_N22.6_C4_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Ng=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "b = 1.112 scaled up", "weight": 0.0833,
-    #     "permute" : [
-
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b1.112_N22.6_C4_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5OQ=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-
-    # {
-    #     "tag": "core model, C = 4.1", "weight": 0.0833,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b0.97_N11.6_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2OA=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "core scaled down, C = 4.1", "weight": 0.0833,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b0.97_N11.6_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4OQ=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "core scaled up, C = 4.1", "weight": 0.0833,
-    #     "permute" : [
-
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b0.97_N11.6_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwMA=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "b = 1.112, C = 4.1", "weight": 0.0833,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b1.112_N22.6_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Nw=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "b = 1.112 scaled down, C = 4.1", "weight": 0.0833,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b1.112_N22.6_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5MA=="}
-    #             ]
-    #         }
-    #     ]
-    # },
-
-    # {
-    #     "tag": "b = 1.112 scaled up, C = 4.1", "weight": 0.0837,
-    #     "permute" : [
-
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "b1.112_N22.6_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwMw=="}
-    #             ]
-    #         }
-    #     ]
-    # }
-
-    # ]
-
-
-    #BIG
-    # permutations = [
-    #     {
-    #         "CR": {
-    #             "CR_N8.0_b1.115_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA==",
-    #             "CR_N2.3_b0.807_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA==",
-    #             "CR_N8.0_b1.115_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Nw==",
-    #             "CR_N2.3_b0.807_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OQ==",
-    #             "CR_N3.7_b0.929_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ==",
-    #             "CR_N3.7_b0.929_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Mw==",
-    #             "CR_N2.3_b0.807_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Mg==",
-    #             "CR_N3.7_b0.929_C4.3_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4NA==",
-    #             "CR_N8.0_b1.115_C4.2_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4NQ=="
-    #             },
-    #         "HK": {
-    #             "HTC_b1.112_N22.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2NA==",
-    #             "HTC_b1.112_N22.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Nw==",
-    #             "HTC_b1.3_N49.4_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2NQ==",
-    #             "HTC_b0.97_N11.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Ng==",
-    #             "HTC_b0.97_N11.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2OA==",
-    #             "HTC_b1.3_N49.4_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3MQ==",
-    #             "HTL_b1.112_N22.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2OQ==",
-    #             "HTL_b1.112_N22.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3MA==",
-    #             "HTL_b0.97_N11.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Mw==",
-    #             "HTL_b1.3_N49.4_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3NQ==",
-    #             "HTL_b1.3_N49.4_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Mg==",
-    #             "HTL_b0.97_N11.6_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3NA=="
-    #         },
-    #         "BG": {
-    #             "floor_addtot346ave": "RmlsZToxMDIyMzA="
-    #         },
-    #         "PY": {
-    #             "P_b0.75_N3.4_C3.9_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="
-    #         }
-    #     },
-    #     {
-    #         "CR": {
-    #             "CR_N8.0_b1.115_C4.3_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMg==",
-    #             "CR_N8.0_b1.115_C4.1_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNQ==",
-    #             "CR_N2.3_b0.807_C4.2_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNg==",
-    #             "CR_N2.3_b0.807_C4.1_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMw==",
-    #             "CR_N3.7_b0.929_C4.1_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNA==",
-    #             "CR_N3.7_b0.929_C4.2_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNw==",
-    #             "CR_N2.3_b0.807_C4.3_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxOQ==",
-    #             "CR_N8.0_b1.115_C4.2_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMA==",
-    #             "CR_N3.7_b0.929_C4.3_s0.51": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMw=="
-    #             },
-    #         "HK": {
-    #             "HTC_b1.112_N22.6_C4_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Ng==",
-    #             "HTC_b1.3_N49.4_C4.1_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4OA==",
-    #             "HTC_b1.112_N22.6_C4.1_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5MA==",
-    #             "HTC_b0.97_N11.6_C4_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Nw==",
-    #             "HTC_b0.97_N11.6_C4.1_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4OQ==",
-    #             "HTL_b1.112_N22.6_C4.1_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5MQ==",
-    #             "HTC_b1.3_N49.4_C4_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5Mg==",
-    #             "HTL_b1.112_N22.6_C4_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5NQ==",
-    #             "HTL_b0.97_N11.6_C4_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5Ng==",
-    #             "HTL_b1.3_N49.4_C4_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5Mw==",
-    #             "HTL_b1.3_N49.4_C4.1_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5NA==",
-    #             "HTL_b0.97_N11.6_C4.1_s0.54": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5Nw=="
-    #         },
-    #         "BG": {
-    #             "floor_addtot346ave": "RmlsZToxMDIyMzA="
-    #         },
-    #         "PY": {
-    #             "P_b0.75_N3.4_C3.9_s0.61": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMA=="
-    #         }
-    #     },
-    #     {
-    #         "CR": {
-    #             "CR_N2.3_b0.807_C4.2_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxOA==",
-    #             "CR_N8.0_b1.115_C4.3_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMQ==",
-    #             "CR_N8.0_b1.115_C4.1_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMg==",
-    #             "CR_N3.7_b0.929_C4.2_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNA==",
-    #             "CR_N2.3_b0.807_C4.1_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNg==",
-    #             "CR_N3.7_b0.929_C4.1_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyOA==",
-    #             "CR_N3.7_b0.929_C4.3_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNQ==",
-    #             "CR_N2.3_b0.807_C4.3_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNw==",
-    #             "CR_N8.0_b1.115_C4.2_s1.62": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyOQ=="
-    #             },
-    #         "HK": {
-    #             "HTC_b1.112_N22.6_C4_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5OQ==",
-    #             "HTC_b1.3_N49.4_C4.1_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwMQ==",
-    #             "HTC_b1.112_N22.6_C4.1_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwMw==",
-    #             "HTC_b0.97_N11.6_C4_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE5OA==",
-    #             "HTC_b0.97_N11.6_C4.1_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwMA==",
-    #             "HTL_b1.112_N22.6_C4.1_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwMg==",
-    #             "HTC_b1.3_N49.4_C4_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwNA==",
-    #             "HTL_b1.112_N22.6_C4_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwNw==",
-    #             "HTL_b0.97_N11.6_C4_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwOA==",
-    #             "HTL_b1.3_N49.4_C4_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwNQ==",
-    #             "HTL_b1.3_N49.4_C4.1_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwNg==",
-    #             "HTL_b0.97_N11.6_C4.1_s1.43": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIwOQ=="
-    #         },
-    #         "BG": {
-    #             "floor_addtot346ave": "RmlsZToxMDIyMzA="
-    #         },
-    #         "PY": {
-    #             "P_b0.75_N3.4_C3.9_s1.34": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMQ=="
-    #         }
-    #     }
-    # ]
-
-
-    #27_TAG_CONFIG
-    # permutations = [
-    #     {
-    #         "tag": "all rate combinations", "weight": 1.0,
-    #         "permute" : [
-    #             {   "group": "HIK",
-    #                 "members" : [
-    #                     {"tag": "HTC_b0.957_N16.5_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk0OQ=="},
-    #                     {"tag": "HTC_b1.078_N22.8_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MA=="},
-    #                     {"tag": "HTL_b0.957_N16.5_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MQ=="},
-    #                     {"tag": "HTL_b1.078_N22.8_C4.1_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mg=="},
-    #                     {"tag": "HTC_b0.957_N16.5_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mw=="},
-    #                     {"tag": "HTC_b0.957_N16.5_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NA=="},
-    #                     {"tag": "HTC_b1.078_N22.8_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NQ=="},
-    #                     {"tag": "HTC_b1.078_N22.8_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Ng=="},
-    #                     {"tag": "HTL_b0.957_N16.5_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Nw=="},
-    #                     {"tag": "HTL_b0.957_N16.5_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OA=="},
-    #                     {"tag": "HTL_b1.078_N22.8_C4.1_s0.54", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OQ=="},
-    #                     {"tag": "HTL_b1.078_N22.8_C4.1_s1.43", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk2MA=="}
-    #                 ]
-    #             },
-    #             {   "group": "PUY",
-    #                 "members" : [
-    #                     {"tag": "P_b0.75_N3.4_C3.9_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="}
-    #                 ]
-    #             },
-    #             {   "group": "CRU",
-    #                 "members" : [
-    #                     {"tag": "CR_N8.0_b1.115_C4.3_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA=="},
-    #                     {"tag": "CR_N2.3_b0.807_C4.2_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA=="},
-    #                     {"tag": "CR_N3.7_b0.929_C4.2_s1", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ=="},
-    #                     {"tag": "CR_N8.0_b1.115_C4.3_s0.51", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMg=="},
-    #                     {"tag": "CR_N2.3_b0.807_C4.2_s0.51", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNg=="},
-    #                     {"tag": "CR_N3.7_b0.929_C4.2_s0.51", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNw=="},
-    #                     {"tag": "CR_N2.3_b0.807_C4.2_s1.62", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxOA=="},
-    #                     {"tag": "CR_N8.0_b1.115_C4.3_s1.62", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMQ=="},
-    #                     {"tag": "CR_N3.7_b0.929_C4.2_s1.62", "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNA=="}
-    #                 ]
-    #             },
-    #             {   "group": "BG",
-    #                 "members" : [
-    #                     {"tag": "floor_addtot346ave", "toshi_id": "RmlsZToxMDIyMzA="}
-    #                 ]
-    #             }
-    #         ]
-    #     }
-    # ]
-
-
-    #NN-weighting
-    # permutations = [
-    #     {
-    #         "tag": "all rate combinations", "weight": 1.0,
-    #         "permute" : [
-    #             {   "group": "HIK",
-    #                 "members" : [
-    #                     {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk0OQ=="},
-    #                     {"tag": "HTC_b1.078_N22.8_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MA=="},
-    #                     {"tag": "HTL_b0.957_N16.5_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1MQ=="},
-    #                     {"tag": "HTL_b1.078_N22.8_C4.1_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mg=="},
-    #                     {"tag": "HTC_b0.957_N16.5_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Mw=="},
-    #                     {"tag": "HTC_b0.957_N16.5_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NA=="},
-    #                     {"tag": "HTC_b1.078_N22.8_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1NQ=="},
-    #                     {"tag": "HTC_b1.078_N22.8_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Ng=="},
-    #                     {"tag": "HTL_b0.957_N16.5_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1Nw=="},
-    #                     {"tag": "HTL_b0.957_N16.5_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OA=="},
-    #                     {"tag": "HTL_b1.078_N22.8_C4.1_s0.54", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk1OQ=="},
-    #                     {"tag": "HTL_b1.078_N22.8_C4.1_s1.43", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk2MA=="}
-    #                 ]
-    #             },
-    #             {   "group": "PUY",
-    #                 "members" : [
-    #                     {"tag": "P_b0.75_N3.4_C3.9_s1", "weight":1.0, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="}
-    #                 ]
-    #             },
-    #             {   "group": "CRU",
-    #                 "members" : [
-    #                     {"tag": "CR_N8.0_b1.115_C4.3_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OA=="},
-    #                     {"tag": "CR_N2.3_b0.807_C4.2_s1", "weight": 0.175, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MA=="},
-    #                     {"tag": "CR_N3.7_b0.929_C4.2_s1", "weight": 0.35, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4MQ=="},
-    #                     {"tag": "CR_N8.0_b1.115_C4.3_s0.51", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxMg=="},
-    #                     {"tag": "CR_N2.3_b0.807_C4.2_s0.51", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNg=="},
-    #                     {"tag": "CR_N3.7_b0.929_C4.2_s0.51", "weight": 0.075, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxNw=="},
-    #                     {"tag": "CR_N2.3_b0.807_C4.2_s1.62", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIxOA=="},
-    #                     {"tag": "CR_N8.0_b1.115_C4.3_s1.62", "weight": 0.0375, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyMQ=="},
-    #                     {"tag": "CR_N3.7_b0.929_C4.2_s1.62", "weight": 0.075, "toshi_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjIyNA=="}
-    #                 ]
-    #             },
-    #             {   "group": "BG",
-    #                 "members" : [
-    #                     {"tag": "floor_addtot346ave", "weight":1.0, "toshi_id": "RmlsZToxMDIyMzA="}
-    #                 ]
-    #             }
-    #         ]
-    #     }
-    # ]
-
-
-    permutations =  [{
-        "tag": "all sources, with polygons", "weight": 1.0,
-        "permute" : [
-            {   "group": "HIK",
-                "members" : [
-                    {"tag": "Hikurangi TC b=1.07, C=4.0, s=.75", "weight": 0.5,
-                        "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ==", "bg_id":"RmlsZToxMDQ4NjI="},
-                    {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 0.5,
-                        "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk0OQ==", "bg_id":"RmlsZToxMDQyOTY="}
-                ]
-            },
-            {   "group": "PUY",
-                "members" : [
-                    {"tag": "Puysegur b=0.712, C=3.9, s=0.4", "weight":1.0,
-                     "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg==", "bg_id": None}
-                ]
-            },
-            {   "group": "CRU",
-                "members" : [
-                    {"tag": "Crustal b=xxx, s=1.0", "weight": 1.0,
-                        "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Mw==", "bg_id":"RmlsZToxMDQ4NjM="}
-                ]
-            }
-        ]
-    }]
-
+    print(permutations)
 
     logging.basicConfig(level=logging.INFO)
     sources_folder = Path(WORK_PATH, 'sources')
-    source_file_mapping = SourceModelLoader().unpack_sources(permutations, sources_folder)
+    # source_file_mapping = SourceModelLoader().unpack_sources(permutations, sources_folder)
 
     ltbs = [ltb for ltb in get_logic_tree_branches(permutations)]
+    print("LTB 0:", ltbs[0])
+    print()
 
-    # print("LTB:", len(ltbs), ltbs[0])
 
-    nrml = build_sources_xml(ltbs, source_file_mapping)
+    print(single_permutation(permutations, 0))
+
+
+    nrml = build_sources_xml([ltbs[0]], source_file_mapping)
 
     with open("source_model.xml", 'w') as f:
         f.write(nrml)

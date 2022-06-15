@@ -25,7 +25,7 @@ from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WOR
 
 from runzi.util import archive
 from runzi.execute.util import ( OpenquakeConfig, SourceModelLoader, build_sources_xml,
-    get_logic_tree_file_ids, get_logic_tree_branches )
+    get_logic_tree_file_ids, get_logic_tree_branches, single_permutation )
 
 logging.basicConfig(level=logging.INFO)
 
@@ -157,8 +157,16 @@ class BuilderTask():
             "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version"
             }
 
+        # now we have split this hazard job up, in whihc case the current job should run just the subset ....
+        logic_tree_permutations = ta['logic_tree_permutations']
+        if ta['split_source_branches']:
+            print(f'logic_tree_permutations: {logic_tree_permutations}')
+            log.info(f"splitting sources for task_id {ta['split_source_id']}")
+            logic_tree_permutations = [single_permutation(logic_tree_permutations, ta['split_source_id'])]
+            log.info(f"new logic_tree_permutations: {logic_tree_permutations}")
+
         # sources are the InversionSolutionNRML XML file(s) to include in the sources list
-        id_list = get_logic_tree_file_ids(ta['logic_tree_permutations'])
+        id_list = get_logic_tree_file_ids(logic_tree_permutations)
 
         log.info(f"sources: {id_list}")
         ## Create the OpenquakeHazardTask, with task details
@@ -206,11 +214,11 @@ class BuilderTask():
 
         sources_folder = Path(config_folder, 'sources')
 
-        source_file_mapping = SourceModelLoader().unpack_sources(ta['logic_tree_permutations'], sources_folder)
+        source_file_mapping = SourceModelLoader().unpack_sources(logic_tree_permutations, sources_folder)
         #print(f'sources_list: {sources_list}')
 
         # now the customised source_models.xml file must be written into the local configuration
-        ltbs = [ltb for ltb in get_logic_tree_branches(ta['logic_tree_permutations'])]
+        ltbs = [ltb for ltb in get_logic_tree_branches(logic_tree_permutations)]
         print("LTB:", len(ltbs), ltbs[0])
         src_xml = build_sources_xml(ltbs, source_file_mapping)
         src_xml_file = Path(sources_folder, 'source_model.xml')
