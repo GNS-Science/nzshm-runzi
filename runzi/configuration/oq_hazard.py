@@ -33,11 +33,12 @@ BL_CONF_0 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandE
 BIGGER_LEVER_CONF = BL_CONF_0
 split_source_branches = True
 
-def build_task(task_arguments, job_arguments, task_id, extra_env):
+factory_class = get_factory(CLUSTER_MODE)
+factory_task = runzi.execute.oq_hazard_task
+task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
-    factory_class = get_factory(CLUSTER_MODE)
-    factory_task = runzi.execute.oq_hazard_task
-    task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
+
+def build_task(task_arguments, job_arguments, task_id, extra_env):
 
     if CLUSTER_MODE == EnvMode['AWS']:
         job_name = f"Runzi-automation-oq-hazard-{task_id}"

@@ -59,6 +59,7 @@ def single_permutation(permutations, task_id):
     new_permutations = { "tag": "", "weight": 1.0, "permute" : [] }
 
     for member in single_source_branch_from(permutations, task_id):
+        member = member._replace(weight = 1.0)
         obj = { "group": member.tag, "members" : [member._asdict()]}
         new_permutations['permute'].append(obj)
     return new_permutations
