@@ -35,7 +35,7 @@ BL_CONF_16_120 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDe
 BL_CONF_32_60 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=60000, cpu=32) #
 BL_CONF_16_30 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=30000, cpu=16) #
 
-BIGGER_LEVER = True
+BIGGER_LEVER = False
 BIGGER_LEVER_CONF = BL_CONF_16_30
 
 factory_class = get_factory(CLUSTER_MODE)

@@ -241,7 +241,7 @@ class BuilderTask():
                     ta['intensity_spec']['levels'])\
                 .set_vs30(ta['vs30'])\
                 .set_rupture_mesh_spacing(ta['rupture_mesh_spacing'])\
-                .set_ps_grid_spacing(ta['ps_grid_spacings'])
+                .set_ps_grid_spacing(ta['ps_grid_spacing'])
             config.write(open(config_file, 'w'))
 
         modify_config(config_file, task_arguments)
