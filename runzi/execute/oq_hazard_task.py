@@ -11,19 +11,19 @@ import platform
 import logging
 import shutil
 
-from pathlib import Path, PurePath
-from importlib import import_module
+from pathlib import Path
+
 import datetime as dt
 from dateutil.tz import tzutc
-import urllib.parse
-import itertools
 
+import itertools
 
 from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
 from nshm_toshi_client.task_relation import TaskRelation
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 
 from runzi.util import archive
+from runzi.util.aws import decompress_config
 from runzi.execute.util import ( OpenquakeConfig, SourceModelLoader, build_sources_xml,
     get_logic_tree_file_ids, get_logic_tree_branches, single_permutation )
 
@@ -58,7 +58,6 @@ def explode_config_template(config_info, working_path: str, task_no: int):
     with zipfile.ZipFile(file_path, 'r') as zip_ref:
         zip_ref.extractall(config_folder)
         return config_folder
-
 
 def execute_openquake(configfile, task_no, toshi_task_id):
 
@@ -323,8 +322,8 @@ if __name__ == "__main__":
         f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
     except:
-        # for AWS this must be a quoted JSON string
-        config = json.loads(urllib.parse.unquote(args.config))
+        # for AWS this must now be a compressed JSON string
+        config = json.loads(decompress_config(args.config))
 
     task = BuilderTask(config['job_arguments'])
     task.run(**config)

@@ -25,7 +25,7 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
 
 HAZARD_MAX_TIME = 240 #minutes
 
-SPLIT_SOURCE_BRANCHES = True
+SPLIT_SOURCE_BRANCHES = False
 
 ##BL_CONF_0 = dict( job_def="BigLever_32GB_8VCPU_JD", job_queue="BigLever_32GB_8VCPU_JQ", mem=30000, cpu=8)
 BL_CONF_1 = dict( job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_32GB_8VCPU_v2_JQ", mem=30000, cpu=8)
@@ -34,9 +34,11 @@ BL_CONF_0 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandE
 BL_CONF_16_120 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=120000, cpu=16) #r5.12xlarge or similar
 BL_CONF_32_60 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=60000, cpu=32) #
 BL_CONF_16_30 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=30000, cpu=16) #
+BL_CONF_8_20 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=20000, cpu=8) #
+BL_CONF_32_120 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=120000, cpu=32) #r5.12xlarge or similar
 
-BIGGER_LEVER = False
-BIGGER_LEVER_CONF = BL_CONF_16_30
+BIGGER_LEVER = True
+BIGGER_LEVER_CONF = BL_CONF_32_120
 
 factory_class = get_factory(CLUSTER_MODE)
 factory_task = runzi.execute.oq_hazard_task
@@ -58,7 +60,8 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
                 vcpu=BIGGER_LEVER_CONF["cpu"],
                 job_definition=BIGGER_LEVER_CONF["job_def"], # "BigLeverOnDemandEC2-JD", # "BiggerLever-runzi-openquake-JD", #"getting-started-job-definition-jun7",
                 job_queue=BIGGER_LEVER_CONF["job_queue"],
-                extra_env = extra_env)
+                extra_env = extra_env,
+                use_compression = True)
         else:
             return get_ecs_job_config(job_name,
                 'N/A', config_data,
@@ -66,7 +69,8 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
                 task_module=runzi.execute.oq_hazard_task.__name__,
                 time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4,
                 job_definition="Fargate-runzi-openquake-JD",
-                extra_env = extra_env)
+                extra_env = extra_env,
+                use_compression = True)
 
     else:
         #write a config

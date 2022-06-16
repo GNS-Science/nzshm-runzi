@@ -4,6 +4,9 @@
 
 import boto3
 import base64
+import io
+import zipfile
+
 import urllib.parse
 from botocore.exceptions import ClientError
 import json
@@ -58,12 +61,32 @@ def get_secret(secret_name, region_name):
         else:
             return base64.b64decode(get_secret_value_response['SecretBinary'])
 
+def compress_config(config):
+    """Use LZMA compression to pack this config into a much smaller string"""
+    compressed = io.BytesIO()
+    with zipfile.ZipFile(compressed, 'w', compression=zipfile.ZIP_LZMA ) as zf:
+        zf.writestr('0', config)
+        zf.close()
+    compressed.seek(0)
+    b64 = base64.b64encode(compressed.read())
+    return b64.decode('ascii')
+
+def decompress_config(compressed):
+    """decompres an LZMA compressed config."""
+    base64_bytes = compressed.encode('ascii')
+    message_bytes = base64.b64decode(base64_bytes)
+
+    ## Decompression
+    zfout = zipfile.ZipFile(io.BytesIO(message_bytes))
+    msg_out = io.BytesIO(zfout.read('0'))
+    msg_out.seek(0)
+    return msg_out.read().decode('ascii')
 
 def get_ecs_job_config(job_name, toshi_file_id, config, toshi_api_url, toshi_s3_url,
     toshi_report_bucket, task_module, time_minutes, memory, vcpu,
     job_definition="Fargate-runzi-opensha-JD",
     job_queue="BasicFargate_Q",
-    extra_env: List[BatchEnvironmentSetting] = None):
+    extra_env: List[BatchEnvironmentSetting] = None, use_compression = False):
 
     if "Fargate" in job_definition:
         assert vcpu in  [0.25, 0.5, 1, 2, 4]
@@ -101,7 +124,7 @@ def get_ecs_job_config(job_name, toshi_file_id, config, toshi_api_url, toshi_s3_
             "environment": [
                 {
                     "name": "TASK_CONFIG_JSON_QUOTED",
-                    "value": urllib.parse.quote(json.dumps(config))
+                    "value": compress_config(json.dumps(config)) if use_compression else urllib.parse.quote(json.dumps(config))
                 },
                 {
                     "name": "NZSHM22_SCRIPT_JVM_HEAP_MAX",
