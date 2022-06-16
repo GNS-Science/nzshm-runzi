@@ -25,14 +25,18 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
 
 HAZARD_MAX_TIME = 240 #minutes
 
-BIGGER_LEVER = True
+SPLIT_SOURCE_BRANCHES = True
+
 ##BL_CONF_0 = dict( job_def="BigLever_32GB_8VCPU_JD", job_queue="BigLever_32GB_8VCPU_JQ", mem=30000, cpu=8)
 BL_CONF_1 = dict( job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_32GB_8VCPU_v2_JQ", mem=30000, cpu=8)
+
 BL_CONF_0 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=380000, cpu=48) #r5.12xlarge or similar
 BL_CONF_16_120 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=120000, cpu=16) #r5.12xlarge or similar
+BL_CONF_32_60 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=60000, cpu=32) #
+BL_CONF_16_30 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=30000, cpu=16) #
 
-BIGGER_LEVER_CONF = BL_CONF_16_120
-SPLIT_SOURCE_BRANCHES = True
+BIGGER_LEVER = True
+BIGGER_LEVER_CONF = BL_CONF_16_30
 
 factory_class = get_factory(CLUSTER_MODE)
 factory_task = runzi.execute.oq_hazard_task
@@ -146,7 +150,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 ltbs = list(get_logic_tree_branches(logic_tree_permutations))
                 for split_id in range(len(ltbs)):
                     print(f'split_id {split_id} task_idL {job_arguments["task_id"]}')
-                    task_arguments['split_source_branches'] = split_source_branches
+                    task_arguments['split_source_branches'] = SPLIT_SOURCE_BRANCHES
                     task_arguments['split_source_id'] = split_id
                     new_task_id = job_arguments['task_id'] * (split_id +1)
                     # job_arguments['task_id'] = new_task_id

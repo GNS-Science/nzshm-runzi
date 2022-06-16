@@ -159,7 +159,7 @@ class BuilderTask():
 
         # now we have split this hazard job up, in whihc case the current job should run just the subset ....
         logic_tree_permutations = ta['logic_tree_permutations']
-        if ta['split_source_branches']:
+        if ta.get('split_source_branches'):
             print(f'logic_tree_permutations: {logic_tree_permutations}')
             log.info(f"splitting sources for task_id {ta['split_source_id']}")
             logic_tree_permutations = [single_permutation(logic_tree_permutations, ta['split_source_id'])]
