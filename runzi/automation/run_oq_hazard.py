@@ -113,6 +113,7 @@ if __name__ == "__main__":
             # {'enabled': True, 'config': {}}
         ],
         rupture_mesh_spacings = [5], #1,2,3,4,5,6,7,8,9],
+        ps_grid_spacings = [30], #km
     )
 
     args_list = []

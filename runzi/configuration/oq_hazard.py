@@ -101,7 +101,8 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
         vs30,
         location_code,
         disagg_conf,
-        rupture_mesh_spacing
+        rupture_mesh_spacing,
+        ps_grid_spacing
         )\
         in itertools.product(
             subtask_arguments["config_archive_ids"],
@@ -110,7 +111,8 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             subtask_arguments['vs30s'],
             subtask_arguments['location_codes'],
             subtask_arguments['disagg_confs'],
-            subtask_arguments['rupture_mesh_spacings']
+            subtask_arguments['rupture_mesh_spacings'],
+            subtask_arguments['ps_grid_spacings']
             ):
 
             task_count +=1
@@ -128,6 +130,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 location_code = location_code,
                 disagg_conf = disagg_conf,
                 rupture_mesh_spacing = rupture_mesh_spacing,
+                ps_grid_spacing = ps_grid_spacing
                 )
 
             print('')
