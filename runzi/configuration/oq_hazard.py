@@ -25,7 +25,7 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
 
 HAZARD_MAX_TIME = 240 #minutes
 
-SPLIT_SOURCE_BRANCHES = False
+SPLIT_SOURCE_BRANCHES = True
 
 ##BL_CONF_0 = dict( job_def="BigLever_32GB_8VCPU_JD", job_queue="BigLever_32GB_8VCPU_JQ", mem=30000, cpu=8)
 BL_CONF_1 = dict( job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_32GB_8VCPU_v2_JQ", mem=30000, cpu=8)

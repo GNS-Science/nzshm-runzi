@@ -81,7 +81,7 @@ if __name__ == "__main__":
             ],
         # NEW FORM
         # makes better use of python
-        logic_tree_permutations =  [logic_tree_permutations[0]],
+        logic_tree_permutations =  [logic_tree_permutations[2]],
         # logic_tree_permutations = [
         #     [{
         #         "tag": "all sources, with polygons", "weight": 1.0,

@@ -109,8 +109,6 @@ class SourceModelLoader():
 
 def build_sources_xml(logic_tree_branches, source_file_mapping):
 
-    #weight = 1/len(logic_tree_branches)
-    total_branch_weight = 0
     E = ElementMaker(namespace="http://openquake.org/xmlns/nrml/0.5",
                       nsmap={"gml" : "http://www.opengis.net/gml", None:"http://openquake.org/xmlns/nrml/0.5"})
     NRML = E.nrml
@@ -131,10 +129,12 @@ def build_sources_xml(logic_tree_branches, source_file_mapping):
             bs += f"|{ltb.bg_id}"
         return bs
 
+    total_branch_weight = 0
+    branch_weight = 1.0 / len(logic_tree_branches)
     for branch in logic_tree_branches:
             files = ""
             branch_name = "|".join([get_branch_sources(ltb) for ltb in branch])
-            branch_weight = 1.0
+
             for ltb in branch:
                 #print(ltb)
                 #name, src_id, wt = source_tuple
@@ -142,14 +142,14 @@ def build_sources_xml(logic_tree_branches, source_file_mapping):
                     files += "\t".join(source_file_mapping[ltb.inv_id]['sources']) + "\t"
                 if ltb.bg_id:
                     files += "\t".join(source_file_mapping[ltb.bg_id]['sources']) + "\t"
-                branch_weight *= ltb.weight
+                #branch_weight *= ltb.weight
             #branch_weight = round(branch_weight, 10)
             total_branch_weight += branch_weight
             ltb = LTB( UM(files), UW(str(branch_weight)), branchID=branch_name)
             ltbs.append(ltb)
 
     print(f'total_branch_weight: {total_branch_weight}')
-    # assert round(total_branch_weight, 8) == 1.0
+    assert round(total_branch_weight, 8) == 1.0
 
     nrml = NRML( LT( LTBL( ltbs, branchingLevelID="1" ), logicTreeID = "Combined"))
     return etree.tostring(nrml, pretty_print=True).decode()
@@ -159,7 +159,8 @@ def build_sources_xml(logic_tree_branches, source_file_mapping):
 if __name__ == "__main__":
     from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 
-    from runzi.CONFIG.OQ.hik_n_sensitivity_config import logic_tree_permutations, gt_description
+    #from runzi.CONFIG.OQ.hik_n_sensitivity_config import logic_tree_permutations, gt_description
+    from runzi.CONFIG.OQ.large_SLT_example_A import logic_tree_permutations, gt_description
     # permutations =  [{
     #     "tag": "all sources, with polygons", "weight": 1.0,
     #     "permute" : [
@@ -188,21 +189,22 @@ if __name__ == "__main__":
 
     permutations = logic_tree_permutations[0]
 
-    print(permutations)
+    #permutations = [single_permutation(permutations, 0), single_permutation(permutations, 1),]
+
+    #print(permutations)
 
     logging.basicConfig(level=logging.INFO)
     sources_folder = Path(WORK_PATH, 'sources')
-    # source_file_mapping = SourceModelLoader().unpack_sources(permutations, sources_folder)
+
+    source_file_mapping = SourceModelLoader().unpack_sources(permutations, sources_folder)
 
     ltbs = [ltb for ltb in get_logic_tree_branches(permutations)]
     print("LTB 0:", ltbs[0])
-    print()
+    #print()
 
+    #print(single_permutation(permutations, 0))
 
-    print(single_permutation(permutations, 0))
-
-
-    nrml = build_sources_xml([ltbs[0]], source_file_mapping)
+    nrml = build_sources_xml(ltbs, source_file_mapping)
 
     with open("source_model.xml", 'w') as f:
         f.write(nrml)
