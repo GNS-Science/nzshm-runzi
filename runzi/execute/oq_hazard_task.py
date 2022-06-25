@@ -156,7 +156,7 @@ class BuilderTask():
             "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version"
             }
 
-        # now we have split this hazard job up, in whihc case the current job should run just the subset ....
+        # now we have split this hazard job up, in which case the current job should run just the subset ....
         logic_tree_permutations = ta['logic_tree_permutations']
         if ta.get('split_source_branches'):
             print(f'logic_tree_permutations: {logic_tree_permutations}')

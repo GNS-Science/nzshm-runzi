@@ -22,7 +22,8 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 #from runzi.CONFIG.OQ.hik_n_sensitivity_config import logic_tree_permutations, gt_description
 #from runzi.CONFIG.OQ.hik_c_sensitivity_config import logic_tree_permutations, gt_description
 #from runzi.CONFIG.OQ.hik_def_sensitivity_config import logic_tree_permutations, gt_description
-from runzi.CONFIG.OQ.crustal_def_sensitivity_config import logic_tree_permutations, gt_description
+#from runzi.CONFIG.OQ.crustal_def_sensitivity_config import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.large_SLT_example_A import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -81,29 +82,8 @@ if __name__ == "__main__":
             ],
         # NEW FORM
         # makes better use of python
-        logic_tree_permutations =  [logic_tree_permutations[2]],
-        # logic_tree_permutations = [
-        #     [{
-        #         "tag": "all sources, with polygons", "weight": 1.0,
-        #         "permute" : [
-        #             {   "group": "HIK",
-        #                 "members" : [
-        #                     {"tag": "Hikurangi TC b=1.07, C=4.0, s=.75", "weight": 1.0, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ==","bg_id":"RmlsZToxMDQ4NjI="}
-        #                 ]
-        #             },
-        #             {   "group": "PUY",
-        #                 "members" : [
-        #                     {"tag": "Puysegur b=0.712, C=3.9, s=0.4", "weight":1.0, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg==" "bg_id": None}
-        #                 ]
-        #             },
-        #             {   "group": "CRU",
-        #                 "members" : [
-        #                     {"tag": "Crustal b=xxx, s=1.0", "weight": 1.0, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Mw==","bg_id":"RmlsZToxMDQ4NjM="}
-        #                 ]
-        #             }
-        #         ]
-        #     }]
-        # ],
+        logic_tree_permutations =  [logic_tree_permutations[0]],
+
         intensity_specs = [
             #{"tag": "lite", "measures": ['PGA', 'SA(0.5)', 'SA(1.0)'], "levels": 'logscale(0.005, 4.00, 30)' },
             { "tag": "fixed", "measures": era_measures, "levels": era_levels},

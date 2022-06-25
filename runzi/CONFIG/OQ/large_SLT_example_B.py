@@ -1,4 +1,4 @@
-gt_description = "Sample Large Source Logic Tree "
+gt_description = "Sample Large Source Logic Tree B"
 
 logic_tree_permutations = [
 
@@ -25,11 +25,8 @@ logic_tree_permutations = [
                     {"tag": "hiktcrp, b1.211, C4.1, s1.22", "weight": 0.0666666666666667, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODE5MA==", "bg_id":"RmlsZToxMDY1MzY="},
                     {"tag": "hiktcrp, b1.211, C4.1, s1.87", "weight": 0.0666666666666667, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODE5Mw==", "bg_id":"RmlsZToxMDY1MzY="},
                     {"tag": "hiktcrp, b1.211, C4.1, s1", "weight": 0.0666666666666667, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODE5OQ==", "bg_id":"RmlsZToxMDY1MjQ="}
-
-
                 ]
             },
-
             {   "group": "PUY",
                 "members" : [
                     {"tag": "puy, b0.791, C3.9, s0.57", "weight": 0.111111111111111, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODI3MA==", "bg_id":"RmlsZToxMDY1NDg="},
@@ -43,10 +40,8 @@ logic_tree_permutations = [
                     {"tag": "puy, b1.064, C4.1, s0.57", "weight": 0.111111111111111, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODI5Mw==", "bg_id":"RmlsZToxMDY1NTg="},
                     {"tag": "puy, b1.064, C4.1, s1", "weight": 0.111111111111111, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODI4Mg==", "bg_id":"RmlsZToxMDY1NDQ="},
                     {"tag": "puy, b1.064, C4.1, s1.43", "weight": 0.111111111111111, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODI3NQ==", "bg_id":"RmlsZToxMDY1NjU="}
-
                 ]
             },
-
             {   "group": "CRU",
                 "members" : [
                     {"tag": "Cru_geol, b0.849, C4.1, s0.53", "weight": 0.0333333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODMzNw==", "bg_id":"RmlsZToxMDY1NDc="},
@@ -66,14 +61,9 @@ logic_tree_permutations = [
                     {"tag": "Cru_geol, b1.06, C4.3, s1", "weight": 0.0333333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODM0OQ==", "bg_id":"RmlsZToxMDY1NDM="},
                     {"tag": "Cru_geol, b1.06, C4.3, s1.47", "weight": 0.0333333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODM1MA==", "bg_id":"RmlsZToxMDY1NjY="},
                     {"tag": "Cru_geol, b1.06, C4.3, s1.61", "weight": 0.0333333333333333, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODM0OA==", "bg_id":"RmlsZToxMDY1NDU="}
-
                 ]
             }
-
-
         ]
     }]
 
 ]
-
-

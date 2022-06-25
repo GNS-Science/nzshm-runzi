@@ -26,6 +26,7 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
 HAZARD_MAX_TIME = 240 #minutes
 
 SPLIT_SOURCE_BRANCHES = True
+SPLIT_TRUNCATION = 1 # set to None if you want all the split jobs, this is just for testing
 
 ##BL_CONF_0 = dict( job_def="BigLever_32GB_8VCPU_JD", job_queue="BigLever_32GB_8VCPU_JQ", mem=30000, cpu=8)
 BL_CONF_1 = dict( job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_32GB_8VCPU_v2_JQ", mem=30000, cpu=8)
@@ -153,9 +154,10 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             if not SPLIT_SOURCE_BRANCHES:
                 yield build_task(task_arguments, job_arguments, task_count, extra_env)
             else:
+                split_range = SPLIT_TRUNCATION if SPLIT_TRUNCATION else len(ltbs) # how many split  jobs to actually run
                 print(f'logic_tree_permutations: {logic_tree_permutations}')
                 ltbs = list(get_logic_tree_branches(logic_tree_permutations))
-                for split_id in range(len(ltbs)):
+                for split_id in range(split_range):
                     print(f'split_id {split_id} task_idL {job_arguments["task_id"]}')
                     task_arguments['split_source_branches'] = SPLIT_SOURCE_BRANCHES
                     task_arguments['split_source_id'] = split_id
