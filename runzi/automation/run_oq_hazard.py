@@ -39,7 +39,6 @@ def build_tasks(new_gt_id, args, task_type, model_type):
 
 if __name__ == "__main__":
 
-
     t0 = dt.datetime.utcnow()
 
     logging.basicConfig(level=logging.INFO)
@@ -78,7 +77,8 @@ if __name__ == "__main__":
             # "RmlsZToxMDEwMDk="   #TEST CONFIG 29_mesh
             # "RmlsZToxMDExNTY=", #New TEST CONFIG w Rotorua TAG = None
             #"RmlsZToxMDYxOTA=" #PROD CONFIG w Rotorua TAG = NZ35
-            "RmlsZToxMDY1NzE=" #PROD + backbone
+            #"RmlsZToxMDY1NzE=" #PROD + backbone
+            "RmlsZToxMTA1MTA=" #PROD SLT_Large_with_grids
             ],
         # NEW FORM
         # makes better use of python

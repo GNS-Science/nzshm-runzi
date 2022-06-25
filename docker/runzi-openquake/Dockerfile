@@ -22,10 +22,6 @@ RUN pip install pytest
 ADD stafford_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
 ADD kuehn_2020_mod.py /usr/src/oq-engine/openquake/hazardlib/gsim
 
-# The new AWS hazard store script ...
-RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@7a68add44dc8e8cd90ca5fe861b066982f5f8b76#egg=toshi-hazard-store
-#RUN pip install toshi_hazard_store
-
 # Install Runzi TODO:is this only for these test configs ??
 WORKDIR /app
 COPY script/container_task.sh .
@@ -39,6 +35,15 @@ RUN git fetch
 RUN git checkout feature/96-site-config-rebased
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
+
+# The AWS hazard store script ...
+RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@7a68add44dc8e8cd90ca5fe861b066982f5f8b76#egg=toshi-hazard-store
+#RUN pip install toshi_hazard_store
+
+# settings for toshi-hazard-store
+COPY pynamodb_settings.py .
+ENV PYNAMODB_CONFIG=/app/pynamodb_settings.py
+ENV NZSHM22_HAZARD_STORE_NUM_WORKERS=4
 
 RUN chown openquake /WORKING
 
