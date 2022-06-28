@@ -13,7 +13,7 @@ SITES = dict(
     GRD1 = {"sites_csv": "NZ_whole_country_10k.csv"},
     NZ6 =  {"site_model_file": "site_model_test.csv"},
     GRD_NZ_0_5 = {"sites_csv": "./grids/grid-NZ-0.5-0.0003.nb1.csv" },               # 50km  240 sites, 0.5 degs 1 neighbour
-    GRD_NZ_0_25 = = {"sites_csv": "./NZ_POLYS_0.25.csv" },                           # 25km  471 sites, 0.25 degs 0 neighbour
+    GRD_NZ_0_25 = {"sites_csv": "./NZ_POLYS_0.25.csv" },                             # 25km  471 sites, 0.25 degs 0 neighbour
     GRD_NZ_0_1 = {"sites_csv": "./grids/grid-NZ-0.1-0.0003.nb1.csv" },               # 10km 3618 sites, 0.1 degs, 1 neighbour
     GRD_WLGREG_0_05 = {"sites_csv": "./grids/grid-Wellington-0.05.0003.nb1.csv" },   #  5km  62 sites
     GRD_WLGREG_0_01 = {"sites_csv": "./grids/grid-Wellington-0.01.0003.nb1.csv" },   #  1km 764 sites
