@@ -330,7 +330,7 @@ class BuilderTask():
                         f'"{ltb["tag"]}"',
                         f'"{ltb["inv_id"]}, {ltb["bg_id"]}"',
                         '--verbose',
-                        '--create_tables']
+                        '--create-tables']
                 log.info(f'store_hazard: {cmd}')
                 subprocess.check_call(cmd)
 
