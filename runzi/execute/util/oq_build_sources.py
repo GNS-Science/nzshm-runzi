@@ -46,6 +46,17 @@ def get_logic_tree_branches(ltb_groups):
         for ltb in itertools.product(*get_ltb(group)):
             yield ltb
 
+
+def get_granular_logic_tree_branches(ltb_groups):
+    """For granular we don't permute (YAY)."""
+    for group in ltb_groups:
+        for ltbs in get_ltb(group):
+            for ltb in ltbs:
+                d = ltb._asdict()
+                d['weight'] = 1.0
+                yield LogicTreeBranch(**d)
+
+
 def single_permutation(permutations, task_id):
     """
     A helper function to slice up a permuations list into it components, and retrun each as a mini-permutation object.
@@ -159,35 +170,13 @@ def build_sources_xml(logic_tree_branches, source_file_mapping):
 if __name__ == "__main__":
     from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 
-    #from runzi.CONFIG.OQ.hik_n_sensitivity_config import logic_tree_permutations, gt_description
     from runzi.CONFIG.OQ.large_SLT_example_A import logic_tree_permutations, gt_description
-    # permutations =  [{
-    #     "tag": "all sources, with polygons", "weight": 1.0,
-    #     "permute" : [
-    #         {   "group": "HIK",
-    #             "members" : [
-    #                 {"tag": "Hikurangi TC b=1.07, C=4.0, s=.75", "weight": 0.5,
-    #                     "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4MQ==", "bg_id":"RmlsZToxMDQ4NjI="},
-    #                 {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 0.5,
-    #                     "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjk0OQ==", "bg_id":"RmlsZToxMDQyOTY="}
-    #             ]
-    #         },
-    #         {   "group": "PUY",
-    #             "members" : [
-    #                 {"tag": "Puysegur b=0.712, C=3.9, s=0.4", "weight":1.0,
-    #                  "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDU4Mg==", "bg_id": None}
-    #             ]
-    #         },
-    #         {   "group": "CRU",
-    #             "members" : [
-    #                 {"tag": "Crustal b=xxx, s=1.0", "weight": 1.0,
-    #                     "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwNDk3Mw==", "bg_id":"RmlsZToxMDQ4NjM="}
-    #             ]
-    #         }
-    #     ]
-    # }]
 
     permutations = logic_tree_permutations[0]
+
+    for grp in single_permutation(permutations, 0)['permute']:
+        print(grp)
+    assert 0
 
     #permutations = [single_permutation(permutations, 0), single_permutation(permutations, 1),]
 
@@ -202,7 +191,6 @@ if __name__ == "__main__":
     print("LTB 0:", ltbs[0])
     #print()
 
-    #print(single_permutation(permutations, 0))
 
     nrml = build_sources_xml(ltbs, source_file_mapping)
 

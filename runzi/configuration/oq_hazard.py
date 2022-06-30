@@ -18,7 +18,7 @@ from runzi.util.aws import get_ecs_job_config, BatchEnvironmentSetting
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 
 import runzi.execute.oq_hazard_task
-from runzi.execute.util import get_logic_tree_branches
+from runzi.execute.util import get_logic_tree_branches, get_granular_logic_tree_branches
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode, S3_URL, S3_REPORT_BUCKET)
@@ -27,6 +27,7 @@ HAZARD_MAX_TIME = 240 #minutes
 
 SPLIT_SOURCE_BRANCHES = True
 SPLIT_TRUNCATION = 1 # set to None if you want all the split jobs, this is just for testing
+GRANULAR = True
 
 ##BL_CONF_0 = dict( job_def="BigLever_32GB_8VCPU_JD", job_queue="BigLever_32GB_8VCPU_JQ", mem=30000, cpu=8)
 BL_CONF_1 = dict( job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_32GB_8VCPU_v2_JQ", mem=30000, cpu=8)
@@ -38,7 +39,7 @@ BL_CONF_16_30 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDem
 BL_CONF_8_20 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=20000, cpu=8) #
 BL_CONF_32_120 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=120000, cpu=32) #r5.12xlarge or similar
 
-BIGGER_LEVER = True
+BIGGER_LEVER = False # FALSE uses fargate
 BIGGER_LEVER_CONF = BL_CONF_32_120
 
 factory_class = get_factory(CLUSTER_MODE)
@@ -151,9 +152,31 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 use_api = USE_API,
                 )
 
-            if not SPLIT_SOURCE_BRANCHES:
+            if not (SPLIT_SOURCE_BRANCHES or GRANULAR):
                 yield build_task(task_arguments, job_arguments, task_count, extra_env)
-            else:
+                continue
+
+            if GRANULAR:
+                #SMALLEST BUIL
+                pass
+                granular_id = 0
+                for ltb in get_granular_logic_tree_branches(logic_tree_permutations):
+                    # print(f'granular ltb {ltb} task_id {job_arguments["task_id"]}')
+                    # task_arguments['split_source_branches'] = SPLIT_SOURCE_BRANCHES
+                    # task_arguments['split_source_id'] = split_id
+                    granular_id +=1
+                    new_task_id = job_arguments['task_id'] * granular_id
+                    new_permuations = [{'tag': 'GRANULAR', 'weight': 1.0, 'permute': [{'group': 'ALL', 'members': [ltb._asdict()] }]}]
+                    task_arguments['logic_tree_permutations'] = new_permuations
+                    task_arguments['split_source_branches'] = False
+                    # # job_arguments['task_id'] = new_task_id
+                    # #TODO replace logic_tree_permuations here!
+                    # print('new_task_id', new_task_id)
+                    yield build_task(task_arguments, job_arguments, new_task_id, extra_env)
+
+                continue
+
+            if SPLIT_SOURCE_BRANCHES:
                 split_range = SPLIT_TRUNCATION if SPLIT_TRUNCATION else len(ltbs) # how many split  jobs to actually run
                 print(f'logic_tree_permutations: {logic_tree_permutations}')
                 ltbs = list(get_logic_tree_branches(logic_tree_permutations))

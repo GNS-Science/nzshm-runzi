@@ -91,7 +91,7 @@ if __name__ == "__main__":
             #{"tag": "super-max", "measures": era_measures, "levels": 'logscale(0.001, 10.0, 300)'}
         ],
         vs30s = [750],# 250, #300, 350, 400, 450, 750 ],
-        location_codes = ['NZ34'], # NZ6, WLG
+        location_codes = ['GRD_NZ_0_1'], # NZ6, WLG
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
         ],
@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     print("GENERAL_TASK_ID:", new_gt_id)
 
-    tasks = build_tasks(new_gt_id, args, task_type, model_type)
+    tasks = [list(build_tasks(new_gt_id, args, task_type, model_type))[0]]
 
     # toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
     print('worker count: ', WORKER_POOL_SIZE)
