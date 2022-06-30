@@ -98,7 +98,8 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
 
     extra_env = [
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_STAGE", value="PROD"),
-        BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_REGION", value="us-east-1")
+        BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_REGION", value="ap-southeast-2")
+        BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_NUM_WORKERS", value="1")
     ]
 
     for (config_archive_id,

@@ -6,7 +6,7 @@ global_default_settings.py to have it automatically discovered.
 """
 
 max_pool_connections = 10  # default 10
-base_backoff_ms = 200  # default 25
-max_retry_attempts = 8  # default 3
+base_backoff_ms = 250  # default 25
+max_retry_attempts = 15  # default 3
 read_timeout_seconds = 30  # default 30
 connect_timeout_seconds = 20  # default 15

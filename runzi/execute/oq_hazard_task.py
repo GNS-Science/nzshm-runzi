@@ -6,6 +6,7 @@ import os
 import io
 import zipfile
 import subprocess
+import time
 import requests
 import platform
 import logging
@@ -351,5 +352,6 @@ if __name__ == "__main__":
         # for AWS this must now be a compressed JSON string
         config = json.loads(decompress_config(args.config))
 
+    time.sleep(int(config['job_arguments']['task_id']) * 2 )
     task = BuilderTask(config['job_arguments'])
     task.run(**config)

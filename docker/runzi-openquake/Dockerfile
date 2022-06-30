@@ -39,7 +39,7 @@ RUN pip3 install -e .
 
 
 # The AWS hazard store script ...
-RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@8d5b17f30eeb4558e1bde2c8d6cf3abff297f365#egg=toshi-hazard-store
+RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@f96c85a886d28f0d40afdaef675a55cdaa01ad4f#egg=toshi-hazard-store
 #RUN pip install toshi_hazard_store
 
 # settings for toshi-hazard-store
@@ -47,8 +47,8 @@ WORKDIR /app
 COPY pynamodb_settings.py .
 ENV PYNAMODB_CONFIG=/app/pynamodb_settings.py
 ENV NZSHM22_HAZARD_STORE_NUM_WORKERS=4
-ENV NZSHM22_HAZARD_STORE_STAGE=TEST
-ENV NZSHM22_HAZARD_STORE_REGION=ap-southeast-2
+ENV NZSHM22_HAZARD_STORE_STAGE=PROD
+ENV NZSHM22_HAZARD_STORE_REGION=us-east-1
 
 RUN chown openquake /WORKING
 
