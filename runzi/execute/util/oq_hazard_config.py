@@ -17,6 +17,7 @@ SITES = dict(
     GRD_NZ_0_1 = {"sites_csv": "./grids/grid-NZ-0.1-0.0003.nb1.csv" },               # 10km 3618 sites, 0.1 degs, 1 neighbour
     GRD_WLGREG_0_05 = {"sites_csv": "./grids/grid-Wellington-0.05.0003.nb1.csv" },   #  5km  62 sites
     GRD_WLGREG_0_01 = {"sites_csv": "./grids/grid-Wellington-0.01.0003.nb1.csv" },   #  1km 764 sites
+    GRD_NZ_0_2_NZ34 = {"sites_csv": "./grid-NZ-0.2-0.0003.nb1.nz34.csv" }            # 20km 1050 site + NZ35 locations
 )
 
 #Sanjay new values
@@ -130,7 +131,7 @@ if __name__ == "__main__":
     sample = io.StringIO(sample_conf) #fake file for demo
 
     nc = OpenquakeConfig(sample)\
-        .set_sites('NZ4')\
+        .set_sites('GRD_NZ_0_2_NZ34')\
         .set_disaggregation(False, {"num_rlz_disagg": 0})\
         .set_ps_grid_spacing(20)
 

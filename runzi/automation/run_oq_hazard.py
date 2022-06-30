@@ -78,7 +78,8 @@ if __name__ == "__main__":
             # "RmlsZToxMDExNTY=", #New TEST CONFIG w Rotorua TAG = None
             #"RmlsZToxMDYxOTA=" #PROD CONFIG w Rotorua TAG = NZ35
             #"RmlsZToxMDY1NzE=" #PROD + backbone
-            "RmlsZToxMTA1MTA=" #PROD SLT_Large_with_grids
+            #"RmlsZToxMTA1MTA=" #PROD SLT_Large_with_grids
+            "RmlsZToxMTEyNDA=" #PROD 37_GRANULAR_RELEASE_1
             ],
         # NEW FORM
         # makes better use of python
@@ -91,7 +92,7 @@ if __name__ == "__main__":
             #{"tag": "super-max", "measures": era_measures, "levels": 'logscale(0.001, 10.0, 300)'}
         ],
         vs30s = [750],# 250, #300, 350, 400, 450, 750 ],
-        location_codes = ['GRD_NZ_0_1'], # NZ6, WLG
+        location_codes = ['GRD_NZ_0_2_NZ34'], # NZ6, WLG
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
         ],

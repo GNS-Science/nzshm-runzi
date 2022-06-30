@@ -33,7 +33,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/96-site-config-rebased
+RUN git checkout feature/granular-realisations
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 
