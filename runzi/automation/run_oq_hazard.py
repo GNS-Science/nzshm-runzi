@@ -79,7 +79,7 @@ if __name__ == "__main__":
             #"RmlsZToxMDYxOTA=" #PROD CONFIG w Rotorua TAG = NZ35
             #"RmlsZToxMDY1NzE=" #PROD + backbone
             #"RmlsZToxMTA1MTA=" #PROD SLT_Large_with_grids
-            "RmlsZToxMTEyNDA=" #PROD 37_GRANULAR_RELEASE_1
+            "RmlsZToxMTEyNDE=" #PROD 37_GRANULAR_RELEASE_1
             ],
         # NEW FORM
         # makes better use of python
@@ -92,7 +92,7 @@ if __name__ == "__main__":
             #{"tag": "super-max", "measures": era_measures, "levels": 'logscale(0.001, 10.0, 300)'}
         ],
         vs30s = [750],# 250, #300, 350, 400, 450, 750 ],
-        location_codes = ['GRD_NZ_0_2_NZ34'], # NZ6, WLG
+        location_codes = ['NZ34'], # NZ6, WLG, GRD_NZ_0_2_NZ34'
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
         ],
@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
     print("GENERAL_TASK_ID:", new_gt_id)
 
-    tasks = [list(build_tasks(new_gt_id, args, task_type, model_type))[0]]
+    tasks = list(build_tasks(new_gt_id, args, task_type, model_type))[:4]
 
     # toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
     print('worker count: ', WORKER_POOL_SIZE)

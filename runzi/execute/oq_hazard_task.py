@@ -301,10 +301,36 @@ class BuilderTask():
                     result = "SUCCESS",
                     state = "DONE"))
 
+
             # run the store_hazard job
             if not SPOOF_HAZARD:
-                # options --new-version-only --create-tables --skip-rlzs --verbose
-                cmd = ['store_hazard', str(oq_result['oq_calc_id']), solution_id, '--verbose', '--new-version-only']
+                # [{'tag': 'GRANULAR', 'weight': 1.0, 'permute': [{'group': 'ALL', 'members': [ltb._asdict()] }]}]
+                # TODO GRANULAR ONLY@!@
+                # ltb = {"tag": "hiktlck, b0.979, C3.9, s0.78", "weight": 0.0666666666666667, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODA3NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+
+                """
+                positional arguments:
+                  calc_id              an openquake calc id OR filepath to the hdf5 file.
+                  toshi_hazard_id      hazard_solution id.
+                  toshi_gt_id          general_task id.
+                  locations_id         identifier for the locations used (common-py ENUM ??)
+                  source_tags          e.g. "hiktlck, b0.979, C3.9, s0.78"
+                  source_ids           e.g. "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODA3NQ==,RmlsZToxMDY1MjU="
+
+                optional arguments:
+                  -h, --help           show this help message and exit
+                  -c, --create-tables  Ensure tables exist.
+                """
+                ltb = ta['logic_tree_permutations'][0]['permute'][0]['members'][0]
+                cmd = ['store_hazard_v3',
+                        str(oq_result['oq_calc_id']),
+                        solution_id,
+                        job_arguments['general_task_id'],
+                        ta['location_code'],
+                        f'"{ltb["tag"]}"',
+                        f'"{ltb["inv_id"]}, {ltb["bg_id"]}"',
+                        '--verbose',
+                        '--create_tables']
                 log.info(f'store_hazard: {cmd}')
                 subprocess.check_call(cmd)
 

@@ -39,8 +39,8 @@ BL_CONF_16_30 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDem
 BL_CONF_8_20 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=20000, cpu=8) #
 BL_CONF_32_120 = dict( job_def="BigLeverOnDemandEC2-JD", job_queue="BigLeverOnDemandEC2-job-queue", mem=120000, cpu=32) #r5.12xlarge or similar
 
-BIGGER_LEVER = False # FALSE uses fargate
-BIGGER_LEVER_CONF = BL_CONF_32_120
+BIGGER_LEVER = True # FALSE uses fargate
+BIGGER_LEVER_CONF = BL_CONF_1 #BL_CONF_32_120
 
 factory_class = get_factory(CLUSTER_MODE)
 factory_task = runzi.execute.oq_hazard_task
