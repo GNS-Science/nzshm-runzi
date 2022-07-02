@@ -92,7 +92,7 @@ if __name__ == "__main__":
             #{"tag": "max10-300", "measures": era_measures, "levels": 'logscale(0.001, 5.00, 100)'}
             #{"tag": "super-max", "measures": era_measures, "levels": 'logscale(0.001, 10.0, 300)'}
         ],
-        vs30s = [750],# 250, #300, 350, 400, 450, 750 ],
+        vs30s = [400],# 250, #300, 350, 400, 450, 750 ],
         location_codes = ['GRD_NZ_0_2_NZ34'], # NZ6, WLG, GRD_NZ_0_2_NZ34'
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
