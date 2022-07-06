@@ -20,7 +20,8 @@ RUN pip install pytest
 
 #TEMP until this is in GEM repo
 ADD stafford_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
-ADD kuehn_2020_mod.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD atkinson_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD kuehn_2020.py /usr/src/oq-engine/openquake/hazardlib/gsim
 ADD mcverry_2006_MW.py /usr/src/oq-engine/openquake/hazardlib/gsim
 
 # Install Runzi TODO:is this only for these test configs ??
@@ -47,7 +48,8 @@ WORKDIR /app
 COPY pynamodb_settings.py .
 ENV PYNAMODB_CONFIG=/app/pynamodb_settings.py
 ENV NZSHM22_HAZARD_STORE_NUM_WORKERS=4
-ENV NZSHM22_HAZARD_STORE_STAGE=PROD
+# ENV NZSHM22_HAZARD_STORE_STAGE=PROD (use CDC)
+ENV NZSHM22_HAZARD_STORE_STAGE=TEST
 ENV NZSHM22_HAZARD_STORE_REGION=us-east-1
 
 RUN chown openquake /WORKING

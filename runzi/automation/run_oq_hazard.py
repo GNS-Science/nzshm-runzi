@@ -24,7 +24,8 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 #from runzi.CONFIG.OQ.hik_def_sensitivity_config import logic_tree_permutations, gt_description
 #from runzi.CONFIG.OQ.crustal_def_sensitivity_config import logic_tree_permutations, gt_description
 #from runzi.CONFIG.OQ.large_SLT_example_A import logic_tree_permutations, gt_description
-from runzi.CONFIG.OQ.SLT_37_GRANULAR_RELEASE_1 import logic_tree_permutations, gt_description
+# from runzi.CONFIG.OQ.SLT_37_GRANULAR_RELEASE_1 import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.test_GRANULAR import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -80,7 +81,8 @@ if __name__ == "__main__":
             #"RmlsZToxMDYxOTA=" #PROD CONFIG w Rotorua TAG = NZ35
             #"RmlsZToxMDY1NzE=" #PROD + backbone
             #"RmlsZToxMTA1MTA=" #PROD SLT_Large_with_grids
-            "RmlsZToxMTEyNDE=" #PROD 37_GRANULAR_RELEASE_1
+            # "RmlsZToxMTEyNDE=" #PROD 37_GRANULAR_RELEASE_1 
+            "RmlsZToxMDEyNzk=" #TEST 37_GRANULAR_RELEASE_1 
             ],
         # NEW FORM
         # makes better use of python
@@ -93,12 +95,13 @@ if __name__ == "__main__":
             #{"tag": "super-max", "measures": era_measures, "levels": 'logscale(0.001, 10.0, 300)'}
         ],
         vs30s = [400],# 250, #300, 350, 400, 450, 750 ],
-        location_codes = ['GRD_NZ_0_2_NZ34'], # NZ6, WLG, GRD_NZ_0_2_NZ34'
+        # location_codes = ['GRD_NZ_0_2_NZ34'], # NZ6, WLG, GRD_NZ_0_2_NZ34' (CDC use!)
+        location_codes = ['NZ4'], # NZ6, WLG, GRD_NZ_0_2_NZ34'
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
         ],
         rupture_mesh_spacings = [5], #1,2,3,4,5,6,7,8,9],
-        ps_grid_spacings = [30], #km
+        ps_grid_spacings = [30], #km 
     )
 
     args_list = []
