@@ -23,6 +23,7 @@ ADD stafford_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
 ADD atkinson_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
 ADD kuehn_2020.py /usr/src/oq-engine/openquake/hazardlib/gsim
 ADD mcverry_2006_MW.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD Atkinson22_coeffs_mod_v8b_sanjay_v2.csv /usr/src/oq-engine/openquake/hazardlib/gsim
 
 # Install Runzi TODO:is this only for these test configs ??
 WORKDIR /app
