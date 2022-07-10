@@ -25,8 +25,9 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 #from runzi.CONFIG.OQ.crustal_def_sensitivity_config import logic_tree_permutations, gt_description
 #from runzi.CONFIG.OQ.large_SLT_example_A import logic_tree_permutations, gt_description
 # from runzi.CONFIG.OQ.SLT_37_GRANULAR_RELEASE_1 import logic_tree_permutations, gt_description
-from runzi.CONFIG.OQ.SLT_37_GRANULAR_RELEASE_NB import logic_tree_permutations, gt_description
+# from runzi.CONFIG.OQ.SLT_37_GRANULAR_RELEASE_NB import logic_tree_permutations, gt_description
 # from runzi.CONFIG.OQ.test_GRANULAR import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.poly_sens_nopolygon import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
