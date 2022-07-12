@@ -13,6 +13,7 @@ from nshm_toshi_client.toshi_task_file import ToshiTaskFile
 
 from .inversion_solution import InversionSolution
 from .scaled_inversion_solution import ScaledInversionSolution
+from .time_dependent_inversion_solution import TimeDependentInversionSolution
 from .general_task import GeneralTask, CreateGeneralTaskArgs, SubtaskType, ModelType
 from .automation_task import AutomationTask
 from .inversion_solution_nrml import InversionSolutionNrml
@@ -30,6 +31,7 @@ class ToshiApi(ToshiClientBase):
 
         #set up the handlers ...
         self.scaled_inversion_solution = ScaledInversionSolution(self)
+        self.time_dependent_inversion_solution = TimeDependentInversionSolution(self)
         self.inversion_solution = InversionSolution(self)
         self.general_task = GeneralTask(self)
         self.automation_task = AutomationTask(self)

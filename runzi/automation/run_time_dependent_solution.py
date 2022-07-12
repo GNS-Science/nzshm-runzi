@@ -19,14 +19,9 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-# If you wish to override something in the main config, do so here ..
-#WORKER_POOL_SIZE = 2 
-WORKER_POOL_SIZE = None
-USE_API = True
-
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     scripts = []
-    for script_file in build_scale_tasks(new_gt_id, task_type, model_type, args, toshi_api):
+    for script_file in build_time_dependent_tasks(new_gt_id, task_type, model_type, args, toshi_api):
         print('scheduling: ', script_file)
         scripts.append(script_file)
     return scripts
@@ -52,7 +47,7 @@ def run(source_solution_ids, scales, model_type: ModelType,
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
-    subtask_type = SubtaskType.SCALE_SOLUTION
+    subtask_type = SubtaskType.TIME_DEPENDENT_SOLUTION
 
     args = dict(
         scales = scales,
@@ -82,6 +77,8 @@ def run(source_solution_ids, scales, model_type: ModelType,
 
     tasks = build_tasks(GENERAL_TASK_ID, args, subtask_type, model_type, toshi_api)
 
+    assert 0
+
     toshi_api.general_task.update_subtask_count(GENERAL_TASK_ID, len(tasks))
 
     print('worker count: ', WORKER_POOL_SIZE)
@@ -95,17 +92,21 @@ def run(source_solution_ids, scales, model_type: ModelType,
 
 if __name__ == "__main__":
 
+    # If you wish to override something in the main config, do so here ..
+    WORKER_POOL_SIZE = 1
+    USE_API = False
+
     # #If using API give this task a descriptive setting...
     TASK_DESCRIPTION = """first run locally """
     
     tectonic_type = 'CRU'
 
-
     if tectonic_type == 'CRU':
         TASK_TITLE = "Crustal. From LTB070. Scaled "
         model_type = ModelType.CRUSTAL
         source_solution_ids = [
-            "SW52ZXJzaW9uU29sdXRpb246MTAxMTgw",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTE2",
+            #"SW52ZXJzaW9uU29sdXRpb246MTAxMTgw",
             # "SW52ZXJzaW9uU29sdXRpb246MTAxMTg1",
             # "SW52ZXJzaW9uU29sdXRpb246MTAxMTg2",
             # "SW52ZXJzaW9uU29sdXRpb246MTAxMTg5",
@@ -116,6 +117,5 @@ if __name__ == "__main__":
             # "SW52ZXJzaW9uU29sdXRpb246MTAxMTk1"
         ]   
         scales = [0.51, 1.62]
-
 
     run(source_solution_ids, scales,model_type, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)

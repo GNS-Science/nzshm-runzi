@@ -11,15 +11,17 @@ from dateutil.tz import tzutc
 from itertools import chain
 
 from runzi.automation.scaling.toshi_api import SubtaskType, ModelType, ToshiApi
-from runzi.automation.scaling.python_task_factory import get_factory
+#from runzi.automation.scaling.python_task_factory import get_factory
+from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 
 import runzi.execute.time_dependent_solution_task
 
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
-    API_KEY, API_URL, CLUSTER_MODE, EnvMode )
+from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, API_KEY, API_URL, CLUSTER_MODE, EnvMode,
+    OPENSHA_ROOT, OPENSHA_JRE, FATJAR, JVM_HEAP_MAX, JVM_HEAP_START, JAVA_THREADS)
 
+INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 
 def build_time_dependent_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments, toshi_api: ToshiApi):
 
@@ -27,7 +29,12 @@ def build_time_dependent_tasks(general_task_id: str, subtask_type: SubtaskType, 
     factory_class = get_factory(CLUSTER_MODE)
 
     factory_task = runzi.execute.time_dependent_solution_task
-    task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
+    #task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
+
+    task_factory = factory_class(OPENSHA_ROOT, WORK_PATH, factory_task,
+        initial_gateway_port=INITIAL_GATEWAY_PORT,
+        jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
+        task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
 
     file_generators = []
     for input_id in subtask_arguments['source_solution_ids']:
