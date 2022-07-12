@@ -19,7 +19,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout fix/query-none-type
+RUN git checkout feature/time-dependent-solutions
 
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
