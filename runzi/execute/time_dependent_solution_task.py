@@ -3,6 +3,7 @@ import json
 
 import os
 import base64
+import logging
 from pathlib import PurePath, Path
 import platform
 import urllib
@@ -19,6 +20,19 @@ from runzi.automation.scaling.file_utils import get_file_meta
 from nshm_toshi_client.task_relation import TaskRelation
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL)
+
+logging.basicConfig(level=logging.INFO)
+
+loglevel = logging.INFO
+logging.getLogger('py4j.java_gateway').setLevel(loglevel)
+logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
+logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
+logging.getLogger('urllib3').setLevel(loglevel)
+logging.getLogger('botocore').setLevel(loglevel)
+logging.getLogger('git.cmd').setLevel(loglevel)
+logging.getLogger('gql.transport').setLevel(logging.WARN)
+
+log = logging.getLogger(__name__)
 
 
 class BuilderTask():
@@ -84,13 +98,13 @@ class BuilderTask():
         t0 = dt.datetime.utcnow()
 
         self._time_dependent_generator.setSolutionFileName(ta['file_path'])\
-            .setCurrentYear(2022)\
-            .setMREData("CFM_1_1")\
-            .setForecastTimespan(50)
+            .setCurrentYear(ta['current_year'])\
+            .setMREData(ta['mre_enum'])\
+            .setForecastTimespan(ta['forecast_timespan'])
 
         output_file = self._time_dependent_generator.generate()
 
-        print(f'output_file (from opensha) : {output_file}')
+        log.info(f'output_file (from opensha) : {output_file}')
 
         # output_file = str(PurePath(job_arguments['working_path'], f"NZSHM22_TimeDependentInversionSolution-{task_id}.zip"))
         #name the output file
@@ -109,11 +123,14 @@ class BuilderTask():
              'result':"SUCCESS",
              'state':"DONE",
             }
-            self._toshi_api.automation_task.complete_task(done_args, result['metrics'])
+            self._toshi_api.automation_task.complete_task(done_args)
 
             #add the log files
-            pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['task_id']}.log")
+            pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
             self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
+
+            java_log_file = self._output_folder.joinpath(f"java_app.{job_arguments['java_gateway_port']}.log")
+            self._toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
 
             # get the predecessors
             source_solution_id = job_arguments.get('source_solution_id')
@@ -130,17 +147,12 @@ class BuilderTask():
                 filepath=output_file,
                 source_solution_id=source_solution_id,
                 predecessors=predecessors,
-                meta=task_arguments, metrics=result['metrics'])
-            print("created time dependent inversion solution: ", inversion_id)
+                meta=task_arguments)
+            log.info(f"Saved time dependent inversion solution: {inversion_id}")
 
 
         t1 = dt.datetime.utcnow()
-        print("Report took %s secs" % (t1-t0).total_seconds())
-
-
-
-        
-        
+        log.info("Report took %s secs" % (t1-t0).total_seconds())
 
 
 if __name__ == "__main__":

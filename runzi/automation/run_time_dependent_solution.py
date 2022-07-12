@@ -26,7 +26,7 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
         scripts.append(script_file)
     return scripts
 
-def run(source_solution_ids, scales, model_type: ModelType,
+def run(source_solution_ids, current_years, mre_enums, forecast_timespans, model_type: ModelType,
         TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL_SIZE):
     t0 = dt.datetime.utcnow()
 
@@ -50,7 +50,9 @@ def run(source_solution_ids, scales, model_type: ModelType,
     subtask_type = SubtaskType.TIME_DEPENDENT_SOLUTION
 
     args = dict(
-        scales = scales,
+        current_years = current_years,
+        mre_enums = mre_enums,
+        forecast_timespans = forecast_timespans,
         source_solution_ids = source_solution_ids
     )
 
@@ -58,7 +60,6 @@ def run(source_solution_ids, scales, model_type: ModelType,
     for key, value in args.items():
         args_list.append(dict(k=key, v=value))
     print(args_list)
-    
     
     if USE_API:
         #create new task in toshi_api
@@ -77,8 +78,6 @@ def run(source_solution_ids, scales, model_type: ModelType,
 
     tasks = build_tasks(GENERAL_TASK_ID, args, subtask_type, model_type, toshi_api)
 
-    assert 0
-
     toshi_api.general_task.update_subtask_count(GENERAL_TASK_ID, len(tasks))
 
     print('worker count: ', WORKER_POOL_SIZE)
@@ -94,28 +93,19 @@ if __name__ == "__main__":
 
     # If you wish to override something in the main config, do so here ..
     WORKER_POOL_SIZE = 1
-    USE_API = False
+    #USE_API =
 
     # #If using API give this task a descriptive setting...
     TASK_DESCRIPTION = """first run locally """
     
-    tectonic_type = 'CRU'
+    TASK_TITLE = "Crustal. From LTB070. Scaled "
+    model_type = ModelType.CRUSTAL
+    source_solution_ids = [
+        "SW52ZXJzaW9uU29sdXRpb246MTAxMTE2",
+    ]
+    current_years = [2022]
+    mre_enums = ["CFM_1_1"]
+    forecast_timespans = [50]
 
-    if tectonic_type == 'CRU':
-        TASK_TITLE = "Crustal. From LTB070. Scaled "
-        model_type = ModelType.CRUSTAL
-        source_solution_ids = [
-            "SW52ZXJzaW9uU29sdXRpb246MTAxMTE2",
-            #"SW52ZXJzaW9uU29sdXRpb246MTAxMTgw",
-            # "SW52ZXJzaW9uU29sdXRpb246MTAxMTg1",
-            # "SW52ZXJzaW9uU29sdXRpb246MTAxMTg2",
-            # "SW52ZXJzaW9uU29sdXRpb246MTAxMTg5",
-            # "SW52ZXJzaW9uU29sdXRpb246MTAxMTgx",
-            # "SW52ZXJzaW9uU29sdXRpb246MTAxMTkx",
-            # "SW52ZXJzaW9uU29sdXRpb246MTAxMTcz",
-            # "SW52ZXJzaW9uU29sdXRpb246MTAxMTk3",
-            # "SW52ZXJzaW9uU29sdXRpb246MTAxMTk1"
-        ]   
-        scales = [0.51, 1.62]
 
-    run(source_solution_ids, scales,model_type, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
+    run(source_solution_ids, current_years, mre_enums, forecast_timespans, model_type, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
