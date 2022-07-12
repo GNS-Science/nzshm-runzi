@@ -7,9 +7,9 @@ a docker image tha integrates Openquake, the opensha converter, and RUnzi
 # BUILD
 
 ```
-## previous builds: be0d236ec1b7, be4454febbb1
+## previous builds: be0d236ec1b7, be4454febbb1, faf0b58d2ed3, a0127da93445
 docker pull openquake/engine:nightly
-docker build . --no-cache -t nzshm22/runzi-openquake
+docker build . --no-cache -t nzshm22/runzi-openquake:nightly
 ```
 
 # ENV OPTIONS
@@ -18,6 +18,9 @@ NZSHM22_SCRIPT_CLUSTER_MODE #one of LOCAL, CLUSTER, AWS
 NZSHM22_TOSHI_API_ENABLED
 NZSHM22_TOSHI_API_URL 		#default http://127.0.0.1:5000/graphql")  http://host.docker.internal/5000/graphql etc
 NZSHM22_TOSHI_S3_URL 		#default http://localhost:4569")
+
+DEPLOYMENT_STAGE=TEST #PROD
+REGION=ap-southeast-2 #sydney
 
 # RUN
 
@@ -47,8 +50,12 @@ docker run -u root -it --rm \
 ### for linux only - with localstack ...
 
 ```
+# --oom-kill-disable
+# --net=host ## WARNING this will confuse oq about whcih db server to work with
+
 docker run -it --rm -u root \
---net=host --env-file environ \
+--memory=55g --memory-swap=55g \
+--env-file environ \
 -v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
 -v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
 -v $(pwd)/examples:/WORKING/examples \
@@ -58,7 +65,10 @@ docker run -it --rm -u root \
 -e NZSHM22_TOSHI_API_URL \
 -e NZSHM22_TOSHI_API_KEY \
 -e NZSHM22_SCRIPT_CLUSTER_MODE \
-nzshm22/runzi-openquake:latest \
+-e NZSHM22_SCRIPT_WORKER_POOL_SIZE=1 \
+-e DEPLOYMENT_STAGE=PROD \
+-e REGION=ap-southeast-2 \
+nzshm22/runzi-openquake:nightly \
 -s bash
 ```
 

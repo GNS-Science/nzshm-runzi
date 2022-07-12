@@ -2,9 +2,10 @@
 # Extend base image
 # needs openquake/engine >= 3.13.0
 #nightly
-FROM openquake/engine:latest
+FROM openquake/engine:nightly
 
 USER root
+
 RUN apt-get update
 RUN apt-get install git -y
 RUN apt-get install nano
@@ -17,10 +18,12 @@ RUN pip install tqdm
 RUN pip install numba
 RUN pip install pytest
 
-# AND for now we're mapping in the code like so `docker run  -it --rm -v $(pwd)/../../../ucerf:/app/ucerf`
-# AND then running pip install -e . in the ucerf folder to test
-
-#USER openquake
+#TEMP until this is in GEM repo
+ADD stafford_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD atkinson_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD kuehn_2020.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD mcverry_2006_MW.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD Atkinson22_coeffs_mod_v8b_sanjay_v2.csv /usr/src/oq-engine/openquake/hazardlib/gsim
 
 # Install Runzi TODO:is this only for these test configs ??
 WORKDIR /app
@@ -29,18 +32,34 @@ RUN chmod +x container_task.sh
 
 WORKDIR /app
 RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
-WORKDIR /app/nzshm-runzi
 
+WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/96-site-config
+RUN git checkout feature/granular-realisations-gsim
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
+
+
+# The AWS hazard store script ...
+RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@f96c85a886d28f0d40afdaef675a55cdaa01ad4f#egg=toshi-hazard-store
+#RUN pip install toshi_hazard_store
+
+# settings for toshi-hazard-store
+WORKDIR /app
+COPY pynamodb_settings.py .
+ENV PYNAMODB_CONFIG=/app/pynamodb_settings.py
+ENV NZSHM22_HAZARD_STORE_NUM_WORKERS=4
+ENV NZSHM22_HAZARD_STORE_STAGE=PROD
+ENV NZSHM22_HAZARD_STORE_REGION=ap-southeast-2
+# ENV NZSHM22_HAZARD_STORE_REGION=us-east-1 not sure this matters as I think it's overridden in oq_hazard.py
 
 RUN chown openquake /WORKING
 
 # Install Marcos Converter
 # git@gitlab.openquake.org:hazard/converters/ucerf.git
 # we'll use ADD for now as the repo is not public
+# AND for now we're mapping in the code like so `docker run  -it --rm -v $(pwd)/../../../ucerf:/app/ucerf`
+# AND then running pip install -e . in the ucerf folder to test
 ADD ucerf3-updates /app/ucerf
 WORKDIR /app/ucerf
 RUN pip install -e .

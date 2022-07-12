@@ -219,7 +219,7 @@ class ToshiApi(ToshiClientBase):
 
       input_variables = dict(id=id)
       executed = self.run_query(pred_qry, input_variables)
-      return executed['node']['predecessors']
+      return executed['node']['predecessors'] if executed['node']['predecessors'] else []
 
 
     

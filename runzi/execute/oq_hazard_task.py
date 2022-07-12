@@ -4,25 +4,29 @@ import json
 
 import os
 import io
-# import zipfile
+import zipfile
 import subprocess
+import time
 import requests
 import platform
 import logging
+import shutil
 
-from pathlib import Path, PurePath
-from importlib import import_module
+from pathlib import Path
+
 import datetime as dt
 from dateutil.tz import tzutc
-import urllib.parse
+
+import itertools
 
 from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
 from nshm_toshi_client.task_relation import TaskRelation
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 
 from runzi.util import archive
-from runzi.execute.util import ( OpenquakeConfig, build_sources_xml,
-    get_logic_tree_file_ids, get_logic_tree_branches )
+from runzi.util.aws import decompress_config
+from runzi.execute.util import ( OpenquakeConfig, SourceModelLoader, build_sources_xml,
+    get_logic_tree_file_ids, get_logic_tree_branches, single_permutation )
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,6 +37,7 @@ logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
 logging.getLogger('urllib3').setLevel(loglevel)
 logging.getLogger('botocore').setLevel(loglevel)
 logging.getLogger('git.cmd').setLevel(loglevel)
+logging.getLogger('gql.transport').setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
 
@@ -40,8 +45,8 @@ def write_sources(xml_str, filepath):
     with open(filepath, 'w') as mf:
         mf.write(xml_str)
 
-def explode_config_template(config_info, working_path: str):
-    config_folder = Path(working_path, "config")
+def explode_config_template(config_info, working_path: str, task_no: int):
+    config_folder = Path(working_path, f"config_{task_no}")
 
     r1 = requests.get(config_info['file_url'])
     file_path = Path(working_path, config_info['file_name'])
@@ -55,17 +60,22 @@ def explode_config_template(config_info, working_path: str):
         zip_ref.extractall(config_folder)
         return config_folder
 
+def execute_openquake(configfile, task_no, toshi_task_id):
 
-def execute_openquake(configfile, logfile, task_id):
+    toshi_task_id = toshi_task_id or "DUMMY_toshi_TASK_ID"
+    output_path = Path(WORK_PATH, f"output_{task_no}")
+    logfile = Path(output_path, f'openquake.{task_no}.log')
 
-    task_id = task_id or "DUMMY_TASK_ID"
+    if output_path.exists():
+        shutil.rmtree(output_path)
+    output_path.mkdir()
 
     oq_result = dict()
 
     if SPOOF_HAZARD:
         print("execute_openquake skipping SPOOF=True")
-        oq_result['csv_archive']=Path(f"{configfile}.csv_archive.zip")
-        oq_result['hdf5_archive']=Path(f"{configfile}.hdf5_archive.zip")
+        oq_result['csv_archive']=Path(WORK_PATH, f"spoof-{task_no}.csv_archive.zip")
+        oq_result['hdf5_archive']=Path(WORK_PATH, f"spoof-{task_no}.hdf5_archive.zip")
         oq_result['csv_archive'].touch()
         oq_result['hdf5_archive'].touch()
         return oq_result
@@ -102,7 +112,8 @@ def execute_openquake(configfile, logfile, task_id):
 
         #get the job ID
         last_task = get_last_task()
-        output_path = Path(WORK_PATH, "output")
+        oq_result['oq_calc_id'] = last_task
+
 
         """
         oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
@@ -110,12 +121,15 @@ def execute_openquake(configfile, logfile, task_id):
         """
         cmd = ['oq', 'engine', '--export-outputs', str(last_task), str(output_path)]
         log.info(f'cmd 2: {cmd}')
-        subprocess.check_call(cmd)
-        oq_result['csv_archive'] = archive(Path(output_path), Path(WORK_PATH, f'openquake_csv_archive-{task_id}.zip'))
+        subprocess.check_call(cmd, stdout=subprocess.DEVNULL)
+        oq_result['csv_archive'] = archive(output_path, Path(WORK_PATH, f'openquake_csv_archive-{toshi_task_id}.zip'))
+
+        #clean up export outputs
+        shutil.rmtree(output_path)
 
         OQDATA = "/home/openquake/oqdata"
         hdf5_file = f"calc_{last_task}.hdf5"
-        oq_result['hdf5_archive'] = archive(Path(OQDATA, hdf5_file), Path(WORK_PATH, f'openquake_hdf5_archive-{task_id}.zip'))
+        oq_result['hdf5_archive'] = archive(Path(OQDATA, hdf5_file), Path(WORK_PATH, f'openquake_hdf5_archive-{toshi_task_id}.zip'))
 
     except Exception as err:
         log.error(f"err: {err}")
@@ -133,30 +147,6 @@ class BuilderTask():
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
-    # def unpack_sources(self, ta, source_path):
-    #     """download and extract the sources"""
-
-    #     sources = dict()
-    #     # for src_name, nrml_id in ta['sources']['nrml_ids'].items():
-
-    #     for branch in ta['logic_tree']['branches']:
-    #         for src_name, nrml_id in branch['sources']['source_ids'].items():
-    #             if nrml_id in sources.keys():
-    #                 continue
-
-    #             log.info(f"get src : {src_name} {nrml_id}")
-
-    #             gen = get_output_file_id(self._toshi_api, nrml_id)
-
-    #             source_nrml = download_files(self._toshi_api, gen, str(WORK_PATH), overwrite=False)
-    #             log.info(f"source_nrml: {source_nrml}")
-
-    #             with zipfile.ZipFile(source_nrml[nrml_id]['filepath'], 'r') as zip_ref:
-    #                 zip_ref.extractall(source_path)
-    #                 sources[nrml_id] = {'source_name': src_name, 'sources' : zip_ref.namelist()}
-    #     return sources
-
-
     def run(self, task_arguments, job_arguments):
         # Run the task....
         t0 = dt.datetime.utcnow()
@@ -167,8 +157,18 @@ class BuilderTask():
             "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version"
             }
 
-        log.info(f"ta['sources']['nrml_ids'] {[nrml_id for nrml_id in ta['sources']['nrml_ids'].values()]}")
+        # now we have split this hazard job up, in which case the current job should run just the subset ....
+        logic_tree_permutations = ta['logic_tree_permutations']
+        if ta.get('split_source_branches'):
+            print(f'logic_tree_permutations: {logic_tree_permutations}')
+            log.info(f"splitting sources for task_id {ta['split_source_id']}")
+            logic_tree_permutations = [single_permutation(logic_tree_permutations, ta['split_source_id'])]
+            log.info(f"new logic_tree_permutations: {logic_tree_permutations}")
 
+        # sources are the InversionSolutionNRML XML file(s) to include in the sources list
+        id_list = get_logic_tree_file_ids(logic_tree_permutations)
+
+        log.info(f"sources: {id_list}")
         ## Create the OpenquakeHazardTask, with task details
 
         task_id = None
@@ -177,7 +177,7 @@ class BuilderTask():
             #create the configuration from the template
             archive_id = ta['config_archive_id']
             config_id = self._toshi_api.openquake_hazard_config.create_config(
-                [nrml_id for nrml_id in ta['sources']['nrml_ids'].values()],        # list [NRML source IDS],
+                [id[1] for id in id_list],    # list [NRML source IDS],
                 archive_id) # config_archive_template file
 
             #create the backref from the archive file to the configuration
@@ -210,29 +210,19 @@ class BuilderTask():
         print(config_template_info)
 
         #unpack the templates
-        config_folder = explode_config_template(config_template_info, work_folder)
-
-        # sources are the InversionSolutionNRML XML file(s) to include in the sources list
-        id_list = get_logic_tree_file_ids(task_args['logic_tree_permutations'])
+        config_folder = explode_config_template(config_template_info, work_folder, ja['task_id'])
 
         sources_folder = Path(config_folder, 'sources')
-        sources_list = self.unpack_sources(ta, sources_folder)
-        print(f'sources_list: {sources_list}')
+
+        source_file_mapping = SourceModelLoader().unpack_sources(logic_tree_permutations, sources_folder)
+        #print(f'sources_list: {sources_list}')
 
         # now the customised source_models.xml file must be written into the local configuration
-        #src_xml = build_sources_xml(sources_list)
-        #print("ID lists:", list(id_list))
-        #TODO build a map whlie downloading the files
-
-        ltbs = [ltb for ltb in get_logic_tree_branches(task_args['logic_tree_permutations'])]
-
+        ltbs = [ltb for ltb in get_logic_tree_branches(logic_tree_permutations)]
         print("LTB:", len(ltbs), ltbs[0])
-
-        nrml = build_sources_xml(ltbs, source_file_mapping)
-
-
-        print(src_xml)
-        write_sources(src_xml, Path(sources_folder, 'source_model.xml'))
+        src_xml = build_sources_xml(ltbs, source_file_mapping)
+        src_xml_file = Path(sources_folder, 'source_model.xml')
+        write_sources(src_xml, src_xml_file)
 
         #prepare the config
         for itm in config_template_info['meta']:
@@ -246,19 +236,40 @@ class BuilderTask():
             config = OpenquakeConfig(open(config_file))\
                 .set_sites(ta['location_code'])\
                 .set_disaggregation(enable = ta['disagg_conf']['enabled'],
-                    settings = ta['disagg_conf']['config'])\
+                    values = ta['disagg_conf']['config'])\
                 .set_iml(ta['intensity_spec']['measures'],
                     ta['intensity_spec']['levels'])\
-                .set_vs30(ta['vs30'])
+                .set_vs30(ta['vs30'])\
+                .set_rupture_mesh_spacing(ta['rupture_mesh_spacing'])\
+                .set_ps_grid_spacing(ta['ps_grid_spacing'])
             config.write(open(config_file, 'w'))
-            return
 
         modify_config(config_file, task_arguments)
 
-        logfile = Path(work_folder, f'openquake.log')
-        oq_result = execute_openquake(config_file, logfile, task_id)
+        oq_result = execute_openquake(config_file, ja['task_id'], task_id)
 
         if self.use_api:
+
+            # TODO: bundle up the sources and modified config for possible re-runs
+            log.info("create modified_configs")
+            modconf_zip = Path(config_folder, 'modified_config.zip')
+            with zipfile.ZipFile(modconf_zip, 'w') as zfile:
+                for filename in [config_file, src_xml_file]:
+                    arcname = str(filename.relative_to(config_folder))
+                    zfile.write(filename,  arcname )
+
+            # save the modified config archives
+            modconf_id, post_url = self._toshi_api.file.create_file(modconf_zip)
+            self._toshi_api.file.upload_content(post_url, modconf_zip)
+
+            # make a json file from the ta dict so we can save it.
+            task_args_json = Path(WORK_PATH, 'task_args.json')
+            with open(task_args_json, 'w') as task_js:
+                task_js.write(json.dumps(ta, indent=2))
+
+            # save the json
+            task_args_id, post_url = self._toshi_api.file.create_file(task_args_json)
+            self._toshi_api.file.upload_content(post_url, task_args_json)
 
             # save the two output archives
             csv_archive_id, post_url = self._toshi_api.file.create_file(oq_result['csv_archive'])
@@ -267,11 +278,21 @@ class BuilderTask():
             hdf5_archive_id, post_url = self._toshi_api.file.create_file(oq_result['hdf5_archive'])
             self._toshi_api.file.upload_content(post_url, oq_result['hdf5_archive'])
 
-            # save the hazard solution
-            solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
-                config_id, csv_archive_id, hdf5_archive_id, produced_by=task_id)
+            # Predecessors...
+            log.info(f'id_list: {id_list[:5]} ...')
+            predecessors = list(map(lambda ssid: dict(id=ssid[1], depth=-1), id_list))
+            log.info(f'predecessors: {predecessors[:5]}')
+            source_predecessors = list(itertools.chain.from_iterable(map(lambda ssid: self._toshi_api.get_predecessors(ssid[1]), id_list)))
 
-            # TODO bundle and save the as-run configuration file(s)
+            if source_predecessors:
+                for predecessor in source_predecessors:
+                    predecessor['depth'] += -1
+                    predecessors.append(predecessor)
+
+            # Save the hazard solution
+            solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
+                config_id, csv_archive_id, hdf5_archive_id, produced_by=task_id, predecessors=predecessors,
+                modconf_id=modconf_id, task_args_id=task_args_id)
 
             # update the OpenquakeHazardTask
             self._toshi_api.openquake_hazard_task.complete_task(
@@ -280,6 +301,39 @@ class BuilderTask():
                     duration = (dt.datetime.utcnow() - t0).total_seconds(),
                     result = "SUCCESS",
                     state = "DONE"))
+
+
+            # run the store_hazard job
+            if not SPOOF_HAZARD:
+                # [{'tag': 'GRANULAR', 'weight': 1.0, 'permute': [{'group': 'ALL', 'members': [ltb._asdict()] }]}]
+                # TODO GRANULAR ONLY@!@
+                # ltb = {"tag": "hiktlck, b0.979, C3.9, s0.78", "weight": 0.0666666666666667, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODA3NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+
+                """
+                positional arguments:
+                  calc_id              an openquake calc id OR filepath to the hdf5 file.
+                  toshi_hazard_id      hazard_solution id.
+                  toshi_gt_id          general_task id.
+                  locations_id         identifier for the locations used (common-py ENUM ??)
+                  source_tags          e.g. "hiktlck, b0.979, C3.9, s0.78"
+                  source_ids           e.g. "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODA3NQ==,RmlsZToxMDY1MjU="
+
+                optional arguments:
+                  -h, --help           show this help message and exit
+                  -c, --create-tables  Ensure tables exist.
+                """
+                ltb = ta['logic_tree_permutations'][0]['permute'][0]['members'][0]
+                cmd = ['store_hazard_v3',
+                        str(oq_result['oq_calc_id']),
+                        solution_id,
+                        job_arguments['general_task_id'],
+                        ta['location_code'],
+                        f'"{ltb["tag"]}"',
+                        f'"{ltb["inv_id"]}, {ltb["bg_id"]}"',
+                        '--verbose',
+                        '--create-tables']
+                log.info(f'store_hazard: {cmd}')
+                subprocess.check_call(cmd)
 
         t1 = dt.datetime.utcnow()
         log.info("Task took %s secs" % (t1-t0).total_seconds())
@@ -295,8 +349,9 @@ if __name__ == "__main__":
         f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
     except:
-        # for AWS this must be a quoted JSON string
-        config = json.loads(urllib.parse.unquote(args.config))
+        # for AWS this must now be a compressed JSON string
+        config = json.loads(decompress_config(args.config))
 
+    time.sleep(int(config['job_arguments']['task_id']) * 2 )
     task = BuilderTask(config['job_arguments'])
     task.run(**config)
