@@ -98,10 +98,11 @@ if __name__ == "__main__":
     # #If using API give this task a descriptive setting...
     TASK_DESCRIPTION = """first run locally """
     
-    TASK_TITLE = "Crustal. From LTB070. Scaled "
+    TASK_TITLE = "Crustal. From NZSHM Test Tree Branch run TTB065"
     model_type = ModelType.CRUSTAL
     source_solution_ids = [
         "SW52ZXJzaW9uU29sdXRpb246MTAxMTE2",
+        "SW52ZXJzaW9uU29sdXRpb246MTAxMTE3"
     ]
     current_years = [2022]
     mre_enums = ["CFM_1_1"]
