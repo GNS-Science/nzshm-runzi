@@ -6,6 +6,7 @@ This script produces tasks in either AWS, PBS or LOCAL that scale the rates of a
 import logging
 import pwd
 import os
+import base64
 import datetime as dt
 from dateutil.tz import tzutc
 from subprocess import check_call
@@ -16,6 +17,7 @@ from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.configuration.scale_inversion_solution import build_scale_tasks
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
+from runzi.automation.scaling.file_utils import get_output_file_ids
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
@@ -59,7 +61,15 @@ def run(source_solution_ids, scales,
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
-    model_type = get_model_type(source_solution_ids,toshi_api)
+    # if a GT id has been provided, unpack to get individual solution ids
+    source_solution_ids_list = []
+    for source_solution_id in source_solution_ids:
+        if 'GeneralTask' in str(base64.b64decode(source_solution_id)):
+            source_solution_ids_list += [out['id'] for out in get_output_file_ids(toshi_api, source_solution_id)]
+        else:
+            source_solution_ids_list += [source_solution_id]
+
+    model_type = get_model_type(source_solution_ids_list,toshi_api)
 
     subtask_type = SubtaskType.SCALE_SOLUTION
 
@@ -67,7 +77,7 @@ def run(source_solution_ids, scales,
         scales = scales,
         polygon_scale=polygon_scale,
         polygon_max_mag=polygon_max_mag,
-        source_solution_ids = source_solution_ids
+        source_solution_ids = source_solution_ids_list
     )
 
     args_list = []
@@ -133,12 +143,13 @@ if __name__ == "__main__":
 
     TASK_TITLE = "Scaling Crustal (geologic slip)"
     source_solution_ids = [
+        "R2VuZXJhbFRhc2s6MTAzMDI1",
         "SW52ZXJzaW9uU29sdXRpb246MTA2MDQ1",
         "SW52ZXJzaW9uU29sdXRpb246MTA2MDM3",
         "SW52ZXJzaW9uU29sdXRpb246MTA2MDQz",
         "SW52ZXJzaW9uU29sdXRpb246MTA2MDUw",
         "SW52ZXJzaW9uU29sdXRpb246MTA2MDU1",
-        "SW52ZXJzaW9uU29sdXRpb246MTA2MDYy"
+        "SW52ZXJzaW9uU29sdXRpb246MTA2MDYy",
     ]
     scales = [0.657, 1.0, 1.305, 1.608]
     polygon_scale = 0.8

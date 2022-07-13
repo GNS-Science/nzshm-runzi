@@ -10,6 +10,7 @@ into source NRML XML files
 import logging
 import pwd
 import os
+import base64
 import datetime as dt
 from dateutil.tz import tzutc
 from subprocess import check_call
@@ -60,12 +61,20 @@ def run(scaled_solution_ids,
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
-    model_type = get_model_type(scaled_solution_ids,toshi_api)
+    # if a GT id has been provided, unpack to get individual solution ids
+    source_solution_ids_list = []
+    for source_solution_id in scaled_solution_ids:
+        if 'GeneralTask' in str(base64.b64decode(source_solution_id)):
+            source_solution_ids_list += [out['id'] for out in get_output_file_ids(toshi_api, source_solution_id)]
+        else:
+            source_solution_ids_list += [source_solution_id]
+
+    model_type = get_model_type(source_solution_ids_list,toshi_api)
 
     args = dict(
         rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km 
         investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years 
-        input_ids = scaled_solution_ids
+        input_ids = source_solution_ids_list
     )
 
     args_list = []
@@ -106,90 +115,11 @@ def run(scaled_solution_ids,
 
 if __name__ == "__main__":
 
-    # TASK_DESCRIPTION = """Hik Noise Avg"""
-    # TASK_TITLE = "Hikurangi Noise Averaged Models"
-    # input_ids = [
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzQ4",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzUy",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzU2",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzYw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzUw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzU0",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzU4",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzYy",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzY0",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzY4",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzcy",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzc0",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2MzY2",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzcw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzc2",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzgw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzc5",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzgy",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzg2",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzkw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzg0",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzg4",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzky",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzk2",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzk0",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2Mzk4",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDAy",
-
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDA2",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDAw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDA0"
-    # ]
-
-    # TASK_DESCRIPTION = """Puysegur NRMLs"""
-    # TASK_TITLE = "Puysegur NRMLs"
-    # input_ids = [
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDA5",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDEw",
-    #     ""U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDEy"
-    # ]
-
+    
     TASK_DESCRIPTION = """Crustal NRMLs"""
-    TASK_TITLE = "Crustal NRMLs"
+    TASK_TITLE = "Hikurangi NRMLs from R2VuZXJhbFRhc2s6MTAzNTY4"
     input_ids = [
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDE0",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDE4",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDIy",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDE2",
-
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDIw",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDI0",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDI2",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDMw",
-
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDM0",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDI4",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDMy",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDM2",
-
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDM4",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQy",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQ2",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQw",
-
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQ0",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDQ4",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDUw",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDU0",
-
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDU4",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDUy",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDU2",
-        "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTA2NDYw"
+       "R2VuZXJhbFRhc2s6MTAzNTY4",
     ]
         
         
