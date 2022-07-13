@@ -60,7 +60,7 @@ make sure Dockerfile has correct runzi branch
 
 ```
 #EG
-export FATJAR_TAG=265-geodetic-deformation-files
+export FATJAR_TAG=mre-output-name
 docker build . --build-arg FATJAR_TAG=${FATJAR_TAG} --no-cache
 ```
 
