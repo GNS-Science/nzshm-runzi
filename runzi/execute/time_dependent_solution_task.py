@@ -89,12 +89,6 @@ class BuilderTask():
         ##DO THE WORK
         ta, ja = task_arguments, job_arguments
 
-        # meta_folder = Path(self._output_folder, ta['file_id'])
-        # meta_folder.mkdir(parents=True, exist_ok=True)
-        # dump the job metadata
-        # with open(Path(meta_folder, "metadata.json"), "w") as write_file:
-        #   json.dump(dict(job_arguments=ja, task_arguments=ta), write_file, indent=4)
-
         t0 = dt.datetime.utcnow()
         output_file = str(PurePath(job_arguments['working_path'], f"NZSHM22_TimeDependentInversionSolution-{task_id}.zip"))
         self._time_dependent_generator.setSolutionFileName(ta['file_path'])\
@@ -103,13 +97,8 @@ class BuilderTask():
             .setForecastTimespan(ta['forecast_timespan'])\
             .setOutputFileName(output_file)
 
-        nf = self._time_dependent_generator.generate()
-        log.info(f'opensha file : {nf}')
+        self._time_dependent_generator.generate()
         log.info(f'Produced file : {output_file}')
-
-        #
-        #name the output file
-        #inversion_runner.writeSolution(output_file)
 
         t1 = dt.datetime.utcnow()
         log.info("TimeDependent rates generation took %s secs" % (t1-t0).total_seconds())
