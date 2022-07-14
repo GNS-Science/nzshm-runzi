@@ -1,0 +1,19 @@
+
+<nrml xmlns:gml="http://www.opengis.net/gml"
+      xmlns="http://openquake.org/xmlns/nrml/0.5">
+    <logicTree logicTreeID="Combined">
+        <logicTreeBranchSet uncertaintyType="sourceModel" branchSetID="BS-NONCE1">
+            <logicTreeBranch branchID="Combined">
+                <uncertaintyModel>
+SW52ZXJzaW9uU29sdXRpb246MTAwMzQw-ruptures.xml
+SW52ZXJzaW9uU29sdXRpb246MTAwMzQw-ruptures_sections.xml
+                </uncertaintyModel>
+                <uncertaintyWeight>1.0</uncertaintyWeight>
+            </logicTreeBranch>
+        </logicTreeBranchSet>
+    </logicTree>
+<!--
+                SW52ZXJzaW9uU29sdXRpb246MTAwMjc2-ruptures_sections.xml
+SW52ZXJzaW9uU29sdXRpb246MTAwMjc2-ruptures.xml
+-->
+</nrml>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<nrml xmlns:gml="http://www.opengis.net/gml"
+      xmlns="http://openquake.org/xmlns/nrml/0.4">
+    <logicTree logicTreeID='lt1'>
+
+        <logicTreeBranchingLevel branchingLevelID="bl1">
+            <logicTreeBranchSet uncertaintyType="gmpeModel" branchSetID="bs1"
+                    applyToTectonicRegionType="Active Shallow Crust">
+
+                <logicTreeBranch branchID="ASK2014">
+ <uncertaintyModel>AbrahamsonEtAl2014</uncertaintyModel>
+                    <uncertaintyWeight>0.2</uncertaintyWeight>
+                </logicTreeBranch>
+                <logicTreeBranch branchID="BSSA2014">
+ <uncertaintyModel>BooreEtAl2014</uncertaintyModel>
+                    <uncertaintyWeight>0.2</uncertaintyWeight>
+                </logicTreeBranch>
+
+                <logicTreeBranch branchID="CB2014">
+ <uncertaintyModel>CampbellBozorgnia2014</uncertaintyModel>
+                    <uncertaintyWeight>0.2</uncertaintyWeight>
+                </logicTreeBranch>
+
+                <logicTreeBranch branchID="CY2014">
+ <uncertaintyModel>ChiouYoungs2014</uncertaintyModel>
+                    <uncertaintyWeight>0.2</uncertaintyWeight>
+                </logicTreeBranch>
+
+                <logicTreeBranch branchID="Bradley2013">
+ <uncertaintyModel>Bradley2013</uncertaintyModel>
+                    <uncertaintyWeight>0.2</uncertaintyWeight>
+                </logicTreeBranch>
+
+            </logicTreeBranchSet>
+        </logicTreeBranchingLevel>
+
+        <logicTreeBranchingLevel branchingLevelID="bl2">
+            <logicTreeBranchSet uncertaintyType="gmpeModel" branchSetID="bs2"
+                    applyToTectonicRegionType="Volcanic">
+
+                <logicTreeBranch branchID="Bradley2013Volc">
+ <uncertaintyModel>Bradley2013Volc</uncertaintyModel>
+                    <uncertaintyWeight>1.0</uncertaintyWeight>
+                </logicTreeBranch>
+
+            </logicTreeBranchSet>
+        </logicTreeBranchingLevel>
+
+        <logicTreeBranchingLevel branchingLevelID="bl3">
+            <logicTreeBranchSet uncertaintyType="gmpeModel" branchSetID="bs3"
+                    applyToTectonicRegionType="Subduction Interface">
+
+                <logicTreeBranch branchID="SI-BCH2">
+ <uncertaintyModel>AbrahamsonEtAl2015SInter</uncertaintyModel>
+                    <uncertaintyWeight>0.6</uncertaintyWeight>
+                </logicTreeBranch>
+
+                <logicTreeBranch branchID="SI-BCH2_Low">
+ <uncertaintyModel>AbrahamsonEtAl2015SInterHigh</uncertaintyModel>
+                    <uncertaintyWeight>0.2</uncertaintyWeight>
+                </logicTreeBranch>
+
+                <logicTreeBranch branchID="SI-BCH2_High">
+ <uncertaintyModel>AbrahamsonEtAl2015SInterLow</uncertaintyModel>
+                    <uncertaintyWeight>0.2</uncertaintyWeight>
+                </logicTreeBranch>
+
+            </logicTreeBranchSet>
+        </logicTreeBranchingLevel>
+
+        <logicTreeBranchingLevel branchingLevelID="bl4">
+            <logicTreeBranchSet uncertaintyType="gmpeModel" branchSetID="bs4"
+                    applyToTectonicRegionType="Subduction Intraslab">
+
+                <logicTreeBranch branchID="SS-BCH2">
+ <uncertaintyModel>AbrahamsonEtAl2015SSlab</uncertaintyModel>
+                    <uncertaintyWeight>1.0</uncertaintyWeight>
+                </logicTreeBranch>
+
+            </logicTreeBranchSet>
+        </logicTreeBranchingLevel>
+
+    </logicTree>
+</nrml>
