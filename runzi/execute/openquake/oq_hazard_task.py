@@ -238,7 +238,7 @@ class BuilderTask():
                 .set_rupture_mesh_spacing("5")\
                 .set_ps_grid_spacing("30")\
                 .set_vs30(disagg_config['vs30'])\
-                .set_gsim_logic_tree_file("./gsim-model.xml")
+                .set_gsim_logic_tree_file("./gsim_model.xml")
             config.write(open(config_file, 'w'))
 
         modify_config(config_file, task_arguments)
