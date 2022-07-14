@@ -239,7 +239,7 @@ class BuilderTask():
 
         #unpack the templates
         config_folder = explode_config_template(config_template_info, work_folder, ja['task_id'])
-        sources_folder = Path(automation_task_id, 'sources')
+        sources_folder = Path(config_folder, 'sources')
         source_file_mapping = SourceModelLoader().unpack_sources_in_list(nrml_id_list, sources_folder)
 
         flattened_files = []
