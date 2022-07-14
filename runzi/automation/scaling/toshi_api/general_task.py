@@ -21,6 +21,7 @@ class SubtaskType(Enum):
     SOLUTION_TO_NRML = 60
     OPENQUAKE_HAZARD = 70
     AGGREGATE_SOLUTION = 80
+    TIME_DEPENDENT_SOLUTION = 90
 
 class ModelType(Enum):
     CRUSTAL = 10
