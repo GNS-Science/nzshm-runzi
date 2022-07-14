@@ -59,7 +59,7 @@ logic_tree_permutations = [
             "permute" : [
 	            {   "group": "HIK",
                     "members" : [
-                        {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 1.0, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDg2Nw==", "bg_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDg2Nw==" }
+                        {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 1.0, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDc2NA==", "bg_id": "RmlsZToxMDEyMDU=" }
                      ]
                 }
             ]

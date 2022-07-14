@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     TASK_TITLE = "Openquake Disagg calcs "
     TASK_DESCRIPTION = "Example 0"
-    CONFIG_FILE = "/GNSDATA/APP/nzshm-runzi/runzi/CONFIG/DISAGG/disagg_example_0.json"
+    CONFIG_FILE = "/GNSDATA/APP/nzshm-runzi/runzi/CONFIG/DISAGG/disagg_example_TEST.json"
     with open(CONFIG_FILE, 'r') as df:
         disagg_configs = json.loads(df.read())
 
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     #   }
     # }
 
-    hazard_config = "RmlsZToxMTI2MTI="  # toshi_id contain job config used by the original hazard jobs
+    hazard_config = "RmlsZToxMDEyODA="  # toshi_id contain job config used by the original hazard jobs TEST for OQH : T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAxMzE5
     args = dict(
         hazard_config = hazard_config,
         disagg_configs =  disagg_configs,
@@ -125,9 +125,8 @@ if __name__ == "__main__":
     print(tasks)
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
-    assert 0
 
-    schedule_tasks(tasks, WORKER_POOL_SIZE)
+    schedule_tasks(tasks[:1], WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())

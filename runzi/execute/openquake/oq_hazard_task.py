@@ -24,7 +24,7 @@ from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WOR
 
 from runzi.util.aws import decompress_config
 from runzi.execute.openquake.util import ( OpenquakeConfig, SourceModelLoader, build_sources_xml,
-    get_logic_tree_file_ids, get_logic_tree_branches, single_permutation )
+    get_logic_tree_file_ids, get_logic_tree_branches, single_permutation, build_disagg_sources_xml )
 from runzi.execute.openquake.execute_openquake import execute_openquake
 
 logging.basicConfig(level=logging.INFO)
@@ -52,8 +52,10 @@ def explode_config_template(config_info, working_path: str, task_no: int):
 
     with open(file_path, 'wb') as f:
         f.write(r1.content)
-        print("downloaded input file:", file_path, f)
-        assert os.path.getsize(file_path) == config_info['file_size']
+        log.info(f"downloaded input file: {file_path}")
+        f.close()
+
+    assert os.path.getsize(file_path) == config_info['file_size']
 
     with zipfile.ZipFile(file_path, 'r') as zip_ref:
         zip_ref.extractall(config_folder)
@@ -69,18 +71,156 @@ class BuilderTask():
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
-    def run(self, task_arguments, job_arguments):
-        # Run the task....
-        t0 = dt.datetime.utcnow()
-        ta, ja = task_arguments, job_arguments
 
+    def _setup_automation_task(self, ta, environment):
+        #create the configuration from the template
+        archive_id = ta['config_archive_id']
+        config_id = self._toshi_api.openquake_hazard_config.create_config(
+            [id[1] for id in logic_tree_id_list],    # list [NRML source IDS],
+            archive_id) # config_archive_template file
+
+        #create the backref from the archive file to the configuration
+        # NB the archive file is created by run_save_oq_configuration_template.pt
+        self._toshi_api.openquake_hazard_config.create_archive_file_relation(
+            config_id, archive_id, role = 'READ')
+
+        #create new OpenquakeHazardTask, attaching the configuration (Revert standard AutomationTask)
+        automation_task_id = self._toshi_api.openquake_hazard_task.create_task(
+            dict(
+                created = dt.datetime.now(tzutc()).isoformat(),
+                model_type = ta['model_type'].upper(),
+                config_id = config_id
+                ),
+            arguments=task_arguments,
+            environment=environment
+            )
+
+        #link OpenquakeHazardTask to the parent GT
+        gt_conn = self._task_relation_api.create_task_relation(job_arguments['general_task_id'], automation_task_id)
+        print(f"created task_relationship: {gt_conn} for at: {automation_task_id} on GT: {job_arguments['general_task_id']}")
+
+        return automation_task_id
+
+
+    def run(self, task_arguments, job_arguments):
+        """Run the job, routing to the correct job implementation."""
+        ta, ja = task_arguments, job_arguments
         environment = {
             "host": platform.node(),
             "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version"
-            }
+        }
+
+        if ta.get('logic_tree_permutations'):
+            # This is LTB based oqenquake hazard job
+            self.run_hazard(task_arguments, job_arguments, environment)
+            return
+        if ta.get('disagg_config'):
+            self.run_disaggregation(task_arguments, job_arguments, environment)
+            return
+        raise ValueError("Invalid configuration.")
+
+
+    #   __| (_)___  __ _  __ _  __ _ _ __ ___  __ _  __ _| |_(_) ___  _ __
+    #  / _` | / __|/ _` |/ _` |/ _` | '__/ _ \/ _` |/ _` | __| |/ _ \| '_ \
+    # | (_| | \__ \ (_| | (_| | (_| | | |  __/ (_| | (_| | |_| | (_) | | | |
+    #  \__,_|_|___/\__,_|\__, |\__, |_|  \___|\__, |\__,_|\__|_|\___/|_| |_|
+    #                    |___/ |___/          |___/
+    def run_disaggregation(self, task_arguments, job_arguments, environment):
+        # Run the disagg ask....
+        t0 = dt.datetime.utcnow()
+        ta, ja = task_arguments, job_arguments
 
         #############
-        # HAZARD ltbs
+        # DISAGG sources are in the config
+        #############
+
+        # get the InversionSolutionNRML XML file(s) to include in the sources list
+        nrml_id_list = list(filter(lambda _id: len(_id), ta['disagg_config']['source_ids']))
+
+        log.info(f"sources: {nrml_id_list}")
+
+        ############
+        # API SETUP
+        ############
+        automation_task_id = None
+        if self.use_api:
+            automation_task_id = self._setup_automation_task(ta, environment)
+
+        #########################
+        # SETUP openquake CONFIG
+        #########################
+        # fetch the config passed in
+
+        work_folder = WORK_PATH
+
+        # TODO this doesn't work if we don't use the API!!
+        config_template_info = self._toshi_api.get_file_detail(ta['hazard_config'])
+        print(config_template_info)
+        #unpack the templates
+        config_folder = explode_config_template(config_template_info, work_folder, ja['task_id'])
+        sources_folder = Path(config_folder, 'sources')
+
+        source_file_mapping = SourceModelLoader().unpack_sources_in_list(nrml_id_list, sources_folder)
+
+        flattened_files = []
+        for key, val in source_file_mapping.items():
+            flattened_files += val['sources']
+
+        source_xml = build_disagg_sources_xml(flattened_files)
+        src_xml_file = Path(sources_folder, 'source_model.xml')
+        write_sources(source_xml, src_xml_file)
+
+        log.info(f'wrote xml sources file: {src_xml_file}')
+
+        assert 0
+
+        # modify the disagg settings
+        ###############
+        # HAZARD CONFIG
+        ###############
+        config_file = Path(config_folder, config_filename)
+        def modify_config(config_file, task_arguments):
+            "modify_config for openquake hazard task."""
+            ta = task_arguments
+            config = OpenquakeConfig(open(config_file))\
+                .set_sites(ta['location_code'])\
+                .set_disaggregation(enable = ta['disagg_conf']['enabled'],
+                    values = ta['disagg_conf']['config'])\
+                .set_iml(ta['intensity_spec']['measures'],
+                    ta['intensity_spec']['levels'])\
+                .set_vs30(ta['vs30'])\
+                .set_rupture_mesh_spacing(ta['rupture_mesh_spacing'])\
+                .set_ps_grid_spacing(ta['ps_grid_spacing'])
+            config.write(open(config_file, 'w'))
+
+        modify_config(config_file, task_arguments)
+
+        # write the sources XML
+        # write the GMM XML
+
+        ##############
+        # EXECUTE
+        ##############
+        oq_result = execute_openquake(config_file, ja['task_id'], automation_task_id)
+
+
+        ######################
+        # API STORE RESULTS #
+        ######################
+
+
+    # | |__   __ _ ______ _ _ __ __| |
+    # | '_ \ / _` |_  / _` | '__/ _` |
+    # | | | | (_| |/ / (_| | | | (_| |
+    # |_| |_|\__,_/___\__,_|_|  \__,_|
+    #
+    def run_hazard(self, task_arguments, job_arguments, environment):
+        # Run the hazard task....
+        t0 = dt.datetime.utcnow()
+        ta, ja = task_arguments, job_arguments
+
+        #############
+        # HAZARD sources and ltbs
         #############
         logic_tree_permutations = ta['logic_tree_permutations']
         if ta.get('split_source_branches'):
@@ -93,7 +233,6 @@ class BuilderTask():
         logic_tree_id_list = get_logic_tree_file_ids(logic_tree_permutations)
 
         log.info(f"sources: {logic_tree_id_list}")
-        ## Create the OpenquakeHazardTask, with task details
 
 
         ############
@@ -101,36 +240,11 @@ class BuilderTask():
         ############
         automation_task_id = None
         if self.use_api:
+            automation_task_id = self._setup_automation_task(ta, environment)
 
-            #create the configuration from the template
-            archive_id = ta['config_archive_id']
-            config_id = self._toshi_api.openquake_hazard_config.create_config(
-                [id[1] for id in logic_tree_id_list],    # list [NRML source IDS],
-                archive_id) # config_archive_template file
-
-            #create the backref from the archive file to the configuration
-            # NB the archive file is created by run_save_oq_configuration_template.pt
-            self._toshi_api.openquake_hazard_config.create_archive_file_relation(
-                config_id, archive_id, role = 'READ')
-
-            #create new OpenquakeHazardTask, attaching the configuration (Revert standard AutomationTask)
-            automation_task_id = self._toshi_api.openquake_hazard_task.create_task(
-                dict(
-                    created = dt.datetime.now(tzutc()).isoformat(),
-                    model_type = ta['model_type'].upper(),
-                    config_id = config_id
-                    ),
-                arguments=task_arguments,
-                environment=environment
-                )
-
-            #link OpenquakeHazardTask to the parent GT
-            gt_conn = self._task_relation_api.create_task_relation(job_arguments['general_task_id'], automation_task_id)
-            print(f"created task_relationship: {gt_conn} for at: {automation_task_id} on GT: {job_arguments['general_task_id']}")
-
-        ##################
-        # API SETUP DONE #
-        ##################
+        #########################
+        # SETUP openquake CONFIG
+        #########################
 
         work_folder = WORK_PATH
 
@@ -190,7 +304,7 @@ class BuilderTask():
 
 
         ######################
-        # API STOREU RESULTS #
+        # API STORE RESULTS #
         ######################
 
         if self.use_api:
@@ -286,6 +400,12 @@ class BuilderTask():
         t1 = dt.datetime.utcnow()
         log.info("Task took %s secs" % (t1-t0).total_seconds())
 
+
+# _ __ ___   __ _(_)_ __
+#  | '_ ` _ \ / _` | | '_ \
+#  | | | | | | (_| | | | | |
+#  |_| |_| |_|\__,_|_|_| |_|
+#
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()

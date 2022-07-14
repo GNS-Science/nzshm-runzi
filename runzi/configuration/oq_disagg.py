@@ -18,8 +18,8 @@ from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config, BatchEnvironmentSetting
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 
-import runzi.execute.oq_hazard_task
-from runzi.execute.util import get_logic_tree_branches, get_granular_logic_tree_branches
+import runzi.execute.openquake.oq_hazard_task
+from runzi.execute.openquake.util import get_logic_tree_branches, get_granular_logic_tree_branches
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode, S3_URL, S3_REPORT_BUCKET)
@@ -27,7 +27,7 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
 HAZARD_MAX_TIME = 10 #minutes
 
 factory_class = get_factory(CLUSTER_MODE)
-factory_task = runzi.execute.oq_hazard_task
+factory_task = runzi.execute.openquake.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
 def build_task(task_arguments, job_arguments, task_id, extra_env):
@@ -39,7 +39,7 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
         return get_ecs_job_config(job_name,
             'N/A', config_data,
             toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
-            task_module=runzi.execute.oq_hazard_task.__name__,
+            task_module=runzi.execute.openquake.oq_hazard_task.__name__,
             time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4,
             job_definition="Fargate-runzi-openquake-JD",
             extra_env = extra_env,
@@ -77,7 +77,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             task_count +=1
 
             task_arguments = dict(
-                hazard_config_id = hazard_config, #  upstream modified config File archive object
+                hazard_config = hazard_config, #  upstream modified config File archive object
                 #upstream_general_task=source_gt_id,
                 model_type = model_type.name,
                 disagg_config = disagg_config,
