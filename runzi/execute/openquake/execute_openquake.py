@@ -10,7 +10,7 @@ from pathlib import Path
 
 from runzi.automation.scaling.local_config import (WORK_PATH, SPOOF_HAZARD)
 
-# from runzi.util import archive
+from runzi.util import archive
 # from runzi.util.aws import decompress_config
 # from runzi.execute.openquake.util import ( OpenquakeConfig, SourceModelLoader, build_sources_xml,
 #     get_logic_tree_file_ids, get_logic_tree_branches, single_permutation )
