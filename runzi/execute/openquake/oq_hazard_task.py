@@ -129,7 +129,7 @@ class BuilderTask():
 
         return modconf_id
 
-    def _store_api_result(self, automation_task_id, task_arguments, oq_result, config_id, modconf_id):
+    def _store_api_result(self, automation_task_id, task_arguments, oq_result, config_id, modconf_id, duration):
         """Record results in API."""
         ta = task_arguments
 
@@ -170,7 +170,7 @@ class BuilderTask():
         self._toshi_api.openquake_hazard_task.complete_task(
             dict(task_id =automation_task_id,
                 hazard_solution_id = solution_id,
-                duration = (dt.datetime.utcnow() - t0).total_seconds(),
+                duration = duration,
                 result = "SUCCESS",
                 state = "DONE"))
 
@@ -223,17 +223,9 @@ class BuilderTask():
             automation_task_id = self._setup_automation_task(ta, ja, config_id, nrml_id_list, environment)
 
         #########################
-        # SETUP openquake CONFIG
+        # Baseline CONFIG
         #########################
-        # fetch the config passed in
-
         work_folder = WORK_PATH
-
-        # TODO this doesn't work if we don't use the API!!
-
-        ##################
-        # JOB ini
-        ##################
         config_template_info = self._toshi_api.get_file_detail(ta['hazard_config'])
         config_filename = "job.ini" #  get_config_filename(config_template_info) TODO not set int meta?
 
@@ -262,36 +254,9 @@ class BuilderTask():
         write_sources(gsim_xml, gsim_xml_file)
         log.info(f'wrote xml gsim  file: {gsim_xml_file}')
 
-        # disagg_config = {
-        #     "vs30": 400,
-        #     "source_ids": [
-        #         "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDc2NA==",
-        #         "RmlsZToxMDEyMDU="
-        #     ],
-        #     "imt": "PGA",
-        #     "agg": "mean",
-        #     "poe": 0.02,
-        #     "level": 0.3551166254050649,
-        #     "location": "-36.870~174.770",
-        #     "gsims": {
-        #         "Subduction Interface": "Atkinson2022SInter_Central",
-        #         "Subduction Intraslab": "KuehnEtAl2020SSlab_NZL",
-        #         "Active Shallow Crust": "Atkinson2022Crust_Central"
-        #     },
-        #     "dist": 6.449359479798744e-08,
-        #     "nearest_rlz": [
-        #         "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3:1",
-        #         "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:1",
-        #         "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:6",
-        #         "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkz:4"
-        #     ],
-        #     "target_level": 0.3551165609114701
-        # }
-
         ###############
-        # HAZARD CONFIG
+        # CONFIGURE JOB
         ###############
-
         lat, lon = disagg_config["location"].split("~")
         config_file = Path(config_folder, config_filename)
         def modify_config(config_file, task_arguments):
@@ -310,9 +275,6 @@ class BuilderTask():
 
         modify_config(config_file, task_arguments)
 
-        # write the sources XML
-        # write the GMM XML
-
         ##############
         # EXECUTE
         ##############
@@ -324,7 +286,9 @@ class BuilderTask():
         ######################
         if self.use_api:
             #TODO store modified config
-            self._store_api_result(automation_task_id, task_arguments, oq_result, config_id, modconf_id=config_id) #  TODO use modified config id
+            self._store_api_result(automation_task_id, task_arguments, oq_result, config_id,
+                modconf_id=config_id, #  TODO use modified config id
+                duration = (dt.datetime.utcnow() - t0).total_seconds())
 
         t1 = dt.datetime.utcnow()
         log.info("Task took %s secs" % (t1-t0).total_seconds())
@@ -420,12 +384,13 @@ class BuilderTask():
         ##############
         oq_result = execute_openquake(config_file, ja['task_id'], automation_task_id)
 
-
         ######################
         # API STORE RESULTS #
         ######################
         if self.use_api:
-            self._store_api_result(automation_task_id, task_arguments, oq_result, config_id, modconf_id=config_id) #  TODO use modified config id
+            self._store_api_result(automation_task_id, task_arguments, oq_result, config_id,
+                modconf_id=config_id, #  TODO use modified config id
+                duration = (dt.datetime.utcnow() - t0).total_seconds())
 
             #############################
             # STORE HAZARD REALIZATIONS #
