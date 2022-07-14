@@ -356,7 +356,7 @@ class BuilderTask():
         automation_task_id = None
         if self.use_api:
             archive_id = ta['config_archive_id']
-            config_id = self._save_config(self, archive_id, logic_tree_id_list):
+            config_id = self._save_config(archive_id, logic_tree_id_list)
             automation_task_id = self._setup_automation_task(ta, ja, config_id, [id[1] for id in logic_tree_id_list], environment)
 
         #########################
