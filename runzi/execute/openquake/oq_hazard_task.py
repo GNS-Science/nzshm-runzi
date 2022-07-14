@@ -129,7 +129,7 @@ class BuilderTask():
 
         return modconf_id
 
-    def _store_api_result(self, config_folder, task_arguments, oq_result, config_id, modconf_id=None):
+    def _store_api_result(self, automation_task_id, task_arguments, oq_result, config_id, modconf_id):
         """Record results in API."""
         ta = task_arguments
 
@@ -159,6 +159,7 @@ class BuilderTask():
         #     for predecessor in source_predecessors:
         #         predecessor['depth'] += -1
         #         predecessors.append(predecessor)
+        predecessors = []
 
         # Save the hazard solution
         solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
@@ -238,7 +239,7 @@ class BuilderTask():
 
         #unpack the templates
         config_folder = explode_config_template(config_template_info, work_folder, ja['task_id'])
-        sources_folder = Path(config_folder, 'sources')
+        sources_folder = Path(automation_task_id, 'sources')
         source_file_mapping = SourceModelLoader().unpack_sources_in_list(nrml_id_list, sources_folder)
 
         flattened_files = []
@@ -322,7 +323,8 @@ class BuilderTask():
         # API STORE RESULTS #
         ######################
         if self.use_api:
-            self._store_api_result(config_folder, task_arguments, oq_result, config_id)
+            #TODO store modified config
+            self._store_api_result(automation_task_id, task_arguments, oq_result, config_id, modconf_id=config_id) #  TODO use modified config id
 
         t1 = dt.datetime.utcnow()
         log.info("Task took %s secs" % (t1-t0).total_seconds())
@@ -423,7 +425,7 @@ class BuilderTask():
         # API STORE RESULTS #
         ######################
         if self.use_api:
-            self._store_api_result(config_folder, task_arguments, oq_result, config_id)
+            self._store_api_result(automation_task_id, task_arguments, oq_result, config_id, modconf_id=config_id) #  TODO use modified config id
 
             #############################
             # STORE HAZARD REALIZATIONS #
