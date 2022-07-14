@@ -25,6 +25,14 @@ ADD kuehn_2020.py /usr/src/oq-engine/openquake/hazardlib/gsim
 ADD mcverry_2006_MW.py /usr/src/oq-engine/openquake/hazardlib/gsim
 ADD Atkinson22_coeffs_mod_v8b_sanjay_v2.csv /usr/src/oq-engine/openquake/hazardlib/gsim
 
+#TEMP UNTIL GEM ACCEPTS ANNES mods
+#TODO move the changed files into the /usr/src/oq-engine/openquake .....
+
+WORKDIR /app
+RUN git clone https://github.com/GNS-Science/nzshm-oq-engine.git
+WORKDIR /app/nzshm-oq-engine
+RUN git checkout d5ac9435dcaa8f0f87d076834c1a7b2aa32a9066
+
 # Install Runzi TODO:is this only for these test configs ??
 WORKDIR /app
 COPY script/container_task.sh .
@@ -35,7 +43,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/time-dependent-solutions
+RUN git checkout feature/135-disaggs
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 
