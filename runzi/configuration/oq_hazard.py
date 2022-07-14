@@ -17,8 +17,8 @@ from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config, BatchEnvironmentSetting
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 
-import runzi.execute.oq_hazard_task
-from runzi.execute.util import get_logic_tree_branches, get_granular_logic_tree_branches
+import runzi.execute.openquake.oq_hazard_task
+from runzi.execute.openquake.util import get_logic_tree_branches, get_granular_logic_tree_branches
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode, S3_URL, S3_REPORT_BUCKET)
@@ -43,7 +43,7 @@ BIGGER_LEVER = True # FALSE uses fargate
 BIGGER_LEVER_CONF = BL_CONF_1 #BL_CONF_32_120
 
 factory_class = get_factory(CLUSTER_MODE)
-factory_task = runzi.execute.oq_hazard_task
+factory_task = runzi.execute.openquake.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
 def build_task(task_arguments, job_arguments, task_id, extra_env):

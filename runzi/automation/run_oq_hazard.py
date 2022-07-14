@@ -24,10 +24,11 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 #from runzi.CONFIG.OQ.hik_def_sensitivity_config import logic_tree_permutations, gt_description
 #from runzi.CONFIG.OQ.crustal_def_sensitivity_config import logic_tree_permutations, gt_description
 #from runzi.CONFIG.OQ.large_SLT_example_A import logic_tree_permutations, gt_description
-# from runzi.CONFIG.OQ.SLT_37_GRANULAR_RELEASE_1 import logic_tree_permutations, gt_description
+#from runzi.CONFIG.OQ.SLT_37_GRANULAR_RELEASE_1 import logic_tree_permutations, gt_description
 # from runzi.CONFIG.OQ.SLT_37_GRANULAR_RELEASE_NB import logic_tree_permutations, gt_description
 # from runzi.CONFIG.OQ.test_GRANULAR import logic_tree_permutations, gt_description
-from runzi.CONFIG.OQ.poly_sens_nopolygon import logic_tree_permutations, gt_description
+#from runzi.CONFIG.OQ.poly_sens_nopolygon import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.archive_ltb import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -84,8 +85,8 @@ if __name__ == "__main__":
             #"RmlsZToxMDY1NzE=" #PROD + backbone
             #"RmlsZToxMTA1MTA=" #PROD SLT_Large_with_grids
             # "RmlsZToxMTEyNDE=" #PROD 37_GRANULAR_RELEASE_1 
-            # "RmlsZToxMDEyNzk=" #TEST 37_GRANULAR_RELEASE_1 
-            "RmlsZToxMTE2NjI=" #PROD 37_GRANULAR_RELEASE_1 with full gsim LT (Kuehn and Atkinson)
+            "RmlsZToxMDEyNzk=" #TEST 37_GRANULAR_RELEASE_1
+            #"RmlsZToxMTE2NjI=" #PROD 37_GRANULAR_RELEASE_1 with full gsim LT (Kuehn and Atkinson)
             ],
         # NEW FORM
         # makes better use of python
@@ -136,7 +137,7 @@ if __name__ == "__main__":
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
 
-    schedule_tasks(tasks, WORKER_POOL_SIZE)
+    schedule_tasks(tasks[:2], WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())

@@ -186,7 +186,7 @@ class BuilderTask():
         ##############
         # EXECUTE
         ##############
-        oq_result = execute_openquake(config_file, ja['task_id'], task_id)
+        oq_result = execute_openquake(config_file, ja['task_id'], automation_task_id)
 
 
         ######################
@@ -236,12 +236,12 @@ class BuilderTask():
 
             # Save the hazard solution
             solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
-                config_id, csv_archive_id, hdf5_archive_id, produced_by=task_id, predecessors=predecessors,
+                config_id, csv_archive_id, hdf5_archive_id, produced_by=automation_task_id, predecessors=predecessors,
                 modconf_id=modconf_id, task_args_id=task_args_id)
 
             # update the OpenquakeHazardTask
             self._toshi_api.openquake_hazard_task.complete_task(
-                dict(task_id =task_id,
+                dict(task_id =automation_task_id,
                     hazard_solution_id = solution_id,
                     duration = (dt.datetime.utcnow() - t0).total_seconds(),
                     result = "SUCCESS",
