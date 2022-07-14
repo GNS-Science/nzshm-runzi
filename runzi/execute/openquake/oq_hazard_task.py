@@ -114,9 +114,7 @@ class BuilderTask():
 
         return automation_task_id
 
-    def _store_api_result(self, config_folder, task_arguments, oq_result, config_id):
-        """Record results in API."""
-        ta = task_arguments
+    def _store_modified_config(self, config_folder, task_arguments, oq_result, config_id):
         # TODO: bundle up the sources and modified config for possible re-runs
         log.info("create modified_configs")
         modconf_zip = Path(config_folder, 'modified_config.zip')
@@ -128,6 +126,12 @@ class BuilderTask():
         # save the modified config archives
         modconf_id, post_url = self._toshi_api.file.create_file(modconf_zip)
         self._toshi_api.file.upload_content(post_url, modconf_zip)
+
+        return modconf_id
+
+    def _store_api_result(self, config_folder, task_arguments, oq_result, config_id, modconf_id=None):
+        """Record results in API."""
+        ta = task_arguments
 
         # make a json file from the ta dict so we can save it.
         task_args_json = Path(WORK_PATH, 'task_args.json')
