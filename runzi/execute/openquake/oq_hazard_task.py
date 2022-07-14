@@ -80,9 +80,9 @@ class BuilderTask():
         self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
 
-    def _setup_automation_task(self, ta, environment):
+    def _setup_automation_task(self, ta, archive_id, logic_tree_id_list, task_arguments, environment):
         #create the configuration from the template
-        archive_id = ta['config_archive_id']
+
         config_id = self._toshi_api.openquake_hazard_config.create_config(
             [id[1] for id in logic_tree_id_list],    # list [NRML source IDS],
             archive_id) # config_archive_template file
@@ -153,7 +153,8 @@ class BuilderTask():
         ############
         automation_task_id = None
         if self.use_api:
-            automation_task_id = self._setup_automation_task(ta, environment)
+            archive_id = ta['hazard_config']
+            automation_task_id = self._setup_automation_task(ta, archive_id, nrml_id_list, task_arguments, environment)
 
         #########################
         # SETUP openquake CONFIG
@@ -288,7 +289,8 @@ class BuilderTask():
         ############
         automation_task_id = None
         if self.use_api:
-            automation_task_id = self._setup_automation_task(ta, environment)
+            archive_id = ta['config_archive_id']
+            automation_task_id = self._setup_automation_task(ta, archive_id, logic_tree_id_list, task_arguments, environment)
 
         #########################
         # SETUP openquake CONFIG
