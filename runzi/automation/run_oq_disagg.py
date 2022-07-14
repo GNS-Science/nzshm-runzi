@@ -20,10 +20,10 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 WORKER_POOL_SIZE = 1
 # USE_API = False
 
-def build_tasks(new_gt_id, args, task_type, model_type):
+# def build_tasks(new_gt_id, args, task_type, model_type):
 
 
-    return scripts
+#     return scripts
 
 if __name__ == "__main__":
 
