@@ -263,8 +263,9 @@ class BuilderTask():
             "modify_config for openquake hazard task."""
             ta = task_arguments
             config = OpenquakeConfig(open(config_file))\
+                .set_description(f"Disaggregation for site: {disagg_config.get('site_name')}, vs30: {disagg_config['vs30']}, IMT: {disagg_config['imt']}, level: {round(disagg_config['level'], 12)}")\
                 .set_disaggregation(enable = True)\
-                .set_iml_disagg(imt=disagg_config['imt'], level=round(disagg_config['level'], 6))\
+                .set_iml_disagg(imt=disagg_config['imt'], level=round(disagg_config['level'], 12)\
                 .set_disagg_site(lat, lon)\
                 .clear_iml()\
                 .set_rupture_mesh_spacing("5")\

@@ -121,6 +121,10 @@ class OpenquakeConfig():
         self.config['calculation']['gsim_logic_tree_file'] = filepath
         return self
 
+    def set_description(self, description):
+        self.config['general']['description'] = description
+        return self
+
     def write(self, tofile):
         self.config.write(tofile)
 
