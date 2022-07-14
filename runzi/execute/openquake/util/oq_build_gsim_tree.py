@@ -1,11 +1,6 @@
-#!oq_build_sources.py
+"""Function to build gsim XML for disaggs."""
 
-import itertools
 import logging
-from pathlib import Path
-import collections
-
-import zipfile
 from typing import Dict
 from lxml import etree
 from lxml.builder import ElementMaker # lxml only !

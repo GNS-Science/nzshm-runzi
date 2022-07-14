@@ -24,7 +24,7 @@ from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WOR
 
 from runzi.util.aws import decompress_config
 from runzi.execute.openquake.util import ( OpenquakeConfig, SourceModelLoader, build_sources_xml,
-    get_logic_tree_file_ids, get_logic_tree_branches, single_permutation, build_disagg_sources_xml )
+    get_logic_tree_file_ids, get_logic_tree_branches, single_permutation, build_disagg_sources_xml, build_gsim_xml)
 from runzi.execute.openquake.execute_openquake import execute_openquake
 
 logging.basicConfig(level=logging.INFO)
@@ -40,9 +40,17 @@ logging.getLogger('gql.transport').setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
 
+
 def write_sources(xml_str, filepath):
     with open(filepath, 'w') as mf:
         mf.write(xml_str)
+
+
+def get_config_filename(config_template_info):
+    for itm in config_template_info['meta']:
+        if itm['k'] == "config_filename":
+            return itm['v']
+
 
 def explode_config_template(config_info, working_path: str, task_no: int):
     config_folder = Path(working_path, f"config_{task_no}")
@@ -133,6 +141,7 @@ class BuilderTask():
         #############
         # DISAGG sources are in the config
         #############
+        disagg_config = ta['disagg_config']
 
         # get the InversionSolutionNRML XML file(s) to include in the sources list
         nrml_id_list = list(filter(lambda _id: len(_id), ta['disagg_config']['source_ids']))
@@ -154,43 +163,82 @@ class BuilderTask():
         work_folder = WORK_PATH
 
         # TODO this doesn't work if we don't use the API!!
+
+        ##################
+        # JOB ini
+        ##################
         config_template_info = self._toshi_api.get_file_detail(ta['hazard_config'])
-        print(config_template_info)
+        config_filename = "job.ini" #  get_config_filename(config_template_info) TODO not set int meta?
+
         #unpack the templates
         config_folder = explode_config_template(config_template_info, work_folder, ja['task_id'])
         sources_folder = Path(config_folder, 'sources')
-
         source_file_mapping = SourceModelLoader().unpack_sources_in_list(nrml_id_list, sources_folder)
 
         flattened_files = []
         for key, val in source_file_mapping.items():
             flattened_files += val['sources']
 
+        ##################
+        # SOURCE XML
+        ##################
         source_xml = build_disagg_sources_xml(flattened_files)
         src_xml_file = Path(sources_folder, 'source_model.xml')
         write_sources(source_xml, src_xml_file)
-
         log.info(f'wrote xml sources file: {src_xml_file}')
 
-        assert 0
+        ##################
+        # GSIMS XML
+        ##################
+        gsim_xml = build_gsim_xml(disagg_config['gsims'])
+        gsim_xml_file = Path(config_folder, 'gsim_model.xml')
+        write_sources(gsim_xml, gsim_xml_file)
+        log.info(f'wrote xml gsim  file: {gsim_xml_file}')
 
-        # modify the disagg settings
+        # disagg_config = {
+        #     "vs30": 400,
+        #     "source_ids": [
+        #         "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDc2NA==",
+        #         "RmlsZToxMDEyMDU="
+        #     ],
+        #     "imt": "PGA",
+        #     "agg": "mean",
+        #     "poe": 0.02,
+        #     "level": 0.3551166254050649,
+        #     "location": "-36.870~174.770",
+        #     "gsims": {
+        #         "Subduction Interface": "Atkinson2022SInter_Central",
+        #         "Subduction Intraslab": "KuehnEtAl2020SSlab_NZL",
+        #         "Active Shallow Crust": "Atkinson2022Crust_Central"
+        #     },
+        #     "dist": 6.449359479798744e-08,
+        #     "nearest_rlz": [
+        #         "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3:1",
+        #         "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:1",
+        #         "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:6",
+        #         "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkz:4"
+        #     ],
+        #     "target_level": 0.3551165609114701
+        # }
+
         ###############
         # HAZARD CONFIG
         ###############
+
+        lat, lon = disagg_config["location"].split("~")
         config_file = Path(config_folder, config_filename)
         def modify_config(config_file, task_arguments):
             "modify_config for openquake hazard task."""
             ta = task_arguments
             config = OpenquakeConfig(open(config_file))\
-                .set_sites(ta['location_code'])\
-                .set_disaggregation(enable = ta['disagg_conf']['enabled'],
-                    values = ta['disagg_conf']['config'])\
-                .set_iml(ta['intensity_spec']['measures'],
-                    ta['intensity_spec']['levels'])\
-                .set_vs30(ta['vs30'])\
-                .set_rupture_mesh_spacing(ta['rupture_mesh_spacing'])\
-                .set_ps_grid_spacing(ta['ps_grid_spacing'])
+                .set_disaggregation(enable = True)\
+                .set_iml_disagg(imt=disagg_config['imt'], level=round(disagg_config['level'], 6))\
+                .set_disagg_site(lat, lon)\
+                .clear_iml()\
+                .set_rupture_mesh_spacing("5")\
+                .set_ps_grid_spacing("30")\
+                .set_vs30(disagg_config['vs30'])\
+                .set_gsim_logic_tree_file("./gsim-model.xml")
             config.write(open(config_file, 'w'))
 
         modify_config(config_file, task_arguments)
@@ -270,12 +318,7 @@ class BuilderTask():
         src_xml_file = Path(sources_folder, 'source_model.xml')
         write_sources(src_xml, src_xml_file)
 
-        #prepare the config
-        for itm in config_template_info['meta']:
-            if itm['k'] == "config_filename":
-                config_filename = itm['v']
-                break
-
+        config_filename = get_config_filename(config_template_info)
 
         ###############
         # HAZARD CONFIG
