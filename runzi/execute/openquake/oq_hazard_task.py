@@ -80,7 +80,7 @@ class BuilderTask():
         self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
 
-    def _setup_automation_task(self, task_arguments, job_arguments, archive_id, logic_tree_id_list, environment):
+    def _save_config(self, archive_id, logic_tree_id_list):
         #create the configuration from the template
 
         config_id = self._toshi_api.openquake_hazard_config.create_config(
@@ -91,6 +91,11 @@ class BuilderTask():
         # NB the archive file is created by run_save_oq_configuration_template.pt
         self._toshi_api.openquake_hazard_config.create_archive_file_relation(
             config_id, archive_id, role = 'READ')
+
+        return config_id
+
+    def _setup_automation_task(self, task_arguments, job_arguments, config_id, logic_tree_id_list, environment):
+        #create the configuration from the template
 
         #create new OpenquakeHazardTask, attaching the configuration (Revert standard AutomationTask)
         automation_task_id = self._toshi_api.openquake_hazard_task.create_task(
@@ -108,6 +113,61 @@ class BuilderTask():
         print(f"created task_relationship: {gt_conn} for at: {automation_task_id} on GT: {job_arguments['general_task_id']}")
 
         return automation_task_id
+
+    def _store_api_result(self, config_folder, task_arguments, oq_result, config_id):
+        """Record results in API."""
+        ta = task_arguments
+        # TODO: bundle up the sources and modified config for possible re-runs
+        log.info("create modified_configs")
+        modconf_zip = Path(config_folder, 'modified_config.zip')
+        with zipfile.ZipFile(modconf_zip, 'w') as zfile:
+            for filename in [config_file, src_xml_file]:
+                arcname = str(filename.relative_to(config_folder))
+                zfile.write(filename,  arcname )
+
+        # save the modified config archives
+        modconf_id, post_url = self._toshi_api.file.create_file(modconf_zip)
+        self._toshi_api.file.upload_content(post_url, modconf_zip)
+
+        # make a json file from the ta dict so we can save it.
+        task_args_json = Path(WORK_PATH, 'task_args.json')
+        with open(task_args_json, 'w') as task_js:
+            task_js.write(json.dumps(ta, indent=2))
+
+        # save the json
+        task_args_id, post_url = self._toshi_api.file.create_file(task_args_json)
+        self._toshi_api.file.upload_content(post_url, task_args_json)
+
+        # save the two output archives
+        csv_archive_id, post_url = self._toshi_api.file.create_file(oq_result['csv_archive'])
+        self._toshi_api.file.upload_content(post_url, oq_result['csv_archive'])
+
+        hdf5_archive_id, post_url = self._toshi_api.file.create_file(oq_result['hdf5_archive'])
+        self._toshi_api.file.upload_content(post_url, oq_result['hdf5_archive'])
+
+        # # Predecessors...
+        # log.info(f'logic_tree_id_list: {logic_tree_id_list[:5]} ...')
+        # predecessors = list(map(lambda ssid: dict(id=ssid[1], depth=-1), logic_tree_id_list))
+        # log.info(f'predecessors: {predecessors[:5]}')
+        # source_predecessors = list(itertools.chain.from_iterable(map(lambda ssid: self._toshi_api.get_predecessors(ssid[1]), logic_tree_id_list)))
+
+        # if source_predecessors:
+        #     for predecessor in source_predecessors:
+        #         predecessor['depth'] += -1
+        #         predecessors.append(predecessor)
+
+        # Save the hazard solution
+        solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
+            config_id, csv_archive_id, hdf5_archive_id, produced_by=automation_task_id, predecessors=predecessors,
+            modconf_id=modconf_id, task_args_id=task_args_id)
+
+        # update the OpenquakeHazardTask
+        self._toshi_api.openquake_hazard_task.complete_task(
+            dict(task_id =automation_task_id,
+                hazard_solution_id = solution_id,
+                duration = (dt.datetime.utcnow() - t0).total_seconds(),
+                result = "SUCCESS",
+                state = "DONE"))
 
 
     def run(self, task_arguments, job_arguments):
@@ -154,7 +214,8 @@ class BuilderTask():
         automation_task_id = None
         if self.use_api:
             archive_id = ta['hazard_config']
-            automation_task_id = self._setup_automation_task(ta, ja, archive_id, nrml_id_list, environment)
+            config_id = self._save_config(self, archive_id, logic_tree_id_list):
+            automation_task_id = self._setup_automation_task(ta, ja, config_id, nrml_id_list, environment)
 
         #########################
         # SETUP openquake CONFIG
@@ -256,6 +317,11 @@ class BuilderTask():
         ######################
         # API STORE RESULTS #
         ######################
+        if self.use_api:
+            self._store_api_result(config_folder, task_arguments, oq_result, config_id)
+
+        t1 = dt.datetime.utcnow()
+        log.info("Task took %s secs" % (t1-t0).total_seconds())
 
 
     # | |__   __ _ ______ _ _ __ __| |
@@ -290,7 +356,8 @@ class BuilderTask():
         automation_task_id = None
         if self.use_api:
             archive_id = ta['config_archive_id']
-            automation_task_id = self._setup_automation_task(ta, ja, archive_id, [id[1] for id in logic_tree_id_list], environment)
+            config_id = self._save_config(self, archive_id, logic_tree_id_list):
+            automation_task_id = self._setup_automation_task(ta, ja, config_id, [id[1] for id in logic_tree_id_list], environment)
 
         #########################
         # SETUP openquake CONFIG
@@ -351,61 +418,8 @@ class BuilderTask():
         ######################
         # API STORE RESULTS #
         ######################
-
         if self.use_api:
-
-            # TODO: bundle up the sources and modified config for possible re-runs
-            log.info("create modified_configs")
-            modconf_zip = Path(config_folder, 'modified_config.zip')
-            with zipfile.ZipFile(modconf_zip, 'w') as zfile:
-                for filename in [config_file, src_xml_file]:
-                    arcname = str(filename.relative_to(config_folder))
-                    zfile.write(filename,  arcname )
-
-            # save the modified config archives
-            modconf_id, post_url = self._toshi_api.file.create_file(modconf_zip)
-            self._toshi_api.file.upload_content(post_url, modconf_zip)
-
-            # make a json file from the ta dict so we can save it.
-            task_args_json = Path(WORK_PATH, 'task_args.json')
-            with open(task_args_json, 'w') as task_js:
-                task_js.write(json.dumps(ta, indent=2))
-
-            # save the json
-            task_args_id, post_url = self._toshi_api.file.create_file(task_args_json)
-            self._toshi_api.file.upload_content(post_url, task_args_json)
-
-            # save the two output archives
-            csv_archive_id, post_url = self._toshi_api.file.create_file(oq_result['csv_archive'])
-            self._toshi_api.file.upload_content(post_url, oq_result['csv_archive'])
-
-            hdf5_archive_id, post_url = self._toshi_api.file.create_file(oq_result['hdf5_archive'])
-            self._toshi_api.file.upload_content(post_url, oq_result['hdf5_archive'])
-
-            # Predecessors...
-            log.info(f'logic_tree_id_list: {logic_tree_id_list[:5]} ...')
-            predecessors = list(map(lambda ssid: dict(id=ssid[1], depth=-1), logic_tree_id_list))
-            log.info(f'predecessors: {predecessors[:5]}')
-            source_predecessors = list(itertools.chain.from_iterable(map(lambda ssid: self._toshi_api.get_predecessors(ssid[1]), logic_tree_id_list)))
-
-            if source_predecessors:
-                for predecessor in source_predecessors:
-                    predecessor['depth'] += -1
-                    predecessors.append(predecessor)
-
-            # Save the hazard solution
-            solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
-                config_id, csv_archive_id, hdf5_archive_id, produced_by=automation_task_id, predecessors=predecessors,
-                modconf_id=modconf_id, task_args_id=task_args_id)
-
-            # update the OpenquakeHazardTask
-            self._toshi_api.openquake_hazard_task.complete_task(
-                dict(task_id =automation_task_id,
-                    hazard_solution_id = solution_id,
-                    duration = (dt.datetime.utcnow() - t0).total_seconds(),
-                    result = "SUCCESS",
-                    state = "DONE"))
-
+            self._store_api_result(config_folder, task_arguments, oq_result, config_id)
 
             #############################
             # STORE HAZARD REALIZATIONS #
