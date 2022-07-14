@@ -214,7 +214,7 @@ class BuilderTask():
         automation_task_id = None
         if self.use_api:
             archive_id = ta['hazard_config']
-            config_id = self._save_config(archive_id, logic_tree_id_list)
+            config_id = self._save_config(archive_id, nrml_id_list)
             automation_task_id = self._setup_automation_task(ta, ja, config_id, nrml_id_list, environment)
 
         #########################
