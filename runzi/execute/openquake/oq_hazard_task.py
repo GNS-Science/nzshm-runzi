@@ -438,7 +438,7 @@ class BuilderTask():
 #  |_| |_| |_|\__,_|_|_| |_|
 #
 if __name__ == "__main__":
-
+    """Fancy ascii text comes from https://patorjk.com/software/taag/#p=display&v=0&f=Standard&t=main."""
     parser = argparse.ArgumentParser()
     parser.add_argument("config")
     args = parser.parse_args()

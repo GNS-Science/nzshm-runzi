@@ -126,7 +126,7 @@ if __name__ == "__main__":
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
 
-    schedule_tasks(tasks[:1], WORKER_POOL_SIZE)
+    schedule_tasks(tasks, WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
