@@ -1,0 +1,27 @@
+[
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDc2NA==",
+            "RmlsZToxMDEyMDU="
+        ],
+        "imt": "PGA",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 0.3551166254050649,
+        "location": "-36.870~174.770",
+        "gsims": {
+            "Subduction Interface": "Atkinson2022SInter_Central",
+            "Subduction Intraslab": "KuehnEtAl2020SSlab_NZL",
+            "Active Shallow Crust": "Atkinson2022Crust_Central"
+        },
+        "dist": 6.449359479798744e-08,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkz:4"
+        ],
+        "target_level": 0.3551165609114701
+    }
+]

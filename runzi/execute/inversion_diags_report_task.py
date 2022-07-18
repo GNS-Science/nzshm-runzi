@@ -68,20 +68,20 @@ class BuilderTask():
         t0 = dt.datetime.utcnow()
         ta, ja = task_arguments, job_arguments
 
-        # build the Named Fault MFDS, only if we have a FM with named faults
-        if ("CFM_0_9" in ta["fault_model"]) | ("CFM_1_0" in ta["fault_model"]):
-            print("Named fault plots for: ", ta['file_id'], ta['fault_model'])
-            print("path: ", ta['file_path'])
+        # # build the Named Fault MFDS, only if we have a FM with named faults
+        # if ("CFM_0_9" in ta["fault_model"]) | ("CFM_1_0" in ta["fault_model"]):
+        #     print("Named fault plots for: ", ta['file_id'], ta['fault_model'])
+        #     print("path: ", ta['file_path'])
 
-            named_mfds_folder = Path(self._output_folder, ta['file_id'], 'named_fault_mfds')
-            named_mfds_folder.mkdir(parents=True, exist_ok=True)
+        named_mfds_folder = Path(self._output_folder, ta['file_id'], 'named_fault_mfds')
+        named_mfds_folder.mkdir(parents=True, exist_ok=True)
 
-            plot_builder = self._gateway.entry_point.getMFDPlotBuilder()
-            plot_builder\
-                .setCrustalSolution(ta['file_path'])\
-                .setOutputDir(str(named_mfds_folder))\
-                .setFaultModel(ta['fault_model'])
-            plot_builder.plot()
+        plot_builder = self._gateway.entry_point.getMFDPlotBuilder()
+        plot_builder\
+            .setCrustalSolution(ta['file_path'])\
+            .setOutputDir(str(named_mfds_folder))\
+            .setFaultModel(ta['fault_model'])
+        plot_builder.plot()
 
         t1 = dt.datetime.utcnow()
         print("MFD plots took %s secs" % (t1-t0).total_seconds())

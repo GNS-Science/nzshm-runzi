@@ -18,7 +18,8 @@ from runzi.execute import inversion_diags_report_task
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
     JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, BUILD_PLOTS, REPORT_LEVEL, EnvMode)
+    API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, BUILD_PLOTS, REPORT_LEVEL, EnvMode,
+    HACK_FAULT_MODEL)
 
 INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 MAX_JOB_TIME_SECS = 60*30 #Change this soon
@@ -41,6 +42,8 @@ def generate_tasks_or_configs(general_task_id, solutions):
 
         #get FM name
         fault_model = solution_info['info'].get('fault_model', "")
+        if HACK_FAULT_MODEL:
+            fault_model = HACK_FAULT_MODEL
 
         task_arguments = dict(
             file_id = str(solution_info['id']),

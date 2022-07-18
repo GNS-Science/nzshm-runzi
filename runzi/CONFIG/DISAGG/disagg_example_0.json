@@ -1,0 +1,374 @@
+[
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAwMQ==",
+            "RmlsZToxMTEyMzc=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEyOQ==",
+            "RmlsZToxMTE5MTg="
+        ],
+        "imt": "PGA",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 0.3551166254050649,
+        "location": "-36.870~174.770",
+        "gsims": {
+            "Subduction Interface": "Atkinson2022SInter_Central",
+            "Subduction Intraslab": "KuehnEtAl2020SSlab_NZL",
+            "Active Shallow Crust": "Atkinson2022Crust_Central"
+        },
+        "dist": 6.449359479798744e-08,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkz:4"
+        ],
+        "target_level": 0.3551165609114701
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk5OQ==",
+            "RmlsZToxMTEyMzU=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEyMg==",
+            "RmlsZToxMTE5MTI="
+        ],
+        "imt": "SA(0.5)",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 0.6764880052681501,
+        "location": "-36.870~174.770",
+        "gsims": {
+            "Subduction Interface": "Atkinson2022SInter_Central",
+            "Subduction Intraslab": "Atkinson2022SSlab_Upper",
+            "Active Shallow Crust": "BooreEtAl2014"
+        },
+        "dist": 2.303739247144776e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc4:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTk5:7"
+        ],
+        "target_level": 0.6764903090073973
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk5Ng==",
+            "RmlsZToxMTEyMjY=",
+            "",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEyNA==",
+            "RmlsZToxMTE5MTk="
+        ],
+        "imt": "SA(1.5)",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 0.2616148263749777,
+        "location": "-36.870~174.770",
+        "gsims": {
+            "Subduction Interface": "AbrahamsonGulerce2020SInter_GLO",
+            "Subduction Intraslab": "AbrahamsonGulerce2020SSlab_NZL",
+            "Active Shallow Crust": "BooreEtAl2014"
+        },
+        "dist": 5.592096927242718e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgw:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTk0:7"
+        ],
+        "target_level": 0.26160923427805044
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAxOA==",
+            "RmlsZToxMTEyMjE=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEzNQ==",
+            "RmlsZToxMTE5MTM="
+        ],
+        "imt": "PGA",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 0.16442648524548523,
+        "location": "-36.870~174.770",
+        "gsims": {
+            "Subduction Interface": "KuehnEtAl2020SInter_NZL",
+            "Subduction Intraslab": "KuehnEtAl2020SSlab_GLO",
+            "Active Shallow Crust": "AbrahamsonEtAl2014"
+        },
+        "dist": 1.8545589275387186e-07,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc1:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:7",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTk3:6"
+        ],
+        "target_level": 0.16442629978959247
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAwMQ==",
+            "RmlsZToxMTEyMzc=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE2Nw==",
+            "RmlsZToxMTE5MTg="
+        ],
+        "imt": "SA(0.5)",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 0.31070244831911936,
+        "location": "-36.870~174.770",
+        "gsims": {
+            "Subduction Interface": "AbrahamsonGulerce2020SInter_GLO",
+            "Subduction Intraslab": "KuehnEtAl2020SSlab_GLO",
+            "Active Shallow Crust": "CampbellBozorgnia2014"
+        },
+        "dist": 1.5577328704718951e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:7",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA3MDAz:8"
+        ],
+        "target_level": 0.31070400605198983
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk4OA==",
+            "RmlsZToxMTEyMjg=",
+            "",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE3MA==",
+            "RmlsZToxMTE5MTI="
+        ],
+        "imt": "SA(1.5)",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 0.11699031112229506,
+        "location": "-36.870~174.770",
+        "gsims": {
+            "Subduction Interface": "AbrahamsonGulerce2020SInter_NZL",
+            "Subduction Intraslab": "AbrahamsonGulerce2020SSlab_NZL",
+            "Active Shallow Crust": "ChiouYoungs2014"
+        },
+        "dist": 6.687767687696411e-07,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgx:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg3:9"
+        ],
+        "target_level": 0.11699097989906383
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk5Ng==",
+            "RmlsZToxMTEyMjY=",
+            "",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEyOA==",
+            "RmlsZToxMTE5MTY="
+        ],
+        "imt": "PGA",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 1.3154091778361368,
+        "location": "-41.510~173.950",
+        "gsims": {
+            "Subduction Interface": "AbrahamsonGulerce2020SInter_NZL",
+            "Subduction Intraslab": "Atkinson2022SSlab_Upper",
+            "Active Shallow Crust": "ChiouYoungs2014"
+        },
+        "dist": 5.140017937943497e-07,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgw:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg5:9"
+        ],
+        "target_level": 1.315408663834343
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAwMQ==",
+            "RmlsZToxMTEyMzc=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE2OA==",
+            "RmlsZToxMTE5MTM="
+        ],
+        "imt": "SA(0.5)",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 2.704980519326211,
+        "location": "-41.510~173.950",
+        "gsims": {
+            "Subduction Interface": "ParkerEtAl2020SInter",
+            "Subduction Intraslab": "AbrahamsonGulerce2020SSlab_NZL",
+            "Active Shallow Crust": "Atkinson2022Crust_Lower"
+        },
+        "dist": 9.749734362074491e-07,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3:5",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:5",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTk1:5"
+        ],
+        "target_level": 2.704981494299647
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk5Ng==",
+            "RmlsZToxMTEyMjY=",
+            "",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEzOQ==",
+            "RmlsZToxMTE5MTE="
+        ],
+        "imt": "SA(1.5)",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 1.0930708059605685,
+        "location": "-41.510~173.950",
+        "gsims": {
+            "Subduction Interface": "KuehnEtAl2020SInter_NZL",
+            "Subduction Intraslab": "AbrahamsonGulerce2020SSlab_GLO",
+            "Active Shallow Crust": "Stafford2022_Lower"
+        },
+        "dist": 1.6613455013247957e-05,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgw:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTky:2"
+        ],
+        "target_level": 1.0930541925055552
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAwMg==",
+            "RmlsZToxMTEyMzI=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE3MQ==",
+            "RmlsZToxMTE5MTQ="
+        ],
+        "imt": "PGA",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 0.6862417062356845,
+        "location": "-41.510~173.950",
+        "gsims": {
+            "Subduction Interface": "KuehnEtAl2020SInter_NZL",
+            "Subduction Intraslab": "AbrahamsonGulerce2020SSlab_GLO",
+            "Active Shallow Crust": "BooreEtAl2014"
+        },
+        "dist": 4.53871492600566e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc5:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg4:7"
+        ],
+        "target_level": 0.6862371675207585
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAwMQ==",
+            "RmlsZToxMTEyMzc=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEyOA==",
+            "RmlsZToxMTE5MTY="
+        ],
+        "imt": "SA(0.5)",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 1.3332301570425849,
+        "location": "-41.510~173.950",
+        "gsims": {
+            "Subduction Interface": "AbrahamsonGulerce2020SInter_GLO",
+            "Subduction Intraslab": "AbrahamsonGulerce2020SSlab_NZL",
+            "Active Shallow Crust": "Stafford2022_Lower"
+        },
+        "dist": 1.0397878156487295e-05,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg5:2"
+        ],
+        "target_level": 1.3332405549207413
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk5OQ==",
+            "RmlsZToxMTEyMzU=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE0OQ==",
+            "RmlsZToxMTE5MTY="
+        ],
+        "imt": "SA(1.5)",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 0.5032402581893287,
+        "location": "-41.510~173.950",
+        "gsims": {
+            "Subduction Interface": "KuehnEtAl2020SInter_NZL",
+            "Subduction Intraslab": "Atkinson2022SSlab_Upper",
+            "Active Shallow Crust": "BooreEtAl2014"
+        },
+        "dist": 3.1986968003216987e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc4:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA3MDAw:7"
+        ],
+        "target_level": 0.5032370594925284
+    }
+]

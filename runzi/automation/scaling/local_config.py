@@ -34,7 +34,7 @@ else:
 JAVA_THREADS = os.getenv('NZSHM22_SCRIPT_JAVA_THREADS', 4) #each
 
 #How many jobs to run in parallel - keep thread/memory resources in mind
-WORKER_POOL_SIZE = os.getenv('NZSHM22_SCRIPT_WORKER_POOL_SIZE',  2)
+WORKER_POOL_SIZE = int(os.getenv('NZSHM22_SCRIPT_WORKER_POOL_SIZE',  2))
 
 #Memory settings, be careful - don't exceed what you have avail, or you'll see swapping!
 JVM_HEAP_START = os.getenv('NZSHM22_SCRIPT_JVM_HEAP_START', 4) #Startup JAVA Memory (per worker)
@@ -50,7 +50,8 @@ WORK_PATH = os.getenv('NZSHM22_SCRIPT_WORK_PATH', PurePath(os.getcwd(), "tmp"))
 CLUSTER_MODE = EnvMode[os.getenv('NZSHM22_SCRIPT_CLUSTER_MODE','LOCAL')] #Wase True/False now EnvMode: LOCAL, CLUSTER, AWS
 
 BUILD_PLOTS = boolean_env('NZSHM22_BUILD_PLOTS')
-REPORT_LEVEL = os.getenv('NZSHM22_REPORT_LEVEL' , 'DEFAULT')
+REPORT_LEVEL = os.getenv('NZSHM22_REPORT_LEVEL' , None) #None, LIGHT, DEFAULT, FULL
+HACK_FAULT_MODEL = os.getenv('NZSHM22_HACK_FAULT_MODEL')
 
 #S3 report bucket name
 S3_REPORT_BUCKET = os.getenv('NZSHM22_S3_REPORT_BUCKET', "None")
