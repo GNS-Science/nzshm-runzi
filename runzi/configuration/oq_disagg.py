@@ -24,7 +24,7 @@ from runzi.execute.openquake.util import get_logic_tree_branches, get_granular_l
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode, S3_URL, S3_REPORT_BUCKET)
 
-HAZARD_MAX_TIME = 10 #minutes
+HAZARD_MAX_TIME = 20 #minutes
 
 factory_class = get_factory(CLUSTER_MODE)
 factory_task = runzi.execute.openquake.oq_hazard_task
