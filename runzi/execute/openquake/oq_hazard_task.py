@@ -164,7 +164,7 @@ class BuilderTask():
         # Save the hazard solution
         solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
             config_id, csv_archive_id, hdf5_archive_id, produced_by=automation_task_id, predecessors=predecessors,
-            modconf_id=modconf_id, task_args_id=task_args_id)
+            modconf_id=modconf_id, task_args_id=task_args_id, meta=task_arguments)
 
         # update the OpenquakeHazardTask
         self._toshi_api.openquake_hazard_task.complete_task(

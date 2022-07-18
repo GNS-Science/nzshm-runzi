@@ -1,6 +1,6 @@
 ## TODO disaggs
 
- - get the template config automaticallym instead of manully in teh oq_run_disagg
+ - get the template config automatically instead of manully in teh oq_run_disagg
  - add useful metadata to the final hazard solution
  - add predecessors
  - store the modified config
