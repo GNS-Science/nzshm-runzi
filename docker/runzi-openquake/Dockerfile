@@ -28,7 +28,7 @@ ADD Atkinson22_coeffs_mod_v8b_sanjay_v2.csv /usr/src/oq-engine/openquake/hazardl
 #TEMP UNTIL GEM ACCEPTS ANNES mods
 WORKDIR /usr/src/oq-engine/openquake/hazardlib/calc
 RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/hazardlib/calc/disagg.py
-WORDIR /usr/src/oq-engine/openquake/calculators
+WORKDIR /usr/src/oq-engine/openquake/calculators
 RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/calculators/disaggregation.py
 
 
