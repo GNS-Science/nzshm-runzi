@@ -26,10 +26,10 @@ ADD mcverry_2006_MW.py /usr/src/oq-engine/openquake/hazardlib/gsim
 ADD Atkinson22_coeffs_mod_v8b_sanjay_v2.csv /usr/src/oq-engine/openquake/hazardlib/gsim
 
 #TEMP UNTIL GEM ACCEPTS ANNES mods
-WORKDIR /usr/src/oq-engine/openquake/hazardlib/calc
-RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/hazardlib/calc/disagg.py
-WORKDIR /usr/src/oq-engine/openquake/calculators
-RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/calculators/disaggregation.py
+RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/hazardlib/calc/disagg.py\
+ -O /usr/src/oq-engine/openquake/hazardlib/calc/disagg.py
+RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/calculators/disaggregation.py\
+ -O /usr/src/oq-engine/openquake/calculators/disaggregation.py
 
 
 # Install Runzi TODO:is this only for these test configs ??
