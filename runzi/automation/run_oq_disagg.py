@@ -41,11 +41,11 @@ if __name__ == "__main__":
 
     TASK_TITLE = "Openquake Disagg calcs"
     TASK_DESCRIPTION = "Full logic tree for SLT workshop"
-    TASK_DESCRIPTION = "TEST build"
+    #TASK_DESCRIPTION = "TEST build"
 
-    CONFIG_FILE = "/GNSDATA/APP/nzshm-runzi/runzi/CONFIG/DISAGG/disagg_example_TEST.json"
-    #CONFIG_FILE = "/app/nzshm-runzi/runzi/CONFIG/DISAGG/disagg_example_1.json"
-    #CONFIG_FILE = "/app/nzshm-runzi/runzi/CONFIG/DISAGG/disagg_full_logictree.json"
+    # CONFIG_FILE = "/GNSDATA/APP/nzshm-runzi/runzi/CONFIG/DISAGG/disagg_example_TEST.json"
+    # CONFIG_FILE = "/app/nzshm-runzi/runzi/CONFIG/DISAGG/disagg_example_1.json"
+    CONFIG_FILE = "/GNSDATA/APP/nzshm-runzi/runzi/CONFIG/DISAGG/disagg_full_logictree.json"
 
     with open(CONFIG_FILE, 'r') as df:
         disagg_configs = json.loads(df.read())
@@ -82,9 +82,9 @@ if __name__ == "__main__":
     #   }
     # }
 
-    hazard_config = "RmlsZToxMDEyODA="  # toshi_id contain job config used by the original hazard jobs TEST for OQH : T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAxMzE5
+    # hazard_config = "RmlsZToxMDEyODA="  # toshi_id contain job config used by the original hazard jobs TEST for OQH : T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAxMzE5
     # hazard_config = "RmlsZToxMTI2MTI="  # toshi_id contain job config used by the original hazard jobs PROD for OQH : T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3
-    # hazard_config = "RmlsZToxMTQ3ODQ==" # PROD for T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA4MTU3
+    hazard_config = "RmlsZToxMTQ3ODQ==" # PROD for T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA4MTU3
 
     args = dict(
         hazard_config = hazard_config,
