@@ -168,11 +168,12 @@ class BuilderTask():
 
             if ta.get('paleo_rate_constraint_weight', 1):
                 weight = 1 if ta.get('reweight') else ta.get('paleo_rate_constraint_weight')
-                inversion_runner.setPaleoRateConstraints(
-                    float(weight), #set default for reweighting
-                    float(ta['paleo_parent_rate_smoothness_constraint_weight']),
-                    ta['paleo_rate_constraint'],
-                    ta['paleo_probability_model'])
+                if ta.get('paleo_rate_constraint'):
+                    inversion_runner.setPaleoRateConstraints(
+                        float(weight), #set default for reweighting
+                        float(ta['paleo_parent_rate_smoothness_constraint_weight']),
+                        ta['paleo_rate_constraint'],
+                        ta['paleo_probability_model'])
 
         elif ta['config_type'] == 'subduction':
             inversion_runner = self._gateway.entry_point.getSubductionInversionRunner()
