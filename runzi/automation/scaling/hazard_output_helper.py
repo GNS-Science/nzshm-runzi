@@ -16,7 +16,7 @@ class HazardOutputHelper():
  
         for hazard_soln_id in hazard_soln_ids:
 
-            file_info = self.get_hdf_info(hazard_soln_id)
+            file_info = self.get_archive_info(hazard_soln_id,'hdf5')
 
             folder = Path(dest_folder, 'downloads', hazard_soln_id)
             folder.mkdir(parents=True, exist_ok=True)
@@ -40,23 +40,47 @@ class HazardOutputHelper():
         return downloads
 
 
-    def download_csv(self, hazard_soln_id, dest_folder, skip_existing=False):
 
-        #TODO this does nothing
-
+    def download_csv(self, hazard_soln_ids, dest_folder, overwrite=False):
+    
         downloads = dict()
-        
+ 
+        for hazard_soln_id in hazard_soln_ids:
+
+            file_info = self.get_archive_info(hazard_soln_id,'csv')
+
+            folder = Path(dest_folder, 'downloads', hazard_soln_id)
+            folder.mkdir(parents=True, exist_ok=True)
+            file_path = PurePath(folder, file_info['file_name'])
+
+            downloads[file_info['id']] = dict(id=file_info['id'],
+                                                filepath = str(file_path),
+                                                info = file_info,
+                                                hazard_id = hazard_soln_id)
+
+            if not overwrite and os.path.isfile(file_path):
+                print(f"Skip DL for existing file: {file_path}")
+                continue
+
+            r1 = requests.get(file_info['file_url'])
+            with open(str(file_path), 'wb') as f:
+                f.write(r1.content)
+                print("downloaded input file:", file_path, f)
+                os.path.getsize(file_path) == file_info['file_size']
 
         return downloads
 
-
-    def get_hdf_info(self,hazard_soln_id):
+    
+    def get_archive_info(self, hazard_soln_id, archive_type):
+        """
+        archive_type: str {'csv','hdf5'}
+        """
        
         qry = '''
         query oqhazsoln ($id:ID!) {  
             node (id: $id) {
 		    ... on OpenquakeHazardSolution {
-                    hdf5_archive {
+                    ###archive_type###_archive {
                     id
                     file_name
                     file_size
@@ -65,12 +89,13 @@ class HazardOutputHelper():
                 }
             }
         }'''
+        qry = qry.replace('###archive_type###',archive_type)
         input_variables = dict(id=hazard_soln_id)
         executed = self.api.run_query(qry, input_variables)
               
-        hdf_info =  executed['node']['hdf5_archive']
+        archive_info =  executed['node'][f'{archive_type}_archive']
 
-        return hdf_info
+        return archive_info
 
 
     def get_hazard_ids_from_gt(self,gt_id):
