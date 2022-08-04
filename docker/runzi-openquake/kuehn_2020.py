@@ -424,6 +424,67 @@ def get_basin_response_term(C, region, vs30, z_value):
                              _get_ln_z_ref(CZ, vs30[mask]))
     return brt
 
+def get_partial_derivative_site_pga(C, vs30, pga1100):
+    """
+    Defines the partial derivative of the site term with respect to the PGA
+    on reference rock, described in equation 5.9 (corrected in Erratum)
+    """
+    dfsite_dlnpga = np.zeros(vs30.shape)
+    idx = vs30 <= C["k1"]
+    vnorm = vs30[idx] / C["k1"]
+    dfsite_dlnpga[idx] = C["k2"] * pga1100 * (
+        (-1.0 / (pga1100 + CONSTS["c"])) +
+        (1.0 / (pga1100 + CONSTS["c"] * (vnorm ** CONSTS["n"])))
+        )
+    return dfsite_dlnpga
+
+def get_nonlinear_stddevs(C, C_PGA, imt, vs30, pga1100):
+    """
+    Get the heteroskedastic within-event and between-event standard deviation
+    """
+    period = imt.period
+
+    # Correlation coefficients from AG20
+    periods_AG20 = [0.01, 0.02, 0.03, 0.05, 0.075, 0.10, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
+    rho_Ws = [1.0, 0.99, 0.99, 0.97, 0.95, 0.92, 0.9, 0.87, 0.84, 0.82, 0.74, 0.66, 0.59, 0.5, 0.41, 0.33, 0.3, 0.27, 0.25, 0.22, 0.19, 0.17, 0.14, 0.1]
+    rho_Bs = [1.0, 0.99, 0.99, 0.985, 0.98, 0.97, 0.96, 0.94, 0.93, 0.91, 0.86, 0.8, 0.78, 0.73, 0.69, 0.62, 0.56, 0.52, 0.495, 0.43, 0.4, 0.37, 0.32, 0.28]
+
+    rho_W_itp = interp1d(np.log(periods_AG20), rho_Ws)
+    rho_B_itp = interp1d(np.log(periods_AG20), rho_Bs)
+    if period < 0.01:
+        rhoW = 1.0
+        rhoB = 1.0
+    else:
+        rhoW = rho_W_itp(np.log(period))
+        rhoB = rho_B_itp(np.log(period))
+
+    # Get linear tau and phi
+    tau_lin = C["tau"]*np.ones(vs30.shape)
+    tau_lin_pga = C_PGA["tau"]*np.ones(vs30.shape)
+    phi_lin = C["phi"]*np.ones(vs30.shape)
+    phi_lin_pga = C_PGA["phi"]*np.ones(vs30.shape)
+    # Find the sites where nonlinear site terms apply
+    idx = vs30 <= C["k1"]
+    # Process the nonlinear site terms
+    phi_amp = 0.3
+    partial_f_pga = get_partial_derivative_site_pga(C, vs30[idx], pga1100[idx])
+    phi_b = np.sqrt(phi_lin[idx] ** 2.0 - phi_amp ** 2.0)
+    phi_b_pga = np.sqrt(phi_lin_pga[idx] ** 2.0 - phi_amp ** 2.0)
+
+    # Get nonlinear tau and phi terms
+    tau = tau_lin.copy()
+    phi = phi_lin.copy()
+    tau_nl_sq = tau_lin[idx]**2 + (partial_f_pga ** 2.0) * tau_lin_pga[idx]**2 +\
+                (2.0 * partial_f_pga * tau_lin_pga[idx]*tau_lin[idx]*rhoB)
+
+    phi_nl_sq = (phi_lin[idx] ** 2.0) + (partial_f_pga ** 2.0) * (phi_b_pga ** 2.0) +\
+        (2.0 * partial_f_pga * phi_b_pga * phi_b * rhoW)
+    tau[idx] = np.sqrt(tau_nl_sq)
+    phi[idx] = np.sqrt(phi_nl_sq)
+    sigma = np.sqrt(tau**2 + phi**2)
+
+    return sigma, tau, phi
+
 
 def get_mean_values(C, region, trt, m_b, ctx, a1100=None):
     """
@@ -633,13 +694,14 @@ class KuehnEtAl2020SInter(GMPE):
     #: Defined for a reference velocity of 1100 m/s
     DEFINED_FOR_REFERENCE_VELOCITY = 1100.0
 
-    def __init__(self, region="GLO", m_b=None, sigma_mu_epsilon=0.0, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, region="GLO", m_b=None, sigma_mu_epsilon=0.0, which_sigma = "Modified", **kwargs):
+        super().__init__(which_sigma = which_sigma, **kwargs)
         # Check that if a region is input that it is one of the ones
         # supported by the model
         assert region in SUPPORTED_REGIONS, "Region %s not defined for %s" %\
             (region, self.__class__.__name__)
         self.region = region
+        self.which_sigma = which_sigma
 
         # For some regions a basin depth term is defined
         if self.region in ("CAS", "JPN"):
@@ -718,9 +780,12 @@ class KuehnEtAl2020SInter(GMPE):
                     self.sigma_mu_model, imt, mag, ctx.rrup)
                 mean[m] += self.sigma_mu_epsilon * sigma_mu_adjust
             # Get standard deviations
-            tau[m] = C["tau"]
-            phi[m] = C["phi"]
-            sig[m] = np.sqrt(C["tau"] ** 2.0 + C["phi"] ** 2.0)
+            if self.which_sigma == "Modified":
+                sig[m], tau[m], phi[m] = get_nonlinear_stddevs(C, C_PGA, imt, ctx.vs30, pga1100)
+            else:
+                tau[m] = C["tau"]
+                phi[m] = C["phi"]
+                sig[m] = np.sqrt(C["tau"] ** 2.0 + C["phi"] ** 2.0)
 
     # Coefficients in external file - supplied directly by the author
     COEFFS = CoeffsTable(sa_damping=5, table=open(KUEHN_COEFFS).read())

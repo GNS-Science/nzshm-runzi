@@ -27,6 +27,8 @@ Module exports :class:`Atkinson2022Crust`
 import math
 import os
 import numpy as np
+from scipy.interpolate import interp1d
+
 from openquake.hazardlib import const
 from openquake.hazardlib.gsim.base import GMPE, CoeffsTable
 from openquake.hazardlib.imt import PGA, SA
@@ -138,8 +140,57 @@ def get_stddevs(suffix, C):
     Within event stdvs as We_.
     Total as sigma_.
     """
-    intra_e_sigma = np.sqrt(C['We_' + suffix]**2 + C['phiSS']**2)
+    intra_e_sigma = np.sqrt(C['We_' + suffix]**2 + C['phiS2S']**2)
     return [C['sigma_' + suffix], C['Be_' + suffix], intra_e_sigma]
+
+def get_nonlinear_stddevs(suffix, C, C_PGA, imt, pga_rock, vs30):
+    """
+    Get the nonlinear tau and phi terms for Gail's model. For this implementation, I using the between-event and within-event correlation from AG20.
+    Note that the Gail's nonlinear soil response term is identical to Seyhan and Stewart (2014) model.
+    """
+    period = imt.period
+    pgar = pga_rock/981.0
+    # Linear Tau
+    tau_lin = C['Be_' + suffix]*np.ones(vs30.shape)
+    tau_lin_pga = C_PGA['Be_' + suffix]*np.ones(vs30.shape)
+
+    # Linear phi
+    intra_e_sigma = np.sqrt(C['We_' + suffix]**2 + C['phiS2S']**2)
+    intra_e_sigma_pga = np.sqrt(C_PGA['We_' + suffix]**2 + C_PGA['phiS2S']**2)
+    phi_lin = intra_e_sigma*np.ones(vs30.shape)
+    phi_lin_pga = intra_e_sigma_pga*np.ones(vs30.shape)
+
+    # Assume that the site response variability is constant with period.
+    phi_amp = 0.3
+    phi_B = np.sqrt(phi_lin**2 - phi_amp**2)
+    phi_B_pga = np.sqrt(phi_lin_pga**2 - phi_amp**2)
+
+    # correlation coefficients from AG20
+    periods_AG20 = [0.01, 0.02, 0.03, 0.05, 0.075, 0.10, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
+    rho_Ws = [1.0, 0.99, 0.99, 0.97, 0.95, 0.92, 0.9, 0.87, 0.84, 0.82, 0.74, 0.66, 0.59, 0.5, 0.41, 0.33, 0.3, 0.27, 0.25, 0.22, 0.19, 0.17, 0.14, 0.1]
+    rho_Bs = [1.0, 0.99, 0.99, 0.985, 0.98, 0.97, 0.96, 0.94, 0.93, 0.91, 0.86, 0.8, 0.78, 0.73, 0.69, 0.62, 0.56, 0.52, 0.495, 0.43, 0.4, 0.37, 0.32, 0.28]
+
+    rho_W_itp = interp1d(np.log(periods_AG20), rho_Ws)
+    rho_B_itp = interp1d(np.log(periods_AG20), rho_Bs)
+    if period < 0.01:
+        rhoW = 1.0
+        rhoB = 1.0
+    else:
+        rhoW = rho_W_itp(np.log(period))
+        rhoB = rho_B_itp(np.log(period))
+
+    f2 = C["f4"] * (np.exp(C["f5"] * (np.minimum(vs30, 760.0) - 360.0)) - np.exp(C["f5"] * (760.0 - 360.0)))
+    f3 = 0.1
+
+    partial_f_pga = f2 * pgar / (pgar + f3)
+    partial_f_pga = partial_f_pga*np.ones(vs30.shape)
+
+    # nonlinear variance components
+    phi2_NL = phi_lin**2 + partial_f_pga**2 * phi_B_pga**2 + 2 * partial_f_pga * phi_B_pga*phi_B * rhoW
+    tau2_NL = tau_lin**2 + partial_f_pga**2 * tau_lin_pga**2 + 2 * partial_f_pga * tau_lin_pga*tau_lin * rhoB
+
+    #return [partial_f_pga, np.sqrt(tau2_NL), np.sqrt(phi2_NL)]
+    return [np.sqrt(tau2_NL + phi2_NL), np.sqrt(tau2_NL), np.sqrt(phi2_NL)]
 
 
 class Atkinson2022Crust(GMPE):
@@ -174,13 +225,14 @@ class Atkinson2022Crust(GMPE):
     #kappa = 0.05
     #stress = 100
 
-    def __init__(self, epistemic = 'Central', **kwargs):
+    def __init__(self, epistemic = 'Central', which_sigma = "Modified", **kwargs):
         """
         Aditional parameter for epistemic central,
         lower and upper bounds.
         """
-        super().__init__(epistemic=epistemic, **kwargs)
+        super().__init__(epistemic=epistemic, which_sigma = which_sigma, **kwargs)
         self.epistemic = epistemic
+        self.which_sigma = which_sigma
 
     def compute(self, ctx:np.recarray, imts, mean, sig, tau, phi):
         # compute pga_rock
@@ -201,13 +253,17 @@ class Atkinson2022Crust(GMPE):
             # In her email and slack post Gail mentioned that her upper and lower branches are as 1.28 times of the delta. So as to represent 10th and 90th percentile.
             # Consequently, the weights have also changed to 0.3, 0.4, 0.3.
             if self.epistemic == 'Lower':
-                mean[m] = mean[m] - _epistemic_adjustment_lower(C, ctx)*1.28
+                mean[m] = mean[m] - _epistemic_adjustment_lower(C, ctx)*1.28155*0.9
+            # The scale factor of 0.9 is applied based upon the discussion that it accounts for the reduction in epistemic uncertainty when no perfect correlation is assumed between rupture scenarios. See the note of Peter and Brendon on slack.
             elif self.epistemic == 'Upper':
-                mean[m] = mean[m] + _epistemic_adjustment_upper(C, ctx)*1.28
+                mean[m] = mean[m] + _epistemic_adjustment_upper(C, ctx)*1.28155*0.9
             else:
                 mean[m] = mean[m]
-
-            sig[m], tau[m], phi[m] = get_stddevs(self.suffix, C)
+            # Aleatory Uncertainty terms.
+            if self.which_sigma == "Modified":
+                sig[m], tau[m], phi[m] = get_nonlinear_stddevs(self.suffix, C, C_PGA, imt, pga_rock, ctx.vs30)
+            else:
+                sig[m], tau[m], phi[m] = get_stddevs(self.suffix, C)
 
     # periods given by 1 / 10 ** COEFFS['f']
     COEFFS = CoeffsTable(sa_damping=5, table=open(Atk22_COEFFS).read())

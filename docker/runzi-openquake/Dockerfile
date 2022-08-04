@@ -19,11 +19,18 @@ RUN pip install numba
 RUN pip install pytest
 
 #TEMP until this is in GEM repo
-ADD stafford_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
-ADD atkinson_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
-ADD kuehn_2020.py /usr/src/oq-engine/openquake/hazardlib/gsim
-ADD mcverry_2006_MW.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD abrahamson_2014.py /usr/src/oq-engine/openquake/hazardlib/gsim
 ADD Atkinson22_coeffs_mod_v8b_sanjay_v2.csv /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD bradley_2013.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD chiou_youngs_2014.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD parker_2020.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD atkinson_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD boore_2014.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD campbell_bozorgnia_2014.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD kuehn_2020.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD stafford_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD mcverry_2006_MW.py /usr/src/oq-engine/openquake/hazardlib/gsim
+
 
 #TEMP UNTIL GEM ACCEPTS ANNES mods
 RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/hazardlib/calc/disagg.py\

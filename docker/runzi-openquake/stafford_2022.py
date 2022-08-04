@@ -17,7 +17,7 @@
 # along with OpenQuake. If not, see <http://www.gnu.org/licenses/>.
 
 """
-Author: s.bora@gns.cri.n /sanjay.singh1986@gmail.com
+Author: s.bora@gns.cri.nz /sanjay.singh1986@gmail.com
 Module exports :class:`Stafford2022`
 """
 import numpy as np
@@ -136,13 +136,14 @@ def _neff_model(T):
 
 def get_adjustments (T, ctx, adjust_c1, adjust_chm, adjust_c7, adjust_cg1):
     ρEhEx = 0.4
+    # The scale factor of 0.9 is applied based upon the discussion that it accounts for the reduction in epistemic uncertainty when no perfect correlation is assumed between rupture scenarios. See the note of Peter and Brendon on slack.
     MEAN_ADJUSTMENT_TERMS_IF = {
     "Lower": {
-        'delta_c1': -1.28155 * _empirical_sigma(T, ctx.rrup, ctx.mag) if adjust_c1==True else 0.0,
-        'delta_c1hm': -1.28155 * ρEhEx * _saturation_sigma(ctx.mag, ctx.rrup) if adjust_chm==True else 0.0,
+        'delta_c1': -1.28155*0.9 * _empirical_sigma(T, ctx.rrup, ctx.mag) if adjust_c1==True else 0.0,
+        'delta_c1hm': -1.28155*0.9 * ρEhEx * _saturation_sigma(ctx.mag, ctx.rrup) if adjust_chm==True else 0.0,
         'delta_c7':-0.02578 if adjust_c7==True else 0.0,
         'delta_c7b': _sigmoid1d(np.log(T), -0.05737, 0.05733, -1.0324, 0.04875) if adjust_c7==True else 0.0,
-        'delta_cg1' : _anelastic_correction(T) - 1.28155 * _anelastic_sigma(T) if adjust_cg1==True else 0.0,
+        'delta_cg1' : _anelastic_correction(T) - 1.28155*0.9 * _anelastic_sigma(T) if adjust_cg1==True else 0.0,
     },
     "Central":{'delta_c1': 0.0,
                'delta_c1hm' : 0.0,
@@ -151,11 +152,11 @@ def get_adjustments (T, ctx, adjust_c1, adjust_chm, adjust_c7, adjust_cg1):
                'delta_cg1': _anelastic_correction(T) if adjust_cg1==True else 0.0
                },
     "Upper":{
-        'delta_c1': 1.28155 * _empirical_sigma(T, ctx.rrup, ctx.mag) if adjust_c1==True else 0.0,
-        'delta_c1hm':1.28155 * ρEhEx * _saturation_sigma(ctx.mag, ctx.rrup) if adjust_chm==True else 0.0,
+        'delta_c1': 1.28155*0.9 * _empirical_sigma(T, ctx.rrup, ctx.mag) if adjust_c1==True else 0.0,
+        'delta_c1hm':1.28155*0.9 * ρEhEx * _saturation_sigma(ctx.mag, ctx.rrup) if adjust_chm==True else 0.0,
         'delta_c7': 0.0,
         'delta_c7b':0.0,
-        'delta_cg1': _anelastic_correction(T) + 1.28155 * _anelastic_sigma(T) if adjust_cg1==True else 0.0
+        'delta_cg1': _anelastic_correction(T) + 1.28155*0.9 * _anelastic_sigma(T) if adjust_cg1==True else 0.0
         }
     }
     return MEAN_ADJUSTMENT_TERMS_IF
@@ -189,32 +190,23 @@ def _get_centered_ztor(ctx):
     # Reverse and reverse-oblique faulting
     rev = (30. <= ctx.rake) & (ctx.rake <= 150.)
     mean_ztor[rev] = np.clip(2.704 - 1.226 * np.clip(ctx.mag[rev] - 5.849, 0.0, None), 0., None) ** 2
-    return np.clip (ctx.ztor - mean_ztor, 0, None) # In GEM code this is different.
-
-def get_ztor(ctx):
-    """This function gets back the ztor. If we dont use this function the problem arises for Ztor < mean_ztor (provided by the two functions) when both ztor and delta_ztor become negative. See the top part of Peter Stafford's Julia code where he gets back this term."""
-    delta_ztor = _get_centered_ztor(ctx)
-    # Strike-slip and normal faulting
-    mean_ztor = np.clip(2.673 - 1.136 * np.clip(ctx.mag - 4.970, 0., None), 0., None) ** 2
-    # Reverse and reverse-oblique faulting
-    rev = (30. <= ctx.rake) & (ctx.rake <= 150.)
-    mean_ztor[rev] = np.clip(2.704 - 1.226 * np.clip(ctx.mag[rev] - 5.849, 0.0, None), 0., None) ** 2
-    return mean_ztor + delta_ztor
+    return ctx.ztor - mean_ztor
 
 def get_hanging_wall_term(C, ctx):
     """
     Returns the hanging wall term
     """
-    ztor = get_ztor(ctx)
     fhw = np.zeros(ctx.rrup.shape)
     idx = ctx.rx >= 0.0
     if np.any(idx):
-        fdist = 1.0 - (np.sqrt(ctx.rjb[idx] ** 2. + ztor[idx] ** 2.) /(ctx.rrup[idx] + 1.0))
+        fdist = 1.0 - (np.sqrt(ctx.rjb[idx] ** 2. + ctx.ztor[idx] ** 2.) /
+                       (ctx.rrup[idx] + 1.0))
         fdist *= C["c9a"] + (1.0 - C["c9a"]) * np.tanh(ctx.rx[idx] / C["c9b"])
         fhw[idx] += C["c9"] * np.cos(np.radians(ctx.dip[idx])) * fdist
     return fhw
 
 def get_stress_scaling(T, C, ctx, mu_branch, adjust_c1, adjust_chm, adjust_c7, adjust_cg1):
+    """This term includes adjustments related to stress scaling."""
     delta_c1 = get_adjustments(T, ctx, adjust_c1, adjust_chm, adjust_c7, adjust_cg1)[mu_branch]["delta_c1"]
     delta_c1hm = get_adjustments(T, ctx, adjust_c1, adjust_chm, adjust_c7, adjust_cg1)[mu_branch]["delta_c1hm"]
     return C['c1'] + delta_c1 + delta_c1hm
@@ -229,7 +221,7 @@ def get_geometric_spreading(C, mag, rrup):
 def get_far_field_distance_scaling(T, C, ctx, mu_branch,adjust_c1, adjust_chm, adjust_c7, adjust_cg1):
     """
     Returns the far-field distance scaling term - both magnitude and
-    distance
+    distance. It includes adjustments made for NZ through delta_cg1.
     """
     delta_cg1 = get_adjustments(T, ctx, adjust_c1, adjust_chm, adjust_c7, adjust_cg1)[mu_branch]["delta_cg1"]
 
@@ -250,7 +242,7 @@ def get_magnitude_scaling(C, mag):
 def get_source_scaling_terms(T, C, ctx, delta_ztor, mu_branch, adjust_c1, adjust_chm, adjust_c7, adjust_cg1):
     """
     Returns additional source scaling parameters related to style of
-    faulting, dip and top of rupture depth
+    faulting, dip and top of rupture depth. It includes adjustments for NZ backbone model through delta_c7 and delta_c7b.
     """
     delta_c7 = get_adjustments(T, ctx, adjust_c1, adjust_chm, adjust_c7, adjust_cg1)[mu_branch]["delta_c7"]
     delta_c7b = get_adjustments(T, ctx, adjust_c1, adjust_chm, adjust_c7, adjust_cg1)[mu_branch]["delta_c7b"]
@@ -362,7 +354,7 @@ def get_stddevs (T, ln_y_ref, C, ctx, sigma_branch):
 
 def get_mean_stddevs(T, mu_branch, sigma_branch, adjust_c1, adjust_chm, adjust_c7, adjust_cg1, C, ctx):
     """
-    Return mean and standard deviation values
+    Return mean and standard deviation values.
     """
     # Get ground motion on reference rock
     ln_y_ref = get_ln_y_ref(T, C, ctx, mu_branch, adjust_c1, adjust_chm, adjust_c7, adjust_cg1)
@@ -387,7 +379,9 @@ def get_mean_stddevs(T, mu_branch, sigma_branch, adjust_c1, adjust_chm, adjust_c
 
 class Stafford2022(GMPE):
     """
-    Implements GMPE developed by Brian S.-J. Chiou and Robert R. Youngs
+    Implements Backbone model developed by Peter Stafford for NZ NSHM revision.
+    For more details see Peter Stafford's GNS report.
+    The base model implementation remains the same as for Chiou and Youngs (2014).
 
     Chiou, B. S.-J. and Youngs, R. R. (2014), "Updated of the Chiou and Youngs
     NGA Model for the Average Horizontal Component of Peak Ground Motion and
