@@ -19,7 +19,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/time-dependent-solutions
+RUN git checkout feature/switch-off-paleo
 
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
