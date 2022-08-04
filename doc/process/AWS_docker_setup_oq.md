@@ -2,9 +2,9 @@
 ## Build and tag new docker image
 ```
 docker build . --no-cache
-export IMAGE_ID=64ab29719d6a
-export RUNZI_GITREF=
-export OQ_TAG=new_gsim
+export IMAGE_ID=0b9b00e42163
+export RUNZI_GITREF=6f76ff5
+export OQ_TAG=gmm_lt_final_v0
 export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_openquake-${OQ_TAG}
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
 ```
@@ -21,5 +21,7 @@ docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:$
 ### for AWS cli v2
 ```
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 461564345538.dkr.ecr.us-east-1.amazonaws.com
-docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
+docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
 ```
+
+Update AWS Job Defintion with ${CONTAINER_TAG}
