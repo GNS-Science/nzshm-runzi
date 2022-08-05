@@ -27,11 +27,11 @@ from runzi.execute.openquake.util import ( OpenquakeConfig, SourceModelLoader, b
     get_logic_tree_file_ids, get_logic_tree_branches, single_permutation, build_disagg_sources_xml, build_gsim_xml)
 from runzi.execute.openquake.execute_openquake import execute_openquake
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 LOG_INFO = logging.INFO
 logging.getLogger('py4j.java_gateway').setLevel(LOG_INFO)
-logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(LOG_INFO)
+logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(logging.DEBUG)
 logging.getLogger('nshm_toshi_client.toshi_file').setLevel(LOG_INFO)
 logging.getLogger('urllib3').setLevel(LOG_INFO)
 logging.getLogger('botocore').setLevel(LOG_INFO)
@@ -326,8 +326,9 @@ class BuilderTask():
         ############
         automation_task_id = None
         if self.use_api:
+            id_list = [_id[1] for _id in logic_tree_id_list]
             archive_id = ta['config_archive_id']
-            config_id = self._save_config(archive_id, logic_tree_id_list)
+            config_id = self._save_config(archive_id, id_list)
             automation_task_id = self._setup_automation_task(ta, ja, config_id, [id[1] for id in logic_tree_id_list], environment)
 
         #########################
@@ -383,6 +384,7 @@ class BuilderTask():
         ##############
         # EXECUTE
         ##############
+        assert 0
         oq_result = execute_openquake(config_file, ja['task_id'], automation_task_id)
 
         ######################

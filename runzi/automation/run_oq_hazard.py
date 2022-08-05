@@ -16,19 +16,9 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-#from runzi.CONFIG.OQ.crustal_N_sensivity_ltb_min import logic_tree_permutations
 
-#from runzi.CONFIG.OQ.crustal_C_sensitivity_config_w_ids_trimmed import logic_tree_permutations, gt_description
-#from runzi.CONFIG.OQ.hik_n_sensitivity_config import logic_tree_permutations, gt_description
-#from runzi.CONFIG.OQ.hik_c_sensitivity_config import logic_tree_permutations, gt_description
-#from runzi.CONFIG.OQ.hik_def_sensitivity_config import logic_tree_permutations, gt_description
-#from runzi.CONFIG.OQ.crustal_def_sensitivity_config import logic_tree_permutations, gt_description
-#from runzi.CONFIG.OQ.large_SLT_example_A import logic_tree_permutations, gt_description
-#from runzi.CONFIG.OQ.SLT_37_GRANULAR_RELEASE_1 import logic_tree_permutations, gt_description
-# from runzi.CONFIG.OQ.SLT_37_GRANULAR_RELEASE_NB import logic_tree_permutations, gt_description
-# from runzi.CONFIG.OQ.test_GRANULAR import logic_tree_permutations, gt_description
-#from runzi.CONFIG.OQ.poly_sens_nopolygon import logic_tree_permutations, gt_description
-from runzi.CONFIG.OQ.archive_ltb import logic_tree_permutations, gt_description
+# from runzi.CONFIG.OQ.archive_ltb import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.SLT_v5 import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -85,8 +75,9 @@ if __name__ == "__main__":
             #"RmlsZToxMDY1NzE=" #PROD + backbone
             #"RmlsZToxMTA1MTA=" #PROD SLT_Large_with_grids
             # "RmlsZToxMTEyNDE=" #PROD 37_GRANULAR_RELEASE_1 
-            "RmlsZToxMDEyNzk=" #TEST 37_GRANULAR_RELEASE_1
+            # "RmlsZToxMDEyNzk=" #TEST 37_GRANULAR_RELEASE_1
             #"RmlsZToxMTE2NjI=" #PROD 37_GRANULAR_RELEASE_1 with full gsim LT (Kuehn and Atkinson)
+            "RmlsZToxMTg3ODQ=" # GSIM LT final v0
             ],
         # NEW FORM
         # makes better use of python

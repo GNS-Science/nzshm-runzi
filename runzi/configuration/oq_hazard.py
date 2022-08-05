@@ -56,7 +56,7 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
             return get_ecs_job_config(job_name,
                 'N/A', config_data,
                 toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
-                task_module=runzi.execute.oq_hazard_task.__name__,
+                task_module=runzi.execute.openquake.oq_hazard_task.__name__,
                 time_minutes=int(HAZARD_MAX_TIME),
                 memory=BIGGER_LEVER_CONF["mem"],
                 vcpu=BIGGER_LEVER_CONF["cpu"],
