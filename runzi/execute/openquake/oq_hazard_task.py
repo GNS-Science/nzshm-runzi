@@ -173,6 +173,8 @@ class BuilderTask():
                 duration = duration,
                 result = "SUCCESS",
                 state = "DONE"))
+        
+        return solution_id
 
 
     def run(self, task_arguments, job_arguments):
@@ -390,7 +392,7 @@ class BuilderTask():
         # API STORE RESULTS #
         ######################
         if self.use_api:
-            self._store_api_result(automation_task_id, task_arguments, oq_result, config_id,
+            solution_id = self._store_api_result(automation_task_id, task_arguments, oq_result, config_id,
                 modconf_id=config_id, #  TODO use modified config id
                 duration = (dt.datetime.utcnow() - t0).total_seconds())
 
