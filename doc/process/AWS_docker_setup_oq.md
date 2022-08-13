@@ -1,9 +1,13 @@
-
-## Build and tag new docker image
+## Build new container with no tag, forcing git pull etc
 ```
 docker build . --no-cache
-export IMAGE_ID=a08a4dad9eca
-export RUNZI_GITREF=d379d83
+```
+
+## Tag new docker image
+```
+
+export IMAGE_ID=49f940cc7bef
+export RUNZI_GITREF=60fddd7
 export OQ_TAG=gmm_lt_final_v0
 export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_openquake-${OQ_TAG}
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
@@ -14,7 +18,7 @@ docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runz
 ```
 
 $(aws ecr get-login --no-include-email --region us-east-1)
-docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
+docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
 
 ```
 
