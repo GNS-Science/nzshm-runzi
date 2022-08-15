@@ -20,6 +20,7 @@ RUN pip install pytest
 
 #TEMP until this is in GEM repo
 ADD gsim /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD tom.py /usr/src/oq-engine/openquake/hazardlib
 
 #TEMP UNTIL GEM ACCEPTS ANNES mods
 RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/hazardlib/calc/disagg.py\

@@ -17,7 +17,8 @@ SITES = dict(
     GRD_NZ_0_1 = {"sites_csv": "./grids/grid-NZ-0.1-0.0003.nb1.csv" },               # 10km 3618 sites, 0.1 degs, 1 neighbour
     GRD_WLGREG_0_05 = {"sites_csv": "./grids/grid-Wellington-0.05.0003.nb1.csv" },   #  5km  62 sites
     GRD_WLGREG_0_01 = {"sites_csv": "./grids/grid-Wellington-0.01.0003.nb1.csv" },   #  1km 764 sites
-    GRD_NZ_0_2_NZ34 = {"sites_csv": "./grid-NZ-0.2-0.0003.nb1.nz34.csv" }            # 20km 1050 site + NZ35 locations
+    GRD_NZ_0_2_NZ34 = {"sites_csv": "./grid-NZ-0.2-0.0003.nb1.nz34.csv" },            # 20km 1050 site + NZ35 locations
+    GRD_NZ_0_2_BA = {"site_model_file": "./grids/backarc_02deg_1n.csv" }            # 20km 1097 site with backarc flag
 )
 
 #Sanjay new values
