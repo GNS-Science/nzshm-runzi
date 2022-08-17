@@ -303,7 +303,8 @@ class BuilderTask():
         ######################
         if self.use_api:
             #TODO store modified config
-            self._store_api_result(automation_task_id, task_arguments, oq_result, config_id,
+            ta_clean = self._sterilize_task_arguments(ta)
+            self._store_api_result(automation_task_id, ta_clean, oq_result, config_id,
                 modconf_id=config_id, #  TODO use modified config id
                 duration = (dt.datetime.utcnow() - t0).total_seconds())
 

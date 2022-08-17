@@ -15,7 +15,8 @@ WORKDIR /WORKING
 RUN /opt/openquake/bin/python3 -m pip install --upgrade pip
 RUN pip install lxml
 RUN pip install tqdm
-RUN pip install numba
+# RUN pip install numba
+RUN pip uninstall -y numba
 RUN pip install pytest
 
 #TEMP until this is in GEM repo
