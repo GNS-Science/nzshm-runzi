@@ -86,7 +86,7 @@ if __name__ == "__main__":
     logging.getLogger('gql.transport').setLevel(logging.WARN)
     log = logging.getLogger(__name__)
 
-    GENERAL_TASK_ID = 'R2VuZXJhbFRhc2s6MTA4NzEz' # PROD
+    GENERAL_TASK_ID = 'R2VuZXJhbFRhc2s6MTEzOTky' # PROD
     #GENERAL_TASK_ID = 'R2VuZXJhbFRhc2s6MTAxNDQy' # TEST
     TOSHI_UI_URL = 'http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com' #PROD
 
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         disagg_solutions.append(o)
 
     disagg_result = dict(general_task_id=GENERAL_TASK_ID, hazard_solutions = disagg_solutions)
-    with open('disagg_result.json', 'w') as f:
+    with open(f'disagg_result_{GENERAL_TASK_ID}.json', 'w') as f:
         f.write(json.dumps(disagg_result, indent=4))
 
     print('Done!')
