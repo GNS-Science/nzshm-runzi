@@ -60,15 +60,15 @@ make sure Dockerfile has correct runzi branch
 
 ```
 #EG
-export FATJAR_TAG=mre-output-name
+export FATJAR_TAG=main_AUG04
 docker build . --build-arg FATJAR_TAG=${FATJAR_TAG} --no-cache
 ```
 
 ### Tag new docker image
 
 ```
-export RUNZI_GITREF=35cf0fd
-export IMAGE_ID=b9c3e46e35b8 #from docker build
+export RUNZI_GITREF=9b35f9d
+export IMAGE_ID=705d6968d7c8 #from docker build
 export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_opensha-${FATJAR_TAG}
 
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
