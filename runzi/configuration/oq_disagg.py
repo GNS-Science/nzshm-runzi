@@ -73,14 +73,21 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
 
 
     for disagg_config in disagg_configs:
-
+        for disagg_specs in disagg_config['deagg_specs']:
+            
             task_count +=1
+
+            full_config = disagg_specs.copy()
+            full_config['location'] = disagg_config['location']
+            full_config['site_name'] = disagg_config.get('site_name')
+            full_config['vs30'] = disagg_config['vs30']
+            full_config['imt'] = disagg_config['imt']
 
             task_arguments = dict(
                 hazard_config = hazard_config, #  upstream modified config File archive object
                 #upstream_general_task=source_gt_id,
                 model_type = model_type.name,
-                disagg_config = disagg_config,
+                disagg_config = full_config,
                 )
 
             # print('')

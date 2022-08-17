@@ -98,6 +98,10 @@ class BuilderTask():
         #create the configuration from the template
 
         #create new OpenquakeHazardTask, attaching the configuration (Revert standard AutomationTask)
+        print('='*50)
+        print('task arguments ...')
+        print(task_arguments)
+        print('='*50)
         automation_task_id = self._toshi_api.openquake_hazard_task.create_task(
             dict(
                 created = dt.datetime.now(tzutc()).isoformat(),
@@ -195,6 +199,14 @@ class BuilderTask():
         raise ValueError("Invalid configuration.")
 
 
+
+    def _sterilize_task_arguments(self, ta):
+        ta_clean = ta.copy()
+        for trt, gsim in ta_clean['disagg_config']['gsims'].items():
+            ta_clean['disagg_config']['gsims'][trt] = gsim.replace('"','``').replace('\n','-')
+        return ta_clean
+
+
     #   __| (_)___  __ _  __ _  __ _ _ __ ___  __ _  __ _| |_(_) ___  _ __
     #  / _` | / __|/ _` |/ _` |/ _` | '__/ _ \/ _` |/ _` | __| |/ _ \| '_ \
     # | (_| | \__ \ (_| | (_| | (_| | | |  __/ (_| | (_| | |_| | (_) | | | |
@@ -220,9 +232,10 @@ class BuilderTask():
         ############
         automation_task_id = None
         if self.use_api:
+            ta_clean = self._sterilize_task_arguments(ta)
             archive_id = ta['hazard_config']
             config_id = self._save_config(archive_id, nrml_id_list)
-            automation_task_id = self._setup_automation_task(ta, ja, config_id, nrml_id_list, environment)
+            automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, nrml_id_list, environment)
 
         #########################
         # Baseline CONFIG
