@@ -19,11 +19,15 @@ RUN pip install numba
 RUN pip install pytest
 
 #TEMP until this is in GEM repo
-ADD stafford_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
-ADD atkinson_2022.py /usr/src/oq-engine/openquake/hazardlib/gsim
-ADD kuehn_2020.py /usr/src/oq-engine/openquake/hazardlib/gsim
-ADD mcverry_2006_MW.py /usr/src/oq-engine/openquake/hazardlib/gsim
-ADD Atkinson22_coeffs_mod_v8b_sanjay_v2.csv /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD gsim /usr/src/oq-engine/openquake/hazardlib/gsim
+ADD tom.py /usr/src/oq-engine/openquake/hazardlib
+
+#TEMP UNTIL GEM ACCEPTS ANNES mods
+RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/hazardlib/calc/disagg.py\
+ -O /usr/src/oq-engine/openquake/hazardlib/calc/disagg.py
+RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/calculators/disaggregation.py\
+ -O /usr/src/oq-engine/openquake/calculators/disaggregation.py
+
 
 # Install Runzi TODO:is this only for these test configs ??
 WORKDIR /app
@@ -35,7 +39,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/time-dependent-solutions
+RUN git checkout feature/140-gmms-disaggs
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 

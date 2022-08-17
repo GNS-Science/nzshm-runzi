@@ -86,7 +86,7 @@ class SourceModelLoader():
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     def unpack_sources(self, logic_tree_branch_permutations, source_path):
-        """download and extract the sources."""
+        """download and extract the sources given a list of LTBS."""
 
         sources = dict()
 
@@ -117,9 +117,31 @@ class SourceModelLoader():
 
         return sources
 
+    def unpack_sources_in_list(self, nrml_ids, source_path):
+        """download and extract the sources given a list of NRML IDs."""
+
+        sources = dict()
+        for nrml_id in nrml_ids:
+            if nrml_id in sources.keys():
+                raise ValueError('duplicates not expeceted nrml ids list')
+
+            log.info(f"get src: {nrml_id}")
+
+            gen = get_output_file_id(self._toshi_api, nrml_id)
+
+            source_nrml = download_files(self._toshi_api, gen, str(WORK_PATH), overwrite=False)
+            log.info(f"source_nrml: {source_nrml}")
+
+            with zipfile.ZipFile(source_nrml[nrml_id]['filepath'], 'r') as zip_ref:
+                zip_ref.extractall(source_path)
+                sources[nrml_id] = {'sources' : zip_ref.namelist()}
+
+        return sources
+
+
 
 def build_sources_xml(logic_tree_branches, source_file_mapping):
-
+    """Build a source model for a set of LTBs with their source files."""
     E = ElementMaker(namespace="http://openquake.org/xmlns/nrml/0.5",
                       nsmap={"gml" : "http://www.opengis.net/gml", None:"http://openquake.org/xmlns/nrml/0.5"})
     NRML = E.nrml
@@ -167,6 +189,31 @@ def build_sources_xml(logic_tree_branches, source_file_mapping):
 
 
 
+def build_disagg_sources_xml(source_files):
+    """Build a single branch source model for a list of source files."""
+    E = ElementMaker(namespace="http://openquake.org/xmlns/nrml/0.5",
+                      nsmap={"gml" : "http://www.opengis.net/gml", None:"http://openquake.org/xmlns/nrml/0.5"})
+    NRML = E.nrml
+    LT = E.logicTree
+    LTBS = E.logicTreeBranchSet
+    LTBL = E.logicTreeBranchingLevel
+    LTB = E.logicTreeBranch
+    UM = E.uncertaintyModel
+    UW = E.uncertaintyWeight
+
+    ltbs = LTBS(uncertaintyType="sourceModel", branchSetID="BS-NONCE1-DISAGG")
+
+    branch_name = "disaggregation sources"
+    branch_weight = "1.0"
+    files = "\t".join(source_files)
+    ltb = LTB( UM(files), UW(str(branch_weight)), branchID=branch_name)
+    ltbs.append(ltb)
+
+    nrml = NRML( LT( LTBL( ltbs, branchingLevelID="1" ), logicTreeID = "DISAGG"))
+    return etree.tostring(nrml, pretty_print=True).decode()
+
+
+
 if __name__ == "__main__":
     from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 
@@ -176,21 +223,21 @@ if __name__ == "__main__":
 
     for grp in single_permutation(permutations, 0)['permute']:
         print(grp)
-    assert 0
 
-    #permutations = [single_permutation(permutations, 0), single_permutation(permutations, 1),]
 
-    #print(permutations)
+    permutations = [single_permutation(permutations, 0), single_permutation(permutations, 1),]
+
+    print(permutations)
 
     logging.basicConfig(level=logging.INFO)
     sources_folder = Path(WORK_PATH, 'sources')
 
     source_file_mapping = SourceModelLoader().unpack_sources(permutations, sources_folder)
 
+    print(f'source_file_mapping {source_file_mapping}')
+
     ltbs = [ltb for ltb in get_logic_tree_branches(permutations)]
     print("LTB 0:", ltbs[0])
-    #print()
-
 
     nrml = build_sources_xml(ltbs, source_file_mapping)
 

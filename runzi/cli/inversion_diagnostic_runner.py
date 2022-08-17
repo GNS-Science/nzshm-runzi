@@ -31,8 +31,8 @@ def inversion_diagnostic_runner(general_task_id):
     headers={"x-api-key":API_KEY}
     file_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-    BUILD_PLOTS = True
-    REPORT_LEVEL = 'DEFAULT' # None, 'LIGHT', 'DEFAULT', 'FULL'
+    #BUILD_PLOTS = True
+    #REPORT_LEVEL = 'DEFAULT' # None, 'LIGHT', 'DEFAULT', 'FULL'
 
     if CLUSTER_MODE == EnvMode['AWS']:
         batch_client = boto3.client(

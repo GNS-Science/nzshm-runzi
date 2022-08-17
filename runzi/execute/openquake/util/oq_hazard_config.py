@@ -17,18 +17,19 @@ SITES = dict(
     GRD_NZ_0_1 = {"sites_csv": "./grids/grid-NZ-0.1-0.0003.nb1.csv" },               # 10km 3618 sites, 0.1 degs, 1 neighbour
     GRD_WLGREG_0_05 = {"sites_csv": "./grids/grid-Wellington-0.05.0003.nb1.csv" },   #  5km  62 sites
     GRD_WLGREG_0_01 = {"sites_csv": "./grids/grid-Wellington-0.01.0003.nb1.csv" },   #  1km 764 sites
-    GRD_NZ_0_2_NZ34 = {"sites_csv": "./grid-NZ-0.2-0.0003.nb1.nz34.csv" }            # 20km 1050 site + NZ35 locations
+    GRD_NZ_0_2_NZ34 = {"sites_csv": "./grid-NZ-0.2-0.0003.nb1.nz34.csv" },            # 20km 1050 site + NZ35 locations
+    GRD_NZ_0_2_BA = {"site_model_file": "./grids/backarc_02deg_1n.csv" }            # 20km 1097 site with backarc flag
 )
 
 #Sanjay new values
 DEFAULT_DISAGG = dict(
     max_sites_disagg = 1,
-    poes_disagg = "0.002105 0.000404",
-    mag_bin_width = 0.25,
+    #poes_disagg = "0.002105 0.000404",
+    mag_bin_width = 0.5,
     distance_bin_width = 10,
     coordinate_bin_width = 1,
     num_epsilon_bins = 4,
-    disagg_outputs = "Mag_Dist Mag_Dist_Eps TRT"
+    disagg_outputs = "Mag_Dist Mag_Dist_Eps TRT Mag_Dist_TRT Mag_Dist_TRT_Eps"
     )
 
 class OpenquakeConfig():
@@ -48,16 +49,24 @@ class OpenquakeConfig():
         #self.config['erf']['complex_fault_mesh_spacing'] = str(rupture_mesh_spacing) #CDC thinks this is only for complex
         return self
 
-    def set_sites(self, site_key: str):
-        assert site_key in SITES.keys()
+    def clear_sites(self):
         #destroy any existing site configs
         self.config['site_params'].pop('sites', None)
         self.config['site_params'].pop('sites_csv', None)
         self.config['site_params'].pop('site_model_file', None)
         self.config.pop('geometry', None)
+        return self
 
+    def set_sites(self, site_key: str):
+        assert site_key in SITES.keys()
+        self.clear_sites()
         key, value = list(SITES[site_key].items())[0]
         self.config['site_params'][key] = value
+        return self
+
+    def set_disagg_site(self, lat, lon):
+        self.clear_sites()
+        self.config['site_params']['sites'] = f'{lon} {lat}'
         return self
 
     def set_disaggregation(self, enable: bool, values: dict = None):
@@ -72,9 +81,16 @@ class OpenquakeConfig():
                 self.config['disagg'][k] = str(v)
         return self
 
-    def set_iml(self, measures: list, levels: object):
-        self.config['calculation'].pop('intensity_measure_types_and_levels', None)
+    def set_iml_disagg(self, imt, level):
+        self.config['disagg']['iml_disagg'] = str({imt:level})
+        return self
 
+    def clear_iml(self):
+        self.config['calculation'].pop('intensity_measure_types_and_levels', None)
+        return self
+
+    def set_iml(self, measures: list, levels: object):
+        self.clear_iml()
         new_iml = '{'
         for m in measures:
             new_iml += f'"{m}": {str(levels)}, '
@@ -100,6 +116,14 @@ class OpenquakeConfig():
         sect['reference_vs30_value'] = str(vs30)
         sect['reference_depth_to_1pt0km_per_sec'] = str(round(calculate_z1pt0(vs30), 0))
         sect['reference_depth_to_2pt5km_per_sec'] = str(round(calculate_z2pt5_ngaw2(vs30), 1))
+        return self
+
+    def set_gsim_logic_tree_file(self, filepath):
+        self.config['calculation']['gsim_logic_tree_file'] = filepath
+        return self
+
+    def set_description(self, description):
+        self.config['general']['description'] = description
         return self
 
     def write(self, tofile):

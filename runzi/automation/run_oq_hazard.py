@@ -16,18 +16,9 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-#from runzi.CONFIG.OQ.crustal_N_sensivity_ltb_min import logic_tree_permutations
 
-#from runzi.CONFIG.OQ.crustal_C_sensitivity_config_w_ids_trimmed import logic_tree_permutations, gt_description
-#from runzi.CONFIG.OQ.hik_n_sensitivity_config import logic_tree_permutations, gt_description
-#from runzi.CONFIG.OQ.hik_c_sensitivity_config import logic_tree_permutations, gt_description
-#from runzi.CONFIG.OQ.hik_def_sensitivity_config import logic_tree_permutations, gt_description
-#from runzi.CONFIG.OQ.crustal_def_sensitivity_config import logic_tree_permutations, gt_description
-#from runzi.CONFIG.OQ.large_SLT_example_A import logic_tree_permutations, gt_description
-# from runzi.CONFIG.OQ.SLT_37_GRANULAR_RELEASE_1 import logic_tree_permutations, gt_description
-# from runzi.CONFIG.OQ.SLT_37_GRANULAR_RELEASE_NB import logic_tree_permutations, gt_description
-# from runzi.CONFIG.OQ.test_GRANULAR import logic_tree_permutations, gt_description
-from runzi.CONFIG.OQ.poly_sens_nopolygon import logic_tree_permutations, gt_description
+# from runzi.CONFIG.OQ.archive_ltb import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.SLT_v6 import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -72,6 +63,19 @@ if __name__ == "__main__":
         'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)']
     era_levels = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
                     1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0]
+    vs30s = [400]
+    location_codes = ['GRD_NZ_0_2_NZ34']
+    
+
+    #===========SRWG===============#
+    # era_measures = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)',
+    #     'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)', 'SA(6.0)', 'SA(7.0)']
+    # era_levels = [0.001, 0.002, 0.004, 0.006, 0.008,
+    #                 0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+    #                 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0]
+    # vs30s = [150, 200, 250, 300, 350, 400, 450, 750]
+    # location_codes = ['NZ34']
+    
 
     args = dict(
         config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
@@ -84,8 +88,10 @@ if __name__ == "__main__":
             #"RmlsZToxMDY1NzE=" #PROD + backbone
             #"RmlsZToxMTA1MTA=" #PROD SLT_Large_with_grids
             # "RmlsZToxMTEyNDE=" #PROD 37_GRANULAR_RELEASE_1 
-            # "RmlsZToxMDEyNzk=" #TEST 37_GRANULAR_RELEASE_1 
-            "RmlsZToxMTE2NjI=" #PROD 37_GRANULAR_RELEASE_1 with full gsim LT (Kuehn and Atkinson)
+            # "RmlsZToxMDEyNzk=" #TEST 37_GRANULAR_RELEASE_1
+            #"RmlsZToxMTE2NjI=" #PROD 37_GRANULAR_RELEASE_1 with full gsim LT (Kuehn and Atkinson)
+            # "RmlsZToxMTg3ODQ=" # GSIM LT final v0
+            "RmlsZToxMjEwMzQ=" # GSIM LT final v0b
             ],
         # NEW FORM
         # makes better use of python
@@ -97,9 +103,8 @@ if __name__ == "__main__":
             #{"tag": "max10-300", "measures": era_measures, "levels": 'logscale(0.001, 5.00, 100)'}
             #{"tag": "super-max", "measures": era_measures, "levels": 'logscale(0.001, 10.0, 300)'}
         ],
-        vs30s = [400],# 250, #300, 350, 400, 450, 750 ],
-        location_codes = ['GRD_NZ_0_2_NZ34'], # NZ6, WLG, GRD_NZ_0_2_NZ34'
-        # location_codes = ['NZ4'], # NZ6, WLG, GRD_NZ_0_2_NZ34'
+        vs30s = vs30s,
+        location_codes = location_codes,
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
         ],
@@ -131,7 +136,7 @@ if __name__ == "__main__":
     print("GENERAL_TASK_ID:", new_gt_id)
 
     tasks = build_tasks(new_gt_id, args, task_type, model_type)
-
+    
     # toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
