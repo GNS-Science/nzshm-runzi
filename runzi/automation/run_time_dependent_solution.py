@@ -6,6 +6,7 @@ This script produces tasks that modify InversionSolution event rates based on Mo
 import logging
 import pwd
 import os
+import base64
 import datetime as dt
 from dateutil.tz import tzutc
 from subprocess import check_call
@@ -15,6 +16,7 @@ from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, 
 from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.configuration.time_dependent_inversion_solution import build_time_dependent_tasks
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
+from runzi.automation.scaling.file_utils import get_output_file_ids
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
@@ -47,13 +49,21 @@ def run(source_solution_ids, current_years, mre_enums, forecast_timespans, model
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
+    # if a GT id has been provided, unpack to get individual solution ids
+    source_solution_ids_list = []
+    for source_solution_id in source_solution_ids:
+        if 'GeneralTask' in str(base64.b64decode(source_solution_id)):
+            source_solution_ids_list += [out['id'] for out in get_output_file_ids(toshi_api, source_solution_id)]
+        else:
+            source_solution_ids_list += [source_solution_id]
+
     subtask_type = SubtaskType.TIME_DEPENDENT_SOLUTION
 
     args = dict(
         current_years = current_years,
         mre_enums = mre_enums,
         forecast_timespans = forecast_timespans,
-        source_solution_ids = source_solution_ids
+        source_solution_ids = source_solution_ids_list
     )
 
     args_list = []
@@ -96,13 +106,14 @@ if __name__ == "__main__":
     #USE_API =
 
     # #If using API give this task a descriptive setting...
-    TASK_DESCRIPTION = """first run locally """
+    TASK_DESCRIPTION = """Crustal. Geologic. TD. From LTB88. Final """
     
-    TASK_TITLE = "Crustal. From NZSHM Test Tree Branch run TTB065"
+    TASK_TITLE = "Crustal. Geologic. TD. From LTB88. Final"
     model_type = ModelType.CRUSTAL
     source_solution_ids = [
-        "SW52ZXJzaW9uU29sdXRpb246MTAxMTE2",
-        "SW52ZXJzaW9uU29sdXRpb246MTAxMTE3"
+        # "R2VuZXJhbFRhc2s6MTA1MTEz", #PROD
+        "R2VuZXJhbFRhc2s6MTA3MDA1",
+
     ]
     current_years = [2022]
     mre_enums = ["CFM_1_1"]
