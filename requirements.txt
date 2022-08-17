@@ -12,4 +12,6 @@ pyfiglet==0.8.post1
 boto3
 requests_toolbelt
 lxml
+requests==2.27.1
+
 

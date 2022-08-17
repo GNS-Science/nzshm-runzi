@@ -12,6 +12,7 @@ import logging
 from pathlib import Path
 import datetime as dt
 import itertools
+import copy
 
 from dateutil.tz import tzutc
 import requests
@@ -201,7 +202,7 @@ class BuilderTask():
 
 
     def _sterilize_task_arguments(self, ta):
-        ta_clean = ta.copy()
+        ta_clean = copy.deepcopy(ta)
         for trt, gsim in ta_clean['disagg_config']['gsims'].items():
             ta_clean['disagg_config']['gsims'][trt] = gsim.replace('"','``').replace('\n','-')
         return ta_clean
