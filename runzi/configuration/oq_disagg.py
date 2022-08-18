@@ -82,6 +82,9 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             full_config['site_name'] = disagg_config.get('site_name')
             full_config['vs30'] = disagg_config['vs30']
             full_config['imt'] = disagg_config['imt']
+            full_config['poe'] = disagg_config['poe']
+            full_config['inv_time'] = disagg_config['inv_time']
+            full_config['target_level'] = disagg_config['target_level']
 
             task_arguments = dict(
                 hazard_config = hazard_config, #  upstream modified config File archive object

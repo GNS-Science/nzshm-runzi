@@ -86,7 +86,7 @@ if __name__ == "__main__":
     logging.getLogger('gql.transport').setLevel(logging.WARN)
     log = logging.getLogger(__name__)
 
-    GENERAL_TASK_ID = 'R2VuZXJhbFRhc2s6MTEzOTky' # PROD
+    GENERAL_TASK_ID = 'R2VuZXJhbFRhc2s6MTE0MDIz' # PROD
     #GENERAL_TASK_ID = 'R2VuZXJhbFRhc2s6MTAxNDQy' # TEST
     TOSHI_UI_URL = 'http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com' #PROD
 
