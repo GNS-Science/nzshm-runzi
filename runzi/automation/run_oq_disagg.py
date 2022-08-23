@@ -46,7 +46,13 @@ if __name__ == "__main__":
     # CONFIG_FILE = "/GNSDATA/APP/nzshm-runzi/runzi/CONFIG/DISAGG/disagg_example_TEST.json"
     # CONFIG_FILE = "/app/nzshm-runzi/runzi/CONFIG/DISAGG/disagg_example_1.json"
     # CONFIG_FILE = "/home/chrisdc/NSHM/Deaggs/deagg_configs_10.json"
-    CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_100.json"
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_250_WHO.json"
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_250_KBZ.json"
+    CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_250_weight_WLG_weight.json"
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_250_product_WLG.json"
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_250_product_WHO.json"
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_250_product_ZQN.json"
+    
 
     with open(CONFIG_FILE, 'r') as df:
         disagg_configs = json.loads(df.read())

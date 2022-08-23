@@ -86,7 +86,14 @@ if __name__ == "__main__":
     logging.getLogger('gql.transport').setLevel(logging.WARN)
     log = logging.getLogger(__name__)
 
-    GENERAL_TASK_ID = 'R2VuZXJhbFRhc2s6MTE0MDIz' # PROD
+    GENERAL_TASK_ID = 'R2VuZXJhbFRhc2s6MTIxMjYx' #WLG weight metric, vertical slice
+    # 'R2VuZXJhbFRhc2s6MTE4ODMy' # WLG product metric
+    #'R2VuZXJhbFRhc2s6MTE3MzMw' #KBZ
+    #'R2VuZXJhbFRhc2s6MTE2NTc5' # WHO
+    #'R2VuZXJhbFRhc2s6MTE1MTIw' #ZQN
+    #'R2VuZXJhbFRhc2s6MTE1MDc1' #WLG
+    #'R2VuZXJhbFRhc2s6MTE0MzI0' # AKL
+    
     #GENERAL_TASK_ID = 'R2VuZXJhbFRhc2s6MTAxNDQy' # TEST
     TOSHI_UI_URL = 'http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com' #PROD
 
@@ -109,8 +116,9 @@ if __name__ == "__main__":
     disagg_info = disagg_api.get_dissag_detail(GENERAL_TASK_ID)
 
     disagg_solutions=[]
-    for o in get_enriched_details(disagg_info):
+    for i,o in enumerate(get_enriched_details(disagg_info)):
         disagg_solutions.append(o)
+    print(f'processed {i+1} disagg results')
 
     disagg_result = dict(general_task_id=GENERAL_TASK_ID, hazard_solutions = disagg_solutions)
     with open(f'disagg_result_{GENERAL_TASK_ID}.json', 'w') as f:

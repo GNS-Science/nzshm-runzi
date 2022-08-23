@@ -15,13 +15,12 @@ WORKDIR /WORKING
 RUN /opt/openquake/bin/python3 -m pip install --upgrade pip
 RUN pip install lxml
 RUN pip install tqdm
-# RUN pip install numba
-RUN pip uninstall -y numba
+RUN pip install numba
+# RUN pip uninstall -y numba
 RUN pip install pytest
 
 #TEMP until this is in GEM repo
 ADD gsim /usr/src/oq-engine/openquake/hazardlib/gsim
-ADD tom.py /usr/src/oq-engine/openquake/hazardlib
 
 #TEMP UNTIL GEM ACCEPTS ANNES mods
 RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/hazardlib/calc/disagg.py\

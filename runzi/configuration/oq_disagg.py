@@ -85,6 +85,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             full_config['poe'] = disagg_config['poe']
             full_config['inv_time'] = disagg_config['inv_time']
             full_config['target_level'] = disagg_config['target_level']
+            full_config['level'] = disagg_config['target_level'] # this is the level at which we calculate the disagg. could be rlz_level or target_level. Has prev been rlz
 
             task_arguments = dict(
                 hazard_config = hazard_config, #  upstream modified config File archive object
