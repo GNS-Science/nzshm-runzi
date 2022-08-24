@@ -39,13 +39,13 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/144-multiple-disaggs
+RUN git checkout feature/full-disaggs
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 
 
 # The AWS hazard store script ...
-RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@f96c85a886d28f0d40afdaef675a55cdaa01ad4f#egg=toshi-hazard-store
+RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@ec55471e4ad111b92695da1245fe72aad25905ca#egg=toshi-hazard-store
 #RUN pip install toshi_hazard_store
 
 # settings for toshi-hazard-store

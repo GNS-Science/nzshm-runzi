@@ -222,6 +222,8 @@ class BuilderTask():
         # DISAGG sources are in the config
         #############
         disagg_config = ta['disagg_config']
+        ta['vs30'] = disagg_config['vs30']
+        ta['logic_tree_permutations'] = [{'permute':[{'members':[{'tag': 'DISAGG'}]}]}] # dummy tag for THP
 
         # get the InversionSolutionNRML XML file(s) to include in the sources list
         nrml_id_list = list(filter(lambda _id: len(_id), ta['disagg_config']['source_ids']))
@@ -305,9 +307,48 @@ class BuilderTask():
         if self.use_api:
             #TODO store modified config
             ta_clean = self._sterilize_task_arguments(ta) if ta['disagg_config'].get('gsims') else ta
-            self._store_api_result(automation_task_id, ta_clean, oq_result, config_id,
+            solution_id = self._store_api_result(automation_task_id, ta_clean, oq_result, config_id,
                 modconf_id=config_id, #  TODO use modified config id
                 duration = (dt.datetime.utcnow() - t0).total_seconds())
+
+
+            #############################
+            # STORE HAZARD REALIZATIONS #
+            #############################
+            # run the store_hazard job
+            if not SPOOF_HAZARD:
+                # [{'tag': 'GRANULAR', 'weight': 1.0, 'permute': [{'group': 'ALL', 'members': [ltb._asdict()] }]}]
+                # TODO GRANULAR ONLY@!@
+                # ltb = {"tag": "hiktlck, b0.979, C3.9, s0.78", "weight": 0.0666666666666667, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODA3NQ==", "bg_id":"RmlsZToxMDY1MjU="},
+
+                """
+                positional arguments:
+                  calc_id              an openquake calc id OR filepath to the hdf5 file.
+                  toshi_hazard_id      hazard_solution id.
+                  toshi_gt_id          general_task id.
+                  locations_id         identifier for the locations used (common-py ENUM ??)
+                  source_tags          e.g. "hiktlck, b0.979, C3.9, s0.78"
+                  source_ids           e.g. "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODA3NQ==,RmlsZToxMDY1MjU="
+
+                optional arguments:
+                  -h, --help           show this help message and exit
+                  -c, --create-tables  Ensure tables exist.
+                """
+                # ltb = ta['logic_tree_permutations'][0]['permute'][0]['members'][0]
+                inv_id, bg_id = disagg_config['source_ids']
+                tag = 'DISAGG'
+                cmd = ['store_hazard_v3',
+                        str(oq_result['oq_calc_id']),
+                        solution_id,
+                        job_arguments['general_task_id'],
+                        disagg_config["location"],
+                        f'"{tag}"',
+                        f'"{inv_id}, {bg_id}"',
+                        '--verbose',
+                        '--meta-data-only',
+                        '--create-tables']
+                log.info(f'store_hazard: {cmd}')
+                subprocess.check_call(cmd)
 
         t1 = dt.datetime.utcnow()
         log.info("Task took %s secs" % (t1-t0).total_seconds())
