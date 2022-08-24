@@ -101,6 +101,10 @@ class OpenquakeConfig():
         self.config['calculation']['intensity_measure_types_and_levels '] = new_iml
         return self
 
+    def set_rlz_index(self, num_rlz):
+        self.config['disagg']['rlz_index'] = repr(list(range(num_rlz)))[1:-1]
+        return self
+
     def set_vs30(self, vs30):
         try:
             from openquake.commands.prepare_site_model import calculate_z1pt0, calculate_z2pt5_ngaw2

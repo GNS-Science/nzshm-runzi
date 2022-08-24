@@ -43,15 +43,7 @@ if __name__ == "__main__":
     TASK_DESCRIPTION = "Full logic tree for SLT workshop"
     #TASK_DESCRIPTION = "TEST build"
 
-    # CONFIG_FILE = "/GNSDATA/APP/nzshm-runzi/runzi/CONFIG/DISAGG/disagg_example_TEST.json"
-    # CONFIG_FILE = "/app/nzshm-runzi/runzi/CONFIG/DISAGG/disagg_example_1.json"
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Deaggs/deagg_configs_10.json"
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_250_WHO.json"
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_250_KBZ.json"
-    CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_250_weight_WLG_weight.json"
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_250_product_WLG.json"
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_250_product_WHO.json"
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_250_product_ZQN.json"
+    CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_full_WLG.json"
     
 
     with open(CONFIG_FILE, 'r') as df:
@@ -92,7 +84,8 @@ if __name__ == "__main__":
     # hazard_config = "RmlsZToxMDEyODA="  # toshi_id contain job config used by the original hazard jobs TEST for OQH : T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAxMzE5
     # hazard_config = "RmlsZToxMTI2MTI="  # toshi_id contain job config used by the original hazard jobs PROD for OQH : T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3
     # hazard_config = "RmlsZToxMTQ3ODQ==" # PROD for T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA4MTU3
-    hazard_config = "RmlsZToxMjEwMzQ=" # GSIM LT final v0b
+    # hazard_config = "RmlsZToxMjEwMzQ=" # GSIM LT final v0b
+    hazard_config = "RmlsZToxMjg4MDY=" # GSIM LT final EE backarc
 
     args = dict(
         hazard_config = hazard_config,

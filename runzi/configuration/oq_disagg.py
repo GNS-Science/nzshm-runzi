@@ -72,7 +72,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
     ]
 
 
-    for disagg_config in disagg_configs:
+    for disagg_config in disagg_configs: # 'source_ids', 'nrlz', 'hazard_solution_id'
         for disagg_specs in disagg_config['deagg_specs']:
             
             task_count +=1
@@ -80,12 +80,14 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             full_config = disagg_specs.copy()
             full_config['location'] = disagg_config['location']
             full_config['site_name'] = disagg_config.get('site_name')
+            full_config['site_code'] = disagg_config.get('site_code')
             full_config['vs30'] = disagg_config['vs30']
             full_config['imt'] = disagg_config['imt']
             full_config['poe'] = disagg_config['poe']
             full_config['inv_time'] = disagg_config['inv_time']
             full_config['target_level'] = disagg_config['target_level']
-            full_config['level'] = disagg_config['target_level'] # this is the level at which we calculate the disagg. could be rlz_level or target_level. Has prev been rlz
+            full_config['level'] = disagg_config['target_level'] # this is the level at which we calculate the disagg
+            
 
             task_arguments = dict(
                 hazard_config = hazard_config, #  upstream modified config File archive object

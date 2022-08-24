@@ -233,7 +233,7 @@ class BuilderTask():
         ############
         automation_task_id = None
         if self.use_api:
-            ta_clean = self._sterilize_task_arguments(ta)
+            ta_clean = self._sterilize_task_arguments(ta) if ta['disagg_config'].get('gsims') else ta                
             archive_id = ta['hazard_config']
             config_id = self._save_config(archive_id, nrml_id_list)
             automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, nrml_id_list, environment)
@@ -265,10 +265,10 @@ class BuilderTask():
         ##################
         # GSIMS XML
         ##################
-        gsim_xml = build_gsim_xml(disagg_config['gsims'])
-        gsim_xml_file = Path(config_folder, 'gsim_model.xml')
-        write_sources(gsim_xml, gsim_xml_file)
-        log.info(f'wrote xml gsim  file: {gsim_xml_file}')
+        # gsim_xml = build_gsim_xml(disagg_config['gsims'])
+        # gsim_xml_file = Path(config_folder, 'gsim_model.xml')
+        # write_sources(gsim_xml, gsim_xml_file)
+        # log.info(f'wrote xml gsim  file: {gsim_xml_file}')
 
         ###############
         # CONFIGURE JOB
@@ -287,7 +287,8 @@ class BuilderTask():
                 .set_rupture_mesh_spacing("5")\
                 .set_ps_grid_spacing("30")\
                 .set_vs30(disagg_config['vs30'])\
-                .set_gsim_logic_tree_file("./gsim_model.xml")
+                .set_rlz_index(disagg_config['nrlz'])
+                # .set_gsim_logic_tree_file("./gsim_model.xml")
             config.write(open(config_file, 'w'))
 
         modify_config(config_file, task_arguments)
@@ -303,7 +304,7 @@ class BuilderTask():
         ######################
         if self.use_api:
             #TODO store modified config
-            ta_clean = self._sterilize_task_arguments(ta)
+            ta_clean = self._sterilize_task_arguments(ta) if ta['disagg_config'].get('gsims') else ta
             self._store_api_result(automation_task_id, ta_clean, oq_result, config_id,
                 modconf_id=config_id, #  TODO use modified config id
                 duration = (dt.datetime.utcnow() - t0).total_seconds())
