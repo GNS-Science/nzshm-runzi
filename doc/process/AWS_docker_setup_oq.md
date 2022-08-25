@@ -6,10 +6,14 @@ docker build . --no-cache
 ## Tag new docker image
 ```
 
-export IMAGE_ID=39bb668542fd
-export RUNZI_GITREF=5c02bcd
+export IMAGE_ID=b307ec1008eb
+export RUNZI_GITREF=3552762
 export OQ_TAG=deaggs #gmm_lt_final_ee_ba 
 export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_openquake-${OQ_TAG} 
+docker tag ${IMAGE_ID} 461564345538.dkr.ecr.ap-southeast-2.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
+```
+
+```
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
 ```
 
@@ -23,6 +27,11 @@ docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake
 ```
 
 ### for AWS cli v2
+```
+aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 461564345538.dkr.ecr.ap-southeast-2.amazonaws.com
+docker push 461564345538.dkr.ecr.ap-southeast-2.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
+```
+
 ```
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 461564345538.dkr.ecr.us-east-1.amazonaws.com
 docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
