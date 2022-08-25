@@ -45,7 +45,7 @@ RUN pip3 install -e .
 
 
 # The AWS hazard store script ...
-RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@ec55471e4ad111b92695da1245fe72aad25905ca#egg=toshi-hazard-store
+RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@031e336e5988f0ce717f7f4ceede7be63b90bfcc#egg=toshi-hazard-store
 #RUN pip install toshi_hazard_store
 
 # settings for toshi-hazard-store

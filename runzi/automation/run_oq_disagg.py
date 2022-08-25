@@ -121,7 +121,6 @@ if __name__ == "__main__":
     if USE_API:
         toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
 
-
     print(tasks)
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')

@@ -341,7 +341,7 @@ class BuilderTask():
                         str(oq_result['oq_calc_id']),
                         solution_id,
                         job_arguments['general_task_id'],
-                        disagg_config["location"],
+                        f'"{disagg_config["location"]}"',
                         f'"{tag}"',
                         f'"{inv_id}, {bg_id}"',
                         '--verbose',
