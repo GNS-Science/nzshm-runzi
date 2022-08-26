@@ -93,7 +93,8 @@ if __name__ == "__main__":
             #"RmlsZToxMTE2NjI=" #PROD 37_GRANULAR_RELEASE_1 with full gsim LT (Kuehn and Atkinson)
             # "RmlsZToxMTg3ODQ=" # GSIM LT final v0
             # "RmlsZToxMjEwMzQ=" # GSIM LT final v0b
-            "RmlsZToxMjg4MDY=" # GSIM LT final EE backarc
+            # "RmlsZToxMjg4MDY=" # GSIM LT final EE backarc
+            "RmlsZToxMzEwOTU=" # GSIM LT v2
             ],
         # NEW FORM
         # makes better use of python
