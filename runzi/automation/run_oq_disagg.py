@@ -43,11 +43,19 @@ if __name__ == "__main__":
     TASK_DESCRIPTION = "Full logic tree for SLT workshop"
     #TASK_DESCRIPTION = "TEST build"
 
-    CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_NZ34_02_full_WLG.json"
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_WLG-0.1.json"
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_CHC-0.1.json"
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_DUD-0.1.json"
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_WLG-0.02.json"
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_CHC-0.02.json"
+    CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_DUD-0.02.json"
+    disagg_settings = dict(mag_bin_width = 0.2)
     
 
     with open(CONFIG_FILE, 'r') as df:
         disagg_configs = json.loads(df.read())
+    for disagg_config in disagg_configs:
+        disagg_config['disagg_settings'] = disagg_settings
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
@@ -85,7 +93,8 @@ if __name__ == "__main__":
     # hazard_config = "RmlsZToxMTI2MTI="  # toshi_id contain job config used by the original hazard jobs PROD for OQH : T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3
     # hazard_config = "RmlsZToxMTQ3ODQ==" # PROD for T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA4MTU3
     # hazard_config = "RmlsZToxMjEwMzQ=" # GSIM LT final v0b
-    hazard_config = "RmlsZToxMjg4MDY=" # GSIM LT final EE backarc
+    # hazard_config = "RmlsZToxMjg4MDY=" # GSIM LT final EE backarc
+    hazard_config = "RmlsZToxMzEwOTU=" # GSIM LT v2
 
     args = dict(
         hazard_config = hazard_config,

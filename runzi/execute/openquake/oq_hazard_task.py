@@ -276,6 +276,7 @@ class BuilderTask():
         ###############
         # CONFIGURE JOB
         ###############
+        disagg_settings = disagg_config.get('disagg_settings')
         lat, lon = disagg_config["location"].split("~")
         config_file = Path(config_folder, config_filename)
         def modify_config(config_file, task_arguments):
@@ -283,7 +284,7 @@ class BuilderTask():
             ta = task_arguments
             config = OpenquakeConfig(open(config_file))\
                 .set_description(f"Disaggregation for site: {disagg_config.get('site_name')}, vs30: {disagg_config['vs30']}, IMT: {disagg_config['imt']}, level: {round(disagg_config['level'], 12)}")\
-                .set_disaggregation(enable = True)\
+                .set_disaggregation(enable = True, values=disagg_settings)\
                 .set_iml_disagg(imt=disagg_config['imt'], level=round(disagg_config['level'], 12))\
                 .set_disagg_site(lat, lon)\
                 .clear_iml()\

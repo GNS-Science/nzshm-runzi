@@ -6,15 +6,12 @@ docker build . --no-cache
 ## Tag new docker image
 ```
 
-export IMAGE_ID=24b2c4454a85
-export RUNZI_GITREF=ea42686
-export OQ_TAG=gmm_lt_v2 #deaggs
+export IMAGE_ID=50f3ef7580c8
+export RUNZI_GITREF=208df21
+export OQ_TAG=deaggs #gmm_lt_v2 
 export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_openquake-${OQ_TAG} 
-docker tag ${IMAGE_ID} 461564345538.dkr.ecr.ap-southeast-2.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
-```
-
-```
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
+#docker tag ${IMAGE_ID} 461564345538.dkr.ecr.ap-southeast-2.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
 ```
 
 ## get credential, push image into AWS ECR
@@ -28,13 +25,14 @@ docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake
 
 ### for AWS cli v2
 ```
-aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 461564345538.dkr.ecr.ap-southeast-2.amazonaws.com
-docker push 461564345538.dkr.ecr.ap-southeast-2.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
-```
-
-```
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 461564345538.dkr.ecr.us-east-1.amazonaws.com
 docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
+
+#aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 461564345538.dkr.ecr.ap-southeast-2.amazonaws.com
+#docker push 461564345538.dkr.ecr.ap-southeast-2.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
 ```
+
+
+
 
 Update AWS Job Defintion with ${CONTAINER_TAG}
