@@ -43,12 +43,13 @@ if __name__ == "__main__":
     TASK_DESCRIPTION = "Full logic tree for SLT workshop"
     #TASK_DESCRIPTION = "TEST build"
 
+    CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_AKL-0.1.json"
     # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_WLG-0.1.json"
     # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_CHC-0.1.json"
     # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_DUD-0.1.json"
     # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_WLG-0.02.json"
     # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_CHC-0.02.json"
-    CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_DUD-0.02.json"
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_DUD-0.02.json"
     disagg_settings = dict(mag_bin_width = 0.2)
     
 

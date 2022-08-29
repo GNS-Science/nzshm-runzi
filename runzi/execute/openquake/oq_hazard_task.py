@@ -52,6 +52,28 @@ def get_config_filename(config_template_info):
         if itm['k'] == "config_filename":
             return itm['v']
 
+def build_site_csv(location):
+
+    backarc_locs = [
+        '-36.870~174.770',
+        '-39.590~174.280',
+        '-37.780~175.280',
+        '-35.220~173.970',
+        '-39.070~174.080',
+        '-38.230~175.870',
+        '-37.130~175.530',
+        '-37.690~176.170',
+        '-38.680~176.080',
+        '-38.140~176.250'
+    ]
+
+    lat,lon = location.split('~')
+    site_csv = 'lon,lat,backarc\n'
+    backarc_flag = 1 if location in backarc_locs else 0
+    site_csv += f'{lon},{lat},{int(backarc_flag)}'    
+
+    return site_csv
+
 
 def explode_config_template(config_info, working_path: str, task_no: int):
     config_folder = Path(working_path, f"config_{task_no}")
@@ -273,6 +295,16 @@ class BuilderTask():
         # write_sources(gsim_xml, gsim_xml_file)
         # log.info(f'wrote xml gsim  file: {gsim_xml_file}')
 
+
+        ##################
+        # SITE
+        ##################
+        site_csv = build_site_csv(disagg_config['location'])
+        site_csv_file = Path(config_folder, 'site.csv')
+        write_sources(site_csv, site_csv_file)
+        log.info(f'wrote csv site file: {site_csv_file}')
+
+
         ###############
         # CONFIGURE JOB
         ###############
@@ -286,13 +318,14 @@ class BuilderTask():
                 .set_description(f"Disaggregation for site: {disagg_config.get('site_name')}, vs30: {disagg_config['vs30']}, IMT: {disagg_config['imt']}, level: {round(disagg_config['level'], 12)}")\
                 .set_disaggregation(enable = True, values=disagg_settings)\
                 .set_iml_disagg(imt=disagg_config['imt'], level=round(disagg_config['level'], 12))\
-                .set_disagg_site(lat, lon)\
                 .clear_iml()\
                 .set_rupture_mesh_spacing("5")\
                 .set_ps_grid_spacing("30")\
                 .set_vs30(disagg_config['vs30'])\
-                .set_rlz_index(disagg_config['nrlz'])
-                # .set_gsim_logic_tree_file("./gsim_model.xml")
+                .set_rlz_index(disagg_config['nrlz'])\
+                .set_disagg_site_model()
+                # .set_gsim_logic_tree_file("./gsim_model.xml")\
+                # .set_disagg_site(lat, lon)
             config.write(open(config_file, 'w'))
 
         modify_config(config_file, task_arguments)

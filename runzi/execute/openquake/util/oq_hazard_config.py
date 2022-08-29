@@ -66,6 +66,11 @@ class OpenquakeConfig():
         self.config['site_params'][key] = value
         return self
 
+    def set_disagg_site_model(self):
+        self.clear_sites()
+        self.config['site_params']['site_model_file'] = 'site.csv'
+        return self
+
     def set_disagg_site(self, lat, lon):
         self.clear_sites()
         self.config['site_params']['sites'] = f'{lon} {lat}'
