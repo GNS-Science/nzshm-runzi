@@ -43,14 +43,25 @@ if __name__ == "__main__":
     TASK_DESCRIPTION = "Full logic tree for SLT workshop"
     #TASK_DESCRIPTION = "TEST build"
 
-    CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_AKL-0.1.json"
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_WLG-0.1.json"
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_CHC-0.1.json"
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_DUD-0.1.json"
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_WLG-0.02.json"
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_CHC-0.02.json"
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_DUD-0.02.json"
-    disagg_settings = dict(mag_bin_width = 0.2)
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_AKL-0.1.json" #[x ]
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_WLG-0.1.json" #[x]
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_CHC-0.1.json" #[x]
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_DUD-0.1.json" #[x]
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_AKL-0.02.json" #[x]
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_WLG-0.02.json" #[x]
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_CHC-0.02.json" #[x]
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_DUD-0.02.json" 
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_nz4_SA1p5_SA3p0_WLG-0.02-SA(1.5).json" # [x ]
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_nz4_SA1p5_SA3p0_WLG-0.02-SA(3.0).json" # [ x]
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_nz4_SA1p5_SA3p0_WLG-0.1-SA(1.5).json" # [ x]
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_nz4_SA1p5_SA3p0_WLG-0.1-SA(3.0).json" # [ x]
+    CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_nz4_SA1p5_SA3p0_CHC-0.02-SA(1.5).json" # [x ]
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_nz4_SA1p5_SA3p0_CHC-0.02-SA(3.0).json" # [ x]
+
+
+
+
+    disagg_settings = dict(mag_bin_width = 0.499)
     
 
     with open(CONFIG_FILE, 'r') as df:
@@ -96,6 +107,7 @@ if __name__ == "__main__":
     # hazard_config = "RmlsZToxMjEwMzQ=" # GSIM LT final v0b
     # hazard_config = "RmlsZToxMjg4MDY=" # GSIM LT final EE backarc
     hazard_config = "RmlsZToxMzEwOTU=" # GSIM LT v2
+    # hazard_config = "RmlsZToxMzQzNzU=" # GSIM LT v2 pointsource_distance = 50
 
     args = dict(
         hazard_config = hazard_config,
