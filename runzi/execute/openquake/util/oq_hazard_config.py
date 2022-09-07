@@ -20,6 +20,7 @@ SITES = dict(
     GRD_NZ_0_2_NZ34 = {"sites_csv": "./grid-NZ-0.2-0.0003.nb1.nz34.csv" },            # 20km 1050 site + NZ35 locations
     GRD_NZ_0_2_BA = {"site_model_file": "./grids/backarc2_02deg_1n.csv" },            # 20km 1097 site with backarc flag
     GRD_NZ_0_1_BA = {"site_model_file": "./grids/backarc2_01deg_1n.csv" },            # 10km 3740 site with backarc flag
+    GRD_NZ_0_1_NZ34_BA = {"site_model_file": "./backarc2_01deg_1n_nz34.csv" },            # 10km 3740 site + NZ34 with backarc flag
     GRD_NZ_0_2_NZ34_BA = {"site_model_file": "./backarc2_02deg_1n_nz34.csv" },            # 20km 1097 site + NZ34 with backarc flag
     NZ34_BA = {"site_model_file": "./site_model_nz_34_BA.csv" }            # NZ34 with backarc flag
 )
