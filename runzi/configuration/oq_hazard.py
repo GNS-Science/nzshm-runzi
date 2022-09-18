@@ -23,7 +23,7 @@ from runzi.execute.openquake.util import get_logic_tree_branches, get_granular_l
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode, S3_URL, S3_REPORT_BUCKET)
 
-HAZARD_MAX_TIME = 24*60 #minutes
+HAZARD_MAX_TIME = 30*60 #minutes
 
 SPLIT_SOURCE_BRANCHES = True
 SPLIT_TRUNCATION = 1 # set to None if you want all the split jobs, this is just for testing
