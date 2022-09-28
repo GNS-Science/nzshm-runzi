@@ -66,7 +66,7 @@ if __name__ == "__main__":
                     1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
     # era_levels = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
     #                 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0]
-    vs30s = [400]
+    vs30s = [1500]
     location_codes = ['GRD_NZ_0_1_NZ34_BA']
 
     #===========SRWG===============#
@@ -81,33 +81,14 @@ if __name__ == "__main__":
 
     args = dict(
         config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
-            # "RmlsZToxMDQyOTc=", #PROD NZ34_SRWG_02 DONT USE- DUPLICATE TMZ
-            # "RmlsZToxMDQ1MDk=",   #PROD RmlsZToxMDQ1MDk=
-            # "RmlsZToxMDA5MDM="  #TEST NZ34 SRWG_02
-            # "RmlsZToxMDEwMDk="   #TEST CONFIG 29_mesh
-            # "RmlsZToxMDExNTY=", #New TEST CONFIG w Rotorua TAG = None
-            #"RmlsZToxMDYxOTA=" #PROD CONFIG w Rotorua TAG = NZ35
-            #"RmlsZToxMDY1NzE=" #PROD + backbone
-            #"RmlsZToxMTA1MTA=" #PROD SLT_Large_with_grids
-            # "RmlsZToxMTEyNDE=" #PROD 37_GRANULAR_RELEASE_1 
-            # "RmlsZToxMDEyNzk=" #TEST 37_GRANULAR_RELEASE_1
-            #"RmlsZToxMTE2NjI=" #PROD 37_GRANULAR_RELEASE_1 with full gsim LT (Kuehn and Atkinson)
-            # "RmlsZToxMTg3ODQ=" # GSIM LT final v0
-            # "RmlsZToxMjEwMzQ=" # GSIM LT final v0b
-            # "RmlsZToxMjg4MDY=" # GSIM LT final EE backarc
-            # "RmlsZToxMzEwOTU=" # GSIM LT v2
-            # "RmlsZToxMzQyMjY=" # McVerry 2006
-            "RmlsZToxMzYyNTg=" # GSIM LT v2 0.1deg grid w/ backarc
+            "RmlsZToxMzY0MDY=" # GSIM LT v2 0.1deg+34
             ],
         # NEW FORM
         # makes better use of python
         logic_tree_permutations =  logic_tree_permutations,
 
         intensity_specs = [
-            #{"tag": "lite", "measures": ['PGA', 'SA(0.5)', 'SA(1.0)'], "levels": 'logscale(0.005, 4.00, 30)' },
             { "tag": "fixed", "measures": era_measures, "levels": era_levels},
-            #{"tag": "max10-300", "measures": era_measures, "levels": 'logscale(0.001, 5.00, 100)'}
-            #{"tag": "super-max", "measures": era_measures, "levels": 'logscale(0.001, 10.0, 300)'}
         ],
         vs30s = vs30s,
         location_codes = location_codes,

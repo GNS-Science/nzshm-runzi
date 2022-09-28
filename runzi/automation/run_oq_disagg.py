@@ -7,7 +7,10 @@ import logging
 import json
 import pwd
 import os
+import itertools
 import datetime as dt
+
+from pathlib import Path
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
 from runzi.configuration.oq_disagg import build_hazard_tasks
@@ -20,8 +23,7 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 WORKER_POOL_SIZE = 1
 # USE_API = False
 
-
-if __name__ == "__main__":
+def run_main(config_file):
 
     t0 = dt.datetime.utcnow()
 
@@ -43,28 +45,15 @@ if __name__ == "__main__":
     TASK_DESCRIPTION = "Full logic tree for SLT workshop"
     #TASK_DESCRIPTION = "TEST build"
 
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_AKL-0.1.json" #[x ]
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_WLG-0.1.json" #[x]
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_CHC-0.1.json" #[x]
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_DUD-0.1.json" #[x]
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_AKL-0.02.json" #[x]
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_WLG-0.02.json" #[x]
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_CHC-0.02.json" #[x]
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_SLT_v8_gmm_v2_DUD-0.02.json" 
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_nz4_SA1p5_SA3p0_WLG-0.02-SA(1.5).json" # [x ]
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_nz4_SA1p5_SA3p0_WLG-0.02-SA(3.0).json" # [ x]
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_nz4_SA1p5_SA3p0_WLG-0.1-SA(1.5).json" # [ x]
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_nz4_SA1p5_SA3p0_WLG-0.1-SA(3.0).json" # [ x]
-    CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_nz4_SA1p5_SA3p0_CHC-0.02-SA(1.5).json" # [x ]
-    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/deagg_configs_nz4_SA1p5_SA3p0_CHC-0.02-SA(3.0).json" # [ x]
-
-
-
-
-    disagg_settings = dict(mag_bin_width = 0.499)
     
 
-    with open(CONFIG_FILE, 'r') as df:
+
+    # disagg_settings = dict(mag_bin_width = 0.499)
+    disagg_settings = dict(mag_bin_width = 0.5)
+    # disagg_settings = dict(num_epsilon_bins = 6)
+    
+
+    with open(config_file, 'r') as df:
         disagg_configs = json.loads(df.read())
     for disagg_config in disagg_configs:
         disagg_config['disagg_settings'] = disagg_settings
@@ -106,8 +95,9 @@ if __name__ == "__main__":
     # hazard_config = "RmlsZToxMTQ3ODQ==" # PROD for T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA4MTU3
     # hazard_config = "RmlsZToxMjEwMzQ=" # GSIM LT final v0b
     # hazard_config = "RmlsZToxMjg4MDY=" # GSIM LT final EE backarc
-    hazard_config = "RmlsZToxMzEwOTU=" # GSIM LT v2
+    # hazard_config = "RmlsZToxMzEwOTU=" # GSIM LT v2
     # hazard_config = "RmlsZToxMzQzNzU=" # GSIM LT v2 pointsource_distance = 50
+    hazard_config = "RmlsZToxMzY0MDY=" # GSIM LT v2 0.1deg+34
 
     args = dict(
         hazard_config = hazard_config,
@@ -151,3 +141,27 @@ if __name__ == "__main__":
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+
+
+def generate_config_filenames(locations, poes, vs30s, imts):
+
+    root_dir = '/home/chrisdc/NSHM/Disaggs/disagg_configs'
+    for (loc, poe, vs30, imt) in itertools.product(locations, poes, vs30s, imts):
+        name = f'deagg_configs_{loc}-{poe}-{imt}-{vs30}.json'
+        yield Path(root_dir, loc, name)
+
+
+if __name__ == "__main__":
+
+    # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/DUD/deagg_configs_DUD-0.1-PGA-400.json"
+    config_dir = Path('/home/chrisdc/NSHM/Disaggs/disagg_configs')
+    locations = ['AKL','WLG','CHC','DUD']
+    poes = [0.1, 0.02]
+    vs30s = [250, 400]
+    # imts = ['PGA','SA(0.5)','SA(1.5)']
+    imts = ['SA(3.0)']
+
+    for config_file in generate_config_filenames(locations, poes, vs30s, imts):
+        run_main(str(config_file))
+
+
