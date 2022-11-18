@@ -1,8 +1,8 @@
 # Dockerfile
 # Extend base image
-# needs openquake/engine >= 3.13.0
+# needs openquake/engine >= 3.15.0
 #nightly
-FROM openquake/engine:nightly
+FROM openquake/engine:3.15
 
 USER root
 
@@ -22,11 +22,11 @@ RUN pip install pytest
 #TEMP until this is in GEM repo
 ADD gsim /usr/src/oq-engine/openquake/hazardlib/gsim
 
-#TEMP UNTIL GEM ACCEPTS ANNES mods
-RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/hazardlib/calc/disagg.py\
+#Disagg bins modification
+RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/756435096fda41a24f49e8e64adc150cf629e0b2/openquake/commonlib/oqvalidation.py\
+ -O /usr/src/oq-engine/openquake/commonlib/oqvalidation.py
+RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/756435096fda41a24f49e8e64adc150cf629e0b2/openquake/hazardlib/calc/disagg.py\
  -O /usr/src/oq-engine/openquake/hazardlib/calc/disagg.py
-RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/calculators/disaggregation.py\
- -O /usr/src/oq-engine/openquake/calculators/disaggregation.py
 
 
 # Install Runzi TODO:is this only for these test configs ??
