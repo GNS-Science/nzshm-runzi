@@ -49,8 +49,14 @@ def run_main(config_file):
 
 
     # disagg_settings = dict(mag_bin_width = 0.499)
-    disagg_settings = dict(mag_bin_width = 0.5)
-    # disagg_settings = dict(num_epsilon_bins = 6)
+    # disagg_settings = dict(mag_bin_width = 0.5)
+    disagg_settings = dict(
+        distance_bin_width = "0 5.0 10.0 15.0 20.0 30.0 40.0 50.0 60.0 80.0 100.0 140.0 180.0 220.0 260.0 320.0 380.0 500.0",
+        num_epsilon_bins = 16,
+        mag_bin_width = .1999,
+        coordinate_bin_width = 5,
+    )
+
     
 
     with open(config_file, 'r') as df:
@@ -97,7 +103,8 @@ def run_main(config_file):
     # hazard_config = "RmlsZToxMjg4MDY=" # GSIM LT final EE backarc
     # hazard_config = "RmlsZToxMzEwOTU=" # GSIM LT v2
     # hazard_config = "RmlsZToxMzQzNzU=" # GSIM LT v2 pointsource_distance = 50
-    hazard_config = "RmlsZToxMzY0MDY=" # GSIM LT v2 0.1deg+34
+    # hazard_config = "RmlsZToxMzY0MDY=" # GSIM LT v2 0.1deg+34
+    hazard_config = "RmlsZToxNzI4MTI=" # GSIM LT v2 0.1deg+34 renew
 
     args = dict(
         hazard_config = hazard_config,
@@ -142,26 +149,67 @@ def run_main(config_file):
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
 
+    return new_gt_id
+
 
 def generate_config_filenames(locations, poes, vs30s, imts):
 
-    root_dir = '/home/chrisdc/NSHM/Disaggs/disagg_configs'
+    root_dir = '/home/chrisdc/NSHM/Disaggs/Disagg_Targets'
     for (loc, poe, vs30, imt) in itertools.product(locations, poes, vs30s, imts):
         name = f'deagg_configs_{loc}-{poe}-{imt}-{vs30}.json'
         yield Path(root_dir, loc, name)
+
+def generate_single_config_filenames(configs):
+
+    root_dir = '/home/chrisdc/NSHM/Disaggs/Disagg_Targets'
+    for config in configs:
+        loc = config['location']
+        poe = config['poe']
+        vs30 = config['vs30']
+        imt = config['imt']
+        name = f'deagg_configs_{loc}-{poe}-{imt}-{vs30}.json'
+        yield Path(root_dir, loc, name)
+
+
 
 
 if __name__ == "__main__":
 
     # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/DUD/deagg_configs_DUD-0.1-PGA-400.json"
-    config_dir = Path('/home/chrisdc/NSHM/Disaggs/disagg_configs')
-    locations = ['AKL','WLG','CHC','DUD']
-    poes = [0.1, 0.02]
-    vs30s = [250, 400]
-    # imts = ['PGA','SA(0.5)','SA(1.5)']
-    imts = ['SA(3.0)']
+    # config_dir = Path('/home/chrisdc/NSHM/Disaggs/Disagg_Targets')
 
+    vs30s = [250, 400, 750]
+    imts = ['PGA', 'SA(0.2)', 'SA(0.5)', 'SA(1.5)', 'SA(3.0)']
+    locations = ['AKL','WLG','CHC','DUD'] # [1]
+    # locations = ['HLZ','TRG', 'PMR', 'NPE'] #Hamilton, Tauranga, Palmerston North, Napier [2]
+    # locations = ['ROT', 'NPL', 'NSN', 'IVC'] #Rotorua, New Plymouth, Nelson, Invercargill [3]
+    # locations = ['xx1', 'GIS', 'BHE', 'TUO' ] #Whanganui, Gisborne, Blenheim, Taupo [4]
+    # locations = ['MRO', 'LVN', 'ZQN', 'GMN'] #Masterton, Levin, Queenstown, Greymouth [5]
+    # locations = ['HAW', 'KBZ', 'KKE', 'MON'] #Hawera, Kaikoura, Kerikeri, Mount Cook [6]
+    # locations = ['TEU', 'TIU', 'TKZ', 'TMZ'] #Te Anau, Timaru, Tokoroa, Thames [7]
+    # locations = ['WHK', 'WHO', 'WSZ', 'xx2'] #Whakatane, Franz Josef, Westport, Turangi [8]
+    # locations = ['xx3', 'xx4', 'xx5'] #Otira, Haast, Hanmer Springs [9]
+
+    # poes = [0.86, 0.63, 0.39, 0.18, 0.1, 0.05, 0.02]
+    poes = [0.1, 0.02]
+    gt_filename = 'round1.gt'    
+
+
+    # configs = [
+    #     dict(imt='PGA', vs30=200, location='CHC', poe=0.02),
+    #     # dict(imt='PGA', vs30=525, location='CHC', poe=0.02),
+    #     # dict(imt='PGA', vs30=525, location='xx4', poe=0.02),
+    #     # dict(imt='PGA', vs30=525, location='xx3', poe=0.02),
+    #     # dict(imt='PGA', vs30=525, location='xx3', poe=0.05),
+    #     # dict(imt='PGA', vs30=525, location='WSZ', poe=0.02),    
+    # ]
+
+    gt_ids = []
     for config_file in generate_config_filenames(locations, poes, vs30s, imts):
-        run_main(str(config_file))
+        gt_ids.append(run_main(str(config_file)))
+
+    with open(gt_filename,'w') as gtfile:
+        for gt_id in gt_ids:
+            gtfile.write('GENERAL_TASK_ID: %s\n' % gt_id)
 
 
