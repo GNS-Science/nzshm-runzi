@@ -33,7 +33,7 @@ DEFAULT_DISAGG = dict(
     distance_bin_width = 10,
     coordinate_bin_width = 1,
     num_epsilon_bins = 4,
-    disagg_outputs = "Mag_Dist Mag_Dist_Eps TRT Mag_Dist_TRT Mag_Dist_TRT_Eps"
+    disagg_outputs = "Mag Dist Mag_Dist Mag_Dist_Eps TRT Mag_Dist_TRT Mag_Dist_TRT_Eps"
     )
 
 class OpenquakeConfig():
