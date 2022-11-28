@@ -9,6 +9,7 @@ import logging
 import json
 import datetime as dt
 from pathlib import Path
+from zipfile import ZipFile
 
 from nshm_toshi_client.toshi_client_base import ToshiClientBase
 from nshm_toshi_client.toshi_file import ToshiFile
@@ -79,6 +80,14 @@ def get_enriched_details(disagg_info):
 WORKER_POOL_SIZE = 1
 # USE_API = False
 
+def check_result(disagg_info):
+
+  edges = disagg_info['data']['node1']['children']['edges']
+  success_count = 0
+  for edge in edges:
+    if edge['node']['child']['result'] == 'SUCCESS': success_count += 1
+  return success_count
+
 
 if __name__ == "__main__":
 
@@ -87,8 +96,12 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(description="""produce a zip archive of openquake configuration inputs
 and save this as a ToshiAPI File object""")
   parser.add_argument("run_output", help="the path to the file containing the GT IDs of the oq disagg runs (e.g. `python runzi/automation/run_oq_disagg.py > disagg.out`")
+  parser.add_argument("out_dir", help="the path of the output directory")
   args = parser.parse_args()
   gt_filepath = args.run_output
+  output_dir = Path(args.out_dir)
+  if not output_dir.exists():
+    output_dir.mkdir()
 
   gt_ids = []
   with open(gt_filepath,'r') as gt_file:
@@ -98,7 +111,7 @@ and save this as a ToshiAPI File object""")
   gt_ids = set(gt_ids)
   
   
-  OUTPUT_DIR = Path('/home/chrisdc/NSHM/GT_Data/round2')
+  
   
   headers={"x-api-key":API_KEY}
   disagg_api = DisaggDetails(API_URL, None, None, with_schema_validation=False, headers=headers)
@@ -106,14 +119,29 @@ and save this as a ToshiAPI File object""")
   for gt_id in gt_ids:
     disagg_info = {}
     disagg_info['data'] = disagg_api.get_dissag_detail(gt_id)
+    success_count = check_result(disagg_info)
+    if not (success_count == 49) | (success_count == 46): #| (success_count == 40) :
+      # arguments = disagg_info['data']['node1']['children']['edges'][0]['node']['child']['arguments']
+      # raise Exception('GT ID %s got %s sucessfull jobs for %s' % (gt_id, success_count, arguments ))
+
+    # # if success_count == 40:
+      arguments = disagg_info['data']['node1']['children']['edges'][0]['node']['child']['arguments']
+      print('='*50)
+      print('GT ID %s got %s sucessfull jobs for %s' % (gt_id, success_count, arguments ))
+      print(' ')
+
     disagg_result = dict(general_task_id=gt_id, deagg_solutions = disagg_info)
-    gt_datafile = Path(OUTPUT_DIR,f'disagg_result_{gt_id}.json')
+    gt_datafile = Path(output_dir,f'disagg_result_{gt_id}.json')
     with gt_datafile.open(mode='w') as f:
-      gt_data_filenames.append(str(gt_datafile))
+      gt_data_filenames.append(gt_datafile)
       f.write(json.dumps(disagg_result, indent=4))
 
-  with Path(OUTPUT_DIR,'gtdata_files.list').open(mode='w') as f:
+  with Path(output_dir,'gtdata_files.list').open(mode='w') as f:
     for gt in gt_data_filenames:
-      f.write('"' + gt + '", ')
+      f.write('"' + str(gt) + '", ')
+
+  with ZipFile(Path(output_dir, 'disagg_gt_data.zip'),'w') as gtzip:
+    for gt in gt_data_filenames:
+      gtzip.write(gt,arcname=gt.name)
 
   print('Done!')
