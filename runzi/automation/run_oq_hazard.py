@@ -61,13 +61,28 @@ if __name__ == "__main__":
 
     era_measures = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)',
         'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)', 'SA(6.0)','SA(7.5)', 'SA(10.0)']
-    era_levels = [0.0001, 0.0002, 0.0004, 0.0006, 0.0008, 0.001, 0.002, 0.004, 0.006, 0.008,
-                    0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
-                    1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+    # era_levels = [0.0001, 0.0002, 0.0004, 0.0006, 0.0008, 0.001, 0.002, 0.004, 0.006, 0.008,
+    #                 0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
+    #                 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
     # era_levels = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
     #                 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0]
-    vs30s = [1500]
-    location_codes = ['GRD_NZ_0_1_NZ34_BA']
+    # nlevels = 175
+    # m = 5/(nlevels-1)
+    # b = -4
+
+    # IMTL sensitivity tests
+    import numpy as np
+    # era_levels = [10**(l*m + b) for l in range(0,nlevels)]
+    pt1_imtl_list = np.append(np.concatenate([np.linspace(0.1,0.9,9) * n for n in [1e-3,1e-2,1e-1,1e0,1e1]]),10)
+    pt05_imtl_list = np.append(np.concatenate([np.linspace(0.1,0.95,18) * n for n in [1e-3,1e-2,1e-1,1e0,1e1]]),10)
+    # custom_imtl_list = np.unique(np.sort(np.concatenate((pt1_imtl_list,np.array([1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.5, 4, 4.5])))))
+    custom_imtl_list = np.unique(np.sort(np.concatenate((pt1_imtl_list,np.array([1.2, 1.4, 1.6, 1.8, 2.2, 2.4, 2.6, 2.8, 3.5, 4.5])))))
+    # era_levels = list(custom_imtl_list)
+    era_levels = [float(imt2) for imt2 in  [f'{imt:0.1e}' for imt in custom_imtl_list]]
+
+    vs30s = [400]
+    # location_codes = ['GRD_NZ_0_1_NZ34_BA']
+    location_codes = ['NZ34_BA']
 
     #===========SRWG===============#
     # era_measures = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)',

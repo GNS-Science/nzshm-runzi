@@ -3,11 +3,14 @@
 This script produces disagg tasks in either AWS, PBS or LOCAL that run OpenquakeHazard in disagg mode.
 
 """
+import argparse
 import logging
+import csv
 import json
 import pwd
 import os
 import itertools
+from collections import namedtuple
 import datetime as dt
 
 from pathlib import Path
@@ -22,8 +25,11 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
 # USE_API = False
+DISAGG_TARGET_DIR = '/home/chrisdc/NSHM/Disaggs/Disagg_Targets'
 
-def run_main(config_file):
+Disagg = namedtuple("Disagg", "location imt vs30 poe")
+
+def launch_gt(config_file):
 
     t0 = dt.datetime.utcnow()
 
@@ -104,7 +110,7 @@ def run_main(config_file):
     # hazard_config = "RmlsZToxMzEwOTU=" # GSIM LT v2
     # hazard_config = "RmlsZToxMzQzNzU=" # GSIM LT v2 pointsource_distance = 50
     # hazard_config = "RmlsZToxMzY0MDY=" # GSIM LT v2 0.1deg+34
-    hazard_config = "RmlsZToxNzI4MTI=" # GSIM LT v2 0.1deg+34 renew
+    hazard_config = "RmlsZTozNDYzODc=" # GSIM LT v2 0.1deg+34 renew 2
 
     args = dict(
         hazard_config = hazard_config,
@@ -154,33 +160,69 @@ def run_main(config_file):
 
 def generate_config_filenames(locations, poes, vs30s, imts):
 
-    root_dir = '/home/chrisdc/NSHM/Disaggs/Disagg_Targets'
     for (loc, poe, vs30, imt) in itertools.product(locations, poes, vs30s, imts):
+        disagg = Disagg(loc, imt, vs30, poe)
         name = f'deagg_configs_{loc}-{poe}-{imt}-{vs30}.json'
-        yield Path(root_dir, loc, name)
+        yield Path(DISAGG_TARGET_DIR, loc, name), disagg
 
-def generate_single_config_filenames(configs):
+def generate_single_config_filename(config):
 
-    root_dir = '/home/chrisdc/NSHM/Disaggs/Disagg_Targets'
-    for config in configs:
-        loc = config['location']
-        poe = config['poe']
-        vs30 = config['vs30']
-        imt = config['imt']
-        name = f'deagg_configs_{loc}-{poe}-{imt}-{vs30}.json'
-        yield Path(root_dir, loc, name)
+    loc = config['location']
+    poe = config['poe']
+    vs30 = config['vs30']
+    imt = config['imt']
+    disagg = Disagg(loc, imt, vs30, poe)
+    name = f'deagg_configs_{loc}-{poe}-{imt}-{vs30}.json'
+    return Path(DISAGG_TARGET_DIR, loc, name), disagg
 
 
+def run_main(locations, imts, vs30s, poes, gt_filename, rerun=False):
+
+    gt_filepath = Path(gt_filename)
+
+    if gt_filepath.exists():
+        raise Exception('file %s already exists, cannot overwrite' % gt_filepath)
+
+    with open(gt_filepath, 'w') as df:
+        disagg_writer = csv.writer(df)
+        disagg_writer.writerow(['GT_ID', 'date', 'time', 'time_zone'] + list(Disagg._fields))
+        if rerun:
+            DISAGG_LIST = os.environ['NZSHM22_DISAGG_LIST']
+            with open(DISAGG_LIST, 'r') as gt_list_file:
+                reader = csv.reader(gt_list_file)
+                GTData = namedtuple("GTData", next(reader)[:-1], rename=True)
+                for row in reader:
+                    gt_data = GTData(*row)
+                    if gt_data.success == 'N':
+                        config = dict(
+                            location = gt_data.location,
+                            poe = gt_data.poe,
+                            vs30 = gt_data.vs30,
+                            imt = gt_data.imt,
+                        )
+                        config_file, disagg_config = generate_single_config_filename(config)
+                        gt_id = launch_gt(str(config_file))
+                        now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
+                        disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
+        else:
+            for config_file, disagg_config in generate_config_filenames(locations, poes, vs30s, imts):
+                gt_id = launch_gt(str(config_file))
+                now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
+                disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
 
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description="run disaggregations")
+    parser.add_argument('-r', '--rerun' , action='store_true', help="rerun the failed jobs in NZSHM22_DISAGG_LIST")
+    args = parser.parse_args()
 
     # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/DUD/deagg_configs_DUD-0.1-PGA-400.json"
     # config_dir = Path('/home/chrisdc/NSHM/Disaggs/Disagg_Targets')
 
     vs30s = [250, 400, 750]
     imts = ['PGA', 'SA(0.2)', 'SA(0.5)', 'SA(1.5)', 'SA(3.0)']
-    locations = ['AKL','WLG','CHC','DUD'] # [1]
+    # locations = ['AKL','WLG','CHC','DUD'] # [1]
     # locations = ['HLZ','TRG', 'PMR', 'NPE'] #Hamilton, Tauranga, Palmerston North, Napier [2]
     # locations = ['ROT', 'NPL', 'NSN', 'IVC'] #Rotorua, New Plymouth, Nelson, Invercargill [3]
     # locations = ['xx1', 'GIS', 'BHE', 'TUO' ] #Whanganui, Gisborne, Blenheim, Taupo [4]
@@ -188,28 +230,16 @@ if __name__ == "__main__":
     # locations = ['HAW', 'KBZ', 'KKE', 'MON'] #Hawera, Kaikoura, Kerikeri, Mount Cook [6]
     # locations = ['TEU', 'TIU', 'TKZ', 'TMZ'] #Te Anau, Timaru, Tokoroa, Thames [7]
     # locations = ['WHK', 'WHO', 'WSZ', 'xx2'] #Whakatane, Franz Josef, Westport, Turangi [8]
-    # locations = ['xx3', 'xx4', 'xx5'] #Otira, Haast, Hanmer Springs [9]
+    locations = ['xx3', 'xx4', 'xx5'] #Otira, Haast, Hanmer Springs [9]
 
     # poes = [0.86, 0.63, 0.39, 0.18, 0.1, 0.05, 0.02]
     poes = [0.1, 0.02]
-    gt_filename = 'round1.gt'    
+    gt_filename = 'round11.csv'    
 
+    locations = ['ROT']
+    imts = ['SA(3.0)']
+    vs30s = [250]
+    poes = [0.02]
 
-    # configs = [
-    #     dict(imt='PGA', vs30=200, location='CHC', poe=0.02),
-    #     # dict(imt='PGA', vs30=525, location='CHC', poe=0.02),
-    #     # dict(imt='PGA', vs30=525, location='xx4', poe=0.02),
-    #     # dict(imt='PGA', vs30=525, location='xx3', poe=0.02),
-    #     # dict(imt='PGA', vs30=525, location='xx3', poe=0.05),
-    #     # dict(imt='PGA', vs30=525, location='WSZ', poe=0.02),    
-    # ]
-
-    gt_ids = []
-    for config_file in generate_config_filenames(locations, poes, vs30s, imts):
-        gt_ids.append(run_main(str(config_file)))
-
-    with open(gt_filename,'w') as gtfile:
-        for gt_id in gt_ids:
-            gtfile.write('GENERAL_TASK_ID: %s\n' % gt_id)
-
+    run_main(locations, imts, vs30s, poes, gt_filename, args.rerun)
 
