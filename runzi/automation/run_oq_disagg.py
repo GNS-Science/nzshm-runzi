@@ -16,11 +16,13 @@ import datetime as dt
 from pathlib import Path
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
-from runzi.configuration.oq_disagg import build_hazard_tasks
+from runzi.configuration.oq_disagg import build_hazard_tasks, get_disagg_configs
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
+
+from runzi.CONFIG.OQ.SLT_v8 import logic_tree_permutations as logic_trees
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -29,7 +31,7 @@ DISAGG_TARGET_DIR = '/home/chrisdc/NSHM/Disaggs/Disagg_Targets'
 
 Disagg = namedtuple("Disagg", "location imt vs30 poe")
 
-def launch_gt(config_file):
+def launch_gt(gt_config):
 
     t0 = dt.datetime.utcnow()
 
@@ -51,9 +53,6 @@ def launch_gt(config_file):
     TASK_DESCRIPTION = "Full logic tree for SLT workshop"
     #TASK_DESCRIPTION = "TEST build"
 
-    
-
-
     # disagg_settings = dict(mag_bin_width = 0.499)
     # disagg_settings = dict(mag_bin_width = 0.5)
     disagg_settings = dict(
@@ -63,10 +62,7 @@ def launch_gt(config_file):
         coordinate_bin_width = 5,
     )
 
-    
-
-    with open(config_file, 'r') as df:
-        disagg_configs = json.loads(df.read())
+    disagg_configs = get_disagg_configs(gt_config, logic_trees)
     for disagg_config in disagg_configs:
         disagg_config['disagg_settings'] = disagg_settings
 
@@ -74,34 +70,6 @@ def launch_gt(config_file):
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     # TODO obtain the config (job.ini from the first nearest_rlz)
-    # example from a Hazard Task ID
-    # query hazard_sol {
-    #   node(id:"T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg4") {
-    #     __typename
-    #     ... on OpenquakeHazardSolution {
-    #         modified_config {
-    #           id
-    #           file_name
-    #           file_size
-    #           file_url
-    #         }
-    #     }
-    #   }
-    # }
-    # {
-    #   "data": {
-    #     "node": {
-    #       "__typename": "OpenquakeHazardSolution",
-    #       "modified_config": {
-    #         "id": "RmlsZToxMTI2MTI=",
-    #         "file_name": "modified_config.zip",
-    #         "file_size": 4083,
-    #         "file_url": "https://nzshm22-toshi-api-prod.s3.amazonaws.com/FileData/112612/modified_config.zip?AWSAccessKeyId=ASIAWW53A7TBIBPMVAHJ&Signature=BpFB0dh%2BCeWraE07yNz1rTVr40Y%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEEsaDmFwLXNvdXRoZWFzdC0yIkYwRAIgMfhCsTu4OsCeT8ka7JF38O%2FcjGCz1rDkCON%2B9ivlJNMCIHQ8OphyTms0rxj1QeP7fJ7D3yuoXugjMAp3yWJ9AeCVKqgCCIT%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQAhoMNDYxNTY0MzQ1NTM4Igz%2BvhH%2FCq15CRl4s1wq%2FAE9ls8Ugl5gdYfQw11ZGBIfpvQX7h4hKtkRQCmn1R%2F9YFdFwZJqdQAkgnMHjESOE2brrkfjhW%2BxuL4nIVeideT2PAKBOCzeQUwPMvlrJaa2FjQNqIMgNHcFPaxQIwZ3G9vwrNG5EiUs6XFRe2MFH%2Fu%2F8dOvYxnxkVuGtf0WPaWijQgT9MWDY%2BDSmHYaAgcYiSq2xVvrcgKDyK2UnbV3iBLW6ugYYYFbFxQswSTUXJI%2B22pk%2B5nPIONOOjmpTViTUwl4ZTOnlXnBUwxk1d8EsV7lRT4FuswN21jdkFLhcA%2F%2F9Ws6%2Bwiynn5Q3hYuk%2FTA1ttDAHRppguztmRjwSMwvYW%2BlgY6mwH%2B%2FNAouzzFWdMzJogeJaYxjFAVCEVqTjigiym9AfSxwQjtNdsxIbj0wpFpu%2FycZNZK8rO1NM3S9oDfAb85N%2FPe%2B77fiT3V1gnVx71QVyT57t67rDEGZaLfPVxfoK4t8SM2OjowNSVTzGg6geSwGzGG6unqad45dpU5dMjk06wBM3Z5k88RrQi15BS9LeYS9u1WHO1uQ4ocme%2Fe6A%3D%3D&Expires=1657772734"
-    #       }
-    #     }
-    #   }
-    # }
-
     # hazard_config = "RmlsZToxMDEyODA="  # toshi_id contain job config used by the original hazard jobs TEST for OQH : T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAxMzE5
     # hazard_config = "RmlsZToxMTI2MTI="  # toshi_id contain job config used by the original hazard jobs PROD for OQH : T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3
     # hazard_config = "RmlsZToxMTQ3ODQ==" # PROD for T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA4MTU3
@@ -158,25 +126,38 @@ def launch_gt(config_file):
     return new_gt_id
 
 
-def generate_config_filenames(locations, poes, vs30s, imts):
+def generate_gt_configs(task_args, locations, poes, vs30s, imts):
 
     for (loc, poe, vs30, imt) in itertools.product(locations, poes, vs30s, imts):
-        disagg = Disagg(loc, imt, vs30, poe)
-        name = f'deagg_configs_{loc}-{poe}-{imt}-{vs30}.json'
-        yield Path(DISAGG_TARGET_DIR, loc, name), disagg
+        yield dict(
+            location = loc,
+            poe = poe,
+            vs30 = vs30,
+            imt = imt,
+            inv_time = task_args['inv_time'],
+            agg = task_args['agg'],
+            hazard_model_id = task_args['hazard_model_id'],
+        ), Disagg(loc, imt, vs30, poe)
 
-def generate_single_config_filename(config):
+
+def generate_single_gt_config(task_args, config):
 
     loc = config['location']
     poe = config['poe']
     vs30 = config['vs30']
     imt = config['imt']
-    disagg = Disagg(loc, imt, vs30, poe)
-    name = f'deagg_configs_{loc}-{poe}-{imt}-{vs30}.json'
-    return Path(DISAGG_TARGET_DIR, loc, name), disagg
 
+    return dict(
+        location = loc,
+        poe = poe,
+        vs30 = vs30,
+        imt = imt,
+        inv_time = task_args['inv_time'],
+        agg = task_args['agg'],
+        hazard_model_id = task_args['hazard_model_id'],
+    ) 
 
-def run_main(locations, imts, vs30s, poes, gt_filename, rerun=False):
+def run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun=False):
 
     gt_filepath = Path(gt_filename)
 
@@ -194,19 +175,18 @@ def run_main(locations, imts, vs30s, poes, gt_filename, rerun=False):
                 for row in reader:
                     gt_data = GTData(*row)
                     if gt_data.success == 'N':
-                        config = dict(
-                            location = gt_data.location,
-                            poe = gt_data.poe,
-                            vs30 = gt_data.vs30,
-                            imt = gt_data.imt,
-                        )
-                        config_file, disagg_config = generate_single_config_filename(config)
-                        gt_id = launch_gt(str(config_file))
+                        gt_config, disagg_config = next(generate_gt_configs(
+                            task_args,
+                            [gt_data.location],
+                            [gt_data.poe],
+                            [gt_data.vs30],
+                            [gt_data.imt]))
+                        gt_id = launch_gt(gt_config) 
                         now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
                         disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
         else:
-            for config_file, disagg_config in generate_config_filenames(locations, poes, vs30s, imts):
-                gt_id = launch_gt(str(config_file))
+            for gt_config, disagg_config in generate_gt_configs(task_args, locations, poes, vs30s, imts): 
+                gt_id = launch_gt(gt_config) 
                 now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
                 disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
 
@@ -219,6 +199,12 @@ if __name__ == "__main__":
 
     # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/DUD/deagg_configs_DUD-0.1-PGA-400.json"
     # config_dir = Path('/home/chrisdc/NSHM/Disaggs/Disagg_Targets')
+
+    task_args = dict(
+        hazard_model_id = 'SLT_v8_gmm_v2_FINAL',
+        agg = 'mean',
+        inv_time = 50,
+    )
 
     vs30s = [250, 400, 750]
     imts = ['PGA', 'SA(0.2)', 'SA(0.5)', 'SA(1.5)', 'SA(3.0)']
@@ -234,12 +220,7 @@ if __name__ == "__main__":
 
     # poes = [0.86, 0.63, 0.39, 0.18, 0.1, 0.05, 0.02]
     poes = [0.1, 0.02]
-    gt_filename = 'round11.csv'    
+    gt_filename = 'test.csv'    
 
-    locations = ['ROT']
-    imts = ['SA(3.0)']
-    vs30s = [250]
-    poes = [0.02]
-
-    run_main(locations, imts, vs30s, poes, gt_filename, args.rerun)
+    run_main(task_args, locations, imts, vs30s, poes, gt_filename, args.rerun)
 
