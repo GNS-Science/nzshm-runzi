@@ -171,19 +171,36 @@ def run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun=False):
             DISAGG_LIST = os.environ['NZSHM22_DISAGG_LIST']
             with open(DISAGG_LIST, 'r') as gt_list_file:
                 reader = csv.reader(gt_list_file)
+                gt_datas = []
+                GTData = namedtuple("GTData", next(reader)[:-1], rename=True)
+                for row in reader:
+                    gt_datas.append(GTData(*row))
+            
+
+            with open(DISAGG_LIST, 'r') as gt_list_file:
+                reader = csv.reader(gt_list_file)
                 GTData = namedtuple("GTData", next(reader)[:-1], rename=True)
                 for row in reader:
                     gt_data = GTData(*row)
                     if gt_data.success == 'N':
-                        gt_config, disagg_config = next(generate_gt_configs(
-                            task_args,
-                            [gt_data.location],
-                            [gt_data.poe],
-                            [gt_data.vs30],
-                            [gt_data.imt]))
-                        gt_id = launch_gt(gt_config) 
-                        now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
-                        disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
+                        gt_success = [
+                                g for g in gt_datas if
+                                    (g.location == gt_data.location) &
+                                    (g.imt==gt_data.imt) &
+                                    (g.vs30==gt_data.vs30) &
+                                    (g.poe==gt_data.poe) & 
+                                    (g.success=='Y')
+                        ]
+                        if not gt_success:
+                            gt_config, disagg_config = next(generate_gt_configs(
+                                task_args,
+                                [gt_data.location],
+                                [gt_data.poe],
+                                [gt_data.vs30],
+                                [gt_data.imt]))
+                            gt_id = launch_gt(gt_config) 
+                            now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
+                            disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
         else:
             for gt_config, disagg_config in generate_gt_configs(task_args, locations, poes, vs30s, imts): 
                 gt_id = launch_gt(gt_config) 
@@ -211,16 +228,18 @@ if __name__ == "__main__":
     # locations = ['AKL','WLG','CHC','DUD'] # [1]
     # locations = ['HLZ','TRG', 'PMR', 'NPE'] #Hamilton, Tauranga, Palmerston North, Napier [2]
     # locations = ['ROT', 'NPL', 'NSN', 'IVC'] #Rotorua, New Plymouth, Nelson, Invercargill [3]
-    # locations = ['xx1', 'GIS', 'BHE', 'TUO' ] #Whanganui, Gisborne, Blenheim, Taupo [4]
+    # locations = ['ZWG', 'GIS', 'BHE', 'TUO' ] #Whanganui, Gisborne, Blenheim, Taupo [4]
     # locations = ['MRO', 'LVN', 'ZQN', 'GMN'] #Masterton, Levin, Queenstown, Greymouth [5]
     # locations = ['HAW', 'KBZ', 'KKE', 'MON'] #Hawera, Kaikoura, Kerikeri, Mount Cook [6]
     # locations = ['TEU', 'TIU', 'TKZ', 'TMZ'] #Te Anau, Timaru, Tokoroa, Thames [7]
-    # locations = ['WHK', 'WHO', 'WSZ', 'xx2'] #Whakatane, Franz Josef, Westport, Turangi [8]
-    locations = ['xx3', 'xx4', 'xx5'] #Otira, Haast, Hanmer Springs [9]
+    # locations = ['WHK', 'WHO', 'WSZ', 'ZTR'] #Whakatane, Franz Josef, Westport, Turangi [8]
+    locations = ['ZOT', 'ZHT', 'ZHS'] #Otira, Haast, Hanmer Springs [9]
 
-    # poes = [0.86, 0.63, 0.39, 0.18, 0.1, 0.05, 0.02]
-    poes = [0.1, 0.02]
-    gt_filename = 'test.csv'    
+    # poes = [0.86, 0.63, 0.39, 0.18, 0.1, 0.05, 0.02] [SRWG]
+    # poes = [0.1, 0.02] [1]
+    poes = [0.86, 0.63, 0.39] # [2]
+    gt_filename = 'loc9_vs301_imt1_poe2.csv'    
+    # gt_filename = 'test_rerun.csv'
 
     run_main(task_args, locations, imts, vs30s, poes, gt_filename, args.rerun)
 

@@ -76,7 +76,8 @@ def check_result(disagg_info):
 
 if __name__ == "__main__":
 
-  parser = argparse.ArgumentParser(description="check that all GT IDs from a batch of disagg runs produced the correct number of results")
+  parser = argparse.ArgumentParser(description="""append batch of disagg runs to the master list $NZSHM22_DISAGG_LIST
+              and check that correct number of subtasks succeeded""")
   parser.add_argument("disagg_run_output", help="the path to the output file from run_oq_disagg.py")
   args = parser.parse_args()
   gt_filepath = args.disagg_run_output
