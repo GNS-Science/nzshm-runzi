@@ -157,17 +157,17 @@ def generate_single_gt_config(task_args, config):
         hazard_model_id = task_args['hazard_model_id'],
     ) 
 
-def run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun=False):
+def run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun):
 
     gt_filepath = Path(gt_filename)
 
-    if gt_filepath.exists():
+    if gt_filepath.exists(): 
         raise Exception('file %s already exists, cannot overwrite' % gt_filepath)
 
     with open(gt_filepath, 'w') as df:
         disagg_writer = csv.writer(df)
         disagg_writer.writerow(['GT_ID', 'date', 'time', 'time_zone'] + list(Disagg._fields))
-        if rerun:
+        if rerun['rerun']:
             DISAGG_LIST = os.environ['NZSHM22_DISAGG_LIST']
             with open(DISAGG_LIST, 'r') as gt_list_file:
                 reader = csv.reader(gt_list_file)
@@ -195,12 +195,15 @@ def run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun=False):
                             gt_config, disagg_config = next(generate_gt_configs(
                                 task_args,
                                 [gt_data.location],
-                                [gt_data.poe],
-                                [gt_data.vs30],
+                                [float(gt_data.poe)],
+                                [int(gt_data.vs30)],
                                 [gt_data.imt]))
-                            gt_id = launch_gt(gt_config) 
-                            now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
-                            disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
+                            if rerun['dry']:
+                                print(gt_config, disagg_config)
+                            else:
+                                gt_id = launch_gt(gt_config) 
+                                now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
+                                disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
         else:
             for gt_config, disagg_config in generate_gt_configs(task_args, locations, poes, vs30s, imts): 
                 gt_id = launch_gt(gt_config) 
@@ -211,8 +214,11 @@ def run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun=False):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="run disaggregations")
-    parser.add_argument('-r', '--rerun' , action='store_true', help="rerun the failed jobs in NZSHM22_DISAGG_LIST")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-r', '--rerun' , action='store_true', help="rerun the failed jobs in NZSHM22_DISAGG_LIST")
+    group.add_argument('-d', '--dry-rerun' , action='store_true', help="print what jobs would be rerun if --rerun were used but don't run them")
     args = parser.parse_args()
+    rerun = {'rerun': args.rerun | args.dry_rerun, 'dry': args.dry_rerun}
 
     # CONFIG_FILE = "/home/chrisdc/NSHM/Disaggs/disagg_configs/DUD/deagg_configs_DUD-0.1-PGA-400.json"
     # config_dir = Path('/home/chrisdc/NSHM/Disaggs/Disagg_Targets')
@@ -238,8 +244,8 @@ if __name__ == "__main__":
     # poes = [0.86, 0.63, 0.39, 0.18, 0.1, 0.05, 0.02] [SRWG]
     # poes = [0.1, 0.02] [1]
     poes = [0.86, 0.63, 0.39] # [2]
-    gt_filename = 'loc9_vs301_imt1_poe2.csv'    
+    gt_filename = 'rerun3_vs301_imt1_poe2.csv'    
     # gt_filename = 'test_rerun.csv'
 
-    run_main(task_args, locations, imts, vs30s, poes, gt_filename, args.rerun)
+    run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun)
 
