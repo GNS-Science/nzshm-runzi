@@ -243,8 +243,9 @@ if __name__ == "__main__":
 
     # poes = [0.86, 0.63, 0.39, 0.18, 0.1, 0.05, 0.02] [SRWG]
     # poes = [0.1, 0.02] [1]
-    poes = [0.86, 0.63, 0.39] # [2]
-    gt_filename = 'rerun3_vs301_imt1_poe2.csv'    
+    # poes = [0.86, 0.63, 0.39] # [2]
+    poes = [0.18, 0.05, 0.03, 0.01] # [3]
+    gt_filename = 'rerun3_vs301_imt1_poe3.csv'    
     # gt_filename = 'test_rerun.csv'
 
     run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun)
