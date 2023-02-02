@@ -1,14 +1,15 @@
 # Dockerfile
 # Extend base image
-# needs openquake/engine >= 3.13.0
+# needs openquake/engine >= 3.15.0
 #nightly
-FROM openquake/engine:nightly
+FROM openquake/engine:3.15
 
 USER root
 
 RUN apt-get update
 RUN apt-get install git -y
 RUN apt-get install nano
+RUN apt-get install wget
 
 WORKDIR /WORKING
 
@@ -16,17 +17,17 @@ RUN /opt/openquake/bin/python3 -m pip install --upgrade pip
 RUN pip install lxml
 RUN pip install tqdm
 RUN pip install numba
+# RUN pip uninstall -y numba
 RUN pip install pytest
 
 #TEMP until this is in GEM repo
-ADD gsim /usr/src/oq-engine/openquake/hazardlib/gsim
-ADD tom.py /usr/src/oq-engine/openquake/hazardlib
+ADD gsim /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim
 
-#TEMP UNTIL GEM ACCEPTS ANNES mods
-RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/hazardlib/calc/disagg.py\
- -O /usr/src/oq-engine/openquake/hazardlib/calc/disagg.py
-RUN wget https://raw.githubusercontent.com/annehulsey/oq-engine/59bf0b51ae4e614bb4963532250429137bca4817/openquake/calculators/disaggregation.py\
- -O /usr/src/oq-engine/openquake/calculators/disaggregation.py
+#Disagg bins modification
+RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/756435096fda41a24f49e8e64adc150cf629e0b2/openquake/hazardlib/calc/disagg.py\
+ -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/calc/disagg.py
+RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/756435096fda41a24f49e8e64adc150cf629e0b2/openquake/commonlib/oqvalidation.py\
+ -O /opt/openquake/lib/python3.9/site-packages/openquake/commonlib/oqvalidation.py
 
 
 # Install Runzi TODO:is this only for these test configs ??
@@ -39,14 +40,15 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/140-gmms-disaggs
+RUN git checkout feature/full-disaggs
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 
 
 # The AWS hazard store script ...
-RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@f96c85a886d28f0d40afdaef675a55cdaa01ad4f#egg=toshi-hazard-store
+RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@031e336e5988f0ce717f7f4ceede7be63b90bfcc#egg=toshi-hazard-store
 #RUN pip install toshi_hazard_store
+RUN pip install -U numba
 
 # settings for toshi-hazard-store
 WORKDIR /app

@@ -18,7 +18,11 @@ SITES = dict(
     GRD_WLGREG_0_05 = {"sites_csv": "./grids/grid-Wellington-0.05.0003.nb1.csv" },   #  5km  62 sites
     GRD_WLGREG_0_01 = {"sites_csv": "./grids/grid-Wellington-0.01.0003.nb1.csv" },   #  1km 764 sites
     GRD_NZ_0_2_NZ34 = {"sites_csv": "./grid-NZ-0.2-0.0003.nb1.nz34.csv" },            # 20km 1050 site + NZ35 locations
-    GRD_NZ_0_2_BA = {"site_model_file": "./grids/backarc_02deg_1n.csv" }            # 20km 1097 site with backarc flag
+    GRD_NZ_0_2_BA = {"site_model_file": "./grids/backarc2_02deg_1n.csv" },            # 20km 1097 site with backarc flag
+    GRD_NZ_0_1_BA = {"site_model_file": "./grids/backarc2_01deg_1n.csv" },            # 10km 3740 site with backarc flag
+    GRD_NZ_0_1_NZ34_BA = {"site_model_file": "./backarc2_01deg_1n_nz34.csv" },            # 10km 3740 site + NZ34 with backarc flag
+    GRD_NZ_0_2_NZ34_BA = {"site_model_file": "./backarc2_02deg_1n_nz34.csv" },            # 20km 1097 site + NZ34 with backarc flag
+    NZ34_BA = {"site_model_file": "./site_model_nz_34_BA.csv" }            # NZ34 with backarc flag
 )
 
 #Sanjay new values
@@ -29,7 +33,7 @@ DEFAULT_DISAGG = dict(
     distance_bin_width = 10,
     coordinate_bin_width = 1,
     num_epsilon_bins = 4,
-    disagg_outputs = "Mag_Dist Mag_Dist_Eps TRT Mag_Dist_TRT Mag_Dist_TRT_Eps"
+    disagg_outputs = "Mag Dist Mag_Dist Mag_Dist_Eps TRT Mag_Dist_TRT Mag_Dist_TRT_Eps"
     )
 
 class OpenquakeConfig():
@@ -62,6 +66,11 @@ class OpenquakeConfig():
         self.clear_sites()
         key, value = list(SITES[site_key].items())[0]
         self.config['site_params'][key] = value
+        return self
+
+    def set_disagg_site_model(self):
+        self.clear_sites()
+        self.config['site_params']['site_model_file'] = 'site.csv'
         return self
 
     def set_disagg_site(self, lat, lon):
@@ -97,6 +106,10 @@ class OpenquakeConfig():
         new_iml += '}'
 
         self.config['calculation']['intensity_measure_types_and_levels '] = new_iml
+        return self
+
+    def set_rlz_index(self, num_rlz):
+        self.config['disagg']['rlz_index'] = repr(list(range(num_rlz)))[1:-1]
         return self
 
     def set_vs30(self, vs30):

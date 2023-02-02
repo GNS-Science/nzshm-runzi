@@ -4,14 +4,24 @@
 This script compiles a json file for a given GT id / json cnfig.
 
 """
+import argparse
 import logging
 import json
 import datetime as dt
+from pathlib import Path
+from zipfile import ZipFile
+import os
+import csv
+
+from collections import namedtuple
 
 from nshm_toshi_client.toshi_client_base import ToshiClientBase
 from nshm_toshi_client.toshi_file import ToshiFile
+from runzi.automation.scaling.local_config import (API_KEY, API_URL, WORK_PATH)
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, API_KEY, API_URL, EnvMode )
+
+DISAGG_LIST = os.environ['NZSHM22_DISAGG_LIST']
 
 class DisaggDetails(ToshiClientBase):
 
@@ -22,17 +32,18 @@ class DisaggDetails(ToshiClientBase):
     def get_dissag_detail(self, general_task_id):
         qry = '''
         query disagg_gt ($general_task_id:ID!) {
-            node(id: $general_task_id) {
-            __typename
+            node1: node(id: $general_task_id) {
             id
             ... on GeneralTask {
               subtask_count
               children {
+                total_count
                 edges {
                   node {
                     child {
                       ... on OpenquakeHazardTask {
                         arguments {k v}
+                        result
                         hazard_solution {
                           id
                           csv_archive { id }
@@ -51,69 +62,47 @@ class DisaggDetails(ToshiClientBase):
         print(qry)
         input_variables = dict(general_task_id=general_task_id)
         executed = self.run_query(qry, input_variables)
-        return executed['node']
+        return executed
 
 
-def get_enriched_details(disagg_info):
-    for task in disagg_info['children']['edges']:
-        for itm in task['node']['child']['arguments']:
-            if itm['k'] == 'disagg_config':
-                #print( itm['v'] )
-                obj = json.loads(itm['v'].replace("'", '"'))
-                obj['hazard_solution_id'] = task['node']['child']['hazard_solution']['id']
-                obj['hazard_solution_csv_archive_id'] = task['node']['child']['hazard_solution']['csv_archive']['id']
-                obj['hazard_solution_hdf5_archive_id'] = task['node']['child']['hazard_solution']['hdf5_archive']['id']
+def check_result(disagg_info):
 
-                obj['hazard_solution_url'] = TOSHI_UI_URL + '/HazardSolution/'  + obj['hazard_solution_id']
-                obj['hazard_solution_csv_archive_url'] = TOSHI_UI_URL + '/FileDetail/' + obj['hazard_solution_csv_archive_id']
-                obj['hazard_solution_hdf5_archive_url'] = TOSHI_UI_URL + '/FileDetail/' + obj['hazard_solution_hdf5_archive_id']
-
-                yield(obj)
-
-
-# If you wish to override something in the main config, do so here ..
-WORKER_POOL_SIZE = 1
-# USE_API = False
+  edges = disagg_info['node1']['children']['edges']
+  success_count = 0
+  for edge in edges:
+    if edge['node']['child']['result'] == 'SUCCESS': success_count += 1
+  return success_count
 
 
 if __name__ == "__main__":
 
-    t0 = dt.datetime.utcnow()
+  parser = argparse.ArgumentParser(description="""append batch of disagg runs to the master list $NZSHM22_DISAGG_LIST
+              and check that correct number of subtasks succeeded""")
+  parser.add_argument("disagg_run_output", help="the path to the output file from run_oq_disagg.py")
+  args = parser.parse_args()
+  gt_filepath = args.disagg_run_output
+  if not Path(gt_filepath).exists():
+    raise Exception("file %s does not exist" % gt_filepath)
 
-    logging.basicConfig(level=logging.INFO)
+  headers={"x-api-key":API_KEY}
+  disagg_api = DisaggDetails(API_URL, None, None, with_schema_validation=False, headers=headers)
+  with open(gt_filepath, 'r') as gt_file:
+    gt_reader = csv.reader(gt_file)
+    with open(DISAGG_LIST, 'a') as list_file:
+      writer = csv.writer(list_file)
+      Disagg = namedtuple("Disagg", next(gt_reader), rename=True)
+      for row in gt_reader:
+        disagg = Disagg(*row)
+        gt_id = disagg.GT_ID
+    
+        disagg_info = disagg_api.get_dissag_detail(gt_id)
+        success_count = check_result(disagg_info)
+        
+        if not (success_count == 49) | (success_count == 46) | (success_count == 40): 
+          row_out = list(disagg) + ['N', str(success_count)]
+        else:
+          row_out = list(disagg) + ['Y', str(success_count)]
+        
+        writer.writerow(row_out)
 
-    loglevel = logging.INFO
-    logging.getLogger('gql.transport').setLevel(logging.WARN)
-    log = logging.getLogger(__name__)
-
-    GENERAL_TASK_ID = 'R2VuZXJhbFRhc2s6MTA4NzEz' # PROD
-    #GENERAL_TASK_ID = 'R2VuZXJhbFRhc2s6MTAxNDQy' # TEST
-    TOSHI_UI_URL = 'http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com' #PROD
-
-    # CONFIG_FILE = "/GNSDATA/APP/nzshm-runzi/runzi/CONFIG/DISAGG/disagg_full_logictree.json"
-    # with open(CONFIG_FILE, 'r') as df:
-    #     disagg_configs = json.loads(df.read())
-
-    headers={"x-api-key":API_KEY}
-
-
-    # BUILD a query for fetch meta from GT subtasks
-    # for each subtask, append to config_file...
-    # the meta from  te
-    # - hazard_solution_toshi_url
-    # - hazard_solution_csv_archive_url
-    # - hazard_solution_hdf5_archive_url
-    # Write out the modified config file
-
-    disagg_api = DisaggDetails(API_URL, None, None, with_schema_validation=False, headers=headers)
-    disagg_info = disagg_api.get_dissag_detail(GENERAL_TASK_ID)
-
-    disagg_solutions=[]
-    for o in get_enriched_details(disagg_info):
-        disagg_solutions.append(o)
-
-    disagg_result = dict(general_task_id=GENERAL_TASK_ID, hazard_solutions = disagg_solutions)
-    with open('disagg_result.json', 'w') as f:
-        f.write(json.dumps(disagg_result, indent=4))
-
-    print('Done!')
+  print('Done!')

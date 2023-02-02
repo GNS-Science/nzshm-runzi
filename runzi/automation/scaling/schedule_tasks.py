@@ -37,6 +37,8 @@ def schedule_tasks(scripts,worker_pool_size=None):
             service_name='batch',
             region_name='us-east-1',
             endpoint_url='https://batch.us-east-1.amazonaws.com')
+            # region_name='ap-southeast-2',
+            # endpoint_url='https://batch.ap-southeast-2.amazonaws.com')
 
         for script_or_config in scripts:
             print('AWS_CONFIG: ', script_or_config)

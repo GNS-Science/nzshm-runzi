@@ -1,6 +1,6 @@
 import unittest
 from io import StringIO
-from fault_section import SheetFault, FaultSubSection, FaultSubSectionFactory
+# from fault_section import SheetFault, FaultSubSection, FaultSubSectionFactory
 import csv
 
 # fixtures

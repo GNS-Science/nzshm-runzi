@@ -7,7 +7,7 @@ from lxml.builder import ElementMaker # lxml only !
 
 log = logging.getLogger(__name__)
 
-
+# Depreciated
 transforms_map = dict(
     Stafford2022 = 'mu_branch',
     Atkinson2022 = 'epistemic',
@@ -16,7 +16,7 @@ transforms_map = dict(
     )
 
 def transform_gsims(gsims: Dict):
-    """convert gsims ito form expected in NRML."""
+    """Depreciated. convert gsims ito form expected in NRML."""
     new_gsims = {}
     for trt, value in gsims.items():
         for name, arg_name in transforms_map.items():
@@ -40,7 +40,7 @@ def build_gsim_xml(gsims):
 
     logic_tree = LT()
     branch_sets = 0
-    for tr, gsim in transform_gsims(gsims).items():
+    for tr, gsim in gsims.items():
         bid = str(branch_sets)
         branch_set = LTBS(uncertaintyType="gmpeModel", branchSetID=bid, applyToTectonicRegionType=tr )
         branch_set.append( LTB( UM(gsim), UW("1.0"), branchID=bid))
@@ -54,29 +54,28 @@ def build_gsim_xml(gsims):
 if __name__ == "__main__":
 
     disagg_config = {
-        "vs30": 400,
-        "source_ids": [
-            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDc2NA==",
-            "RmlsZToxMDEyMDU="
-        ],
-        "imt": "PGA",
-        "agg": "mean",
-        "poe": 0.02,
-        "level": 0.3551166254050649,
-        "location": "-36.870~174.770",
-        "gsims": {
-            "Subduction Interface": "Atkinson2022SInter_Central",
-            "Subduction Intraslab": "KuehnEtAl2020SSlab_NZL",
-            "Active Shallow Crust": "Atkinson2022Crust_Central"
-        },
-        "dist": 6.449359479798744e-08,
-        "nearest_rlz": [
-            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3:1",
-            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:1",
-            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:6",
-            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkz:4"
-        ],
-        "target_level": 0.3551165609114701
+        'level': 0.14000836650634893,
+        'source_ids': ['SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExODcxNw==',
+        'RmlsZToxMjA5OTQ=',
+        'SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExNDQyNA==',
+        'RmlsZToxMjEwMjE=',
+        'RmlsZToxMjEwMzM=',
+        'SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEyMDkxMQ==',
+        'RmlsZToxMjA5ODU='],
+        'gsims': {'Subduction Interface': '[Atkinson2022SInter]\nepistemic = "Upper"',
+        'Subduction Intraslab': '[KuehnEtAl2020SSlab]\nregion = "GLO"\nsigma_mu_epsilon = 0.0',
+        'Active Shallow Crust': '[CampbellBozorgnia2014]\nsigma_mu_epsilon = 0.0'},
+        'rlz': ['T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTEzNDI4:0',
+        'T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTEzNDMx:0',
+        'T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTEzNDM5:9',
+        'T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTEzNDQ0:13'],
+        'hazard_ids': ['T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTEzNDI4',
+        'T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTEzNDMx',
+        'T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTEzNDM5',
+        'T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTEzNDQ0'],
+        'weight': 2.3061303136037524e-06,
+        'dist': 2.6742413677754984e-05,
+        'rank': 7
     }
 
 
