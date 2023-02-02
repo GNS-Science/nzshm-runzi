@@ -94,6 +94,7 @@ class BuilderTask():
         self._time_dependent_generator.setSolutionFileName(ta['file_path'])\
             .setCurrentYear(ta['current_year'])\
             .setMREData(ta['mre_enum'])\
+            .setAperiodicity(ta['aperiodicity'])\
             .setForecastTimespan(ta['forecast_timespan'])\
             .setOutputFileName(output_file)
 

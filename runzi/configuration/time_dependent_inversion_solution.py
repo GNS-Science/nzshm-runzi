@@ -46,12 +46,14 @@ def build_time_dependent_tasks(general_task_id: str, subtask_type: SubtaskType, 
         for (
             current_year,
             mre_enum,
-            forecast_timespan
+            forecast_timespan,
+            aperiodicity,
             )\
             in itertools.product(
                 subtask_arguments["current_years"],
                 subtask_arguments['mre_enums'],
-                subtask_arguments['forecast_timespans']
+                subtask_arguments['forecast_timespans'],
+                subtask_arguments['aperiodicities']
                 ):
 
                 task_count += 1
@@ -60,6 +62,7 @@ def build_time_dependent_tasks(general_task_id: str, subtask_type: SubtaskType, 
                     current_year = current_year,
                     mre_enum = mre_enum,
                     forecast_timespan = forecast_timespan,
+                    aperiodicity = aperiodicity,
                     model_type = model_type.name,
                     file_path = src_sol_info['filepath']
                 )

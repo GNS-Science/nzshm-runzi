@@ -28,7 +28,7 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
         scripts.append(script_file)
     return scripts
 
-def run(source_solution_ids, current_years, mre_enums, forecast_timespans, model_type: ModelType,
+def run(source_solution_ids, current_years, mre_enums, forecast_timespans, aperiodicities, model_type: ModelType,
         TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL_SIZE):
     t0 = dt.datetime.utcnow()
 
@@ -62,6 +62,7 @@ def run(source_solution_ids, current_years, mre_enums, forecast_timespans, model
     args = dict(
         current_years = current_years,
         mre_enums = mre_enums,
+        aperiodicities = aperiodicities,
         forecast_timespans = forecast_timespans,
         source_solution_ids = source_solution_ids_list
     )
@@ -106,18 +107,18 @@ if __name__ == "__main__":
     #USE_API =
 
     # #If using API give this task a descriptive setting...
-    TASK_DESCRIPTION = """Crustal. Geologic. TD. From LTB88. Final """
+    TASK_DESCRIPTION = """Crustal. Geodetic. TD. From LTB89. Final """
     
-    TASK_TITLE = "Crustal. Geologic. TD. From LTB88. Final"
+    TASK_TITLE = "Crustal. Geodetic. TD. From LTB89. Final. 100yr. NZ-SHM22 aperiodicity"
     model_type = ModelType.CRUSTAL
     source_solution_ids = [
-        # "R2VuZXJhbFRhc2s6MTA1MTEz", #PROD
-        "R2VuZXJhbFRhc2s6MTA3MDA1",
+        "R2VuZXJhbFRhc2s6MTA3MDE0",
 
     ]
     current_years = [2022]
     mre_enums = ["CFM_1_1"]
-    forecast_timespans = [50]
+    forecast_timespans = [100]
+    aperiodicities = ["NZSHM22"]
 
 
-    run(source_solution_ids, current_years, mre_enums, forecast_timespans, model_type, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
+    run(source_solution_ids, current_years, mre_enums, forecast_timespans, aperiodicities, model_type, TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
