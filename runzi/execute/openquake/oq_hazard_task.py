@@ -189,9 +189,14 @@ class BuilderTask():
         predecessors = []
 
         # Save the hazard solution
-        solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
-            config_id, csv_archive_id, hdf5_archive_id, produced_by=automation_task_id, predecessors=predecessors,
-            modconf_id=modconf_id, task_args_id=task_args_id, meta=task_arguments)
+        if not oq_result.get('no_result'):
+            solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
+                config_id, csv_archive_id, hdf5_archive_id, produced_by=automation_task_id, predecessors=predecessors,
+                modconf_id=modconf_id, task_args_id=task_args_id, meta=task_arguments)
+            metrics = dict()
+        else:
+            solution_id = 'NO_RESULT'
+            metrics = {'no_result': 'TRUE'}
 
         # update the OpenquakeHazardTask
         self._toshi_api.openquake_hazard_task.complete_task(
@@ -199,7 +204,9 @@ class BuilderTask():
                 hazard_solution_id = solution_id,
                 duration = duration,
                 result = "SUCCESS",
-                state = "DONE"))
+                state = "DONE"),
+            metrics=metrics
+        )
         
         return solution_id
 
@@ -351,7 +358,7 @@ class BuilderTask():
             # STORE HAZARD REALIZATIONS #
             #############################
             # run the store_hazard job
-            if not SPOOF_HAZARD:
+            if not SPOOF_HAZARD and not oq_result.get('no_result'):
                 # [{'tag': 'GRANULAR', 'weight': 1.0, 'permute': [{'group': 'ALL', 'members': [ltb._asdict()] }]}]
                 # TODO GRANULAR ONLY@!@
                 # ltb = {"tag": "hiktlck, b0.979, C3.9, s0.78", "weight": 0.0666666666666667, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODA3NQ==", "bg_id":"RmlsZToxMDY1MjU="},

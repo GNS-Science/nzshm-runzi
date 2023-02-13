@@ -143,15 +143,9 @@ if __name__ == "__main__":
 
     TASK_TITLE = "Scaling Crustal (geologic slip)"
     source_solution_ids = [
-        "R2VuZXJhbFRhc2s6MTAzMDI1",
-        "SW52ZXJzaW9uU29sdXRpb246MTA2MDQ1",
-        "SW52ZXJzaW9uU29sdXRpb246MTA2MDM3",
-        "SW52ZXJzaW9uU29sdXRpb246MTA2MDQz",
-        "SW52ZXJzaW9uU29sdXRpb246MTA2MDUw",
-        "SW52ZXJzaW9uU29sdXRpb246MTA2MDU1",
-        "SW52ZXJzaW9uU29sdXRpb246MTA2MDYy",
+        "R2VuZXJhbFRhc2s6MTA2MjE0OQ==",
     ]
-    scales = [0.657, 1.0, 1.305, 1.608]
+    scales = [0.66, 1.0, 1.41]
     polygon_scale = 0.8
     polygon_max_mag = 8
         

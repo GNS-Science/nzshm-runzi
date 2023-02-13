@@ -22,7 +22,8 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-from runzi.CONFIG.OQ.SLT_v8 import logic_tree_permutations as logic_trees
+from runzi.CONFIG.OQ.SLT_v8p0p1 import logic_tree_permutations as logic_trees
+# from runzi.CONFIG.OQ.SLT_v8_puyonly import logic_tree_permutations as logic_trees
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -224,13 +225,16 @@ if __name__ == "__main__":
     # config_dir = Path('/home/chrisdc/NSHM/Disaggs/Disagg_Targets')
 
     task_args = dict(
+        # hazard_model_id = 'NSHM_v1.0.2',
         hazard_model_id = 'SLT_v8_gmm_v2_FINAL',
         agg = 'mean',
         inv_time = 50,
     )
 
-    vs30s = [250, 400, 750]
-    imts = ['PGA', 'SA(0.2)', 'SA(0.5)', 'SA(1.5)', 'SA(3.0)']
+    # vs30s = [250, 400, 750]
+    # vs30s = [400]
+    # imts = ['PGA', 'SA(0.2)', 'SA(0.5)', 'SA(1.5)', 'SA(3.0)']
+    # imts = ["PGA", "SA(1.5)", "SA(3.0)", "SA(5.0)"]
     # locations = ['AKL','WLG','CHC','DUD'] # [1]
     # locations = ['HLZ','TRG', 'PMR', 'NPE'] #Hamilton, Tauranga, Palmerston North, Napier [2]
     # locations = ['ROT', 'NPL', 'NSN', 'IVC'] #Rotorua, New Plymouth, Nelson, Invercargill [3]
@@ -255,9 +259,8 @@ if __name__ == "__main__":
     # poes = [0.86, 0.63, 0.39, 0.18, 0.1, 0.05, 0.02] [SRWG]
     # poes = [0.1, 0.02] [1]
     # poes = [0.86, 0.63, 0.39] # [2]
-    poes = [0.18, 0.05, 0.03, 0.01] # [3]
-    gt_filename = 'rerun3_vs301_imt1_poe3.csv'    
-    # gt_filename = 'test_rerun.csv'
+    # poes = [0.18, 0.05, 0.03, 0.01] # [3]
+    
 
     run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun)
 

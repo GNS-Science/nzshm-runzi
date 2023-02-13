@@ -18,7 +18,15 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 
 
 # from runzi.CONFIG.OQ.archive_ltb import logic_tree_permutations, gt_description
+<<<<<<< HEAD
 from runzi.CONFIG.OQ.SLT_v8p0p1 import logic_tree_permutations, gt_description
+=======
+# from runzi.CONFIG.OQ.SLT_v8 import logic_tree_permutations, gt_description
+# from runzi.CONFIG.OQ.SLT_v8_sensitivity import logic_tree_permutations, gt_description
+# from runzi.CONFIG.OQ.SLT_v8_sensitivity import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.SLT_v8p0p1_hikonly import logic_tree_permutations, gt_description
+# from runzi.CONFIG.OQ.SLT_v8p0p1_hikonly_sensitivity import logic_tree_permutations, gt_description
+>>>>>>> handle disagg with no sources without error. needs toshiapi update for dummy hazardsolution ID
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
