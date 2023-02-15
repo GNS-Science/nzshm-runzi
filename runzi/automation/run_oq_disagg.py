@@ -239,7 +239,18 @@ if __name__ == "__main__":
     # locations = ['HAW', 'KBZ', 'KKE', 'MON'] #Hawera, Kaikoura, Kerikeri, Mount Cook [6]
     # locations = ['TEU', 'TIU', 'TKZ', 'TMZ'] #Te Anau, Timaru, Tokoroa, Thames [7]
     # locations = ['WHK', 'WHO', 'WSZ', 'ZTR'] #Whakatane, Franz Josef, Westport, Turangi [8]
-    locations = ['ZOT', 'ZHT', 'ZHS'] #Otira, Haast, Hanmer Springs [9]
+    # locations = ['ZOT', 'ZHT', 'ZHS'] #Otira, Haast, Hanmer Springs [9]
+
+    # locations = ['GIS', 'AKL', 'KKE']
+    locations = ['WLG']
+    # poes = [0.1, 0.02]
+    poes = [0.02]
+    # imts = ["SA(10.0)"]
+    imts = ['SA(3.0)']
+    # imts = ['SA(5.0)', 'SA(6.0)','SA(7.5)']
+    # imts = ['SA(3.0)', 'SA(4.0)']
+    vs30s = [700]
+    gt_filename = 'v1.0.0_WLG_3s.csv'
 
     # poes = [0.86, 0.63, 0.39, 0.18, 0.1, 0.05, 0.02] [SRWG]
     # poes = [0.1, 0.02] [1]
