@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     args = dict(
         config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
-            "RmlsZToxMDM5MTgw"  # GSIM LT v2 0.1 SRWG214
+            "RmlsZToxMDM5MjMw"  # GSIM LT v2 0.1 SRWG214
             ],
         # NEW FORM
         # makes better use of python
