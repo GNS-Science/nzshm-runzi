@@ -43,15 +43,15 @@ WORKDIR /app
 # RUN git checkout feature/grid-srwg214
 # RUN pip3 install -r requirements.txt
 # RUN pip3 install -e .
-RUN pip3 install git+https://github.com/GNS-Science/nzshm-common-py.git@feature/20-backarc-v2
-RUN pip3 install geopandas==0.11.1
+# RUN pip3 install git+https://github.com/GNS-Science/nzshm-common-py.git@feature/20-backarc-v2
+# RUN pip3 install geopandas==0.11.1
 RUN pip3 install git+https://github.com/GNS-Science/nzshm-runzi.git@feature/148-disagg-error-handling
 
 
 # The AWS hazard store script ...
-RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@031e336e5988f0ce717f7f4ceede7be63b90bfcc#egg=toshi-hazard-store
+RUN pip3 install git+https://github.com/GNS-Science/toshi-hazard-store@07d886b4721a5c525b446e313ec178c9b27da21d#egg=toshi-hazard-store
 #RUN pip install toshi_hazard_store
-RUN pip install -U numba
+RUN pip3 install -U numba
 
 # settings for toshi-hazard-store
 WORKDIR /app

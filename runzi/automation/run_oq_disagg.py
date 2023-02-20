@@ -229,9 +229,10 @@ if __name__ == "__main__":
     )
 
     locations = list(LOCATIONS_SRWG214_BY_ID.keys())
+    locations = locations[:1]
     poes = [0.02]
     imts = ['PGA']
-    vs30s = [750]
+    vs30s = [150]
     gt_filename = 'test.csv'
 
     run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun)
