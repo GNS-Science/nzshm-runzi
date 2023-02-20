@@ -7,8 +7,10 @@ import logging
 import shutil
 
 from pathlib import Path
+from openquake.commonlib.datastore import get_datadir
 
 from runzi.automation.scaling.local_config import (WORK_PATH, SPOOF_HAZARD)
+
 
 from runzi.util import archive
 # from runzi.util.aws import decompress_config
@@ -47,7 +49,13 @@ def execute_openquake(configfile, task_no, toshi_task_id):
         oq_out = subprocess.run(cmd, capture_output=True)
         log.info(oq_out.stdout.decode('UTF-8'))
         log.info(oq_out.stderr.decode('UTF-8'))
-        if 'Filtered away all ruptures??' not in oq_out.stderr.decode('UTF-8'):
+        if 'Filtered away all ruptures??' in oq_out.stderr.decode('UTF-8'):
+            # oq_result['csv_archive']=Path(WORK_PATH, f"spoof-{task_no}.csv_archive.zip")
+            # oq_result['hdf5_archive']=Path(WORK_PATH, f"spoof-{task_no}.hdf5_archive.zip")
+            # oq_result['csv_archive'].touch()
+            # oq_result['hdf5_archive'].touch()
+            oq_result['no_ruptures'] = True
+        else:
 
             def get_last_task():
                 """
@@ -89,15 +97,10 @@ def execute_openquake(configfile, task_no, toshi_task_id):
             #clean up export outputs
             shutil.rmtree(output_path)
 
-            OQDATA = "/home/openquake/oqdata"
+            OQDATA = Path(get_datadir())
+
             hdf5_file = f"calc_{last_task}.hdf5"
             oq_result['hdf5_archive'] = archive(Path(OQDATA, hdf5_file), Path(WORK_PATH, f'openquake_hdf5_archive-{toshi_task_id}.zip'))
-        else:
-            oq_result['csv_archive']=Path(WORK_PATH, f"spoof-{task_no}.csv_archive.zip")
-            oq_result['hdf5_archive']=Path(WORK_PATH, f"spoof-{task_no}.hdf5_archive.zip")
-            oq_result['csv_archive'].touch()
-            oq_result['hdf5_archive'].touch()
-            oq_result['no_result'] = True
       
 
     except Exception as err:

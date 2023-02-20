@@ -17,6 +17,9 @@ import copy
 from dateutil.tz import tzutc
 import requests
 
+from nzshm_common.geometry.geometry import BACKARC_POLYGON
+from shapely.geometry import Point
+
 
 from nshm_toshi_client.task_relation import TaskRelation
 
@@ -54,22 +57,24 @@ def get_config_filename(config_template_info):
 
 def build_site_csv(location):
 
-    backarc_locs = [
-        '-36.870~174.770',
-        '-39.590~174.280',
-        '-37.780~175.280',
-        '-35.220~173.970',
-        '-39.070~174.080',
-        '-38.230~175.870',
-        '-37.130~175.530',
-        '-37.690~176.170',
-        '-38.680~176.080',
-        '-38.140~176.250'
-    ]
+    # backarc_locs = [
+    #     '-36.870~174.770',
+    #     '-39.590~174.280',
+    #     '-37.780~175.280',
+    #     '-35.220~173.970',
+    #     '-39.070~174.080',
+    #     '-38.230~175.870',
+    #     '-37.130~175.530',
+    #     '-37.690~176.170',
+    #     '-38.680~176.080',
+    #     '-38.140~176.250'
+    # ]
 
     lat,lon = location.split('~')
+    point = Point(float(lon), float(lat))
+    backarc_flag = 1 if BACKARC_POLYGON.contains(point)[0] else 0
+
     site_csv = 'lon,lat,backarc\n'
-    backarc_flag = 1 if location in backarc_locs else 0
     site_csv += f'{lon},{lat},{int(backarc_flag)}'    
 
     return site_csv
@@ -170,11 +175,12 @@ class BuilderTask():
         self._toshi_api.file.upload_content(post_url, task_args_json)
 
         # save the two output archives
-        csv_archive_id, post_url = self._toshi_api.file.create_file(oq_result['csv_archive'])
-        self._toshi_api.file.upload_content(post_url, oq_result['csv_archive'])
+        if not oq_result.get('no_ruptures'):
+            csv_archive_id, post_url = self._toshi_api.file.create_file(oq_result['csv_archive'])
+            self._toshi_api.file.upload_content(post_url, oq_result['csv_archive'])
 
-        hdf5_archive_id, post_url = self._toshi_api.file.create_file(oq_result['hdf5_archive'])
-        self._toshi_api.file.upload_content(post_url, oq_result['hdf5_archive'])
+            hdf5_archive_id, post_url = self._toshi_api.file.create_file(oq_result['hdf5_archive'])
+            self._toshi_api.file.upload_content(post_url, oq_result['hdf5_archive'])
 
         # # Predecessors...
         # log.info(f'logic_tree_id_list: {logic_tree_id_list[:5]} ...')
@@ -189,14 +195,14 @@ class BuilderTask():
         predecessors = []
 
         # Save the hazard solution
-        if not oq_result.get('no_result'):
+        if oq_result.get('no_ruptures'):
+            solution_id = None
+            metrics = {'no_result': 'TRUE'}
+        else:
             solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
                 config_id, csv_archive_id, hdf5_archive_id, produced_by=automation_task_id, predecessors=predecessors,
                 modconf_id=modconf_id, task_args_id=task_args_id, meta=task_arguments)
             metrics = dict()
-        else:
-            solution_id = 'NO_RESULT'
-            metrics = {'no_result': 'TRUE'}
 
         # update the OpenquakeHazardTask
         self._toshi_api.openquake_hazard_task.complete_task(
@@ -358,7 +364,7 @@ class BuilderTask():
             # STORE HAZARD REALIZATIONS #
             #############################
             # run the store_hazard job
-            if not SPOOF_HAZARD and not oq_result.get('no_result'):
+            if not SPOOF_HAZARD and not oq_result.get('no_ruptures'):
                 # [{'tag': 'GRANULAR', 'weight': 1.0, 'permute': [{'group': 'ALL', 'members': [ltb._asdict()] }]}]
                 # TODO GRANULAR ONLY@!@
                 # ltb = {"tag": "hiktlck, b0.979, C3.9, s0.78", "weight": 0.0666666666666667, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODA3NQ==", "bg_id":"RmlsZToxMDY1MjU="},

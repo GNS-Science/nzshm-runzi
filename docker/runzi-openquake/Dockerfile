@@ -45,7 +45,7 @@ WORKDIR /app
 # RUN pip3 install -e .
 RUN pip3 install git+https://github.com/GNS-Science/nzshm-common-py.git@feature/20-backarc-v2
 RUN pip3 install geopandas==0.11.1
-RUN pip3 install git+https://github.com/GNS-Science/nzshm-runzi.git@feature/grid-srwg214
+RUN pip3 install git+https://github.com/GNS-Science/nzshm-runzi.git@feature/148-disagg-error-handling
 
 
 # The AWS hazard store script ...

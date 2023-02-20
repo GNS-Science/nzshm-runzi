@@ -24,10 +24,10 @@ boto3 = "^1.26.43"
 requests-toolbelt = "^0.10.1"
 lxml = "^4.9.2"
 requests = "2.27.1"
-nzshm-common = "0.4.0"
 toshi-hazard-store = "^0.5.5"
 pytest = "^7.2.0"
 openquake-engine = {git = "https://github.com/chrisdicaprio/oq-engine.git", rev = "feature/disagg_bin_edges", optional = true}
+nzshm-common = {git = "https://github.com/GNS-Science/nzshm-common-py.git", rev = "feature/20-backarc-v2", extras = ["geometry"]}
 
 [tool.poetry.extras]
 openquake = ["openquake-engine"]
