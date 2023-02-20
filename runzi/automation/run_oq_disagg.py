@@ -120,6 +120,7 @@ def launch_gt(gt_config):
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
 
+    return 
     schedule_tasks(tasks, WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", new_gt_id)
@@ -228,11 +229,12 @@ if __name__ == "__main__":
         inv_time = 50,
     )
 
-    locations = list(LOCATIONS_SRWG214_BY_ID.keys())
-    locations = locations[:1]
+    # locations = list(LOCATIONS_SRWG214_BY_ID.keys())
+    # locations = locations[:1]
+    locations = ['WLG']
     poes = [0.02]
     imts = ['PGA']
-    vs30s = [150]
-    gt_filename = 'test.csv'
+    vs30s = [400]
+    gt_filename = 'test2.csv'
 
     run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun)

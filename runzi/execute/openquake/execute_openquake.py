@@ -46,10 +46,12 @@ def execute_openquake(configfile, task_no, toshi_task_id):
         #
         cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
         log.info(f'cmd 1: {cmd}')
-        oq_out = subprocess.run(cmd, capture_output=True)
-        log.info(oq_out.stdout.decode('UTF-8'))
-        log.info(oq_out.stderr.decode('UTF-8'))
-        if 'Filtered away all ruptures??' in oq_out.stderr.decode('UTF-8'):
+        # oq_out = subprocess.run(cmd, capture_output=True)
+        oq_out = subprocess.run(cmd)
+        # log.info(oq_out.stdout.decode('UTF-8'))
+        # log.info(oq_out.stderr.decode('UTF-8'))
+        # if 'Filtered away all ruptures??' in oq_out.stderr.decode('UTF-8'):
+        if False:
             # oq_result['csv_archive']=Path(WORK_PATH, f"spoof-{task_no}.csv_archive.zip")
             # oq_result['hdf5_archive']=Path(WORK_PATH, f"spoof-{task_no}.hdf5_archive.zip")
             # oq_result['csv_archive'].touch()
