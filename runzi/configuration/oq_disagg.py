@@ -13,7 +13,8 @@ import numpy as np
 
 from nzshm_common.location.location import LOCATIONS_BY_ID, LOCATIONS_SRWG214_BY_ID
 from nzshm_common.location.code_location import CodedLocation
-from toshi_hazard_store.query_v3 import get_hazard_curves
+# from toshi_hazard_store.query_v3 import get_hazard_curves
+import toshi_hazard_store
 
 
 from itertools import chain
@@ -49,7 +50,7 @@ def get_target_level(gt_config, location):
     agg = gt_config['agg']
     imt = gt_config['imt']
     vs30 = gt_config['vs30']
-    hc = next(get_hazard_curves([location], [vs30], [hazard_model_id], [imt], [agg]))
+    hc = next(toshi_hazard_store.query_v3.get_hazard_curves([location], [vs30], [hazard_model_id], [imt], [agg]))
     levels = []
     hazard_vals = []
     for v in hc.values:

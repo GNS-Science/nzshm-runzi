@@ -49,7 +49,7 @@ RUN pip3 install git+https://github.com/GNS-Science/nzshm-runzi.git@feature/148-
 
 
 # The AWS hazard store script ...
-RUN pip3 install git+https://github.com/GNS-Science/toshi-hazard-store@07d886b4721a5c525b446e313ec178c9b27da21d#egg=toshi-hazard-store
+# RUN pip3 install git+https://github.com/GNS-Science/toshi-hazard-store@07d886b4721a5c525b446e313ec178c9b27da21d
 #RUN pip install toshi_hazard_store
 RUN pip3 install -U numba
 

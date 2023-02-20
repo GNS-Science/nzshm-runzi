@@ -720,7 +720,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "pynamodb"
-version = "5.3.4"
+version = "5.4.0"
 description = "A Pythonic Interface to DynamoDB"
 category = "main"
 optional = false
@@ -984,18 +984,30 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "toshi-hazard-store"
-version = "0.5.5"
+version = "0.6.0"
 description = "Library for saving and retrieving NZHSM openquake hazard results with convenience (uses AWS Dynamodb)."
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
+develop = false
 
 [package.dependencies]
-numpy = ">=1.23.1,<2.0.0"
+numpy = "^1.23.1"
 nzshm-common = ">=0.4.0"
-pandas = ">=1.4.3,<2.0.0"
-pynamodb = ">=5.2.1,<6.0.0"
-pynamodb-attributes = ">=0.3.2,<0.4.0"
+pandas = "^1.4.3"
+pynamodb = "^5.2.1"
+pynamodb-attributes = "^0.3.2"
+
+[package.extras]
+dev = []
+doc = []
+test = []
+
+[package.source]
+type = "git"
+url = "https://github.com/GNS-Science/toshi-hazard-store.git"
+reference = "7eea41cbe76ac24c8d9d2f2825e9b1cf9805f538"
+resolved_reference = "7eea41cbe76ac24c8d9d2f2825e9b1cf9805f538"
 
 [[package]]
 name = "typing-extensions"
@@ -1052,7 +1064,7 @@ openquake = ["openquake-engine"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "5f1ed1aed3a13d360bc838ee1493332778296e8470bc2951b66c41be138ad423"
+content-hash = "c0d89690ba44197fa4dd2819b7f9e977b353bc7bb0dcb65f672f43edff7346fb"
 
 [metadata.files]
 aiohttp = [
@@ -1981,8 +1993,8 @@ pygments = [
     {file = "Pygments-2.10.0.tar.gz", hash = "sha256:f398865f7eb6874156579fdf36bc840a03cab64d1cde9e93d68f46a425ec52c6"},
 ]
 pynamodb = [
-    {file = "pynamodb-5.3.4-py3-none-any.whl", hash = "sha256:af85814ffa32075c1bd8f01a5281470c7f1dd92f81ea8689f87443cf5e900798"},
-    {file = "pynamodb-5.3.4.tar.gz", hash = "sha256:3991239810c2a3d8bb3503783b787c47dc304566258e0793ae0b1d61909d1a3f"},
+    {file = "pynamodb-5.4.0-py3-none-any.whl", hash = "sha256:f05784988d48429e7490a25346ad6e8a73cad3e20674993e31e78e9e4b40c93a"},
+    {file = "pynamodb-5.4.0.tar.gz", hash = "sha256:ac58d30c9d191ac16137571c13371a5d7125deeb21d57f0ffe2380b88275eb58"},
 ]
 pynamodb-attributes = [
     {file = "pynamodb-attributes-0.3.2.tar.gz", hash = "sha256:d149df26c2568ffbb2f8ed43efefff480911b7ec127a98867101c28bb57a190f"},
@@ -2239,10 +2251,7 @@ tomli = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
 ]
-toshi-hazard-store = [
-    {file = "toshi-hazard-store-0.5.5.tar.gz", hash = "sha256:f1658dc98830001148b78a1acbf96225e51fb78777848b6df548464b7923ff7e"},
-    {file = "toshi_hazard_store-0.5.5-py3-none-any.whl", hash = "sha256:ee8b9ceeae40cda394beda7f9d44c17dd925de0d6b43609db04cb772685beb83"},
-]
+toshi-hazard-store = []
 typing-extensions = [
     {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
     {file = "typing_extensions-4.4.0.tar.gz", hash = "sha256:1511434bb92bf8dd198c12b1cc812e800d4181cfcb867674e0f8279cc93087aa"},

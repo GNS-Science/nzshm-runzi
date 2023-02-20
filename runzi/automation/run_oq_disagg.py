@@ -24,8 +24,8 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-from runzi.CONFIG.OQ.SLT_v8p0p1 import logic_tree_permutations as logic_trees
-
+# from runzi.CONFIG.OQ.SLT_v8p0p1 import logic_tree_permutations as logic_trees
+from runzi.CONFIG.OQ.SLT_v8p0p1_test import logic_tree_permutations as logic_trees
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
 # USE_API = False
