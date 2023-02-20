@@ -36,16 +36,16 @@ COPY script/container_task.sh .
 RUN chmod +x container_task.sh
 
 WORKDIR /app
-# RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
+RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
-# WORKDIR /app/nzshm-runzi
-# RUN git fetch
-# RUN git checkout feature/grid-srwg214
+WORKDIR /app/nzshm-runzi
+RUN git fetch
+RUN git checkout feature/148-disagg-error-handling
 # RUN pip3 install -r requirements.txt
-# RUN pip3 install -e .
+RUN pip3 install -e .
 # RUN pip3 install git+https://github.com/GNS-Science/nzshm-common-py.git@feature/20-backarc-v2
 # RUN pip3 install geopandas==0.11.1
-RUN pip3 install git+https://github.com/GNS-Science/nzshm-runzi.git@feature/148-disagg-error-handling
+# RUN pip3 install git+https://github.com/GNS-Science/nzshm-runzi.git@feature/148-disagg-error-handling
 
 
 # The AWS hazard store script ...
