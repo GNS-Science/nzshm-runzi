@@ -120,7 +120,6 @@ def launch_gt(gt_config):
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
 
-    assert 0
     schedule_tasks(tasks, WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", new_gt_id)

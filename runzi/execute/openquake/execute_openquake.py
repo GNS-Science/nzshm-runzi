@@ -49,7 +49,7 @@ def execute_openquake(configfile, task_no, toshi_task_id):
         subprocess.run(cmd)
 
         with open(logfile, 'r') as logf:
-            oq_out = logf.readlines()
+            oq_out = logf.read()
 
         if 'Filtered away all ruptures??' in oq_out:
             oq_result['no_ruptures'] = True

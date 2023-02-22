@@ -173,7 +173,6 @@ class BuilderTask():
         # save the json
         task_args_id, post_url = self._toshi_api.file.create_file(task_args_json)
         self._toshi_api.file.upload_content(post_url, task_args_json)
-
         # save the two output archives
         if not oq_result.get('no_ruptures'):
             csv_archive_id, post_url = self._toshi_api.file.create_file(oq_result['csv_archive'])
@@ -348,7 +347,6 @@ class BuilderTask():
         ##############
         oq_result = execute_openquake(config_file, ja['task_id'], automation_task_id)
 
-
         ######################
         # API STORE RESULTS #
         ######################
@@ -359,12 +357,11 @@ class BuilderTask():
                 modconf_id=config_id, #  TODO use modified config id
                 duration = (dt.datetime.utcnow() - t0).total_seconds())
 
-
             #############################
             # STORE HAZARD REALIZATIONS #
             #############################
             # run the store_hazard job
-            if not SPOOF_HAZARD and not oq_result.get('no_ruptures'):
+            if (not SPOOF_HAZARD) and (not oq_result.get('no_ruptures')):
                 # [{'tag': 'GRANULAR', 'weight': 1.0, 'permute': [{'group': 'ALL', 'members': [ltb._asdict()] }]}]
                 # TODO GRANULAR ONLY@!@
                 # ltb = {"tag": "hiktlck, b0.979, C3.9, s0.78", "weight": 0.0666666666666667, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODA3NQ==", "bg_id":"RmlsZToxMDY1MjU="},
