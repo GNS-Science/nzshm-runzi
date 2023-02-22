@@ -14,7 +14,7 @@ from collections import namedtuple
 import datetime as dt
 from pathlib import Path
 
-from nzshm_common.location.location import LOCATIONS_SRWG214_BY_ID, LOCATIONS_BY_ID
+from nzshm_common.location.location import location_by_id
 
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType

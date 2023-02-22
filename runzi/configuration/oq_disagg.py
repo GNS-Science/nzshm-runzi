@@ -11,7 +11,7 @@ from typing import Iterable
 
 import numpy as np
 
-from nzshm_common.location.location import LOCATIONS_BY_ID, LOCATIONS_SRWG214_BY_ID
+from nzshm_common.location.location import location_by_id
 from nzshm_common.location.code_location import CodedLocation
 # from toshi_hazard_store.query_v3 import get_hazard_curves
 import toshi_hazard_store
@@ -125,13 +125,12 @@ def get_disagg_configs(gt_config, logic_trees):
     """
 
     configs = gt_config.copy()
-    LOCATIONS_BY_ID.update(LOCATIONS_SRWG214_BY_ID)
-    if LOCATIONS_BY_ID.get(configs['location']):
+    if location_by_id(configs['location']):
         configs['site_code'] = configs['location']
-        configs['site_name'] = LOCATIONS_BY_ID[configs['location']]['name']
+        configs['site_name'] = location_by_id(configs['location'])['name']
         resolution = 0.001
-        lat = LOCATIONS_BY_ID[configs['location']]['latitude']
-        lon = LOCATIONS_BY_ID[configs['location']]['longitude']
+        lat = location_by_id(configs['location'])['latitude']
+        lon = location_by_id(configs['location'])['longitude']
         location = CodedLocation(lat, lon, resolution).code
         configs['location'] = location
     elif '~' in configs['location']:
