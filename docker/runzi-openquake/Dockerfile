@@ -40,7 +40,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout 55aea5b47454197df5a8c663acd3f1d05a1cc746
+RUN git checkout feature/148-disagg-error-handling
 # RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
 # RUN pip3 install git+https://github.com/GNS-Science/nzshm-common-py.git@feature/20-backarc-v2

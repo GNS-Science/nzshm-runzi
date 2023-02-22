@@ -44,13 +44,14 @@ def execute_openquake(configfile, task_no, toshi_task_id):
         #
         #  oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
         #
-        # cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
-        cmd = ['oq', 'engine', '--run', f'{configfile}']
+        cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
         log.info(f'cmd 1: {cmd}')
-        oq_out = subprocess.run(cmd, capture_output=True)
-        log.info(oq_out.stdout.decode('UTF-8'))
-        log.info(oq_out.stderr.decode('UTF-8'))
-        if 'Filtered away all ruptures??' in oq_out.stdout.decode('UTF-8'):
+        subprocess.run(cmd)
+
+        with open(logfile, 'r') as logf:
+            oq_out = logf.readlines()
+
+        if 'Filtered away all ruptures??' in oq_out:
             oq_result['no_ruptures'] = True
         else:
 

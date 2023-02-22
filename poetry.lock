@@ -573,7 +573,7 @@ test = []
 type = "git"
 url = "https://github.com/GNS-Science/nzshm-common-py.git"
 reference = "feature/20-backarc-v2"
-resolved_reference = "e855c7871f046abe32fd74fa13bc4778d3cfc8b2"
+resolved_reference = "83a26636876b627640b74201195a83fe3df8a871"
 
 [[package]]
 name = "openquake.engine"
