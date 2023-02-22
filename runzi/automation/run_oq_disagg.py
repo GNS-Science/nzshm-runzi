@@ -24,8 +24,8 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-# from runzi.CONFIG.OQ.SLT_v8p0p1 import logic_tree_permutations as logic_trees
-from runzi.CONFIG.OQ.SLT_v8p0p1_test import logic_tree_permutations as logic_trees
+from runzi.CONFIG.OQ.SLT_v8p0p1 import logic_tree_permutations as logic_trees
+# from runzi.CONFIG.OQ.SLT_v8p0p1_test import logic_tree_permutations as logic_trees
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
 # USE_API = False
@@ -230,10 +230,10 @@ if __name__ == "__main__":
 
     # locations = list(LOCATIONS_SRWG214_BY_ID.keys())
     # locations = locations[:1]
-    locations = ['WLG']
+    locations = ['srg_0']
     poes = [0.02]
     imts = ['PGA']
-    vs30s = [400]
-    gt_filename = 'test2.csv'
+    vs30s = [150]
+    gt_filename = 'test.csv'
 
     run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun)

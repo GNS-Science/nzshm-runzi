@@ -720,7 +720,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "pynamodb"
-version = "5.4.0"
+version = "5.4.1"
 description = "A Pythonic Interface to DynamoDB"
 category = "main"
 optional = false
@@ -993,7 +993,7 @@ develop = false
 
 [package.dependencies]
 numpy = "^1.23.1"
-nzshm-common = ">=0.4.0"
+nzshm-common = {git = "https://github.com/GNS-Science/nzshm-common-py.git", rev = "feature/20-backarc-v2"}
 pandas = "^1.4.3"
 pynamodb = "^5.2.1"
 pynamodb-attributes = "^0.3.2"
@@ -1006,8 +1006,8 @@ test = []
 [package.source]
 type = "git"
 url = "https://github.com/GNS-Science/toshi-hazard-store.git"
-reference = "7eea41cbe76ac24c8d9d2f2825e9b1cf9805f538"
-resolved_reference = "7eea41cbe76ac24c8d9d2f2825e9b1cf9805f538"
+reference = "fix/multi_batch"
+resolved_reference = "2f483aadba3c2bc80a1b1164df3d9f902b2deff7"
 
 [[package]]
 name = "typing-extensions"
@@ -1064,7 +1064,7 @@ openquake = ["openquake-engine"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "c0d89690ba44197fa4dd2819b7f9e977b353bc7bb0dcb65f672f43edff7346fb"
+content-hash = "8767716cf7f4c9b3722491cb62a4d32a9e372679fa45ca016011119af4f0f0e9"
 
 [metadata.files]
 aiohttp = [
@@ -1993,8 +1993,8 @@ pygments = [
     {file = "Pygments-2.10.0.tar.gz", hash = "sha256:f398865f7eb6874156579fdf36bc840a03cab64d1cde9e93d68f46a425ec52c6"},
 ]
 pynamodb = [
-    {file = "pynamodb-5.4.0-py3-none-any.whl", hash = "sha256:f05784988d48429e7490a25346ad6e8a73cad3e20674993e31e78e9e4b40c93a"},
-    {file = "pynamodb-5.4.0.tar.gz", hash = "sha256:ac58d30c9d191ac16137571c13371a5d7125deeb21d57f0ffe2380b88275eb58"},
+    {file = "pynamodb-5.4.1-py3-none-any.whl", hash = "sha256:e09c39880560e10251778185b3d0c7a97ee8f42ab363a940c674e9330b61bf9d"},
+    {file = "pynamodb-5.4.1.tar.gz", hash = "sha256:3c4d10867d59e6d7a2b54ee4ae213f1021d6f50ff93145e3909784bfc2b7560e"},
 ]
 pynamodb-attributes = [
     {file = "pynamodb-attributes-0.3.2.tar.gz", hash = "sha256:d149df26c2568ffbb2f8ed43efefff480911b7ec127a98867101c28bb57a190f"},
