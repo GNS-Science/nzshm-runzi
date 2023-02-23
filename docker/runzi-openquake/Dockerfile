@@ -20,7 +20,7 @@ RUN pip install numba
 # RUN pip uninstall -y numba
 RUN pip install pytest
 
-#TEMP until this is in GEM repo
+# TODO this should be done by cloning https://github.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/tree/master/gsim
 ADD gsim /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim
 
 #Disagg bins modification

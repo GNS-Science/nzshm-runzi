@@ -14,7 +14,7 @@ from collections import namedtuple
 import datetime as dt
 from pathlib import Path
 
-from nzshm_common.location.location import location_by_id
+from nzshm_common.location.location import location_by_id, LOCATION_LISTS
 
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
@@ -120,6 +120,7 @@ def launch_gt(gt_config):
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
 
+    assert 0
     schedule_tasks(tasks, WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", new_gt_id)
@@ -228,12 +229,12 @@ if __name__ == "__main__":
         inv_time = 50,
     )
 
-    # locations = list(LOCATIONS_SRWG214_BY_ID.keys())
     # locations = locations[:1]
-    locations = ['srg_0']
+    # locations = ['srg_135']
+    locations = LOCATION_LISTS['SRWG214']['locations']
     poes = [0.02]
-    imts = ['PGA']
-    vs30s = [150]
+    imts = ['SA(10.0)']
+    vs30s = [400]
     gt_filename = 'test.csv'
 
     run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun)
