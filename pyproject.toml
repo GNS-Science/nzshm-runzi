@@ -25,12 +25,14 @@ requests-toolbelt = "^0.10.1"
 lxml = "^4.9.2"
 requests = "2.27.1"
 pytest = "^7.2.0"
-openquake-engine = {git = "https://github.com/chrisdicaprio/oq-engine.git", rev = "feature/disagg_bin_edges", optional = true}
 nzshm-common = {git = "https://github.com/GNS-Science/nzshm-common-py.git", rev = "feature/20-backarc-v2", extras = ["geometry"]}
 toshi-hazard-store = {git = "https://github.com/GNS-Science/toshi-hazard-store.git", rev = "fix/multi_batch"}
+openquake-converters-ucerf = {path = "../ucerf", optional = true, develop = true}
+openquake-engine = {path = "/home/chrisdc/NSHM/DEV/CALCULATION/oq-engine", optional = true, develop = true}
 
 [tool.poetry.extras]
 openquake = ["openquake-engine"]
+converter =["openquake-converters-ucerf"]
 
 [build-system]
 requires = ["poetry-core"]

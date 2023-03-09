@@ -18,7 +18,7 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 
 
 # from runzi.CONFIG.OQ.archive_ltb import logic_tree_permutations, gt_description
-from runzi.CONFIG.OQ.SLT_v8p0p1 import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.SLT_v8p0p2_cruonly import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -59,22 +59,22 @@ if __name__ == "__main__":
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
-    # era_measures = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)',
-    #     'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)', 'SA(6.0)','SA(7.5)', 'SA(10.0)']
-    # ]
-    era_measures = ["SA(0.15)",	"SA(0.25)", "SA(0.35)",	"SA(0.6)", "SA(0.8)", "SA(0.9)",
-                    "SA(1.25)", "SA(1.75)", "SA(2.5)", "SA(3.5)", "SA(4.5)"]
+    era_measures = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)',
+        'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)', 'SA(6.0)','SA(7.5)', 'SA(10.0)']
+    # era_measures = ["SA(0.15)",	"SA(0.25)", "SA(0.35)",	"SA(0.6)", "SA(0.8)", "SA(0.9)",
+    #                 "SA(1.25)", "SA(1.75)", "SA(2.5)", "SA(3.5)", "SA(4.5)"]
     era_levels = [0.0001, 0.0002, 0.0004, 0.0006, 0.0008, 0.001, 0.002, 0.004, 0.006, 0.008,
                     0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
                     1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 
-    vs30s = [750]
-    # location_codes = ['GRD_NZ_0_1_NZ34_BA']
-    location_codes = ['SRWG214']
+    vs30s = [400]
+    location_codes = ['GRD_NZ_0_1_NZ34_BA']
+    # location_codes = ['SRWG214']
+    # location_codes = ['NZ34_BA']
 
     args = dict(
         config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
-            "RmlsZToxMDM5MjMw"  # GSIM LT v2 0.1 SRWG214
+            "RmlsZToxMjI0Nzk3" # GSIM LT v2 0.1 SRWG214 renew1
             ],
         # NEW FORM
         # makes better use of python
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
         ],
-        rupture_mesh_spacings = [5], #1,2,3,4,5,6,7,8,9],
+        rupture_mesh_spacings = [4], #1,2,3,4,5,6,7,8,9],
         ps_grid_spacings = [30], #km 
     )
 

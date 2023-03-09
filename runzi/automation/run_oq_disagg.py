@@ -80,7 +80,8 @@ def launch_gt(gt_config):
     # hazard_config = "RmlsZToxMzQzNzU=" # GSIM LT v2 pointsource_distance = 50
     # hazard_config = "RmlsZToxMzY0MDY=" # GSIM LT v2 0.1deg+34
     # hazard_config = "RmlsZTozNDYzODc=" # GSIM LT v2 0.1deg+34 renew 2
-    hazard_config = "RmlsZToxMDM5MjMw"  # GSIM LT v2 0.1 SRWG214
+    # hazard_config = "RmlsZToxMDM5MjMw"  # GSIM LT v2 0.1 SRWG214
+    hazard_config = "RmlsZToxMjI0Nzk3" # GSIM LT v2 0.1 SRWG214 renew1
 
     args = dict(
         hazard_config = hazard_config,
@@ -120,7 +121,6 @@ def launch_gt(gt_config):
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
 
-    assert 0
     schedule_tasks(tasks, WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", new_gt_id)
@@ -225,16 +225,20 @@ if __name__ == "__main__":
 
     task_args = dict(
         hazard_model_id = 'NSHM_v1.0.2',
-        agg = 'mean',
+        # agg = 'mean',
+        agg = '0.9',
         inv_time = 50,
     )
 
     # locations = locations[:1]
     # locations = ['srg_135']
-    locations = LOCATION_LISTS['SRWG214']['locations']
-    poes = [0.02]
-    imts = ['SA(10.0)']
-    vs30s = [400]
-    gt_filename = 'test.csv'
+    # locations = LOCATION_LISTS['SRWG214']['locations']
+    locations = ['srg_29']
+    poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
+    # poes = [0.02]
+    imts = ['PGA']
+    vs30s = [275]
+    gt_filename = 'srwg_29_p90_disagg.csv'
+    # gt_filename ='srwg_188.csv'
 
     run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun)
