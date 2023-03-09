@@ -27,8 +27,8 @@ requests = "2.27.1"
 pytest = "^7.2.0"
 nzshm-common = {git = "https://github.com/GNS-Science/nzshm-common-py.git", rev = "feature/20-backarc-v2", extras = ["geometry"]}
 toshi-hazard-store = {git = "https://github.com/GNS-Science/toshi-hazard-store.git", rev = "fix/multi_batch"}
-openquake-converters-ucerf = {path = "../ucerf", optional = true, develop = true}
 openquake-engine = {path = "/home/chrisdc/NSHM/DEV/CALCULATION/oq-engine", optional = true, develop = true}
+openquake-converters-ucerf = {git = "git@gitlab.openquake.org:hazard/converters/ucerf.git", rev = "fix_section_geometry", optional = true}
 
 [tool.poetry.extras]
 openquake = ["openquake-engine"]
