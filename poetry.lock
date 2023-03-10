@@ -647,7 +647,7 @@ description = "Computes earthquake hazard and risk."
 category = "main"
 optional = true
 python-versions = "*"
-develop = true
+develop = false
 
 [package.dependencies]
 decorator = ">=4.3"
@@ -672,8 +672,10 @@ dev = ["flake8 (>=3.5)", "ipython", "pdbpp", "pydata-sphinx-theme", "pytest (>=4
 osgeo = ["GDAL (>=2.4)"]
 
 [package.source]
-type = "directory"
-url = "../CALCULATION/oq-engine"
+type = "git"
+url = "https://github.com/chrisdicaprio/oq-engine.git"
+reference = "feature/disagg_bin_edges"
+resolved_reference = "756435096fda41a24f49e8e64adc150cf629e0b2"
 
 [[package]]
 name = "packaging"
@@ -1142,7 +1144,7 @@ openquake = ["openquake-engine"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "fd1a7f5985f34787283da70c8d38807695fa13a8707fca1a1fdadb724145c3e6"
+content-hash = "b7cdb37ebdf070afdc0bef100a4972b27d639e75d53aca30d0910aae4408079e"
 
 [metadata.files]
 aiohttp = [
