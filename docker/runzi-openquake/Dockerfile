@@ -2,7 +2,7 @@
 # Extend base image
 # needs openquake/engine >= 3.15.0
 #nightly
-FROM openquake/engine:3.15
+FROM openquake/engine:3.16.1
 
 USER root
 
