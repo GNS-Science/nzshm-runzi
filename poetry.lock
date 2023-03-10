@@ -675,7 +675,7 @@ osgeo = ["GDAL (>=2.4)"]
 type = "git"
 url = "https://github.com/chrisdicaprio/oq-engine.git"
 reference = "feature/disagg_bin_edges"
-resolved_reference = "756435096fda41a24f49e8e64adc150cf629e0b2"
+resolved_reference = "fe9288290b3d665dab1f7d5a55b7e5e1be49e396"
 
 [[package]]
 name = "packaging"
