@@ -16,7 +16,7 @@ WORKDIR /WORKING
 RUN /opt/openquake/bin/python3 -m pip install --upgrade pip
 RUN pip install lxml
 RUN pip install tqdm
-RUN pip install numba
+# RUN pip install numba
 # RUN pip uninstall -y numba
 RUN pip install pytest
 
@@ -51,7 +51,7 @@ RUN pip3 install -e .
 # The AWS hazard store script ...
 # RUN pip3 install git+https://github.com/GNS-Science/toshi-hazard-store@07d886b4721a5c525b446e313ec178c9b27da21d
 #RUN pip install toshi_hazard_store
-RUN pip3 install -U numba
+# RUN pip3 install -U numba
 
 # settings for toshi-hazard-store
 WORKDIR /app
