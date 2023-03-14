@@ -29,6 +29,7 @@ nzshm-common = {git = "https://github.com/GNS-Science/nzshm-common-py.git", rev 
 toshi-hazard-store = {git = "https://github.com/GNS-Science/toshi-hazard-store.git", rev = "fix/multi_batch"}
 openquake-engine = {git = "https://github.com/chrisdicaprio/oq-engine.git", rev = "feature/disagg_bin_edges", optional = true}
 openquake-converters-ucerf = {path = "/home/chrisdc/NSHM/DEV/COMPONENTS/ucerf", optional = true, develop = true}
+tqdm = "^4.65.0"
 
 [tool.poetry.extras]
 openquake = ["openquake-engine"]
