@@ -27,8 +27,8 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 # If you wish to override something in the main config, do so here ..
-WORKER_POOL_SIZE = 4
-USE_API = True
+WORKER_POOL_SIZE = 27
+# USE_API = True
 
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
@@ -56,7 +56,7 @@ def run(scaled_solution_ids,
 
     log = logging.getLogger(__name__)
 
-    GENERAL_TASK_ID = None
+    new_gt_id = None
 
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
@@ -101,7 +101,8 @@ def run(scaled_solution_ids,
 
     tasks = build_tasks(new_gt_id, args, task_type, model_type,toshi_api)
 
-    toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
+    if USE_API:
+        toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
 
     print('worker count: ', WORKER_POOL_SIZE) 
 
@@ -117,9 +118,9 @@ if __name__ == "__main__":
 
     
     TASK_DESCRIPTION = """Crustal NRMLs"""
-    TASK_TITLE = "Time Dependent R2VuZXJhbFRhc2s6MTAxMzcz"
+    TASK_TITLE = "Geologic. Time Inpendent. From R2VuZXJhbFRhc2s6MTEzMTAz"
     input_ids = [
-       "R2VuZXJhbFRhc2s6MTAxMzcz",
+       "R2VuZXJhbFRhc2s6MTEzMTAz",
     ]
         
         

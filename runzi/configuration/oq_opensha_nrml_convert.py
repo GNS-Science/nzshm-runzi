@@ -15,7 +15,6 @@ from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 
-import runzi.execute.oq_hazard_task
 import runzi.execute.oq_opensha_convert_task
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,

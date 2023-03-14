@@ -103,7 +103,7 @@ class BuilderTask():
             output_zip = Path(self._output_folder, ta["file_name"].replace('.zip', '_nrml.zip')) 
             print(f'output: {output_zip}')
             zfile = zipfile.ZipFile(output_zip, 'w')
-            for filename in list(Path(self._output_folder).glob(f'{source_id}*.xml')):
+            for filename in list(Path(self._output_folder).glob(f'{source_id}*')):
                 arcname = str(filename).replace(str(self._output_folder), '')
                 zfile.write(filename, arcname )
                 print(f'archived {filename} as {arcname}')
