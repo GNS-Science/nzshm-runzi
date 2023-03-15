@@ -18,7 +18,8 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
 
 
 # from runzi.CONFIG.OQ.archive_ltb import logic_tree_permutations, gt_description
-from runzi.CONFIG.OQ.SLT_v8p0p2_cruonly import logic_tree_permutations, gt_description
+# from runzi.CONFIG.OQ.SLT_v8p0p2_cruonly import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.SLT_v8p0p1_test_hdf import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -68,7 +69,8 @@ if __name__ == "__main__":
                     1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 
     vs30s = [400]
-    location_codes = ['GRD_NZ_0_1_NZ34_BA']
+    # location_codes = ['GRD_NZ_0_1_NZ34_BA']
+    location_codes = ["WLG"]
     # location_codes = ['SRWG214']
     # location_codes = ['NZ34_BA']
 
@@ -120,7 +122,7 @@ if __name__ == "__main__":
     # toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
-
+ 
     schedule_tasks(tasks, WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", new_gt_id)

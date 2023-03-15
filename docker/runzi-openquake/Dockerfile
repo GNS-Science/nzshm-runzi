@@ -24,10 +24,10 @@ RUN pip install pytest
 ADD gsim /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim
 
 #Disagg bins modification
-RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/756435096fda41a24f49e8e64adc150cf629e0b2/openquake/hazardlib/calc/disagg.py\
- -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/calc/disagg.py
-RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/756435096fda41a24f49e8e64adc150cf629e0b2/openquake/commonlib/oqvalidation.py\
- -O /opt/openquake/lib/python3.9/site-packages/openquake/commonlib/oqvalidation.py
+# RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/756435096fda41a24f49e8e64adc150cf629e0b2/openquake/hazardlib/calc/disagg.py\
+#  -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/calc/disagg.py
+# RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/756435096fda41a24f49e8e64adc150cf629e0b2/openquake/commonlib/oqvalidation.py\
+#  -O /opt/openquake/lib/python3.9/site-packages/openquake/commonlib/oqvalidation.py
 
 
 # Install Runzi TODO:is this only for these test configs ??
