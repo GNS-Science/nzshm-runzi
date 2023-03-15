@@ -113,7 +113,8 @@ class SourceModelLoader():
 
             with zipfile.ZipFile(source_nrml[nrml_id]['filepath'], 'r') as zip_ref:
                 zip_ref.extractall(source_path)
-                sources[nrml_id] = {'source_name': src_name, 'sources' : zip_ref.namelist()}
+                namelist = [name for name in zip_ref.namelist() if 'xml' in name]
+                sources[nrml_id] = {'source_name': src_name, 'sources' : namelist}
 
         return sources
 
