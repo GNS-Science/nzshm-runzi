@@ -1551,7 +1551,7 @@ osgeo = ["GDAL (>=2.4)"]
 type = "git"
 url = "https://github.com/chrisdicaprio/oq-engine.git"
 reference = "feature/nzshm_gsim"
-resolved_reference = "ba2c0f4d1c712fc9a57d2e11620a0f1d7c506152"
+resolved_reference = "8d5bd7adf0e7c0e44dacdd37d71f286ebb145a5b"
 
 [[package]]
 name = "packaging"
