@@ -39,7 +39,7 @@ class RuptureSetBuilderTask():
         self._output_folder = PurePath(job_args.get('working_path')) #.joinpath('tmp').joinpath(dt.datetime.utcnow().isoformat().replace(':','-'))
 
         #setup the csv (backup) task recorder
-        self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
+        # self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
 
         if self.use_api:
             headers={"x-api-key":API_KEY}
@@ -62,9 +62,9 @@ class RuptureSetBuilderTask():
 
         environment = {
             "host": platform.node(),
-            "gitref_opensha":self._repoheads['opensha'],
-            "gitref_nzshm-opensha":self._repoheads['nzshm-opensha'],
-            "gitref_nzshm-runzi":self._repoheads['nzshm-runzi'],
+            # "gitref_opensha":self._repoheads['opensha'],
+            # "gitref_nzshm-opensha":self._repoheads['nzshm-opensha'],
+            # "gitref_nzshm-runzi":self._repoheads['nzshm-runzi'],
             "java_threads": job_arguments["java_threads"],
             "proc_count": job_arguments["PROC_COUNT"],
             "jvm_heap_max": job_arguments["JVM_HEAP_MAX"] }
