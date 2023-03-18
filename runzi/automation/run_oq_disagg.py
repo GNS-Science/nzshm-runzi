@@ -57,7 +57,7 @@ def launch_gt(gt_config):
     # disagg_settings = dict(mag_bin_width = 0.499)
     # disagg_settings = dict(mag_bin_width = 0.5)
     disagg_settings = dict(
-        distance_bin_width = "0 5.0 10.0 15.0 20.0 30.0 40.0 50.0 60.0 80.0 100.0 140.0 180.0 220.0 260.0 320.0 380.0 500.0",
+        disagg_bin_edges = {'dist': [0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0, 140.0, 180.0, 220.0, 260.0, 320.0, 380.0, 500.0]},
         num_epsilon_bins = 16,
         mag_bin_width = .1999,
         coordinate_bin_width = 5,
@@ -120,7 +120,6 @@ def launch_gt(gt_config):
     print(tasks)
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
-
     schedule_tasks(tasks, WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", new_gt_id)
@@ -234,11 +233,10 @@ if __name__ == "__main__":
     # locations = ['srg_135']
     # locations = LOCATION_LISTS['SRWG214']['locations']
     locations = ['srg_29']
-    poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
-    # poes = [0.02]
+    # poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
+    poes = [0.02]
     imts = ['PGA']
     vs30s = [275]
-    gt_filename = 'srwg_29_p90_disagg.csv'
-    # gt_filename ='srwg_188.csv'
+    gt_filename = 'test.csv'
 
     run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun)
