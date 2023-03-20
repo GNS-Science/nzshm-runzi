@@ -72,7 +72,7 @@ if __name__ == "__main__":
     # vs30s = [275]
     vs30s = [400]
     # location_lists = [['NZ', 'NZ_0_1_NB_1_1', 'SRWG214']]
-    location_lists = [['NZ']]
+    location_lists = [['WLG','DUD', 'CHC', 'AKL']]
 
     args = dict(
         config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
