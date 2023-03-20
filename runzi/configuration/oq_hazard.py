@@ -106,7 +106,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
         logic_tree_permutations,
         intensity_spec,
         vs30,
-        location_code,
+        location_list,
         disagg_conf,
         rupture_mesh_spacing,
         ps_grid_spacing
@@ -116,7 +116,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             subtask_arguments['logic_tree_permutations'],
             subtask_arguments['intensity_specs'],
             subtask_arguments['vs30s'],
-            subtask_arguments['location_codes'],
+            subtask_arguments['location_lists'],
             subtask_arguments['disagg_confs'],
             subtask_arguments['rupture_mesh_spacings'],
             subtask_arguments['ps_grid_spacings']
@@ -134,7 +134,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 logic_tree_permutations = logic_tree_permutations,
                 intensity_spec = intensity_spec,
                 vs30 = vs30,
-                location_code = location_code,
+                location_list = location_list,
                 disagg_conf = disagg_conf,
                 rupture_mesh_spacing = rupture_mesh_spacing,
                 ps_grid_spacing = ps_grid_spacing

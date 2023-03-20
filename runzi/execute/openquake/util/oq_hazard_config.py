@@ -3,31 +3,33 @@ import logging
 import configparser
 import io
 
+from typing import List
 from pathlib import Path
+
 log = logging.getLogger(__name__)
 
 # commented out site lists w/o backarc flag
-SITES = dict(
-    WLG = {"sites": "174.7762 -41.2865"},
-    # NZ4 = {"site_model_file": "site_model_nz_4.csv"},
-    # NZ34 = {"site_model_file": "site_model_nz_34.csv"},
-    # GRD1 = {"sites_csv": "NZ_whole_country_10k.csv"},
-    # NZ6 =  {"site_model_file": "site_model_test.csv"},
-    # GRD_NZ_0_5 = {"sites_csv": "./grids/grid-NZ-0.5-0.0003.nb1.csv" },               # 50km  240 sites, 0.5 degs 1 neighbour
-    # GRD_NZ_0_25 = {"sites_csv": "./NZ_POLYS_0.25.csv" },                             # 25km  471 sites, 0.25 degs 0 neighbour
-    # GRD_NZ_0_1 = {"sites_csv": "./grids/grid-NZ-0.1-0.0003.nb1.csv" },               # 10km 3618 sites, 0.1 degs, 1 neighbour
-    # GRD_WLGREG_0_05 = {"sites_csv": "./grids/grid-Wellington-0.05.0003.nb1.csv" },   #  5km  62 sites
-    # GRD_WLGREG_0_01 = {"sites_csv": "./grids/grid-Wellington-0.01.0003.nb1.csv" },   #  1km 764 sites
-    # GRD_NZ_0_2_NZ34 = {"sites_csv": "./grid-NZ-0.2-0.0003.nb1.nz34.csv" },            # 20km 1050 site + NZ35 locations
-    GRD_NZ_0_2_BA = {"site_model_file": "./grids/backarc2_02deg_1n.csv" },            # 20km 1097 site with backarc flag
-    GRD_NZ_0_1_BA = {"site_model_file": "./grids/backarc2_01deg_1n.csv" },            # 10km 3740 site with backarc flag
-    GRD_NZ_0_1_NZ34_BA = {"site_model_file": "./backarc2_01deg_1n_nz34.csv" },            # 10km 3740 site + NZ34 with backarc flag
-    GRD_NZ_0_2_NZ34_BA = {"site_model_file": "./backarc2_02deg_1n_nz34.csv" },            # 20km 1097 site + NZ34 with backarc flag
-    NZ34_BA = {"site_model_file": "./site_model_nz_34_BA.csv" },            # NZ34 with backarc flag
-    SRWG214 = {"site_model_file": "./site_model_srwg214.csv" },            # SRWG locations (includes ba flag)
-    SRWG214_NZ34 = {"site_model_file": "./site_model_srwg214_nz34.csv" },
-    GRD_NZ_01_SRWG214_NZ34 = {"site_model_file": "./site_model_srwg214.csv" },          
-)
+# SITES = dict(
+#     WLG = {"sites": "174.7762 -41.2865"},
+#     # NZ4 = {"site_model_file": "site_model_nz_4.csv"},
+#     # NZ34 = {"site_model_file": "site_model_nz_34.csv"},
+#     # GRD1 = {"sites_csv": "NZ_whole_country_10k.csv"},
+#     # NZ6 =  {"site_model_file": "site_model_test.csv"},
+#     # GRD_NZ_0_5 = {"sites_csv": "./grids/grid-NZ-0.5-0.0003.nb1.csv" },               # 50km  240 sites, 0.5 degs 1 neighbour
+#     # GRD_NZ_0_25 = {"sites_csv": "./NZ_POLYS_0.25.csv" },                             # 25km  471 sites, 0.25 degs 0 neighbour
+#     # GRD_NZ_0_1 = {"sites_csv": "./grids/grid-NZ-0.1-0.0003.nb1.csv" },               # 10km 3618 sites, 0.1 degs, 1 neighbour
+#     # GRD_WLGREG_0_05 = {"sites_csv": "./grids/grid-Wellington-0.05.0003.nb1.csv" },   #  5km  62 sites
+#     # GRD_WLGREG_0_01 = {"sites_csv": "./grids/grid-Wellington-0.01.0003.nb1.csv" },   #  1km 764 sites
+#     # GRD_NZ_0_2_NZ34 = {"sites_csv": "./grid-NZ-0.2-0.0003.nb1.nz34.csv" },            # 20km 1050 site + NZ35 locations
+#     GRD_NZ_0_2_BA = {"site_model_file": "./grids/backarc2_02deg_1n.csv" },            # 20km 1097 site with backarc flag
+#     GRD_NZ_0_1_BA = {"site_model_file": "./grids/backarc2_01deg_1n.csv" },            # 10km 3740 site with backarc flag
+#     GRD_NZ_0_1_NZ34_BA = {"site_model_file": "./backarc2_01deg_1n_nz34.csv" },            # 10km 3740 site + NZ34 with backarc flag
+#     GRD_NZ_0_2_NZ34_BA = {"site_model_file": "./backarc2_02deg_1n_nz34.csv" },            # 20km 1097 site + NZ34 with backarc flag
+#     NZ34_BA = {"site_model_file": "./site_model_nz_34_BA.csv" },            # NZ34 with backarc flag
+#     SRWG214 = {"site_model_file": "./site_model_srwg214.csv" },            # SRWG locations (includes ba flag)
+#     SRWG214_NZ34 = {"site_model_file": "./site_model_srwg214_nz34.csv" },
+#     GRD_NZ_01_SRWG214_NZ34 = {"site_model_file": "./site_model_srwg214.csv" },          
+# )
 
 #Sanjay new values
 DEFAULT_DISAGG = dict(
@@ -65,11 +67,8 @@ class OpenquakeConfig():
         self.config.pop('geometry', None)
         return self
 
-    def set_sites(self, site_key: str):
-        assert site_key in SITES.keys()
-        self.clear_sites()
-        key, value = list(SITES[site_key].items())[0]
-        self.config['site_params'][key] = value
+    def set_sites(self, site_model_filename):
+        self.config['site_params']['site_model_file'] = site_model_filename
         return self
 
     def set_disagg_site_model(self):

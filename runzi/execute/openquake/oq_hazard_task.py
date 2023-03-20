@@ -17,10 +17,6 @@ import copy
 from dateutil.tz import tzutc
 import requests
 
-from nzshm_common.geometry.geometry import BACKARC_POLYGON
-from shapely.geometry import Point
-
-
 from nshm_toshi_client.task_relation import TaskRelation
 
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -28,7 +24,8 @@ from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WOR
 
 from runzi.util.aws import decompress_config
 from runzi.execute.openquake.util import ( OpenquakeConfig, SourceModelLoader, build_sources_xml,
-    get_logic_tree_file_ids, get_logic_tree_branches, single_permutation, build_disagg_sources_xml, build_gsim_xml)
+    get_logic_tree_file_ids, get_logic_tree_branches, single_permutation, build_disagg_sources_xml, build_gsim_xml,
+    build_site_csv, get_coded_locations)
 from runzi.execute.openquake.execute_openquake import execute_openquake
 
 logging.basicConfig(level=logging.DEBUG)
@@ -54,31 +51,6 @@ def get_config_filename(config_template_info):
     for itm in config_template_info['meta']:
         if itm['k'] == "config_filename":
             return itm['v']
-
-def build_site_csv(location):
-
-    # backarc_locs = [
-    #     '-36.870~174.770',
-    #     '-39.590~174.280',
-    #     '-37.780~175.280',
-    #     '-35.220~173.970',
-    #     '-39.070~174.080',
-    #     '-38.230~175.870',
-    #     '-37.130~175.530',
-    #     '-37.690~176.170',
-    #     '-38.680~176.080',
-    #     '-38.140~176.250'
-    # ]
-
-    lat,lon = location.split('~')
-    point = Point(float(lon), float(lat))
-    backarc_flag = 1 if BACKARC_POLYGON.contains(point)[0] else 0
-
-    site_csv = 'lon,lat,backarc\n'
-    site_csv += f'{lon},{lat},{int(backarc_flag)}'    
-
-    return site_csv
-
 
 def explode_config_template(config_info, working_path: str, task_no: int):
     config_folder = Path(working_path, f"config_{task_no}")
@@ -311,7 +283,7 @@ class BuilderTask():
         ##################
         # SITE
         ##################
-        site_csv = build_site_csv(disagg_config['location'])
+        site_csv = build_site_csv([disagg_config['location']])
         site_csv_file = Path(config_folder, 'site.csv')
         write_sources(site_csv, site_csv_file)
         log.info(f'wrote csv site file: {site_csv_file}')
@@ -465,6 +437,15 @@ class BuilderTask():
 
         config_filename = get_config_filename(config_template_info)
 
+        ##################
+        # SITES
+        ##################
+        locations = get_coded_locations(ta['location_list'])
+        site_csv = build_site_csv(locations)
+        site_csv_file = Path(config_folder, 'sites.csv')
+        write_sources(site_csv, site_csv_file)
+        log.info(f'wrote csv site file: {site_csv_file}')
+
         ###############
         # HAZARD CONFIG
         ###############
@@ -473,7 +454,7 @@ class BuilderTask():
             "modify_config for openquake hazard task."""
             ta = task_arguments
             config = OpenquakeConfig(open(config_file))\
-                .set_sites(ta['location_code'])\
+                .set_sites("./sites.csv")\
                 .set_disaggregation(enable = ta['disagg_conf']['enabled'],
                     values = ta['disagg_conf']['config'])\
                 .set_iml(ta['intensity_spec']['measures'],
