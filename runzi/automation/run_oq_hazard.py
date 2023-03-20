@@ -69,8 +69,10 @@ if __name__ == "__main__":
                     0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
                     1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 
-    vs30s = [275]
-    location_lists = [['NZ', 'NZ_0_1_NB_1_1', 'SRWG214']]
+    # vs30s = [275]
+    vs30s = [400]
+    # location_lists = [['NZ', 'NZ_0_1_NB_1_1', 'SRWG214']]
+    location_lists = [['NZ']]
 
     args = dict(
         config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
@@ -120,7 +122,6 @@ if __name__ == "__main__":
     # toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
-    
     schedule_tasks(tasks, WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", new_gt_id)

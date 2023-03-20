@@ -68,6 +68,7 @@ class OpenquakeConfig():
         return self
 
     def set_sites(self, site_model_filename):
+        self.clear_sites()
         self.config['site_params']['site_model_file'] = site_model_filename
         return self
 
