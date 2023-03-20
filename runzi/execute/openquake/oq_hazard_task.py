@@ -506,7 +506,7 @@ class BuilderTask():
                         str(oq_result['oq_calc_id']),
                         solution_id,
                         job_arguments['general_task_id'],
-                        ta['location_list'],
+                        str(ta['location_list']),
                         f'"{ltb["tag"]}"',
                         f'"{ltb["inv_id"]}, {ltb["bg_id"]}"',
                         '--verbose',
