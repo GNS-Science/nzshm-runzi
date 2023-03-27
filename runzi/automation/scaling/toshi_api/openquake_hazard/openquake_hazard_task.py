@@ -3,6 +3,7 @@ from datetime import datetime as dt
 from dateutil.tz import tzutc
 from hashlib import md5
 from pathlib import PurePath
+from enum import Enum
 
 import base64
 import json
@@ -12,6 +13,10 @@ from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 
 import logging
 log = logging.getLogger(__name__)
+
+class HazardTaskType(Enum):
+    HAZARD = 10
+    DISAGG = 20
 
 class OpenquakeHazardTask(object):
 
@@ -47,12 +52,13 @@ class OpenquakeHazardTask(object):
             raise ValueError("complete_variables must contain keys: %s" % missing_keys)
 
 
-    def create_task(self, input_variables, arguments=None, environment=None):
+    def create_task(self, input_variables, arguments=None, environment=None, task_type=HazardTaskType.HAZARD):
         qry = '''
             mutation create_openquake_hazard_task ($created:DateTime!, $model_type:ModelType!, $config_id: ID!) {
               create_openquake_hazard_task (
                 input: {
                   model_type: $model_type
+                  ###TASK_TYPE###
                   created: $created
                   config: $config_id
                   state: STARTED
@@ -74,6 +80,8 @@ class OpenquakeHazardTask(object):
             qry = qry.replace("##ARGUMENTS##", kvl_to_graphql('arguments', arguments))
         if environment:
             qry = qry.replace("##ENVIRONMENT##", kvl_to_graphql('environment', environment))
+        
+        qry = qry.replace("###TASK_TYPE###", f"task_type: {task_type.name}")
 
         log.debug(f'create_task() qry: {qry}')
         self.validate_variables(self.get_example_create_variables(), {}, input_variables)

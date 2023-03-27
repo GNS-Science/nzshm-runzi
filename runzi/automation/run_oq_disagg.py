@@ -24,7 +24,8 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-from runzi.CONFIG.OQ.SLT_v8p0p1 import logic_tree_permutations as logic_trees
+# from runzi.CONFIG.OQ.SLT_v8p0p1 import logic_tree_permutations as logic_trees
+from runzi.CONFIG.OQ.SLT_v8p0p1_test_hdf import logic_tree_permutations as logic_trees
 # from runzi.CONFIG.OQ.SLT_v8p0p1_test import logic_tree_permutations as logic_trees
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -51,8 +52,7 @@ def launch_gt(gt_config):
     # If using API give this task a descriptive setting...
 
     TASK_TITLE = "Openquake Disagg calcs"
-    TASK_DESCRIPTION = "Full logic tree for SLT workshop"
-    #TASK_DESCRIPTION = "TEST build"
+    TASK_DESCRIPTION = f"hazard ID: {gt_config['hazard_model_id']}, hazard aggregation target: {gt_config['agg']}"
 
     # disagg_settings = dict(mag_bin_width = 0.499)
     # disagg_settings = dict(mag_bin_width = 0.5)
@@ -71,16 +71,6 @@ def launch_gt(gt_config):
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     # TODO obtain the config (job.ini from the first nearest_rlz)
-    # hazard_config = "RmlsZToxMDEyODA="  # toshi_id contain job config used by the original hazard jobs TEST for OQH : T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAxMzE5
-    # hazard_config = "RmlsZToxMTI2MTI="  # toshi_id contain job config used by the original hazard jobs PROD for OQH : T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3
-    # hazard_config = "RmlsZToxMTQ3ODQ==" # PROD for T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA4MTU3
-    # hazard_config = "RmlsZToxMjEwMzQ=" # GSIM LT final v0b
-    # hazard_config = "RmlsZToxMjg4MDY=" # GSIM LT final EE backarc
-    # hazard_config = "RmlsZToxMzEwOTU=" # GSIM LT v2
-    # hazard_config = "RmlsZToxMzQzNzU=" # GSIM LT v2 pointsource_distance = 50
-    # hazard_config = "RmlsZToxMzY0MDY=" # GSIM LT v2 0.1deg+34
-    # hazard_config = "RmlsZTozNDYzODc=" # GSIM LT v2 0.1deg+34 renew 2
-    # hazard_config = "RmlsZToxMDM5MjMw"  # GSIM LT v2 0.1 SRWG214
     hazard_config = "RmlsZToxMjI0Nzk3" # GSIM LT v2 0.1 SRWG214 renew1
 
     args = dict(
@@ -131,33 +121,33 @@ def launch_gt(gt_config):
 def generate_gt_configs(task_args, locations, poes, vs30s, imts):
 
     for (loc, poe, vs30, imt) in itertools.product(locations, poes, vs30s, imts):
-        yield dict(
+        yield dict(task_args,
             location = loc,
             poe = poe,
             vs30 = vs30,
             imt = imt,
-            inv_time = task_args['inv_time'],
-            agg = task_args['agg'],
-            hazard_model_id = task_args['hazard_model_id'],
         ), Disagg(loc, imt, vs30, poe)
 
 
-def generate_single_gt_config(task_args, config):
+# def generate_single_gt_config(task_args, config):
 
-    loc = config['location']
-    poe = config['poe']
-    vs30 = config['vs30']
-    imt = config['imt']
+#     loc = config['location']
+#     poe = config['poe']
+#     vs30 = config['vs30']
+#     imt = config['imt']
 
-    return dict(
-        location = loc,
-        poe = poe,
-        vs30 = vs30,
-        imt = imt,
-        inv_time = task_args['inv_time'],
-        agg = task_args['agg'],
-        hazard_model_id = task_args['hazard_model_id'],
-    ) 
+#     breakpoint()
+#     return dict(
+#         location = loc,
+#         poe = poe,
+#         vs30 = vs30,
+#         imt = imt,
+#         inv_time = task_args['inv_time'],
+#         agg = task_args['agg'],
+#         hazard_model_id = task_args['hazard_model_id'],
+#         rupture_mesh_spacing = task_args['rupture_mesh_spacing'],
+#         ps_grid_spacing = task_args['ps_grid_spacing'],
+#     ) 
 
 def run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun):
 
@@ -227,6 +217,8 @@ if __name__ == "__main__":
         # agg = 'mean',
         agg = '0.9',
         inv_time = 50,
+        rupture_mesh_spacing = 4,
+        ps_grid_spacing = 30, #km 
     )
 
     # locations = locations[:1]

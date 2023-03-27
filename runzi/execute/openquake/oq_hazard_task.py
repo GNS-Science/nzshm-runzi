@@ -20,6 +20,7 @@ import requests
 from nshm_toshi_client.task_relation import TaskRelation
 
 from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 
 from runzi.util.aws import decompress_config
@@ -94,7 +95,7 @@ class BuilderTask():
 
         return config_id
 
-    def _setup_automation_task(self, task_arguments, job_arguments, config_id, logic_tree_id_list, environment):
+    def _setup_automation_task(self, task_arguments, job_arguments, config_id, logic_tree_id_list, environment, task_type):
         #create the configuration from the template
 
         #create new OpenquakeHazardTask, attaching the configuration (Revert standard AutomationTask)
@@ -109,7 +110,8 @@ class BuilderTask():
                 config_id = config_id
                 ),
             arguments=task_arguments,
-            environment=environment
+            environment=environment,
+            task_type=task_type,
             )
 
         #link OpenquakeHazardTask to the parent GT
@@ -242,10 +244,11 @@ class BuilderTask():
         ############
         automation_task_id = None
         if self.use_api:
+            task_type = HazardTaskType.DISAGG
             ta_clean = self._sterilize_task_arguments(ta) if ta['disagg_config'].get('gsims') else ta                
             archive_id = ta['hazard_config']
             config_id = self._save_config(archive_id, nrml_id_list)
-            automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, nrml_id_list, environment)
+            automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, nrml_id_list, environment, task_type)
 
         #########################
         # Baseline CONFIG
@@ -303,8 +306,8 @@ class BuilderTask():
                 .set_disaggregation(enable = True, values=disagg_settings)\
                 .set_iml_disagg(imt=disagg_config['imt'], level=round(disagg_config['level'], 12))\
                 .clear_iml()\
-                .set_rupture_mesh_spacing("5")\
-                .set_ps_grid_spacing("30")\
+                .set_rupture_mesh_spacing(ta["rupture_mesh_spacing"])\
+                .set_ps_grid_spacing(ta["ps_grid_spacing"])\
                 .set_vs30(disagg_config['vs30'])\
                 .set_rlz_index(disagg_config['nrlz'])\
                 .set_disagg_site_model()
@@ -317,6 +320,7 @@ class BuilderTask():
         ##############
         # EXECUTE
         ##############
+        assert 0
         oq_result = execute_openquake(config_file, ja['task_id'], automation_task_id)
 
         ######################
@@ -402,10 +406,11 @@ class BuilderTask():
         ############
         automation_task_id = None
         if self.use_api:
+            task_type = HazardTaskType.HAZARD
             id_list = [_id[1] for _id in logic_tree_id_list]
             archive_id = ta['config_archive_id']
             config_id = self._save_config(archive_id, id_list)
-            automation_task_id = self._setup_automation_task(ta, ja, config_id, [id[1] for id in logic_tree_id_list], environment)
+            automation_task_id = self._setup_automation_task(ta, ja, config_id, [id[1] for id in logic_tree_id_list], environment, task_type)
 
         #########################
         # SETUP openquake CONFIG
@@ -469,6 +474,7 @@ class BuilderTask():
         ##############
         # EXECUTE
         ##############
+        assert 0
         oq_result = execute_openquake(config_file, ja['task_id'], automation_task_id)
 
         ######################

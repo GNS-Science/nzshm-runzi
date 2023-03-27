@@ -136,7 +136,7 @@ def get_disagg_configs(gt_config, logic_trees):
     elif '~' in configs['location']:
         location = configs['location']
     else:
-        raise Exception('location must be valid site_code or coded location')
+        raise Exception('location must be valid site_code or coded location string')
 
     configs['target_level'] = get_target_level(gt_config, location)
     configs['deagg_specs'] = get_lt_branches(logic_trees)
@@ -205,12 +205,15 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             full_config['level'] = disagg_config['target_level'] # this is the level at which we calculate the disagg
             full_config['disagg_settings'] = disagg_config['disagg_settings']
             
-
             task_arguments = dict(
                 hazard_config = hazard_config, #  upstream modified config File archive object
                 #upstream_general_task=source_gt_id,
                 model_type = model_type.name,
                 disagg_config = full_config,
+                hazard_model_id = disagg_config['hazard_model_id'],
+                hazard_agg_target = disagg_config['agg'],
+                rupture_mesh_spacing = disagg_config['rupture_mesh_spacing'],
+                ps_grid_spacing = disagg_config['ps_grid_spacing'],
                 )
 
             # print('')
