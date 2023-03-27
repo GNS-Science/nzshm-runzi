@@ -26,11 +26,11 @@ lxml = "^4.9.2"
 requests = "2.27.1"
 pytest = "^7.2.0"
 nzshm-common = {git = "https://github.com/GNS-Science/nzshm-common-py.git", rev = "feature/20-backarc-v2", extras = ["geometry"]}
-toshi-hazard-store = {git = "https://github.com/GNS-Science/toshi-hazard-store.git", rev = "fix/multi_batch"}
 openquake-converters-ucerf = {path = "/home/chrisdc/NSHM/DEV/COMPONENTS/ucerf", optional = true, develop = true}
 tqdm = "^4.65.0"
 openquake-engine = {git = "https://github.com/chrisdicaprio/oq-engine.git", rev = "feature/nzshm_gsim", optional = true}
 pandas = "1.4.3"
+toshi-hazard-store = {git = "https://github.com/GNS-Science/toshi-hazard-store.git", rev = "feature/34_hazard_curve_cache"}
 
 [tool.poetry.extras]
 openquake = ["openquake-engine"]

@@ -2330,8 +2330,8 @@ test = []
 [package.source]
 type = "git"
 url = "https://github.com/GNS-Science/toshi-hazard-store.git"
-reference = "fix/multi_batch"
-resolved_reference = "2f483aadba3c2bc80a1b1164df3d9f902b2deff7"
+reference = "feature/34_hazard_curve_cache"
+resolved_reference = "b47b257311786c3a3174f74912019382c757c450"
 
 [[package]]
 name = "tqdm"
@@ -2506,4 +2506,4 @@ openquake = ["openquake-engine"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "a8640b019d8b0eb92316fbbf62865601e4f1035e65bf872d4d95f1e544aa5e7d"
+content-hash = "c81d52aadfcfea5af266e928c9e15d247a37103c474aba83e0b1efada3a4116d"
