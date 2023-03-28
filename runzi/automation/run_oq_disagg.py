@@ -24,9 +24,8 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-# from runzi.CONFIG.OQ.SLT_v8p0p1 import logic_tree_permutations as logic_trees
-from runzi.CONFIG.OQ.SLT_v8p0p1_test_hdf import logic_tree_permutations as logic_trees
-# from runzi.CONFIG.OQ.SLT_v8p0p1_test import logic_tree_permutations as logic_trees
+from runzi.CONFIG.OQ.SLT_v8p0p1_test import logic_tree_permutations as logic_trees
+# from runzi.CONFIG.OQ.SLT_v9p0p0 import logic_tree_permutations as logic_trees
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
 # USE_API = False
@@ -61,6 +60,7 @@ def launch_gt(gt_config):
         num_epsilon_bins = 16,
         mag_bin_width = .1999,
         coordinate_bin_width = 5,
+        disagg_outputs = "TRT Mag Dist Mag_Dist TRT_Mag_Dist_Eps"
     )
 
     disagg_configs = get_disagg_configs(gt_config, logic_trees)
@@ -126,7 +126,7 @@ def generate_gt_configs(task_args, locations, poes, vs30s, imts):
             poe = poe,
             vs30 = vs30,
             imt = imt,
-        ), Disagg(loc, imt, vs30, poe)
+        )
 
 
 # def generate_single_gt_config(task_args, config):
@@ -149,58 +149,60 @@ def generate_gt_configs(task_args, locations, poes, vs30s, imts):
 #         ps_grid_spacing = task_args['ps_grid_spacing'],
 #     ) 
 
-def run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun):
+def run_main(task_args, locations, imts, vs30s, poes):
 
-    gt_filepath = Path(gt_filename)
+    # gt_filepath = Path(gt_filename)
 
-    if gt_filepath.exists(): 
-        raise Exception('file %s already exists, cannot overwrite' % gt_filepath)
+    # if gt_filepath.exists(): 
+    #     raise Exception('file %s already exists, cannot overwrite' % gt_filepath)
 
-    with open(gt_filepath, 'w') as df:
-        disagg_writer = csv.writer(df)
-        disagg_writer.writerow(['GT_ID', 'date', 'time', 'time_zone'] + list(Disagg._fields))
-        if rerun['rerun']:
-            DISAGG_LIST = os.environ['NZSHM22_DISAGG_LIST']
-            with open(DISAGG_LIST, 'r') as gt_list_file:
-                reader = csv.reader(gt_list_file)
-                gt_datas = []
-                GTData = namedtuple("GTData", next(reader)[:-1], rename=True)
-                for row in reader:
-                    gt_datas.append(GTData(*row))
+    # with open(gt_filepath, 'w') as df:
+    #     disagg_writer = csv.writer(df)
+    #     disagg_writer.writerow(['GT_ID', 'date', 'time', 'time_zone'] + list(Disagg._fields))
+    #     if rerun['rerun']:
+    #         DISAGG_LIST = os.environ['NZSHM22_DISAGG_LIST']
+    #         with open(DISAGG_LIST, 'r') as gt_list_file:
+    #             reader = csv.reader(gt_list_file)
+    #             gt_datas = []
+    #             GTData = namedtuple("GTData", next(reader)[:-1], rename=True)
+    #             for row in reader:
+    #                 gt_datas.append(GTData(*row))
             
 
-            with open(DISAGG_LIST, 'r') as gt_list_file:
-                reader = csv.reader(gt_list_file)
-                GTData = namedtuple("GTData", next(reader)[:-1], rename=True)
-                for row in reader:
-                    gt_data = GTData(*row)
-                    if gt_data.success == 'N':
-                        gt_success = [
-                                g for g in gt_datas if
-                                    (g.location == gt_data.location) &
-                                    (g.imt==gt_data.imt) &
-                                    (g.vs30==gt_data.vs30) &
-                                    (g.poe==gt_data.poe) & 
-                                    (g.success=='Y')
-                        ]
-                        if not gt_success:
-                            gt_config, disagg_config = next(generate_gt_configs(
-                                task_args,
-                                [gt_data.location],
-                                [float(gt_data.poe)],
-                                [int(gt_data.vs30)],
-                                [gt_data.imt]))
-                            if rerun['dry']:
-                                print(gt_config, disagg_config)
-                            else:
-                                gt_id = launch_gt(gt_config) 
-                                now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
-                                disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
-        else:
-            for gt_config, disagg_config in generate_gt_configs(task_args, locations, poes, vs30s, imts): 
-                gt_id = launch_gt(gt_config) 
-                now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
-                disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
+    #         with open(DISAGG_LIST, 'r') as gt_list_file:
+    #             reader = csv.reader(gt_list_file)
+    #             GTData = namedtuple("GTData", next(reader)[:-1], rename=True)
+    #             for row in reader:
+    #                 gt_data = GTData(*row)
+    #                 if gt_data.success == 'N':
+    #                     gt_success = [
+    #                             g for g in gt_datas if
+    #                                 (g.location == gt_data.location) &
+    #                                 (g.imt==gt_data.imt) &
+    #                                 (g.vs30==gt_data.vs30) &
+    #                                 (g.poe==gt_data.poe) & 
+    #                                 (g.success=='Y')
+    #                     ]
+    #                     if not gt_success:
+    #                         gt_config, disagg_config = next(generate_gt_configs(
+    #                             task_args,
+    #                             [gt_data.location],
+    #                             [float(gt_data.poe)],
+    #                             [int(gt_data.vs30)],
+    #                             [gt_data.imt]))
+    #                         if rerun['dry']:
+    #                             print(gt_config, disagg_config)
+    #                         else:
+    #                             gt_id = launch_gt(gt_config) 
+    #                             now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
+    #                             disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
+    #     else:
+    gt_ids = []
+    for gt_config in generate_gt_configs(task_args, locations, poes, vs30s, imts): 
+        gt_ids.append(launch_gt(gt_config))
+        # now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
+        # disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
+    return gt_ids
 
 
 if __name__ == "__main__":
@@ -214,8 +216,8 @@ if __name__ == "__main__":
 
     task_args = dict(
         hazard_model_id = 'NSHM_v1.0.2',
-        # agg = 'mean',
-        agg = '0.9',
+        agg = 'mean',
+        # agg = '0.9',
         inv_time = 50,
         rupture_mesh_spacing = 4,
         ps_grid_spacing = 30, #km 
@@ -224,11 +226,18 @@ if __name__ == "__main__":
     # locations = locations[:1]
     # locations = ['srg_135']
     # locations = LOCATION_LISTS['SRWG214']['locations']
+    # locations = ['srg_29','srg_135']
     locations = ['srg_29']
     # poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
     poes = [0.02]
-    imts = ['PGA']
+    imts = ['SA(5.0)']
     vs30s = [275]
-    gt_filename = 'test.csv'
+    gt_filename = 'gtids.txt'
 
-    run_main(task_args, locations, imts, vs30s, poes, gt_filename, rerun)
+    gt_ids = run_main(task_args, locations, imts, vs30s, poes)
+
+    print("_____________________GT IDs______________________")
+    with open(gt_filename, 'w') as gtfile:
+        for id in gt_ids:
+            print(id)
+            gtfile.write(id + '\n')

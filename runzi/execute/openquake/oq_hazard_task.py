@@ -309,8 +309,8 @@ class BuilderTask():
                 .set_rupture_mesh_spacing(ta["rupture_mesh_spacing"])\
                 .set_ps_grid_spacing(ta["ps_grid_spacing"])\
                 .set_vs30(disagg_config['vs30'])\
-                .set_rlz_index(disagg_config['nrlz'])\
                 .set_disagg_site_model()
+                # .set_rlz_index(disagg_config['nrlz'])\
                 # .set_gsim_logic_tree_file("./gsim_model.xml")\
                 # .set_disagg_site(lat, lon)
             config.write(open(config_file, 'w'))

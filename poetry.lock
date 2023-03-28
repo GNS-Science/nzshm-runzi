@@ -1517,7 +1517,7 @@ url = "../COMPONENTS/ucerf"
 
 [[package]]
 name = "openquake.engine"
-version = "3.16.1"
+version = "3.17.0"
 description = "Computes earthquake hazard and risk."
 category = "main"
 optional = true
@@ -1551,7 +1551,7 @@ osgeo = ["GDAL (>=2.4)"]
 type = "git"
 url = "https://github.com/chrisdicaprio/oq-engine.git"
 reference = "feature/nzshm_gsim"
-resolved_reference = "8d5bd7adf0e7c0e44dacdd37d71f286ebb145a5b"
+resolved_reference = "b5fd833887ca32dba7694cc0cf6e9fd3b676a81c"
 
 [[package]]
 name = "packaging"
