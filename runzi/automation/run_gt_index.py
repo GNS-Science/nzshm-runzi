@@ -26,6 +26,7 @@ def parse_args():
     parser.add_argument("gt_ids", nargs="*", help="list of GeneralTask IDs to add to index")
     parser.add_argument("--read", action="store_true", help="read stored index")
     parser.add_argument("--reset", action="store_true", help="clear the index. WARNING: THIS CANNOT BE UNDONE")
+    parser.add_argument("--remove", action="store_true", help="remove GT IDs rather than adding to the index")
     return parser.parse_args()
 
 
@@ -113,31 +114,55 @@ def save_index(index, index_filepath, url):
         raise e
 
 
+def remove_gt(index, id):
+    i_rmv = []
+    for i, entry in enumerate(index):
+        if index['id'] == id:
+            i_rmv.append(i)
+    i_rmv.sort()
+    i_rmv.reverse()
+    for i in i_rmv:
+        del index[i]
+
+    return index
+
+
+def read_ids_from_file(ids_filepath):
+
+    with open(ids_filepath, 'r') as ids_file:
+        return list(map(str.strip, ids_file.readlines()))
+
+def append_gts(index, ids):
+
+    if len(ids) == 1 and Path(ids[0]).exists():
+        ids = read_ids_from_file(ids[0])
+
+    for gt_id in ids:
+        index.append(get_tasks(gt_id))
+
+    return index
+
 def run(args):
 
     index_filepath = Path(WORK_PATH, "gt-index", "gt-index.json")
     if not index_filepath.parent.exists():
         index_filepath.parent.mkdir()
     
+    index = get_index_from_s3()
+    
     if args.reset:
-        clear = input("WARNING: THIS WILL CLEAR ALL ENTRYIES IN THE INDEX, DO YOU WANT TO PROCEED? [y/N]")
+        clear = input("WARNING: THIS WILL CLEAR ALL ENTRIES IN THE INDEX, DO YOU WANT TO PROCEED? [y/N]")
         if clear.lower() == "y":
             index = []
-            save_index(index, index_filepath, S3_URL)
-            return
-
-    # download existing index from S3
-    # read in existing index
-    index = get_index_from_s3()
-    if args.read:
+    elif args.read:
         print(index)
-        return
-
-    # query api and
-    # add query results to existing index
-    for gt_id in args.gt_ids:
-        index.append(get_tasks(gt_id))
-
+    elif args.remove:
+        proceed = input(f"WARNING: THIS WILL CLEAR ALL ENTRIES {args.gt_ids} IN THE INDEX, DO YOU WANT TO PROCEED? [y/N]")
+        if proceed.lower() == "y":
+            index = remove_gt(index, args.gt_ids)
+    else:
+        index = append_gts(index, args.gt_ids)
+    
     save_index(index, index_filepath, S3_URL)
 
 
