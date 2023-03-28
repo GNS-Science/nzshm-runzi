@@ -51,11 +51,12 @@ def execute_openquake(configfile, task_no, toshi_task_id):
         with open(logfile, 'r') as logf:
             oq_out = logf.read()
 
-        filtered_txt = 'Filtered away all ruptures??'
-        if 'error' in oq_out.lower() and not filtered_txt in oq_out:
+        filtered_txt1 = 'Filtered away all ruptures??'
+        filtered_txt2 = 'There are no ruptures close to the site'
+        if 'error' in oq_out.lower() and (not filtered_txt1 in oq_out) and (not filtered_txt2 in oq_out):
             raise Exception("Unknown error encountered by openquake")
 
-        if  filtered_txt in oq_out:
+        if (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out):
             oq_result['no_ruptures'] = True
         else:
 

@@ -24,8 +24,8 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
-from runzi.CONFIG.OQ.SLT_v8p0p1_test import logic_tree_permutations as logic_trees
-# from runzi.CONFIG.OQ.SLT_v9p0p0 import logic_tree_permutations as logic_trees
+# from runzi.CONFIG.OQ.SLT_v8p0p1_test import logic_tree_permutations as logic_trees
+from runzi.CONFIG.OQ.SLT_v9p0p0 import logic_tree_permutations as logic_trees
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
 # USE_API = False
@@ -215,7 +215,7 @@ if __name__ == "__main__":
     rerun = {'rerun': args.rerun | args.dry_rerun, 'dry': args.dry_rerun}
 
     task_args = dict(
-        hazard_model_id = 'NSHM_v1.0.2',
+        hazard_model_id = 'NSHM_v1.0.4',
         agg = 'mean',
         # agg = '0.9',
         inv_time = 50,
@@ -226,8 +226,7 @@ if __name__ == "__main__":
     # locations = locations[:1]
     # locations = ['srg_135']
     # locations = LOCATION_LISTS['SRWG214']['locations']
-    # locations = ['srg_29','srg_135']
-    locations = ['srg_29']
+    locations = ['srg_29','srg_135']
     # poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
     poes = [0.02]
     imts = ['SA(5.0)']
