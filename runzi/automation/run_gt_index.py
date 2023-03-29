@@ -3,6 +3,7 @@ Build and store index of general tasks. Existing index is retrieved from S3, new
 uploaded to S3.
 
 Structure of index is: List[Dict[str,Any]]
+
 """
 import argparse
 import json
@@ -27,7 +28,10 @@ def parse_args():
     parser.add_argument("--read", action="store_true", help="read stored index")
     parser.add_argument("--reset", action="store_true", help="clear the index. WARNING: THIS CANNOT BE UNDONE")
     parser.add_argument("--remove", action="store_true", help="remove GT IDs rather than adding to the index")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if not (args.gt_ids or args.read or args.reset or args.remove):
+        parser.parse_args(['-h'])
+    return args
 
 
 def get_index_from_s3():
@@ -114,16 +118,15 @@ def save_index(index, index_filepath, url):
         raise e
 
 
-def remove_gt(index, id):
+def remove_gts(index, ids):
     i_rmv = []
     for i, entry in enumerate(index):
-        if index['id'] == id:
+        if entry['id'] in ids:
             i_rmv.append(i)
     i_rmv.sort()
     i_rmv.reverse()
     for i in i_rmv:
         del index[i]
-
     return index
 
 
@@ -149,21 +152,25 @@ def run(args):
         index_filepath.parent.mkdir()
     
     index = get_index_from_s3()
-    
+    save = False 
     if args.reset:
+        save = True
         clear = input("WARNING: THIS WILL CLEAR ALL ENTRIES IN THE INDEX, DO YOU WANT TO PROCEED? [y/N]")
         if clear.lower() == "y":
             index = []
     elif args.read:
         print(index)
     elif args.remove:
+        save = True
         proceed = input(f"WARNING: THIS WILL CLEAR ALL ENTRIES {args.gt_ids} IN THE INDEX, DO YOU WANT TO PROCEED? [y/N]")
         if proceed.lower() == "y":
-            index = remove_gt(index, args.gt_ids)
+            index = remove_gts(index, args.gt_ids)
     else:
+        save = True
         index = append_gts(index, args.gt_ids)
-    
-    save_index(index, index_filepath, S3_URL)
+
+    if save: 
+        save_index(index, index_filepath, S3_URL)
 
 
 if __name__ == "__main__":
