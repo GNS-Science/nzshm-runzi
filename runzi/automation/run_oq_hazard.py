@@ -17,10 +17,7 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 
-# from runzi.CONFIG.OQ.archive_ltb import logic_tree_permutations, gt_description
-# from runzi.CONFIG.OQ.SLT_v8p0p2_cruonly import logic_tree_permutations, gt_description
 from runzi.CONFIG.OQ.SLT_v9p0p0 import logic_tree_permutations, gt_description
-# from runzi.CONFIG.OQ.SLT_v8p0p1_test_hdf import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1

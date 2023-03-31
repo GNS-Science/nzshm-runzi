@@ -7,12 +7,12 @@ from nzshm_common.location.code_location import CodedLocation
 from shapely.geometry import Point
 from openquake.commands.prepare_site_model import calculate_z1pt0, calculate_z2pt5_ngaw2
 
-def coded_location_by_id(id: str) -> str:
-    loc = location_by_id(id)
+def coded_location_by_id(lid: str) -> str:
+    loc = location_by_id(lid)
     return CodedLocation(lat=loc['latitude'], lon=loc['longitude'], resolution=0.001).code
 
-def vs30_by_id(id: str) -> str:
-    loc = location_by_id(id)
+def vs30_by_id(lid: str) -> str:
+    loc = location_by_id(lid)
     if vs30 := loc.get('vs30'):
         return str(vs30)
     return 'nan'
@@ -49,21 +49,20 @@ def get_coded_locations(location_list: List[str]) -> Tuple[List[str], List[str]]
     
     locations: List[str] = []
     vs30s: List[str] = []
-
     for location_spec in location_list:
         if '~' in location_spec:
             locations.append(location_spec)
             vs30s.append('nan')
         elif location_by_id(location_spec):
             locations.append(coded_location_by_id(location_spec))
-            if vs30 := location_by_id(id).get('vs30'):
+            if vs30 := location_by_id(location_spec).get('vs30'):
                 vs30s.append(str(vs30))
             else:
                 vs30s.append('nan')
         elif location_spec in LOCATION_LISTS:
             location_ids = LOCATION_LISTS[location_spec]["locations"]
-            locations += [coded_location_by_id(id) for id in location_ids]
-            vs30s += [vs30_by_id(id) for id in location_ids]
+            locations += [coded_location_by_id(lid) for lid in location_ids]
+            vs30s += [vs30_by_id(lid) for lid in location_ids]
         elif location_spec in dir(RegionGrid):
             locations += [CodedLocation(*loc, 0.001).code for loc in load_grid(location_spec)]
             vs30s += ['nan']*len([CodedLocation(*loc, 0.001).code for loc in load_grid(location_spec)]) #region grids don't yet support vs30
