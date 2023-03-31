@@ -71,7 +71,8 @@ def launch_gt(gt_config):
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     # TODO obtain the config (job.ini from the first nearest_rlz)
-    hazard_config = "RmlsZToxMjI0Nzk3" # GSIM LT v2 0.1 SRWG214 renew1
+    hazard_config = "RmlsZToxMjkxNjk4" # GSIM LT v2, no sites
+            
 
     args = dict(
         hazard_config = hazard_config,
@@ -223,13 +224,14 @@ if __name__ == "__main__":
         ps_grid_spacing = 30, #km 
     )
 
-    # locations = locations[:1]
-    # locations = ['srg_135']
     # locations = LOCATION_LISTS['SRWG214']['locations']
-    locations = ['srg_29','srg_135']
+    # locations = ['srg_0', 'srg_1', 'srg_2', 'srg_3',
+    #              'srg_4','srg_5','srg_6','srg_7','srg_8']
+    # locations = ['srg_132']
+    locations = list(map('srg_{}'.format,range(130,142)))
     # poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
     poes = [0.02]
-    imts = ['SA(5.0)']
+    imts = ['PGA']
     vs30s = [275]
     gt_filename = 'gtids.txt'
 

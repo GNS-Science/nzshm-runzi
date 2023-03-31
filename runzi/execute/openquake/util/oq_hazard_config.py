@@ -129,6 +129,9 @@ class OpenquakeConfig():
             'reference_depth_to_1pt0km_per_sec', 'reference_depth_to_2pt5km_per_sec']:
             sect.pop(setting, None)
 
+        if vs30 == 0:
+            return self
+
         sect['reference_vs30_type'] = 'measured'
         sect['reference_vs30_value'] = str(vs30)
         sect['reference_depth_to_1pt0km_per_sec'] = str(round(calculate_z1pt0(vs30), 0))

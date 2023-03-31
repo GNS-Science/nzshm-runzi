@@ -320,6 +320,7 @@ class BuilderTask():
         ##############
         # EXECUTE
         ##############
+        assert 0
         oq_result = execute_openquake(config_file, ja['task_id'], automation_task_id)
 
         ######################
@@ -444,8 +445,11 @@ class BuilderTask():
         ##################
         # SITES
         ##################
-        locations = get_coded_locations(ta['location_list'])
-        site_csv = build_site_csv(locations)
+        locations, vs30s = get_coded_locations(ta['location_list'])
+        if ta['vs30'] == 0:
+            site_csv = build_site_csv(locations, vs30s)
+        else:
+            site_csv = build_site_csv(locations)
         site_csv_file = Path(config_folder, 'sites.csv')
         write_sources(site_csv, site_csv_file)
         log.info(f'wrote csv site file: {site_csv_file}')
@@ -473,6 +477,7 @@ class BuilderTask():
         ##############
         # EXECUTE
         ##############
+        assert 0
         oq_result = execute_openquake(config_file, ja['task_id'], automation_task_id)
 
         ######################
