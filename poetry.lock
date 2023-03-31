@@ -1492,8 +1492,8 @@ test = []
 [package.source]
 type = "git"
 url = "https://github.com/GNS-Science/nzshm-common-py.git"
-reference = "feature/20-backarc-v2"
-resolved_reference = "3d9afc8886e9cd6055e7d46b20ba40bc50b34a5c"
+reference = "feature/27-hawks-bay-vs30"
+resolved_reference = "21ac5a6423bd6350229cc538f42b0ef4684e3ca5"
 
 [[package]]
 name = "openquake.converters.ucerf"
@@ -2317,7 +2317,7 @@ develop = false
 
 [package.dependencies]
 numpy = "^1.23.1"
-nzshm-common = {git = "https://github.com/GNS-Science/nzshm-common-py.git", rev = "feature/20-backarc-v2"}
+nzshm-common = {git = "https://github.com/GNS-Science/nzshm-common-py.git", rev = "feature/27-hawks-bay-vs30"}
 pandas = "^1.4.3"
 pynamodb = "^5.2.1"
 pynamodb-attributes = "^0.3.2"
@@ -2506,4 +2506,4 @@ openquake = ["openquake-engine"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "c81d52aadfcfea5af266e928c9e15d247a37103c474aba83e0b1efada3a4116d"
+content-hash = "d6adbc484865bdd166bc72ea059057d8f675ac0460c122dd38ed9b555305bba5"

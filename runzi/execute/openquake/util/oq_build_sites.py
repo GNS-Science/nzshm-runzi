@@ -34,8 +34,8 @@ def build_site_csv(locations, vs30s=None) -> str:
         site_csv = 'lon,lat,vs30,z1pt0,z2pt5,vs30measured,backarc\n'
         for location, vs30 in zip(locations, vs30s):
             lon, lat, backarc_flag = llb(location)
-            z1pt0 = str(round(calculate_z1pt0(vs30), 0))
-            z2pt5 = str(round(calculate_z2pt5_ngaw2(vs30), 1))
+            z1pt0 = str(round(calculate_z1pt0(float(vs30)), 0))
+            z2pt5 = str(round(calculate_z2pt5_ngaw2(float(vs30)), 1))
             site_csv += f'{lon},{lat},{vs30},{z1pt0},{z2pt5},0,{int(backarc_flag)}\n'
     else:    
         site_csv = 'lon,lat,backarc\n'

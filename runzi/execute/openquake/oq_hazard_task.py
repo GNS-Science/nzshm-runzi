@@ -477,7 +477,6 @@ class BuilderTask():
         ##############
         # EXECUTE
         ##############
-        assert 0
         oq_result = execute_openquake(config_file, ja['task_id'], automation_task_id)
 
         ######################
