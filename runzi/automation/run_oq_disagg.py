@@ -15,6 +15,8 @@ import datetime as dt
 from pathlib import Path
 
 from nzshm_common.location.location import location_by_id, LOCATION_LISTS
+from nzshm_common.grids import load_grid
+from nzshm_common.location.code_location import CodedLocation
 
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
@@ -149,7 +151,7 @@ def generate_gt_configs(task_args, locations, poes, vs30s, imts):
 #         ps_grid_spacing = task_args['ps_grid_spacing'],
 #     ) 
 
-def run_main(task_args, locations, imts, vs30s, poes):
+def run_main(task_args, locations, imts, vs30s, poes, gt_filename):
 
     # gt_filepath = Path(gt_filename)
 
@@ -198,10 +200,13 @@ def run_main(task_args, locations, imts, vs30s, poes):
     #                             disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
     #     else:
     gt_ids = []
-    for gt_config in generate_gt_configs(task_args, locations, poes, vs30s, imts): 
-        gt_ids.append(launch_gt(gt_config))
-        # now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
-        # disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
+    with open(gt_filename, 'w', buffering=1) as gtfile:
+        for gt_config in generate_gt_configs(task_args, locations, poes, vs30s, imts): 
+            gt_id = launch_gt(gt_config)
+            gt_ids.append(gt_id)
+            # now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
+            # disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
+            gtfile.write(gt_id + '\n')
     return gt_ids
 
 
@@ -216,7 +221,7 @@ if __name__ == "__main__":
 
     task_args = dict(
         hazard_model_id = 'NSHM_v1.0.4',
-        agg = 'mean',
+        agg = '0.9',
         # agg = '0.9',
         inv_time = 50,
         rupture_mesh_spacing = 4,
@@ -224,21 +229,25 @@ if __name__ == "__main__":
     )
 
     # locations = LOCATION_LISTS['SRWG214']['locations']
-    # locations = ['srg_0', 'srg_1', 'srg_2', 'srg_3',
-    #              'srg_4','srg_5','srg_6','srg_7','srg_8']
-    # locations = ['srg_132']
-    # locations = list(map('srg_{}'.format,range(130,142)))
-    locations = ['-39.500~176.900', '-38.650~178.000']
-    # poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
-    poes = [0.02]
-    imts = ['PGA']
-    vs30s = [300]
-    gt_filename = 'gtids.txt'
+    grid_01 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_1_NB_1_1')])
+    grid_02 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_2_NB_1_1')])
+    locations = list(grid_01.intersection(grid_02))
+    locations = list(grid_01.difference(grid_02))
+    # locations.sort()
+    # h = int(len(locations)/2)
+    # locations = locations[h:]
 
-    gt_ids = run_main(task_args, locations, imts, vs30s, poes)
+    locations = ['srg_29']
+
+    poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
+    # poes = [0.02]
+    imts = ['PGA']
+    vs30s = [275]
+    gt_filename = 'gtids_srg29_90.txt'
+
+    gt_ids = run_main(task_args, locations, imts, vs30s, poes, gt_filename)
+
 
     print("_____________________GT IDs______________________")
-    with open(gt_filename, 'w') as gtfile:
-        for id in gt_ids:
-            print(id)
-            gtfile.write(id + '\n')
+    for id in gt_ids:
+        print(id)
