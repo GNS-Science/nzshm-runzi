@@ -326,11 +326,6 @@ class BuilderTask():
         # API STORE RESULTS #
         ######################
         if self.use_api:
-            #TODO store modified config
-            ta_clean = self._sterilize_task_arguments(ta) if ta['disagg_config'].get('gsims') else ta
-            solution_id = self._store_api_result(automation_task_id, ta_clean, oq_result, config_id,
-                modconf_id=config_id, #  TODO use modified config id
-                duration = (dt.datetime.utcnow() - t0).total_seconds())
 
             #############################
             # STORE HAZARD REALIZATIONS #
@@ -369,6 +364,12 @@ class BuilderTask():
                         '--create-tables']
                 log.info(f'store_hazard: {cmd}')
                 subprocess.check_call(cmd)
+            
+            #TODO store modified config
+            ta_clean = self._sterilize_task_arguments(ta) if ta['disagg_config'].get('gsims') else ta
+            solution_id = self._store_api_result(automation_task_id, ta_clean, oq_result, config_id,
+                modconf_id=config_id, #  TODO use modified config id
+                duration = (dt.datetime.utcnow() - t0).total_seconds())
 
         t1 = dt.datetime.utcnow()
         log.info("Task took %s secs" % (t1-t0).total_seconds())
@@ -482,9 +483,6 @@ class BuilderTask():
         # API STORE RESULTS #
         ######################
         if self.use_api:
-            solution_id = self._store_api_result(automation_task_id, task_arguments, oq_result, config_id,
-                modconf_id=config_id, #  TODO use modified config id
-                duration = (dt.datetime.utcnow() - t0).total_seconds())
 
             #############################
             # STORE HAZARD REALIZATIONS #
@@ -520,6 +518,10 @@ class BuilderTask():
                         '--create-tables']
                 log.info(f'store_hazard: {cmd}')
                 subprocess.check_call(cmd)
+            
+            solution_id = self._store_api_result(automation_task_id, task_arguments, oq_result, config_id,
+                modconf_id=config_id, #  TODO use modified config id
+                duration = (dt.datetime.utcnow() - t0).total_seconds())
 
         t1 = dt.datetime.utcnow()
         log.info("Task took %s secs" % (t1-t0).total_seconds())
