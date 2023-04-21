@@ -62,15 +62,15 @@ if __name__ == "__main__":
         'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)', 'SA(6.0)','SA(7.5)', 'SA(10.0)']
     era_measures_new = ["SA(0.15)",	"SA(0.25)", "SA(0.35)",	"SA(0.6)", "SA(0.8)", "SA(0.9)",
                     "SA(1.25)", "SA(1.75)", "SA(2.5)", "SA(3.5)", "SA(4.5)"]
-    # era_measures = era_measures_orig + era_measures_new
-    era_measures = ['PGA']
+    era_measures = era_measures_orig + era_measures_new
+    # era_measures = ['PGA']
     era_levels = [0.0001, 0.0002, 0.0004, 0.0006, 0.0008, 0.001, 0.002, 0.004, 0.006, 0.008,
                     0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
                     1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 
-    vs30s = [300]
-    # location_lists = [['NZ', 'NZ_0_1_NB_1_1', 'SRWG214']]
-    location_lists = [['-39.500~176.900', '-38.650~178.000']]
+    vs30s = [1500]
+    location_lists = [['NZ', 'NZ_0_1_NB_1_1', 'SRWG214']]
+    # location_lists = [['-39.500~176.900', '-38.650~178.000']]
     # location_lists = [['HB']]
 
     args = dict(

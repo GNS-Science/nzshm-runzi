@@ -6,9 +6,9 @@ docker build . --no-cache
 ## Tag new docker image
 ```
 
-export IMAGE_ID=f5997ecc57ca
-export RUNZI_GITREF=28c061c
-export OQ_TAG=nightly_20230331 #gmm_lt_v2 
+export IMAGE_ID=31c7a295a6cf
+export RUNZI_GITREF=555c0af
+export OQ_TAG=nightly_20230403 #gmm_lt_v2 
 export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_openquake-${OQ_TAG} 
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
 ```

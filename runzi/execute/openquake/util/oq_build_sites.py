@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from nzshm_common.geometry.geometry import BACKARC_POLYGON
+from nzshm_common.geometry.geometry import backarc_polygon
 from nzshm_common.location.location import LOCATION_LISTS, location_by_id
 from nzshm_common.grids.region_grid import RegionGrid, load_grid
 from nzshm_common.location.code_location import CodedLocation
@@ -22,7 +22,7 @@ def build_site_csv(locations, vs30s=None) -> str:
     def llb(location):
         lat,lon = location.split('~')
         point = Point(float(lon), float(lat))
-        backarc_flag = 1 if BACKARC_POLYGON.contains(point)[0] else 0
+        backarc_flag = 1 if backarc_polygon().contains(point)[0] else 0
         return lon, lat, backarc_flag
         
 
@@ -50,6 +50,13 @@ def get_coded_locations(location_list: List[str]) -> Tuple[List[str], List[str]]
     locations: List[str] = []
     vs30s: List[str] = []
     for location_spec in location_list:
+        if '_within_' in location_spec:
+            ga, gb = location_spec.split('_within_')
+            la = load_grid(ga)
+            lb = load_grid(gb)
+            keep_locations = set(lb).intersection(set(la))
+            locations += [CodedLocation(*loc, 0.001).code for loc in keep_locations]
+            vs30s += ['nan']*len(keep_locations)
         if '~' in location_spec:
             locations.append(location_spec)
             vs30s.append('nan')
