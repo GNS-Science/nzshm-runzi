@@ -2161,32 +2161,25 @@ files = [
 
 [[package]]
 name = "toshi-hazard-store"
-version = "0.7.0"
+version = "0.7.2"
 description = "Library for saving and retrieving NZHSM openquake hazard results with convenience (uses AWS Dynamodb)."
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
-files = []
-develop = false
+files = [
+    {file = "toshi_hazard_store-0.7.2-py3-none-any.whl", hash = "sha256:512b98917a1b86b4ef7a7aaf2f93f14d345a5a38473d1643bbf9ee24cb0bc2ad"},
+    {file = "toshi_hazard_store-0.7.2.tar.gz", hash = "sha256:2b0056565321cbb66cadc22b393c5f767dc578edab75bdb60d01999f3f6c96c3"},
+]
 
 [package.dependencies]
-numpy = "^1.23.1"
-nzshm-common = "^0.6.0"
-pandas = "^1.4.3"
-pynamodb = "^5.2.1"
-pynamodb-attributes = "^0.3.2"
+numpy = ">=1.23.1,<2.0.0"
+nzshm-common = ">=0.6.0,<0.7.0"
+pandas = ">=1.4.3,<2.0.0"
+pynamodb = ">=5.2.1,<6.0.0"
+pynamodb-attributes = ">=0.3.2,<0.4.0"
 
 [package.extras]
-dev = []
-doc = []
 openquake = ["openquake-engine (>=3.16,<4.0)"]
-test = []
-
-[package.source]
-type = "git"
-url = "https://github.com/GNS-Science/toshi-hazard-store.git"
-reference = "fix/update-nzshm-common"
-resolved_reference = "64bb05c25658e8394e823082afc76c6e8648fd56"
 
 [[package]]
 name = "tqdm"
@@ -2361,4 +2354,4 @@ openquake = ["openquake-engine"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "34fd62c9c1fa59d26093ed5247a6e4db0fa37cb3fc1d33c5ac444756bf78881a"
+content-hash = "5730e4b669b1ea8d3939de334e585008b99f7908b7d6ce0d85a3befa925d8cfc"

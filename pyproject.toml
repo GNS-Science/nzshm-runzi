@@ -29,8 +29,8 @@ openquake-converters-ucerf = {path = "/home/chrisdc/NSHM/DEV/COMPONENTS/ucerf", 
 tqdm = "^4.65.0"
 openquake-engine = {git = "https://github.com/chrisdicaprio/oq-engine.git", rev = "feature/nzshm_gsim", optional = true}
 pandas = "1.4.3"
-toshi-hazard-store = {git = "https://github.com/GNS-Science/toshi-hazard-store.git", rev = "fix/update-nzshm-common"}
 nzshm-common = {extras = ["geometry"], version = "^0.6.0"}
+toshi-hazard-store = "^0.7.2"
 
 [tool.poetry.extras]
 openquake = ["openquake-engine"]
