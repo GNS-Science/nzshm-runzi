@@ -70,10 +70,9 @@ def get_index_from_s3():
 
 
 def parse_task_args(args):
-    arguments = {}
-    for arg in args:
-        arguments[arg['k']] = arg['v']
-    return arguments
+    if args:
+        return {arg['k']: arg['v'] for arg in args}
+    return {}
 
 def parse_oqhazard_task(id):
     qry = """
