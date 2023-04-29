@@ -22,7 +22,7 @@ def build_site_csv(locations, vs30s=None) -> str:
     def llb(location):
         lat,lon = location.split('~')
         point = Point(float(lon), float(lat))
-        backarc_flag = 1 if backarc_polygon().contains(point)[0] else 0
+        backarc_flag = 1 if backarc_polygon().contains(point) else 0
         return lon, lat, backarc_flag
         
 
