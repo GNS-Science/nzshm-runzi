@@ -5,7 +5,8 @@ from nzshm_common.location.location import LOCATION_LISTS, location_by_id
 from nzshm_common.grids.region_grid import RegionGrid, load_grid
 from nzshm_common.location.code_location import CodedLocation
 from shapely.geometry import Point
-from openquake.commands.prepare_site_model import calculate_z1pt0, calculate_z2pt5_ngaw2
+# from openquake.commands.prepare_site_model import calculate_z1pt0, calculate_z2pt5_ngaw2
+from openquake.hazardlib.site import calculate_z1pt0, calculate_z2pt5
 
 def coded_location_by_id(lid: str) -> str:
     loc = location_by_id(lid)
@@ -35,7 +36,8 @@ def build_site_csv(locations, vs30s=None) -> str:
         for location, vs30 in zip(locations, vs30s):
             lon, lat, backarc_flag = llb(location)
             z1pt0 = str(round(calculate_z1pt0(float(vs30)), 0))
-            z2pt5 = str(round(calculate_z2pt5_ngaw2(float(vs30)), 1))
+            # z2pt5 = str(round(calculate_z2pt5_ngaw2(float(vs30)), 1))
+            z2pt5 = str(round(calculate_z2pt5(float(vs30)), 1))
             site_csv += f'{lon},{lat},{vs30},{z1pt0},{z2pt5},0,{int(backarc_flag)}\n'
     else:    
         site_csv = 'lon,lat,backarc\n'
