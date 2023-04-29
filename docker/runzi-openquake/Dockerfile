@@ -2,7 +2,9 @@
 # Extend base image
 # needs openquake/engine >= 3.15.0
 #nightly
-FROM openquake/engine:3.16.2
+# FROM openquake/engine:3.16.2
+FROM openquake/engine:nightly
+
 
 
 USER root
@@ -22,30 +24,55 @@ RUN pip install tqdm
 RUN pip install pytest
 
 
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/abrahamson_2014.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/abrahamson_2014.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/abrahamson_gulerce_2020.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/abrahamson_gulerce_2020.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/atkinson_2022.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/atkinson_2022.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/Atkinson22_coeffs_mod_v8b_sanjay_v2.csv\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/Atkinson22_coeffs_mod_v8b_sanjay_v2.csv
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/boore_2014.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/boore_2014.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/bradley_2013.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/bradley_2013.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/campbell_bozorgnia_2014.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/campbell_bozorgnia_2014.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/chiou_youngs_2014.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/chiou_youngs_2014.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/kuehn_2020.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/kuehn_2020.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/parker_2021.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/parker_2021.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/stafford_2022.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/stafford_2022.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/mcverry_2006_MW_RotD50.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/mcverry_2006_MW_RotD50.py
+
 RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/abrahamson_2014.py\
-    -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/abrahamson_2014.py
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/abrahamson_2014.py
 RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/abrahamson_gulerce_2020.py\
-    -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/abrahamson_gulerce_2020.py
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/abrahamson_gulerce_2020.py
 RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/atkinson_2022.py\
-    -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/atkinson_2022.py
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/atkinson_2022.py
 RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/Atkinson22_coeffs_mod_v8b_sanjay_v2.csv\
-    -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/Atkinson22_coeffs_mod_v8b_sanjay_v2.csv
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/Atkinson22_coeffs_mod_v8b_sanjay_v2.csv
 RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/boore_2014.py\
-    -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/boore_2014.py
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/boore_2014.py
 RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/bradley_2013.py\
-    -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/bradley_2013.py
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/bradley_2013.py
 RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/campbell_bozorgnia_2014.py\
-    -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/campbell_bozorgnia_2014.py
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/campbell_bozorgnia_2014.py
 RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/chiou_youngs_2014.py\
-    -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/chiou_youngs_2014.py
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/chiou_youngs_2014.py
 RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/kuehn_2020.py\
-    -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/kuehn_2020.py
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/kuehn_2020.py
 RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/parker_2021.py\
-    -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/parker_2021.py
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/parker_2021.py
 RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/stafford_2022.py\
-    -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/stafford_2022.py
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/stafford_2022.py
 RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/mcverry_2006_MW_RotD50.py\
-    -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/mcverry_2006_MW_RotD50.py
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/mcverry_2006_MW_RotD50.py
 
 # Install Runzi TODO:is this only for these test configs ??
 WORKDIR /app
