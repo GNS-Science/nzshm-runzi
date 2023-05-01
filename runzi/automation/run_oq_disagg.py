@@ -229,7 +229,8 @@ if __name__ == "__main__":
     )
 
     # locations = LOCATION_LISTS['SRWG214']['locations'] + LOCATION_LISTS['NZ']['locations']
-    locations = LOCATION_LISTS['NZ']['locations'] + ['srg_164']
+    # locations = LOCATION_LISTS['NZ']['locations'] + ['srg_164']
+    locations = ['WLG']
     # locations = LOCATION_LISTS['NZ']['locations']
     # locations = ['srg_164']
     # grid_01 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_1_NB_1_1')])
@@ -241,11 +242,12 @@ if __name__ == "__main__":
     # locations = locations[h:]
 
 
-    poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
-    # poes = [0.02]
-    imts = ['SA(1.5)']
+    # poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
+    poes = [0.02]
+    imts = ['PGA']
     vs30s = [400]
-    gt_filename = 'gtids_NZplus1_SA1.5_allpoes_vs400.txt'
+    # gt_filename = 'gtids_NZplus1_PGA_allpoes_vs400.txt'
+    gt_filename = 'test.txt'
     # gt_filename = 'gtids_NZ_PGA_allpoes_vs400.txt'
 
     gt_ids = run_main(task_args, locations, imts, vs30s, poes, gt_filename)

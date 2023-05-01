@@ -118,10 +118,10 @@ class OpenquakeConfig():
 
     def set_vs30(self, vs30):
         try:
-            from openquake.commands.prepare_site_model import calculate_z1pt0, calculate_z2pt5_ngaw2
-        except:
-            print("openquake librarys are not available, skipping set_vs30 ")
-            return self
+            from openquake.hazardlib.site import calculate_z1pt0, calculate_z2pt5
+        except ImportError:
+            from openquake.commands.prepare_site_model import calculate_z1pt0
+            from openquake.commands.prepare_site_model import calculate_z2pt5_ngaw2 as calculate_z2pt5
 
         sect = self.config['site_params']
         #Clean up old settings
@@ -135,7 +135,7 @@ class OpenquakeConfig():
         sect['reference_vs30_type'] = 'measured'
         sect['reference_vs30_value'] = str(vs30)
         sect['reference_depth_to_1pt0km_per_sec'] = str(round(calculate_z1pt0(vs30), 0))
-        sect['reference_depth_to_2pt5km_per_sec'] = str(round(calculate_z2pt5_ngaw2(vs30), 1))
+        sect['reference_depth_to_2pt5km_per_sec'] = str(round(calculate_z2pt5(vs30), 1))
         return self
 
     def set_gsim_logic_tree_file(self, filepath):
