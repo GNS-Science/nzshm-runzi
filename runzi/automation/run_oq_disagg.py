@@ -62,6 +62,7 @@ def launch_gt(gt_config):
         mag_bin_width = .1999,
         coordinate_bin_width = 5,
         disagg_outputs = "TRT Mag Dist Mag_Dist TRT_Mag_Dist_Eps"
+        # disagg_outputs = "TRT Mag Dist Mag_Dist Mag_Dist_TRT_Eps"
     )
 
     disagg_configs = get_disagg_configs(gt_config, logic_trees)
@@ -72,7 +73,7 @@ def launch_gt(gt_config):
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     # TODO obtain the config (job.ini from the first nearest_rlz)
-    hazard_config = "RmlsZToxMjkxNjk4" # GSIM LT v2, no sites
+    hazard_config = "RmlsZToyODQ4OTc1" # GSIM LT v2, no sites, renew 2023-04-29
             
 
     args = dict(
@@ -221,29 +222,31 @@ if __name__ == "__main__":
 
     task_args = dict(
         hazard_model_id = 'NSHM_v1.0.4',
-        agg = '0.9',
-        # agg = '0.9',
+        agg = 'mean',
         inv_time = 50,
         rupture_mesh_spacing = 4,
         ps_grid_spacing = 30, #km 
     )
 
-    # locations = LOCATION_LISTS['SRWG214']['locations']
-    grid_01 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_1_NB_1_1')])
-    grid_02 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_2_NB_1_1')])
-    locations = list(grid_01.intersection(grid_02))
-    locations = list(grid_01.difference(grid_02))
+    # locations = LOCATION_LISTS['SRWG214']['locations'] + LOCATION_LISTS['NZ']['locations']
+    locations = LOCATION_LISTS['NZ']['locations'] + ['srg_164']
+    # locations = LOCATION_LISTS['NZ']['locations']
+    # locations = ['srg_164']
+    # grid_01 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_1_NB_1_1')])
+    # grid_02 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_2_NB_1_1')])
+    # locations = list(grid_01.intersection(grid_02))
+    # locations = list(grid_01.difference(grid_02))
     # locations.sort()
     # h = int(len(locations)/2)
     # locations = locations[h:]
 
-    locations = ['srg_29']
 
     poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
     # poes = [0.02]
-    imts = ['PGA']
-    vs30s = [275]
-    gt_filename = 'gtids_srg29_90.txt'
+    imts = ['SA(1.5)']
+    vs30s = [400]
+    gt_filename = 'gtids_NZplus1_SA1.5_allpoes_vs400.txt'
+    # gt_filename = 'gtids_NZ_PGA_allpoes_vs400.txt'
 
     gt_ids = run_main(task_args, locations, imts, vs30s, poes, gt_filename)
 

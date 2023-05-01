@@ -152,8 +152,12 @@ def save_index(index):
 
 
 def remove_gts(index, ids):
-    for id in ids:
-        del index[id]
+    
+    if len(ids) == 1 and Path(ids[0]).exists():
+        ids = read_ids_from_file(ids[0])
+
+    for gt_id in ids:
+        del index[gt_id]
     return index
 
 
