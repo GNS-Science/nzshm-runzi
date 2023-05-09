@@ -6,14 +6,17 @@ Structure of index is: List[Dict[str,Any]]
 
 """
 import argparse
+import itertools
 from dataclasses import dataclass
 import json
 import boto3.session
 import urllib.request
 import tempfile
 from pathlib import Path
+from typing import List, Generator, Tuple
 
 from nzshm_common.util import compress_string, decompress_string
+from nzshm_common.location.code_location import CodedLocation
 
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, S3_REPORT_BUCKET)
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -44,6 +47,100 @@ class DeaggConfig:
             repr += f"{k}={v}\n"
         repr = repr[:-1]
         return repr
+
+
+def coded_location(loc: Tuple[float, float]) -> CodedLocation:
+    return CodedLocation(*loc, 0.001).code
+
+
+def requested_configs(
+    locations: List[Tuple[float, float]],
+    deagg_agg_targets: List[str],
+    poes: List[float],
+    imts: List[str],
+    vs30s: List[int],
+    deagg_hazard_model_target: str,
+    inv_time: int,
+    iter_method: str = ''
+) -> Generator[DeaggConfig, None, None]:
+
+    if not iter_method or iter_method.lower() == 'product':
+        iterator = itertools.product(
+            map(coded_location, locations),
+            deagg_agg_targets,
+            poes,
+            imts,
+            vs30s,
+        )
+    elif iter_method.lower() == 'zip':
+        iterator = zip(
+            map(coded_location, locations),
+            deagg_agg_targets,
+            poes,
+            imts,
+            vs30s,
+        )
+    else:
+        raise ValueError('iter_method must be empty, "product", or "zip", %s given.' % iter_method)
+
+    for location, agg, poe, imt, vs30 in iterator:
+        yield DeaggConfig(
+            hazard_model_id=deagg_hazard_model_target,
+            location=location,
+            inv_time=inv_time,
+            agg=agg,
+            poe=poe,
+            imt=imt,
+            vs30=vs30,
+        )
+
+
+def get_deagg_gtids(
+    hazard_gts: List[str],
+    locations: List[Tuple[float, float]],
+    deagg_agg_targets: List[str],
+    poes: List[float],
+    imts: List[str],
+    vs30s: List[int],
+    deagg_hazard_model_target: str,
+    inv_time: int,
+    iter_method: str = '',
+) -> List[str]:
+    
+    def extract_deagg_config(subtask):
+        deagg_task_config = json.loads(subtask['arguments']['disagg_config'].replace("'", '"').replace('None', 'null'))
+
+        return DeaggConfig(
+            hazard_model_id=subtask['arguments']['hazard_model_id'],
+            location=deagg_task_config['location'],
+            inv_time=deagg_task_config['inv_time'],
+            agg=subtask['arguments']['hazard_agg_target'],
+            poe=deagg_task_config['poe'],
+            imt=deagg_task_config['imt'],
+            vs30=deagg_task_config['vs30'],
+        )
+
+    if hazard_gts:
+        return hazard_gts
+    else:
+        gtids = []
+        index = get_index_from_s3()
+        for deagg in requested_configs(
+            locations, deagg_agg_targets, poes, imts, vs30s, deagg_hazard_model_target, inv_time, iter_method,
+        ):
+            gtids_tmp = []
+            for gt, entry in index.items():
+                if entry['subtask_type'] == 'OpenquakeHazardTask' and entry['hazard_subtask_type'] == 'DISAGG':
+                    if deagg == extract_deagg_config(entry['subtasks'][0]):
+                        gtids_tmp.append(entry['id'])
+            if not gtids_tmp:
+                raise Exception("no general task found for deagg {}".format(deagg))
+            if len(gtids_tmp) > 1:
+                raise Exception("more than one general task {} found for {}".format(gtids_tmp, deagg))
+            gtids += gtids_tmp
+
+    return gtids
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="add general task and subtasks to index")
