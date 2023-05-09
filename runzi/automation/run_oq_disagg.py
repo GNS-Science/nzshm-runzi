@@ -230,25 +230,23 @@ if __name__ == "__main__":
 
     # locations = LOCATION_LISTS['SRWG214']['locations'] + LOCATION_LISTS['NZ']['locations']
     # locations = LOCATION_LISTS['NZ']['locations'] + ['srg_164']
-    locations = ['WLG']
+    # locations = ['WLG']
     # locations = LOCATION_LISTS['NZ']['locations']
     # locations = ['srg_164']
-    # grid_01 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_1_NB_1_1')])
-    # grid_02 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_2_NB_1_1')])
+    grid_01 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_1_NB_1_1')])
+    grid_02 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_2_NB_1_1')])
     # locations = list(grid_01.intersection(grid_02))
-    # locations = list(grid_01.difference(grid_02))
-    # locations.sort()
-    # h = int(len(locations)/2)
-    # locations = locations[h:]
+    locations = list(grid_01.difference(grid_02))
+    locations.sort()
+    h = int(len(locations)/2)
+    locations = locations[h:]
 
 
     # poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
     poes = [0.02]
     imts = ['PGA']
-    vs30s = [400]
-    # gt_filename = 'gtids_NZplus1_PGA_allpoes_vs400.txt'
-    gt_filename = 'test.txt'
-    # gt_filename = 'gtids_NZ_PGA_allpoes_vs400.txt'
+    vs30s = [275]
+    gt_filename = 'gtids_griddiffB_02.txt'
 
     gt_ids = run_main(task_args, locations, imts, vs30s, poes, gt_filename)
 

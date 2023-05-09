@@ -5,6 +5,7 @@ import io
 import subprocess
 import logging
 import shutil
+import re
 
 from pathlib import Path
 from openquake.commonlib.datastore import get_datadir
@@ -56,7 +57,7 @@ def execute_openquake(configfile, task_no, toshi_task_id):
         if 'error' in oq_out.lower() and (not filtered_txt1 in oq_out) and (not filtered_txt2 in oq_out):
             raise Exception("Unknown error encountered by openquake")
 
-        if (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out):
+        if (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (re.findall('No \[.*\] contributions for site', oq_out)):
             oq_result['no_ruptures'] = True
         else:
 
