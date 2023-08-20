@@ -222,17 +222,31 @@ def get_tasks(gt_id):
     task['subtask_type'] = task['subtasks'][0]['subtask_type']
     if haz_task_type := task['subtasks'][0]['task_type']:
         task['hazard_subtask_type'] = haz_task_type
-    return task
+    
+    entry = dict(
+        subtask_type = task['subtask_type'],
+        hazard_subtask_type = task['hazard_subtask_type'],
+        arguments = task['subtasks'][0]['arguments'],
+        num_success = get_num_success_old(task)
+    )
+
+    return entry
+
+def write_index(index, index_filepath):
+    index_comp = compress_string(json.dumps(index))
+    with open(index_filepath, 'w') as index_file:
+        index_file.write(index_comp)
 
 def save_index(index):
     # save index as serialized json file
 
     with tempfile.TemporaryDirectory() as index_dir:
         index_filepath = Path(index_dir, 'gt-index.json')
-        index_comp = compress_string(json.dumps(index))
-        with open(index_filepath, 'w') as index_file:
-            # json.dump(index, index_file)
-            index_file.write(index_comp)
+        write_index(index, index_filepath)
+        # index_comp = compress_string(json.dumps(index))
+        # with open(index_filepath, 'w') as index_file:
+        #     # json.dump(index, index_file)
+        #     index_file.write(index_comp)
 
         # upload to S3
         session = boto3.session.Session()
@@ -275,38 +289,41 @@ def append_gts(index, ids):
 
     return index
 
-def convert_index(index):
+# def convert_index(index):
     
-    new_index = {}
-    for entry in index:
-        new_index[entry['id']]  = entry
-    return new_index
+    # new_index = {}
+    # for entry in index:
+    #     new_index[entry['id']]  = entry
+    # return new_index
 
-def extract_deagg_config(subtask):
-        deagg_task_config = json.loads(subtask['arguments']['disagg_config'].replace("'", '"').replace('None', 'null'))
+def extract_deagg_config(entry):
+    deagg_task_config = json.loads(entry['arguments']['disagg_config'].replace("'", '"').replace('None', 'null'))
 
-        return DeaggConfig(
-            hazard_model_id=subtask['arguments']['hazard_model_id'],
-            location=deagg_task_config['location'],
-            inv_time=deagg_task_config['inv_time'],
-            agg=subtask['arguments']['hazard_agg_target'],
-            poe=deagg_task_config['poe'],
-            imt=deagg_task_config['imt'],
-            vs30=deagg_task_config['vs30'],
-        )
+    return DeaggConfig(
+        hazard_model_id=entry['arguments']['hazard_model_id'],
+        location=deagg_task_config['location'],
+        inv_time=deagg_task_config['inv_time'],
+        agg=entry['arguments']['hazard_agg_target'],
+        poe=deagg_task_config['poe'],
+        imt=deagg_task_config['imt'],
+        vs30=deagg_task_config['vs30'],
+    )
+
+def get_num_success_old(gt):
+    count = 0
+    for subtask in gt['subtasks']:
+        if subtask['result'] == 'SUCCESS':
+            count += 1
+    return count
 
 def get_num_success(gt):
-        count = 0
-        for subtask in gt['subtasks']:
-            if subtask['result'] == 'SUCCESS':
-                count += 1
-        return count
+    return gt['num_success']
 
 def list_disaggs(index):
 
     for gt_id, entry in index.items():
         if entry['subtask_type'] == 'OpenquakeHazardTask' and entry['hazard_subtask_type'] == 'DISAGG':
-            disagg_config = extract_deagg_config(entry['subtasks'][0])
+            disagg_config = extract_deagg_config(entry)
             num_success = get_num_success(entry)
             print(f"id: {gt_id}")
             print(f"number of successful subtaks: {num_success}")
@@ -318,7 +335,7 @@ def list_disaggs(index):
 def list_bad_disaggs(index, n_expected):
     for gt_id, entry in index.items():
         if n_expected != get_num_success(entry):
-            disagg_config = extract_deagg_config(entry['subtasks'][0])
+            disagg_config = extract_deagg_config(entry)
             num_success = get_num_success(entry)
             print(f"id: {gt_id}")
             print(f"number of successful subtaks: {num_success}")
@@ -326,10 +343,24 @@ def list_bad_disaggs(index, n_expected):
             print('-' * 50)
             print('')
 
+def convert_index(index):
+    index_new = {k: dict(
+            subtask_type = v['subtask_type'],
+            hazard_subtask_type = v['hazard_subtask_type']
+        )
+    for k,v in index.items()
+    }
+
+    for k in index.keys():
+        index_new[k]['arguments'] = index[k]['subtasks'][0]['arguments']
+        index_new[k]['num_success'] = get_num_success_old(index[k])
+    
+    return index_new
+
 def run(args):
-    index_filepath = Path(WORK_PATH, "gt-index", "gt-index.json")
-    if not index_filepath.parent.exists():
-        index_filepath.parent.mkdir()
+    # index_filepath = Path(WORK_PATH, "gt-index", "gt-index.json")
+    # if not index_filepath.parent.exists():
+    #     index_filepath.parent.mkdir()
     
     index = get_index_from_s3()
     save = False 
@@ -343,9 +374,17 @@ def run(args):
         save = True
         clear = input("WARNING: THIS WILL CLEAR ALL ENTRIES IN THE INDEX, DO YOU WANT TO PROCEED? [y/N]")
         if clear.lower() == "y":
-            index = []
+            index = {}
     elif args.read:
-        print(index)
+        index_tmp = {}
+        for i,(k,v) in enumerate(index.items()):
+            if i>2:
+                break
+            index_tmp[k] = v
+
+        json.dump(index_tmp, open('index_tmp.json', 'w'), indent=4)
+        write_index(index, 'index.json')
+        # print(index)
     elif args.remove:
         save = True
         proceed = input(f"WARNING: THIS WILL CLEAR ALL ENTRIES {args.remove} IN THE INDEX, DO YOU WANT TO PROCEED? [y/N]")
@@ -354,6 +393,8 @@ def run(args):
     elif args.convert:
         save = True
         index = convert_index(index)
+        # write_index(index_new, "/home/chrisdc/tmp/index_new.json")
+        # index = convert_index(index)
     elif args.add_ids:
         save = True
         index = append_gts(index, args.add_ids)
