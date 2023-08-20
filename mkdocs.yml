@@ -1,0 +1,80 @@
+site_name: runzi
+site_url: https://gns-science.github.io/nzshm-runzi
+repo_url: https://github.com/gns-science/nzshm-runzi
+repo_name: gns-science/nzshm-runzi
+#strict: true
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - User Guide:
+    - user_guide/index.md
+    - Inversion: user_guide/inversion.md
+  
+theme:
+  name: material
+  language: en
+  #logo: assets/logo.png
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      toggle:
+        icon: material/brightness-7 
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.indexes
+    - navigation.instant
+    - navigation.tabs.sticky
+    - content.code.copy
+markdown_extensions:
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.tabbed
+  - attr_list
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight:
+      linenums: false
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - admonition
+  - toc:
+      baselevel: 2
+      permalink: true
+      slugify: !!python/name:pymdownx.slugs.uslugify
+  - meta
+plugins:
+  - include-markdown
+  - search:
+      lang: en
+  - mkdocstrings:
+      watch:
+        - runzi
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/GNS-Science/nzhsm-runzi
+      name: Github
+    - icon: material/email
+      link: "mailto:nshm@gns.cri.nz"
+extra_javascript:
+  - https://unpkg.com/mermaid@9.0.0/dist/mermaid.min.js
+# uncomment the following and put your google tracking id below to enable GA
+#google_analytics:
+  #- UA-xxx
+  #- auto

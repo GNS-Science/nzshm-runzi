@@ -1,4 +1,4 @@
-gt_description = "Source Logic Tree v8.0.2"
+gt_description = "Source Logic Tree v9.0.0"
 
 logic_tree_permutations = [
 

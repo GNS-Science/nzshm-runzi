@@ -73,8 +73,7 @@ def launch_gt(gt_config):
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     # TODO obtain the config (job.ini from the first nearest_rlz)
-    hazard_config = "RmlsZToyODQ4OTc1" # GSIM LT v2, no sites, renew 2023-04-29
-            
+    hazard_config = "RmlsZToxMjkxNjk4" # GSIM LT v2, no sites
 
     args = dict(
         hazard_config = hazard_config,
@@ -233,20 +232,22 @@ if __name__ == "__main__":
     # locations = ['WLG']
     # locations = LOCATION_LISTS['NZ']['locations']
     # locations = ['srg_164']
-    grid_01 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_1_NB_1_1')])
-    grid_02 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_2_NB_1_1')])
+    # grid_01 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_1_NB_1_1')])
+    # grid_02 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_2_NB_1_1')])
     # locations = list(grid_01.intersection(grid_02))
-    locations = list(grid_01.difference(grid_02))
-    locations.sort()
-    h = int(len(locations)/2)
-    locations = locations[h:]
+    # locations = list(grid_01.difference(grid_02))
+    # locations.sort()
+    # h = int(len(locations)/2)
+    # locations = locations[h:]
+    locations = ["-45.400~170.400"]
 
 
     # poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
-    poes = [0.02]
-    imts = ['PGA']
-    vs30s = [275]
-    gt_filename = 'gtids_griddiffB_02.txt'
+    poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
+    # imts = ['PGA', "SA(0.5)", "SA(1.0)", "SA(1.5)", "SA(3.0)"]
+    imts = ["SA(0.2)"]
+    vs30s = [1000]
+    gt_filename = 'gtids_BB2.txt'
 
     gt_ids = run_main(task_args, locations, imts, vs30s, poes, gt_filename)
 
