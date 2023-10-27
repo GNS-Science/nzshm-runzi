@@ -95,7 +95,7 @@ class BuilderTask():
             print(computed)
 
             out_file = os.path.join(self._output_folder, f'{source_id}-ruptures.xml')
-            write_source_model(out_file, [computed], name=source_name, investigation_time=investigation_time)
+            write_source_model(out_file, [computed], name=source_name, investigation_time=investigation_time, prefix=prefix)
 
             print(f'Created output in: {self._output_folder}')
 
