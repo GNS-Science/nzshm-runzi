@@ -118,9 +118,9 @@ if __name__ == "__main__":
 
     
     TASK_DESCRIPTION = """Crustal NRMLs"""
-    TASK_TITLE = "Geologic. Time Inpendent. From R2VuZXJhbFRhc2s6MTEzMTAz"
+    TASK_TITLE = " geodetic. Time Dependent. From R2VuZXJhbFRhc2s6NjUzOTc5MA=="
     input_ids = [
-       "R2VuZXJhbFRhc2s6MTEzMTAz",
+       "R2VuZXJhbFRhc2s6NjUzOTc5MA==",
     ]
         
         

@@ -25,12 +25,14 @@ requests-toolbelt = "^0.10.1"
 lxml = "^4.9.2"
 requests = "2.27.1"
 pytest = "^7.2.0"
-openquake-converters-ucerf = {path = "/home/chrisdc/NSHM/DEV/COMPONENTS/ucerf", optional = true, develop = true}
 tqdm = "^4.65.0"
-openquake-engine = {git = "https://github.com/chrisdicaprio/oq-engine.git", rev = "feature/nzshm_gsim", optional = true}
 pandas = "1.4.3"
 nzshm-common = {extras = ["geometry"], version = "^0.6.0"}
 toshi-hazard-store = "^0.7.2"
+numba = "0.56.4"
+geopandas = "0.13.2"
+openquake-engine = {path = "../CALCULATION/oq-engine", optional = true, develop = true}
+openquake-converters-ucerf = {path = "../COMPONENTS/ucerf", optional = true, develop = true}
 
 [tool.poetry.extras]
 openquake = ["openquake-engine"]

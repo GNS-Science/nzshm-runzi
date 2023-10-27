@@ -228,25 +228,21 @@ if __name__ == "__main__":
         ps_grid_spacing = 30, #km 
     )
 
-    # locations = LOCATION_LISTS['SRWG214']['locations'] + LOCATION_LISTS['NZ']['locations']
-    # locations = LOCATION_LISTS['NZ']['locations'] + ['srg_164']
-    # locations = ['WLG']
-    # locations = LOCATION_LISTS['NZ']['locations']
-    # locations = ['srg_164']
-    grid_01 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_1_NB_1_1')])
-    grid_02 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_2_NB_1_1')])
+    locations = LOCATION_LISTS['NZ']['locations'] + ['srg_164']
+    # grid_01 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_1_NB_1_1')])
+    # grid_02 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_2_NB_1_1')])
     # locations = list(grid_01.intersection(grid_02))
-    locations = list(grid_01.difference(grid_02))
-    locations.sort()
-    h = int(len(locations)/2)
-    locations = locations[h:]
+    # locations = list(grid_01.difference(grid_02))
+    # locations.sort()
+    # h = int(len(locations)/2)
+    # locations = locations[:h]
+    # locations = locations[h:]
+    # imts = ["PGA"]
+    imts = ["SA(0.2)", "SA(0.5)", "SA(1.5)", "SA(3.0)"]
+    vs30s = [750]
 
-
-    # poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
-    poes = [0.02]
-    imts = ['PGA']
-    vs30s = [275]
-    gt_filename = 'gtids_griddiffB_02.txt'
+    poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
+    gt_filename = 'gtids_NZplus1_allIMT_allpoe_750.txt'
 
     gt_ids = run_main(task_args, locations, imts, vs30s, poes, gt_filename)
 

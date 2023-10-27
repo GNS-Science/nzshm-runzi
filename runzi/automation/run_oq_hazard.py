@@ -17,7 +17,7 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 
-from runzi.CONFIG.OQ.SLT_v9p0p0 import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.SLT_v9p0p1 import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -68,8 +68,9 @@ if __name__ == "__main__":
                     0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
                     1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 
-    vs30s = [1500]
-    location_lists = [['NZ', 'NZ_0_1_NB_1_1', 'SRWG214']]
+    vs30s = [400]
+    # location_lists = [['NZ', 'NZ_0_1_NB_1_1', 'SRWG214']]
+    location_lists = [['NZ']]
     # location_lists = [['-39.500~176.900', '-38.650~178.000']]
     # location_lists = [['HB']]
 
