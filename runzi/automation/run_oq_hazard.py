@@ -3,11 +3,16 @@
 This script produces tasks in either AWS, PBS or LOCAL that run OpenquakeHazard
 
 """
+import csv
 import logging
 import pwd
 import os
 import datetime as dt
 from dateutil.tz import tzutc
+from pathlib import Path
+from collections import namedtuple
+
+from nzshm_common.location.code_location import CodedLocation
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
 from runzi.configuration.oq_hazard import build_hazard_tasks
@@ -17,10 +22,26 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 
-from runzi.CONFIG.OQ.SLT_v9p0p1 import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.SLT_v9p0p1_IFMonly import logic_tree_permutations, gt_description
+# from runzi.CONFIG.OQ.SLT_test_against_OQ import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
+
+def locations_from_csv(locations_filepath):
+
+    locations = []
+    locations_filepath = Path(locations_filepath)
+    with locations_filepath.open('r') as locations_file:
+        reader = csv.reader(locations_file)
+        Location = namedtuple("Location", next(reader), rename=True)
+        for row in reader:
+            location = Location(*row)
+            locations.append(
+                CodedLocation(lat=float(location.lat), lon=float(location.lon), resolution=0.001).code
+            )
+    return locations
+
 
 def build_tasks(new_gt_id, args, task_type, model_type):
 
@@ -62,20 +83,27 @@ if __name__ == "__main__":
         'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)', 'SA(6.0)','SA(7.5)', 'SA(10.0)']
     era_measures_new = ["SA(0.15)",	"SA(0.25)", "SA(0.35)",	"SA(0.6)", "SA(0.8)", "SA(0.9)",
                     "SA(1.25)", "SA(1.75)", "SA(2.5)", "SA(3.5)", "SA(4.5)"]
-    era_measures = era_measures_orig + era_measures_new
-    # era_measures = ['PGA']
+    # era_measures = era_measures_orig + era_measures_new
+    era_measures = era_measures_orig
+
+    # era_measures_mcverry = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)', 'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)']
+    # era_measures = era_measures_mcverry
     era_levels = [0.0001, 0.0002, 0.0004, 0.0006, 0.0008, 0.001, 0.002, 0.004, 0.006, 0.008,
                     0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
                     1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 
     vs30s = [400]
     # location_lists = [['NZ', 'NZ_0_1_NB_1_1', 'SRWG214']]
-    location_lists = [['NZ']]
+    location_lists = [['NZ', 'NZ_0_1_NB_1_1']]
+    # location_lists = [["NZ"]]
     # location_lists = [['-39.500~176.900', '-38.650~178.000']]
     # location_lists = [['HB']]
+    # location_lists = [locations_from_csv('/home/chrisdc/NSHM/Locations/transpower_locations.csv')]
+    # location_lists = [['WLG','AKL','DUD','CHC']]
 
     args = dict(
         config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
+            # "RmlsZTo2MzI0MjY2", #McVerry
             "RmlsZToxMjkxNjk4" # GSIM LT v2, no sites
             ],
         # NEW FORM
