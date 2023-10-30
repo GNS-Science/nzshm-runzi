@@ -98,7 +98,7 @@ if __name__ == "__main__":
         disagg_info = disagg_api.get_dissag_detail(gt_id)
         success_count = check_result(disagg_info)
         
-        if not (success_count == 49) | (success_count == 46) | (success_count == 40): 
+        if not (success_count == 49):
           row_out = list(disagg) + ['N', str(success_count)]
         else:
           row_out = list(disagg) + ['Y', str(success_count)]

@@ -11,9 +11,10 @@ from typing import Iterable
 
 import numpy as np
 
-from nzshm_common.location.location import LOCATIONS_BY_ID
+from nzshm_common.location.location import location_by_id
 from nzshm_common.location.code_location import CodedLocation
-from toshi_hazard_store.query_v3 import get_hazard_curves
+# from toshi_hazard_store.query_v3 import get_hazard_curves
+import toshi_hazard_store
 
 
 from itertools import chain
@@ -31,12 +32,17 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
 
 HAZARD_MAX_TIME = 20 #minutes
 
+BL_CONF_1 = dict( job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_32GB_8VCPU_v2_JQ", mem=30000, cpu=8)
+BL_CONF_2 = dict( job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_16GB_4VCPU_JQ", mem=15000, cpu=4)
+BIGGER_LEVER = True # FALSE uses fargate
+BIGGER_LEVER_CONF = BL_CONF_2 #BL_CONF_32_120
+
 factory_class = get_factory(CLUSTER_MODE)
 factory_task = runzi.execute.openquake.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
 def compute_hazard_at_poe(levels, values, poe, inv_time):
-
+    
     rp = -inv_time / np.log(1 - poe)
     haz = np.exp(np.interp(np.log(1 / rp), np.flip(np.log(values)), np.flip(np.log(levels))))
     return haz
@@ -49,13 +55,12 @@ def get_target_level(gt_config, location):
     agg = gt_config['agg']
     imt = gt_config['imt']
     vs30 = gt_config['vs30']
-
-    hc = next(get_hazard_curves([location], [vs30], [hazard_model_id], [imt], [agg]))
+    hc = next(toshi_hazard_store.query_v3.get_hazard_curves([location], [vs30], [hazard_model_id], [imt], [agg]))
     levels = []
     hazard_vals = []
     for v in hc.values:
-        levels.append(v.lvl)
-        hazard_vals.append(v.val) 
+        levels.append(float(v.lvl))
+        hazard_vals.append(float(v.val)) 
 
     return compute_hazard_at_poe(levels, hazard_vals, poe, inv_time)
 
@@ -125,18 +130,18 @@ def get_disagg_configs(gt_config, logic_trees):
     """
 
     configs = gt_config.copy()
-    if LOCATIONS_BY_ID.get(configs['location']):
+    if location_by_id(configs['location']):
         configs['site_code'] = configs['location']
-        configs['site_name'] = LOCATIONS_BY_ID[configs['location']]['name']
+        configs['site_name'] = location_by_id(configs['location'])['name']
         resolution = 0.001
-        lat = LOCATIONS_BY_ID[configs['location']]['latitude']
-        lon = LOCATIONS_BY_ID[configs['location']]['longitude']
+        lat = location_by_id(configs['location'])['latitude']
+        lon = location_by_id(configs['location'])['longitude']
         location = CodedLocation(lat, lon, resolution).code
         configs['location'] = location
     elif '~' in configs['location']:
         location = configs['location']
     else:
-        raise Exception('location must be valid site_code or coded location')
+        raise Exception('location must be valid site_code or coded location string')
 
     configs['target_level'] = get_target_level(gt_config, location)
     configs['deagg_specs'] = get_lt_branches(logic_trees)
@@ -149,17 +154,28 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
     if CLUSTER_MODE == EnvMode['AWS']:
         job_name = f"Runzi-automation-oq-disagg-{task_id}"
         config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
-
-        return get_ecs_job_config(job_name,
-            'N/A', config_data,
-            toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
-            task_module=runzi.execute.openquake.oq_hazard_task.__name__,
-            time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4,
-            job_definition="Fargate-runzi-openquake-JD",
-            # job_definition="SydneyRunziOpenquakeJD",
-            # job_queue = "SydneyManagedFargateJQ",
-            extra_env = extra_env,
-            use_compression = True)
+ 
+        if BIGGER_LEVER:
+            return get_ecs_job_config(job_name,
+                'N/A', config_data,
+                toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
+                task_module=runzi.execute.openquake.oq_hazard_task.__name__,
+                time_minutes=int(HAZARD_MAX_TIME),
+                memory=BIGGER_LEVER_CONF["mem"],
+                vcpu=BIGGER_LEVER_CONF["cpu"],
+                job_definition=BIGGER_LEVER_CONF["job_def"], # "BigLeverOnDemandEC2-JD", # "BiggerLever-runzi-openquake-JD", #"getting-started-job-definition-jun7",
+                job_queue=BIGGER_LEVER_CONF["job_queue"],
+                extra_env = extra_env,
+                use_compression = True)
+        else:
+            return get_ecs_job_config(job_name,
+                'N/A', config_data,
+                toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
+                task_module=runzi.execute.openquake.oq_hazard_task.__name__,
+                time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4,
+                job_definition="Fargate-runzi-openquake-JD",
+                extra_env = extra_env,
+                use_compression = True)
     else:
         #write a config
         task_factory.write_task_config(task_arguments, job_arguments)
@@ -205,12 +221,15 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             full_config['level'] = disagg_config['target_level'] # this is the level at which we calculate the disagg
             full_config['disagg_settings'] = disagg_config['disagg_settings']
             
-
             task_arguments = dict(
                 hazard_config = hazard_config, #  upstream modified config File archive object
                 #upstream_general_task=source_gt_id,
                 model_type = model_type.name,
                 disagg_config = full_config,
+                hazard_model_id = disagg_config['hazard_model_id'],
+                hazard_agg_target = disagg_config['agg'],
+                rupture_mesh_spacing = disagg_config['rupture_mesh_spacing'],
+                ps_grid_spacing = disagg_config['ps_grid_spacing'],
                 )
 
             # print('')

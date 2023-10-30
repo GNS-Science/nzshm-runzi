@@ -155,6 +155,6 @@ def download_files(file_api, file_generator, dest_folder, id_suffix=False, overw
         with open(str(file_path), 'wb') as f:
             f.write(r1.content)
             print("downloaded input file:", file_path, f)
-            os.path.getsize(file_path) == info['file_size']
+            assert os.path.getsize(file_path) == info['file_size']
 
     return downloads

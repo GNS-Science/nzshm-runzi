@@ -3,6 +3,7 @@ from datetime import datetime as dt
 from dateutil.tz import tzutc
 from hashlib import md5
 from pathlib import PurePath
+from enum import Enum
 
 import base64
 import json
@@ -12,6 +13,10 @@ from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 
 import logging
 log = logging.getLogger(__name__)
+
+class HazardTaskType(Enum):
+    HAZARD = 10
+    DISAGG = 20
 
 class OpenquakeHazardTask(object):
 
@@ -25,15 +30,21 @@ class OpenquakeHazardTask(object):
     def get_example_complete_variables(self):
           return {
           "task_id": "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjA=",
-          "hazard_solution_id": "ZZZZZ",
           "duration": 600,
           "result": "SUCCESS",
           "state": "DONE"
            }
+    
+    def get_optional_complete_variables(self):
+        return {
+          "hazard_solution_id": "ZZZZZ",
+        }
 
-    def validate_variables(self, reference, values):
+    def validate_variables(self, reference, optional, values):
         valid_keys = reference.keys()
-        if not values.keys() == valid_keys:
+        optional_keys = optional.keys()
+        given_keys = values.keys()
+        if not set(given_keys).difference(set(optional_keys)) == set(valid_keys):
             diffs = set(valid_keys).difference(set(values.keys()))
             missing_keys = ", ".join(diffs)
             print(valid_keys)
@@ -41,12 +52,13 @@ class OpenquakeHazardTask(object):
             raise ValueError("complete_variables must contain keys: %s" % missing_keys)
 
 
-    def create_task(self, input_variables, arguments=None, environment=None):
+    def create_task(self, input_variables, arguments=None, environment=None, task_type=HazardTaskType.HAZARD):
         qry = '''
             mutation create_openquake_hazard_task ($created:DateTime!, $model_type:ModelType!, $config_id: ID!) {
               create_openquake_hazard_task (
                 input: {
                   model_type: $model_type
+                  ###TASK_TYPE###
                   created: $created
                   config: $config_id
                   state: STARTED
@@ -68,9 +80,11 @@ class OpenquakeHazardTask(object):
             qry = qry.replace("##ARGUMENTS##", kvl_to_graphql('arguments', arguments))
         if environment:
             qry = qry.replace("##ENVIRONMENT##", kvl_to_graphql('environment', environment))
+        
+        qry = qry.replace("###TASK_TYPE###", f"task_type: {task_type.name}")
 
         log.debug(f'create_task() qry: {qry}')
-        self.validate_variables(self.get_example_create_variables(), input_variables)
+        self.validate_variables(self.get_example_create_variables(), {}, input_variables)
 
         executed = self.api.run_query(qry, input_variables)
         return executed['create_openquake_hazard_task']['openquake_hazard_task']['id']
@@ -83,14 +97,14 @@ class OpenquakeHazardTask(object):
               $duration: Float!
               $state:EventState!
               $result:EventResult!
-              $hazard_solution_id: ID!
+              ##HAZARD_ID1##
             ){
               update_openquake_hazard_task(input:{
                 task_id:$task_id
                 duration:$duration
                 result:$result
                 state:$state
-                hazard_solution: $hazard_solution_id
+                ##HAZARD_ID2##
 
                 ##METRICS##
 
@@ -102,11 +116,15 @@ class OpenquakeHazardTask(object):
             }
         '''
 
+        if input_variables['hazard_solution_id']:
+            qry = qry.replace("##HAZARD_ID1##", "$hazard_solution_id: ID!")
+            qry = qry.replace("##HAZARD_ID2##", "hazard_solution: $hazard_solution_id")
+
         if metrics:
             qry = qry.replace("##METRICS##", kvl_to_graphql('metrics', metrics))
 
         log.debug(f'complete_task() qry: {qry}')
 
-        self.validate_variables(self.get_example_complete_variables(), input_variables)
+        self.validate_variables(self.get_example_complete_variables(), self.get_optional_complete_variables(), input_variables)
         executed = self.api.run_query(qry, input_variables)
         return executed['update_openquake_hazard_task']['openquake_hazard_task']['id']

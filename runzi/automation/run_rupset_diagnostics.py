@@ -109,7 +109,7 @@ if __name__ == "__main__":
         toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
         #get input files from API
-        upstream_task_id = "R2VuZXJhbFRhc2s6MTAwMDU4"
+        # upstream_task_id = "R2VuZXJhbFRhc2s6MTAwMDU4"
 
         """
         CHOOSE ONE OF:
@@ -118,7 +118,7 @@ if __name__ == "__main__":
          - file_generator = get_output_file_ids(general_api, upstream_task_id)
         """
         #for a single rupture set, pass a valid FileID
-        file_id = "RmlsZToxMDAwODc="
+        file_id = "RmlsZToxMjkwOTg0"
         file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
         # file_generator = get_output_file_ids(toshi_api, upstream_task_id)
 

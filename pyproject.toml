@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{include = "runzi"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.9,<3.13"
 gitpython = "3.1.11"
 gql = "^3.2.0"
 py4j = "0.10.9.1"
@@ -24,10 +24,19 @@ boto3 = "^1.26.43"
 requests-toolbelt = "^0.10.1"
 lxml = "^4.9.2"
 requests = "2.27.1"
-nzshm-common = "0.4.0"
-toshi-hazard-store = "^0.5.5"
 pytest = "^7.2.0"
+tqdm = "^4.65.0"
+pandas = "1.4.3"
+nzshm-common = {extras = ["geometry"], version = "^0.6.0"}
+numba = "0.56.4"
+geopandas = "0.13.2"
+openquake-engine = {path = "../CALCULATION/oq-engine", optional = true, develop = true}
+openquake-converters-ucerf = {path = "../COMPONENTS/ucerf", optional = true, develop = true}
+toshi-hazard-store = "^0.7.5"
 
+[tool.poetry.extras]
+openquake = ["openquake-engine"]
+converter =["openquake-converters-ucerf"]
 
 [build-system]
 requires = ["poetry-core"]

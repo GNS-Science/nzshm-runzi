@@ -5,10 +5,13 @@ import io
 import subprocess
 import logging
 import shutil
+import re
 
 from pathlib import Path
+from openquake.commonlib.datastore import get_datadir
 
 from runzi.automation.scaling.local_config import (WORK_PATH, SPOOF_HAZARD)
+
 
 from runzi.util import archive
 # from runzi.util.aws import decompress_config
@@ -44,51 +47,65 @@ def execute_openquake(configfile, task_no, toshi_task_id):
         #
         cmd = ['oq', 'engine', '--run', f'{configfile}', '-L',  f'{logfile}']
         log.info(f'cmd 1: {cmd}')
-        subprocess.check_call(cmd)
+        subprocess.run(cmd)
 
-        def get_last_task():
-            """
-            root@tryharder-ubuntu:/app# oq engine --lhc
-            job_id |     status |          start_time |         description
-                 6 |   complete | 2022-03-29 01:12:16 | 35 sites, few periods
-            """
+        with open(logfile, 'r') as logf:
+            oq_out = logf.read()
 
-            cmd = ['oq', 'engine', '--lhc']
-            p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-            out, err = p.communicate()
+        filtered_txt1 = 'Filtered away all ruptures??'
+        filtered_txt2 = 'There are no ruptures close to the site'
+        if 'error' in oq_out.lower() and (not filtered_txt1 in oq_out) and (not filtered_txt2 in oq_out):
+            raise Exception("Unknown error encountered by openquake")
 
-            fileish = io.StringIO()
-            fileish.write(out.decode())
-            fileish.seek(0)
+        if (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (re.findall('No \[.*\] contributions for site', oq_out)):
+            oq_result['no_ruptures'] = True
+        else:
 
-            fileish.readline() #consume header
-            #lines = fileish.readlines()
-            for line in fileish.readlines():
-                print(line)
-                task = int(line.split("|")[0])
+            def get_last_task():
+                """
+                root@tryharder-ubuntu:/app# oq engine --lhc
+                job_id |     status |          start_time |         description
+                    6 |   complete | 2022-03-29 01:12:16 | 35 sites, few periods
+                """
 
-            return task
+                cmd = ['oq', 'engine', '--lhc']
+                p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+                out, err = p.communicate()
 
-        #get the job ID
-        last_task = get_last_task()
-        oq_result['oq_calc_id'] = last_task
+                fileish = io.StringIO()
+                fileish.write(out.decode())
+                fileish.seek(0)
+
+                fileish.readline() #consume header
+                #lines = fileish.readlines()
+                for line in fileish.readlines():
+                    print(line)
+                    task = int(line.split("|")[0])
+
+                return task
+
+            #get the job ID
+            last_task = get_last_task()
+            oq_result['oq_calc_id'] = last_task
 
 
-        #
-        #  oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
-        #  cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
-        #
-        cmd = ['oq', 'engine', '--export-outputs', str(last_task), str(output_path)]
-        log.info(f'cmd 2: {cmd}')
-        subprocess.check_call(cmd, stdout=subprocess.DEVNULL)
-        oq_result['csv_archive'] = archive(output_path, Path(WORK_PATH, f'openquake_csv_archive-{toshi_task_id}.zip'))
+            #
+            #  oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
+            #  cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
+            #
+            cmd = ['oq', 'engine', '--export-outputs', str(last_task), str(output_path)]
+            log.info(f'cmd 2: {cmd}')
+            subprocess.check_call(cmd, stdout=subprocess.DEVNULL)
+            oq_result['csv_archive'] = archive(output_path, Path(WORK_PATH, f'openquake_csv_archive-{toshi_task_id}.zip'))
 
-        #clean up export outputs
-        shutil.rmtree(output_path)
+            #clean up export outputs
+            shutil.rmtree(output_path)
 
-        OQDATA = "/home/openquake/oqdata"
-        hdf5_file = f"calc_{last_task}.hdf5"
-        oq_result['hdf5_archive'] = archive(Path(OQDATA, hdf5_file), Path(WORK_PATH, f'openquake_hdf5_archive-{toshi_task_id}.zip'))
+            OQDATA = Path(get_datadir())
+
+            hdf5_file = f"calc_{last_task}.hdf5"
+            oq_result['hdf5_archive'] = archive(Path(OQDATA, hdf5_file), Path(WORK_PATH, f'openquake_hdf5_archive-{toshi_task_id}.zip'))
+      
 
     except Exception as err:
         log.error(f"err: {err}")

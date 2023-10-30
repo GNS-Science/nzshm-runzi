@@ -3,6 +3,7 @@ import argparse
 import json
 import base64
 import uuid
+import urllib
 
 import os
 
@@ -94,7 +95,7 @@ class BuilderTask():
             print(computed)
 
             out_file = os.path.join(self._output_folder, f'{source_id}-ruptures.xml')
-            write_source_model(out_file, [computed], name=source_name, investigation_time=investigation_time)
+            write_source_model(out_file, [computed], name=source_name, investigation_time=investigation_time, prefix=prefix)
 
             print(f'Created output in: {self._output_folder}')
 
@@ -102,7 +103,7 @@ class BuilderTask():
             output_zip = Path(self._output_folder, ta["file_name"].replace('.zip', '_nrml.zip')) 
             print(f'output: {output_zip}')
             zfile = zipfile.ZipFile(output_zip, 'w')
-            for filename in list(Path(self._output_folder).glob(f'{source_id}*.xml')):
+            for filename in list(Path(self._output_folder).glob(f'{source_id}*')):
                 arcname = str(filename).replace(str(self._output_folder), '')
                 zfile.write(filename, arcname )
                 print(f'archived {filename} as {arcname}')

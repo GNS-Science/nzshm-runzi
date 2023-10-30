@@ -3,11 +3,16 @@
 This script produces tasks in either AWS, PBS or LOCAL that run OpenquakeHazard
 
 """
+import csv
 import logging
 import pwd
 import os
 import datetime as dt
 from dateutil.tz import tzutc
+from pathlib import Path
+from collections import namedtuple
+
+from nzshm_common.location.code_location import CodedLocation
 
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
 from runzi.configuration.oq_hazard import build_hazard_tasks
@@ -17,11 +22,26 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 
-# from runzi.CONFIG.OQ.archive_ltb import logic_tree_permutations, gt_description
-from runzi.CONFIG.OQ.SLT_v8 import logic_tree_permutations, gt_description
+from runzi.CONFIG.OQ.SLT_v9p0p1_IFMonly import logic_tree_permutations, gt_description
+# from runzi.CONFIG.OQ.SLT_test_against_OQ import logic_tree_permutations, gt_description
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
+
+def locations_from_csv(locations_filepath):
+
+    locations = []
+    locations_filepath = Path(locations_filepath)
+    with locations_filepath.open('r') as locations_file:
+        reader = csv.reader(locations_file)
+        Location = namedtuple("Location", next(reader), rename=True)
+        for row in reader:
+            location = Location(*row)
+            locations.append(
+                CodedLocation(lat=float(location.lat), lon=float(location.lon), resolution=0.001).code
+            )
+    return locations
+
 
 def build_tasks(new_gt_id, args, task_type, model_type):
 
@@ -59,44 +79,32 @@ if __name__ == "__main__":
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
-    era_measures = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)',
+    era_measures_orig = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)',
         'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)', 'SA(6.0)','SA(7.5)', 'SA(10.0)']
-    # era_levels = [0.0001, 0.0002, 0.0004, 0.0006, 0.0008, 0.001, 0.002, 0.004, 0.006, 0.008,
-    #                 0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
-    #                 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
-    # era_levels = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
-    #                 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0]
-    # nlevels = 175
-    # m = 5/(nlevels-1)
-    # b = -4
+    era_measures_new = ["SA(0.15)",	"SA(0.25)", "SA(0.35)",	"SA(0.6)", "SA(0.8)", "SA(0.9)",
+                    "SA(1.25)", "SA(1.75)", "SA(2.5)", "SA(3.5)", "SA(4.5)"]
+    # era_measures = era_measures_orig + era_measures_new
+    era_measures = era_measures_orig
 
-    # IMTL sensitivity tests
-    import numpy as np
-    # era_levels = [10**(l*m + b) for l in range(0,nlevels)]
-    pt1_imtl_list = np.append(np.concatenate([np.linspace(0.1,0.9,9) * n for n in [1e-3,1e-2,1e-1,1e0,1e1]]),10)
-    pt05_imtl_list = np.append(np.concatenate([np.linspace(0.1,0.95,18) * n for n in [1e-3,1e-2,1e-1,1e0,1e1]]),10)
-    # custom_imtl_list = np.unique(np.sort(np.concatenate((pt1_imtl_list,np.array([1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.5, 4, 4.5])))))
-    custom_imtl_list = np.unique(np.sort(np.concatenate((pt1_imtl_list,np.array([1.2, 1.4, 1.6, 1.8, 2.2, 2.4, 2.6, 2.8, 3.5, 4.5])))))
-    # era_levels = list(custom_imtl_list)
-    era_levels = [float(imt2) for imt2 in  [f'{imt:0.1e}' for imt in custom_imtl_list]]
+    # era_measures_mcverry = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)', 'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)']
+    # era_measures = era_measures_mcverry
+    era_levels = [0.0001, 0.0002, 0.0004, 0.0006, 0.0008, 0.001, 0.002, 0.004, 0.006, 0.008,
+                    0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
+                    1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 
     vs30s = [400]
-    # location_codes = ['GRD_NZ_0_1_NZ34_BA']
-    location_codes = ['NZ34_BA']
-
-    #===========SRWG===============#
-    # era_measures = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)',
-    #     'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)', 'SA(6.0)', 'SA(7.0)']
-    # era_levels = [0.001, 0.002, 0.004, 0.006, 0.008,
-    #                 0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
-    #                 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0]
-    # vs30s = [150, 200, 250, 300, 350, 400, 450, 750]
-    # location_codes = ['NZ34']
-    
+    # location_lists = [['NZ', 'NZ_0_1_NB_1_1', 'SRWG214']]
+    location_lists = [['NZ', 'NZ_0_1_NB_1_1']]
+    # location_lists = [["NZ"]]
+    # location_lists = [['-39.500~176.900', '-38.650~178.000']]
+    # location_lists = [['HB']]
+    # location_lists = [locations_from_csv('/home/chrisdc/NSHM/Locations/transpower_locations.csv')]
+    # location_lists = [['WLG','AKL','DUD','CHC']]
 
     args = dict(
         config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
-            "RmlsZToxMzY0MDY=" # GSIM LT v2 0.1deg+34
+            # "RmlsZTo2MzI0MjY2", #McVerry
+            "RmlsZToxMjkxNjk4" # GSIM LT v2, no sites
             ],
         # NEW FORM
         # makes better use of python
@@ -106,11 +114,11 @@ if __name__ == "__main__":
             { "tag": "fixed", "measures": era_measures, "levels": era_levels},
         ],
         vs30s = vs30s,
-        location_codes = location_codes,
+        location_lists = location_lists,
         disagg_confs = [{'enabled': False, 'config': {}},
             # {'enabled': True, 'config': {}}
         ],
-        rupture_mesh_spacings = [5], #1,2,3,4,5,6,7,8,9],
+        rupture_mesh_spacings = [4], #1,2,3,4,5,6,7,8,9],
         ps_grid_spacings = [30], #km 
     )
 
@@ -142,7 +150,6 @@ if __name__ == "__main__":
     # toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
     print('worker count: ', WORKER_POOL_SIZE)
     print(f'tasks to schedule: {len(tasks)}')
-
     schedule_tasks(tasks, WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", new_gt_id)

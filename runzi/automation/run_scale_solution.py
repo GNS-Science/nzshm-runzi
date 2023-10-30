@@ -23,8 +23,8 @@ from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THRE
     API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 # If you wish to override something in the main config, do so here ..
-#WORKER_POOL_SIZE = 2 
-WORKER_POOL_SIZE = None
+WORKER_POOL_SIZE = 27 
+# WORKER_POOL_SIZE = None
 USE_API = True
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
@@ -141,17 +141,11 @@ if __name__ == "__main__":
     # ]
     # scales = [0.4, 1.0, 1.63]
 
-    TASK_TITLE = "Scaling Crustal (geologic slip)"
+    TASK_TITLE = "Scaling Crustal (geodetic slip, TD)"
     source_solution_ids = [
-        "R2VuZXJhbFRhc2s6MTAzMDI1",
-        "SW52ZXJzaW9uU29sdXRpb246MTA2MDQ1",
-        "SW52ZXJzaW9uU29sdXRpb246MTA2MDM3",
-        "SW52ZXJzaW9uU29sdXRpb246MTA2MDQz",
-        "SW52ZXJzaW9uU29sdXRpb246MTA2MDUw",
-        "SW52ZXJzaW9uU29sdXRpb246MTA2MDU1",
-        "SW52ZXJzaW9uU29sdXRpb246MTA2MDYy",
+        "R2VuZXJhbFRhc2s6NjUzOTY5Ng==",
     ]
-    scales = [0.657, 1.0, 1.305, 1.608]
+    scales = [0.66, 1.0, 1.41]
     polygon_scale = 0.8
     polygon_max_mag = 8
         

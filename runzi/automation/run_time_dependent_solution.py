@@ -103,16 +103,16 @@ def run(source_solution_ids, current_years, mre_enums, forecast_timespans, aperi
 if __name__ == "__main__":
 
     # If you wish to override something in the main config, do so here ..
-    WORKER_POOL_SIZE = 1
+    WORKER_POOL_SIZE = 9
     #USE_API =
 
     # #If using API give this task a descriptive setting...
     TASK_DESCRIPTION = """Crustal. Geodetic. TD. From LTB89. Final """
     
-    TASK_TITLE = "Crustal. Geodetic. TD. From LTB89. Final. 100yr. NZ-SHM22 aperiodicity"
+    TASK_TITLE = "Crustal. Geodetic. TD. From LTB98. 100yr. NZ-SHM22 aperiodicity"
     model_type = ModelType.CRUSTAL
     source_solution_ids = [
-        "R2VuZXJhbFRhc2s6MTA3MDE0",
+        "R2VuZXJhbFRhc2s6NjUzOTY1OQ==",
 
     ]
     current_years = [2022]

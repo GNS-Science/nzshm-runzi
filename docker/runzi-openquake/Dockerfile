@@ -2,7 +2,10 @@
 # Extend base image
 # needs openquake/engine >= 3.15.0
 #nightly
-FROM openquake/engine:3.15
+# FROM openquake/engine:3.16.2
+FROM openquake/engine:nightly
+
+
 
 USER root
 
@@ -16,19 +19,60 @@ WORKDIR /WORKING
 RUN /opt/openquake/bin/python3 -m pip install --upgrade pip
 RUN pip install lxml
 RUN pip install tqdm
-RUN pip install numba
+# RUN pip install numba
 # RUN pip uninstall -y numba
 RUN pip install pytest
 
-#TEMP until this is in GEM repo
-ADD gsim /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim
 
-#Disagg bins modification
-RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/756435096fda41a24f49e8e64adc150cf629e0b2/openquake/hazardlib/calc/disagg.py\
- -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/calc/disagg.py
-RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/756435096fda41a24f49e8e64adc150cf629e0b2/openquake/commonlib/oqvalidation.py\
- -O /opt/openquake/lib/python3.9/site-packages/openquake/commonlib/oqvalidation.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/abrahamson_2014.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/abrahamson_2014.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/abrahamson_gulerce_2020.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/abrahamson_gulerce_2020.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/atkinson_2022.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/atkinson_2022.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/Atkinson22_coeffs_mod_v8b_sanjay_v2.csv\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/Atkinson22_coeffs_mod_v8b_sanjay_v2.csv
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/boore_2014.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/boore_2014.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/bradley_2013.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/bradley_2013.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/campbell_bozorgnia_2014.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/campbell_bozorgnia_2014.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/chiou_youngs_2014.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/chiou_youngs_2014.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/kuehn_2020.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/kuehn_2020.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/parker_2021.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/parker_2021.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/stafford_2022.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/stafford_2022.py
+# RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/mcverry_2006_MW_RotD50.py\
+#     -O /opt/openquake/lib/python3.9/site-packages/openquake/hazardlib/gsim/mcverry_2006_MW_RotD50.py
 
+RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/abrahamson_2014.py\
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/abrahamson_2014.py
+RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/abrahamson_gulerce_2020.py\
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/abrahamson_gulerce_2020.py
+RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/atkinson_2022.py\
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/atkinson_2022.py
+RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/Atkinson22_coeffs_mod_v8b_sanjay_v2.csv\
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/Atkinson22_coeffs_mod_v8b_sanjay_v2.csv
+RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/boore_2014.py\
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/boore_2014.py
+RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/bradley_2013.py\
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/bradley_2013.py
+RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/campbell_bozorgnia_2014.py\
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/campbell_bozorgnia_2014.py
+RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/chiou_youngs_2014.py\
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/chiou_youngs_2014.py
+RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/kuehn_2020.py\
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/kuehn_2020.py
+RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/parker_2021.py\
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/parker_2021.py
+RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/stafford_2022.py\
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/stafford_2022.py
+RUN wget https://raw.githubusercontent.com/GNS-Science/OQ_NZ_SHM_GSIM_LT/master/gsim/mcverry_2006_MW_RotD50.py\
+    -O /usr/src/oq-engine/openquake/hazardlib/gsim/mcverry_2006_MW_RotD50.py
 
 # Install Runzi TODO:is this only for these test configs ??
 WORKDIR /app
@@ -40,15 +84,18 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout feature/full-disaggs
-RUN pip3 install -r requirements.txt
+RUN git checkout feature/148-disagg-error-handling
+# RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
+# RUN pip3 install git+https://github.com/GNS-Science/nzshm-common-py.git@feature/20-backarc-v2
+# RUN pip3 install geopandas==0.11.1
+# RUN pip3 install git+https://github.com/GNS-Science/nzshm-runzi.git@feature/148-disagg-error-handling
 
 
 # The AWS hazard store script ...
-RUN pip install git+https://github.com/GNS-Science/toshi-hazard-store@031e336e5988f0ce717f7f4ceede7be63b90bfcc#egg=toshi-hazard-store
+# RUN pip3 install git+https://github.com/GNS-Science/toshi-hazard-store@07d886b4721a5c525b446e313ec178c9b27da21d
 #RUN pip install toshi_hazard_store
-RUN pip install -U numba
+# RUN pip3 install -U numba
 
 # settings for toshi-hazard-store
 WORKDIR /app

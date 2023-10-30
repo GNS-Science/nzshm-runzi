@@ -12,7 +12,7 @@ from multiprocessing.dummy import Pool
 import datetime as dt
 from dateutil.tz import tzutc
 
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
+from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling import subduction_rupture_set_builder_task
 
@@ -109,13 +109,13 @@ if __name__ == "__main__":
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     #If using API give this task a descriptive setting...
-    TASK_TITLE = "Build Puysegur ruptures - 1st cut"
+    TASK_TITLE = "Build Puysegur ruptures - fix dip direction"
 
     TASK_DESCRIPTION = """
     """
     ##Test parameters
     args = dict(
-        models = ["SBD_0_1_PUY_30", ], #"SBD_0_1_HKR_KRM_10"]
+        models = ["SBD_0_2_PUY_15", ], #"SBD_0_1_HKR_KRM_10"]
         min_aspect_ratios = ["2.0",],
         max_aspect_ratios = ["5.0",],
         aspect_depth_thresholds = ["5",],
@@ -130,6 +130,9 @@ if __name__ == "__main__":
         args_list.append(dict(k=key, v=value))
 
     if USE_API:
+
+        subtask_type = SubtaskType.RUPTURE_SET
+        model_type = ModelType.SUBDUCTION
         #create new task in toshi_api
         gt_args = CreateGeneralTaskArgs(
             agent_name=pwd.getpwuid(os.getuid()).pw_name,
@@ -137,8 +140,8 @@ if __name__ == "__main__":
             description=TASK_DESCRIPTION
             )\
             .set_argument_list(args_list)\
-            .set_subtask_type('RUPTURE_SET')\
-            .set_model_type('SUBDUCTION')
+            .set_subtask_type(subtask_type)\
+            .set_model_type(model_type)
 
         GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
 

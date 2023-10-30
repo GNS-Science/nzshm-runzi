@@ -17,15 +17,16 @@ import copy
 from dateutil.tz import tzutc
 import requests
 
-
 from nshm_toshi_client.task_relation import TaskRelation
 
 from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 
 from runzi.util.aws import decompress_config
 from runzi.execute.openquake.util import ( OpenquakeConfig, SourceModelLoader, build_sources_xml,
-    get_logic_tree_file_ids, get_logic_tree_branches, single_permutation, build_disagg_sources_xml, build_gsim_xml)
+    get_logic_tree_file_ids, get_logic_tree_branches, single_permutation, build_disagg_sources_xml, build_gsim_xml,
+    build_site_csv, get_coded_locations)
 from runzi.execute.openquake.execute_openquake import execute_openquake
 
 logging.basicConfig(level=logging.DEBUG)
@@ -51,29 +52,6 @@ def get_config_filename(config_template_info):
     for itm in config_template_info['meta']:
         if itm['k'] == "config_filename":
             return itm['v']
-
-def build_site_csv(location):
-
-    backarc_locs = [
-        '-36.870~174.770',
-        '-39.590~174.280',
-        '-37.780~175.280',
-        '-35.220~173.970',
-        '-39.070~174.080',
-        '-38.230~175.870',
-        '-37.130~175.530',
-        '-37.690~176.170',
-        '-38.680~176.080',
-        '-38.140~176.250'
-    ]
-
-    lat,lon = location.split('~')
-    site_csv = 'lon,lat,backarc\n'
-    backarc_flag = 1 if location in backarc_locs else 0
-    site_csv += f'{lon},{lat},{int(backarc_flag)}'    
-
-    return site_csv
-
 
 def explode_config_template(config_info, working_path: str, task_no: int):
     config_folder = Path(working_path, f"config_{task_no}")
@@ -117,7 +95,7 @@ class BuilderTask():
 
         return config_id
 
-    def _setup_automation_task(self, task_arguments, job_arguments, config_id, logic_tree_id_list, environment):
+    def _setup_automation_task(self, task_arguments, job_arguments, config_id, logic_tree_id_list, environment, task_type):
         #create the configuration from the template
 
         #create new OpenquakeHazardTask, attaching the configuration (Revert standard AutomationTask)
@@ -132,7 +110,8 @@ class BuilderTask():
                 config_id = config_id
                 ),
             arguments=task_arguments,
-            environment=environment
+            environment=environment,
+            task_type=task_type,
             )
 
         #link OpenquakeHazardTask to the parent GT
@@ -168,13 +147,13 @@ class BuilderTask():
         # save the json
         task_args_id, post_url = self._toshi_api.file.create_file(task_args_json)
         self._toshi_api.file.upload_content(post_url, task_args_json)
-
         # save the two output archives
-        csv_archive_id, post_url = self._toshi_api.file.create_file(oq_result['csv_archive'])
-        self._toshi_api.file.upload_content(post_url, oq_result['csv_archive'])
+        if not oq_result.get('no_ruptures'):
+            csv_archive_id, post_url = self._toshi_api.file.create_file(oq_result['csv_archive'])
+            self._toshi_api.file.upload_content(post_url, oq_result['csv_archive'])
 
-        hdf5_archive_id, post_url = self._toshi_api.file.create_file(oq_result['hdf5_archive'])
-        self._toshi_api.file.upload_content(post_url, oq_result['hdf5_archive'])
+            hdf5_archive_id, post_url = self._toshi_api.file.create_file(oq_result['hdf5_archive'])
+            self._toshi_api.file.upload_content(post_url, oq_result['hdf5_archive'])
 
         # # Predecessors...
         # log.info(f'logic_tree_id_list: {logic_tree_id_list[:5]} ...')
@@ -189,9 +168,14 @@ class BuilderTask():
         predecessors = []
 
         # Save the hazard solution
-        solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
-            config_id, csv_archive_id, hdf5_archive_id, produced_by=automation_task_id, predecessors=predecessors,
-            modconf_id=modconf_id, task_args_id=task_args_id, meta=task_arguments)
+        if oq_result.get('no_ruptures'):
+            solution_id = None
+            metrics = {'no_result': 'TRUE'}
+        else:
+            solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
+                config_id, csv_archive_id, hdf5_archive_id, produced_by=automation_task_id, predecessors=predecessors,
+                modconf_id=modconf_id, task_args_id=task_args_id, meta=task_arguments)
+            metrics = dict()
 
         # update the OpenquakeHazardTask
         self._toshi_api.openquake_hazard_task.complete_task(
@@ -199,7 +183,9 @@ class BuilderTask():
                 hazard_solution_id = solution_id,
                 duration = duration,
                 result = "SUCCESS",
-                state = "DONE"))
+                state = "DONE"),
+            metrics=metrics
+        )
         
         return solution_id
 
@@ -258,10 +244,11 @@ class BuilderTask():
         ############
         automation_task_id = None
         if self.use_api:
+            task_type = HazardTaskType.DISAGG
             ta_clean = self._sterilize_task_arguments(ta) if ta['disagg_config'].get('gsims') else ta                
             archive_id = ta['hazard_config']
             config_id = self._save_config(archive_id, nrml_id_list)
-            automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, nrml_id_list, environment)
+            automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, nrml_id_list, environment, task_type)
 
         #########################
         # Baseline CONFIG
@@ -299,7 +286,7 @@ class BuilderTask():
         ##################
         # SITE
         ##################
-        site_csv = build_site_csv(disagg_config['location'])
+        site_csv = build_site_csv([disagg_config['location']])
         site_csv_file = Path(config_folder, 'site.csv')
         write_sources(site_csv, site_csv_file)
         log.info(f'wrote csv site file: {site_csv_file}')
@@ -319,11 +306,11 @@ class BuilderTask():
                 .set_disaggregation(enable = True, values=disagg_settings)\
                 .set_iml_disagg(imt=disagg_config['imt'], level=round(disagg_config['level'], 12))\
                 .clear_iml()\
-                .set_rupture_mesh_spacing("5")\
-                .set_ps_grid_spacing("30")\
+                .set_rupture_mesh_spacing(ta["rupture_mesh_spacing"])\
+                .set_ps_grid_spacing(ta["ps_grid_spacing"])\
                 .set_vs30(disagg_config['vs30'])\
-                .set_rlz_index(disagg_config['nrlz'])\
                 .set_disagg_site_model()
+                # .set_rlz_index(disagg_config['nrlz'])\
                 # .set_gsim_logic_tree_file("./gsim_model.xml")\
                 # .set_disagg_site(lat, lon)
             config.write(open(config_file, 'w'))
@@ -335,23 +322,22 @@ class BuilderTask():
         ##############
         oq_result = execute_openquake(config_file, ja['task_id'], automation_task_id)
 
-
         ######################
         # API STORE RESULTS #
         ######################
         if self.use_api:
+            
             #TODO store modified config
             ta_clean = self._sterilize_task_arguments(ta) if ta['disagg_config'].get('gsims') else ta
             solution_id = self._store_api_result(automation_task_id, ta_clean, oq_result, config_id,
                 modconf_id=config_id, #  TODO use modified config id
                 duration = (dt.datetime.utcnow() - t0).total_seconds())
 
-
             #############################
             # STORE HAZARD REALIZATIONS #
             #############################
             # run the store_hazard job
-            if not SPOOF_HAZARD:
+            if (not SPOOF_HAZARD) and (not oq_result.get('no_ruptures')):
                 # [{'tag': 'GRANULAR', 'weight': 1.0, 'permute': [{'group': 'ALL', 'members': [ltb._asdict()] }]}]
                 # TODO GRANULAR ONLY@!@
                 # ltb = {"tag": "hiktlck, b0.979, C3.9, s0.78", "weight": 0.0666666666666667, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODA3NQ==", "bg_id":"RmlsZToxMDY1MjU="},
@@ -384,7 +370,7 @@ class BuilderTask():
                         '--create-tables']
                 log.info(f'store_hazard: {cmd}')
                 subprocess.check_call(cmd)
-
+            
         t1 = dt.datetime.utcnow()
         log.info("Task took %s secs" % (t1-t0).total_seconds())
 
@@ -420,10 +406,11 @@ class BuilderTask():
         ############
         automation_task_id = None
         if self.use_api:
+            task_type = HazardTaskType.HAZARD
             id_list = [_id[1] for _id in logic_tree_id_list]
             archive_id = ta['config_archive_id']
             config_id = self._save_config(archive_id, id_list)
-            automation_task_id = self._setup_automation_task(ta, ja, config_id, [id[1] for id in logic_tree_id_list], environment)
+            automation_task_id = self._setup_automation_task(ta, ja, config_id, [id[1] for id in logic_tree_id_list], environment, task_type)
 
         #########################
         # SETUP openquake CONFIG
@@ -455,6 +442,18 @@ class BuilderTask():
 
         config_filename = get_config_filename(config_template_info)
 
+        ##################
+        # SITES
+        ##################
+        locations, vs30s = get_coded_locations(ta['location_list'])
+        if ta['vs30'] == 0:
+            site_csv = build_site_csv(locations, vs30s)
+        else:
+            site_csv = build_site_csv(locations)
+        site_csv_file = Path(config_folder, 'sites.csv')
+        write_sources(site_csv, site_csv_file)
+        log.info(f'wrote csv site file: {site_csv_file}')
+
         ###############
         # HAZARD CONFIG
         ###############
@@ -463,7 +462,7 @@ class BuilderTask():
             "modify_config for openquake hazard task."""
             ta = task_arguments
             config = OpenquakeConfig(open(config_file))\
-                .set_sites(ta['location_code'])\
+                .set_sites("./sites.csv")\
                 .set_disaggregation(enable = ta['disagg_conf']['enabled'],
                     values = ta['disagg_conf']['config'])\
                 .set_iml(ta['intensity_spec']['measures'],
@@ -484,6 +483,7 @@ class BuilderTask():
         # API STORE RESULTS #
         ######################
         if self.use_api:
+            
             solution_id = self._store_api_result(automation_task_id, task_arguments, oq_result, config_id,
                 modconf_id=config_id, #  TODO use modified config id
                 duration = (dt.datetime.utcnow() - t0).total_seconds())
@@ -492,7 +492,7 @@ class BuilderTask():
             # STORE HAZARD REALIZATIONS #
             #############################
             # run the store_hazard job
-            if not SPOOF_HAZARD:
+            if not SPOOF_HAZARD and (not oq_result.get('no_ruptures')):
                 # [{'tag': 'GRANULAR', 'weight': 1.0, 'permute': [{'group': 'ALL', 'members': [ltb._asdict()] }]}]
                 # TODO GRANULAR ONLY@!@
                 # ltb = {"tag": "hiktlck, b0.979, C3.9, s0.78", "weight": 0.0666666666666667, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODA3NQ==", "bg_id":"RmlsZToxMDY1MjU="},
@@ -515,7 +515,7 @@ class BuilderTask():
                         str(oq_result['oq_calc_id']),
                         solution_id,
                         job_arguments['general_task_id'],
-                        ta['location_code'],
+                        str(ta['location_list']),
                         f'"{ltb["tag"]}"',
                         f'"{ltb["inv_id"]}, {ltb["bg_id"]}"',
                         '--verbose',
