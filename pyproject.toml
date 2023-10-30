@@ -7,6 +7,9 @@ license = "GPL-3.0-only"
 readme = "README.md"
 packages = [{include = "runzi"}]
 
+[tool.poetry.scripts]
+runzi = 'scripts.cli:main'
+
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
 gitpython = "3.1.11"
@@ -33,6 +36,8 @@ geopandas = "0.13.2"
 openquake-engine = {path = "../CALCULATION/oq-engine", optional = true, develop = true}
 openquake-converters-ucerf = {path = "../COMPONENTS/ucerf", optional = true, develop = true}
 toshi-hazard-store = "^0.7.5"
+toml = "^0.10.2"
+click = "^8.1.7"
 
 [tool.poetry.extras]
 openquake = ["openquake-engine"]

@@ -1,0 +1,1 @@
+from .run_oq_hazard import run_oq_hazard_f

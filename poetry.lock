@@ -2307,7 +2307,7 @@ files = [
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
-optional = true
+optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
@@ -2525,4 +2525,4 @@ openquake = ["openquake-engine"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "28f1a66e44438aa00f438a0a4da194471837b726822575eefcc8ad0a6386124c"
+content-hash = "1bb4cac8c136d35de9d04d0c73020d96c7583d11e7ffbc98618e8ed62b900f40"
