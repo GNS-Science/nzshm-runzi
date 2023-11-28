@@ -11,11 +11,18 @@ def load_config(config_filename: str):
 def rnz():
     pass
 
-@rnz.command(name="run-oq-hazard", help="launch OpenQuake hazard calculation jobs")
+@rnz.command(name="oq-hazard", help="launch OpenQuake hazard calculation jobs")
 @click.argument("config-filename", type=click.Path(exists=True))
 def run_oq_hazard(config_filename):
     config = load_config(config_filename)
     runzi.automation.run_oq_hazard_f(config)
+
+
+@rnz.command(name="oq-disagg", help="launch OpenQuake disagg calculation jobs")
+@click.argument("config-filename", type=click.Path(exists=True))
+def run_oq_hazard(config_filename):
+    config = load_config(config_filename)
+    runzi.automation.run_oq_disagg_f(config)
 
 
 if __name__ == "__main__":
