@@ -8,10 +8,9 @@ import logging
 import pwd
 import os
 import datetime as dt
-from dateutil.tz import tzutc
 from pathlib import Path
 from collections import namedtuple
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from nzshm_common.location.code_location import CodedLocation
 
@@ -20,8 +19,7 @@ from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, 
 from runzi.configuration.oq_hazard import build_hazard_tasks
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, CLUSTER_MODE, EnvMode )
+from runzi.automation.scaling.local_config import USE_API, API_KEY, API_URL
 
 
 def locations_from_csv(locations_filepath):
@@ -49,7 +47,7 @@ def build_tasks(new_gt_id, args, task_type, model_type):
     return scripts
 
 
-def validate_config(config):
+def validate_config(config: Dict[Any, Any]) -> None:
     validate_path(config, "logic_tree")
     validate_entry(config, "imts", list, elm_type=str)
     validate_entry(config, "imtls", list, elm_type=float)
@@ -61,7 +59,18 @@ def validate_config(config):
     validate_entry(config, "title", str)
     validate_entry(config, "description", str)
     validate_entry(config, "num_workers", int, optional=True)
-    
+
+
+def update_location_list(location_list: List[str]):
+
+    location_list_new = []
+    for location in location_list:
+        if Path(location).exists():
+            location_list_new += locations_from_csv(location)
+        else:
+            location_list_new.append(location)
+
+    return location_list_new
 
 def run_oq_hazard_f(config: Dict[Any, Any]):
 
@@ -69,6 +78,9 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
     logic_tree = load_logic_tree(config["logic_tree"])
     if not config.get("num_workers"):
         config["num_workers"] = 1
+    location_lists = [
+        update_location_list(loc_list) for loc_list in config["location_lists"]
+    ]
 
     t0 = dt.datetime.utcnow()
 
@@ -95,7 +107,7 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
             { "tag": "fixed", "measures": config["imts"], "levels": config["imtls"]},
         ],
         vs30s = config["vs30s"],
-        location_lists = config["location_lists"],
+        location_lists = location_lists,
         disagg_confs = [{'enabled': False, 'config': {}},
         ],
         rupture_mesh_spacings = config["rupture_mesh_spacings"],
