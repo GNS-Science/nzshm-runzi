@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{include = "runzi"}]
 
 [tool.poetry.scripts]
-runzi = 'scripts.cli:main'
+runzi = 'scripts.cli:rnz'
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
