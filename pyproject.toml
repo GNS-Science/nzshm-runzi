@@ -5,7 +5,10 @@ description = "scripting and cli for the NSHM"
 authors = ["GNS NSHM programme"]
 license = "GPL-3.0-only"
 readme = "README.md"
-packages = [{include = "runzi"}]
+packages = [
+    {include = "runzi"},
+    {include = "scripts"}
+]
 
 [tool.poetry.scripts]
 runzi = 'scripts.cli:rnz'
