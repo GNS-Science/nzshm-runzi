@@ -3,11 +3,15 @@
 import itertools
 import logging
 from pathlib import Path
+from typing import Union
 import collections
 
 import zipfile
 from lxml import etree
 from lxml.builder import ElementMaker # lxml only !
+
+from nzshm_model.source_logic_tree.logic_tree import SourceLogicTree, FaultSystemLogicTree, FlattenedSourceLogicTree
+
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH)
@@ -23,6 +27,53 @@ log = logging.getLogger(__name__)
 # Using a named tuple make the data much easier to work with...
 # this is where we change source_model to use ~toshi_id~ (now inv_iod and bg_id)
 LogicTreeBranch = collections.namedtuple('LogicTreeBranch', 'tag inv_id bg_id weight')
+
+def get_decomposed_logic_trees(
+        srm_logic_tree: SourceLogicTree, slt_decomposition: str
+) -> Union[SourceLogicTree, FlattenedSourceLogicTree]:
+    """
+    yield SourceLogicTree or FlattenedSourceLogicTree objects according to the decomposition scheme:
+    'component': yield a SourceLogicTree with a single FaultSystem with a single Branch, for each component branch
+    of the logic tree
+    'composite': yield a FlattenedSourceLogicTree with a single CompositeBranch, for each branch of the flattened logic tree
+    'none': do not decompose the logic tree, simply return the input logic tree.
+    """
+
+    if slt_decomposition not in ('none', 'composite', 'component'):
+        raise ValueError("slt_decomposition must be one of 'none', 'composite', component'")
+    
+    if slt_decomposition == 'none':
+        return srm_logic_tree
+    elif slt_decomposition == 'component':
+        for fault_system in srm_logic_tree.fault_system_lts:
+            for branch in fault_system.branches:
+                branch.weight = 1.0
+                fault_system_lt = FaultSystemLogicTree(
+                    short_name=fault_system.short_name,
+                    long_name=fault_system.long_name,
+                    branches = [branch],
+                )
+                yield SourceLogicTree(
+                    version=srm_logic_tree.version,
+                    title=' '.join((fault_system.long_name, str(branch.values))),
+                    fault_system_lts=[fault_system_lt],
+                    correlations=[],
+                )
+    elif slt_decomposition == 'composite':
+        for composite_branch in FlattenedSourceLogicTree.from_source_logic_tree(srm_logic_tree).branches:
+            composite_branch.weight = 1.0
+            
+            # not necessary given how these are used, but this is to ensure any future
+            # changes don't break due to inconsistant branch weights
+            for branch in composite_branch.branches:
+                branch.weight = 1.0
+
+            yield FlattenedSourceLogicTree(
+                version=srm_logic_tree.version,
+                title=' '.join([srm_logic_tree.title] + [str(branch.values) for branch in composite_branch.branches]),
+                branches=[composite_branch],
+            )
+
 
 
 def get_logic_tree_file_ids(ltb_groups):

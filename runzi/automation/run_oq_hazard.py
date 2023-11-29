@@ -13,6 +13,7 @@ from collections import namedtuple
 from typing import Any, Dict, List
 
 from nzshm_common.location.code_location import CodedLocation
+from nzshm_model.source_logic_tree.slt_config import from_config
 
 from runzi.automation.config import validate_entry, load_logic_tree, validate_path
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
@@ -48,16 +49,17 @@ def build_tasks(new_gt_id, args, task_type, model_type):
 
 
 def validate_config(config: Dict[Any, Any]) -> None:
-    validate_path(config, "logic_tree")
+    validate_path(config, "srm_logic_tree")
     validate_entry(config, "imts", list, elm_type=str)
     validate_entry(config, "imtls", list, elm_type=float)
     validate_entry(config, "vs30s", list, elm_type=int)
     validate_entry(config, "location_lists", list, elm_type=list)
     validate_entry(config, "rupture_mesh_spacings", list, elm_type=int)
     validate_entry(config, "ps_grid_spacings", list, elm_type=int)
-    validate_entry(config, "config_archive_ids", list, elm_type=str)
+    validate_entry(config, "config_archive_id", str)
     validate_entry(config, "title", str)
     validate_entry(config, "description", str)
+    validate_entry(config, "slt_decomposition", str, choice=["none", "composite", "component"])
     validate_entry(config, "num_workers", int, optional=True)
 
 
@@ -75,7 +77,7 @@ def update_location_list(location_list: List[str]):
 def run_oq_hazard_f(config: Dict[Any, Any]):
 
     validate_config(config)
-    logic_tree = load_logic_tree(config["logic_tree"])
+    srm_logic_tree = from_config(config["srm_logic_tree"])
     if not config.get("num_workers"):
         config["num_workers"] = 1
     location_lists = [
@@ -101,11 +103,10 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
 
     args = dict(
         # a Toshi File containing zipped configuration
-        config_archive_ids = config["config_archive_ids"],
-        logic_tree_permutations =  logic_tree.logic_tree_permutations,
-        intensity_specs = [
-            { "tag": "fixed", "measures": config["imts"], "levels": config["imtls"]},
-        ],
+        config_archive_id = config["config_archive_id"],
+        srm_logic_tree =  srm_logic_tree,
+        slt_decomposition = config["slt_decomposition"],
+        intensity_spec = { "tag": "fixed", "measures": config["imts"], "levels": config["imtls"]},
         vs30s = config["vs30s"],
         location_lists = location_lists,
         disagg_confs = [{'enabled': False, 'config': {}},

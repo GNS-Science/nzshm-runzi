@@ -3,7 +3,7 @@ import sys
 
 from pathlib import Path
 
-def validate_entry(config, name, type, elm_type=None, optional=False):
+def validate_entry(config, name, type, elm_type=None, optional=False, choice=None):
 
     if not optional:
         if not config.get(name):
@@ -25,6 +25,10 @@ def validate_entry(config, name, type, elm_type=None, optional=False):
         if not all(isinstance(x,elm_type) for x in entry):
             msg = f"all elements of {name} must be type {elm_type}"
             raise ValueError(msg)
+    
+    if choice and (config[name] not in choice):
+        msg = f"{name} must be one of {choice}"
+        raise ValueError(msg)
 
 def validate_path(config, name):
     validate_entry(config, name, str)
