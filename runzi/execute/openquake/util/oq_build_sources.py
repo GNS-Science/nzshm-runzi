@@ -76,16 +76,25 @@ def get_decomposed_logic_trees(
 
 
 
-def get_logic_tree_file_ids(ltb_groups):
+def get_logic_tree_file_ids(logic_tree: Union[SourceLogicTree, FlattenedSourceLogicTree]):
+
+    def get_ids(ids, branch, name=''):
+        ids.add((':'.join((name, str(branch.values), 'IFM')), branch.onfault_nrml_id))
+        ids.add((':'.join((name, str(branch.values), 'DSM')), branch.distributed_nrml_id))
+        return (ids)
+
     ids = set()
-    for group in ltb_groups: #List
-        for sources in get_ltb(group):
-            for source in sources:
-                if source.inv_id:
-                    ids.add( (source.tag, source.inv_id))
-                if source.bg_id:
-                    ids.add( (source.tag, source.bg_id))
-    return list(ids)
+    if isinstance(logic_tree, SourceLogicTree):
+        for fault_system in logic_tree.fault_system_lts:
+            for branch in fault_system.branches:
+                ids = get_ids(ids, branch, name=fault_system.short_name)
+    elif isinstance(logic_tree, FlattenedSourceLogicTree):
+        for composite_branch in logic_tree.branches:
+            for branch in composite_branch:
+                ids = get_ids(ids, branch, name=FlattenedSourceLogicTree.title)
+    
+    return ids
+
 
 def get_ltb(group):
     """NEW object-syle config"""

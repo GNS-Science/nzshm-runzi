@@ -14,10 +14,12 @@ import datetime as dt
 import itertools
 import copy
 
+import dacite
 from dateutil.tz import tzutc
 import requests
 
 from nshm_toshi_client.task_relation import TaskRelation
+from nzshm_model.source_logic_tree.logic_tree import SourceLogicTree, FlattenedSourceLogicTree
 
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
@@ -198,7 +200,7 @@ class BuilderTask():
             "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version"
         }
 
-        if ta.get('logic_tree_permutations'):
+        if ta.get('srm_logic_tree'):
             # This is LTB based oqenquake hazard job
             self.run_hazard(task_arguments, job_arguments, environment)
             return
@@ -388,15 +390,21 @@ class BuilderTask():
         #############
         # HAZARD sources and ltbs
         #############
-        logic_tree_permutations = ta['logic_tree_permutations']
-        if ta.get('split_source_branches'):
-            print(f'logic_tree_permutations: {logic_tree_permutations}')
-            log.info(f"splitting sources for task_id {ta['split_source_id']}")
-            logic_tree_permutations = [single_permutation(logic_tree_permutations, ta['split_source_id'])]
-            log.info(f"new logic_tree_permutations: {logic_tree_permutations}")
+        if ta.get('srm_logic_tree'):
+            srm_logic_tree = dacite.from_dict(
+                data_class=SourceLogicTree, data=ta['srm_logic_tree']
+            )
+        elif ta.get('srm_flat_logic_tree'):
+            srm_logic_tree = dacite.from_dict(
+                data_class=FlattenedSourceLogicTree, data=ta['srm_flat_logic_tree']
+            )
+        else:
+            raise ValueError("task_arguments must have 'srm_logic_tree' or 'srm_flat_logic_tree' key")
 
         # sources are the InversionSolutionNRML XML file(s) to include in the sources list
-        logic_tree_id_list = get_logic_tree_file_ids(logic_tree_permutations)
+        logic_tree_id_list = get_logic_tree_file_ids(srm_logic_tree) # UPDATE
+        print(logic_tree_id_list)
+        assert 0
 
         log.info(f"sources: {logic_tree_id_list}")
 
@@ -430,9 +438,10 @@ class BuilderTask():
 
         sources_folder = Path(config_folder, 'sources')
 
-        source_file_mapping = SourceModelLoader().unpack_sources(logic_tree_permutations, sources_folder)
+        source_file_mapping = SourceModelLoader().unpack_sources(logic_tree_permutations, sources_folder) # UPDATE
         #print(f'sources_list: {sources_list}')
 
+        # UPDATE: is there a nzshm_model method for this?
         # now the customised source_models.xml file must be written into the local configuration
         ltbs = [ltb for ltb in get_logic_tree_branches(logic_tree_permutations)]
         print("LTB:", len(ltbs), ltbs[0])
@@ -510,7 +519,7 @@ class BuilderTask():
                   -h, --help           show this help message and exit
                   -c, --create-tables  Ensure tables exist.
                 """
-                ltb = ta['logic_tree_permutations'][0]['permute'][0]['members'][0]
+                ltb = ta['logic_tree_permutations'][0]['permute'][0]['members'][0] # UPDATE
                 cmd = ['store_hazard_v3',
                         str(oq_result['oq_calc_id']),
                         solution_id,
