@@ -46,4 +46,5 @@ config_archive_id = "RmlsZToxMjkxNjk4" # GSIM LT v2, no sites
 num_workers = 4
 
 srm_logic_tree = "/home/chrisdc/NSHM/DEV/COMPONENTS/nzshm-model/SRM_LTs/python/SLT_v9p0p0.py"
-slt_decomposition = "component"
+# slt_decomposition = "component"
+slt_decomposition = "none"

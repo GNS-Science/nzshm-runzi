@@ -201,7 +201,7 @@ class BuilderTask():
             "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version"
         }
 
-        if ta.get('srm_logic_tree'):
+        if ta.get('srm_logic_tree') or ta.get('srm_flat_logic_tree'):
             # This is LTB based oqenquake hazard job
             self.run_hazard(task_arguments, job_arguments, environment)
             return
@@ -434,7 +434,6 @@ class BuilderTask():
         config_folder = explode_config_template(config_template_info, work_folder, ja['task_id'])
 
         sources_folder = Path(config_folder, 'sources')
-
         source_file_mapping = SourceModelLoader().unpack_sources(logic_tree_id_list, sources_folder) # UPDATE
         #print(f'sources_list: {sources_list}')
 
@@ -446,6 +445,7 @@ class BuilderTask():
         src_xml = build_sources_xml(doc, source_file_mapping)
         src_xml_file = Path(sources_folder, 'source_model.xml')
         write_sources(src_xml, src_xml_file)
+        assert 0
 
         config_filename = get_config_filename(config_template_info)
 

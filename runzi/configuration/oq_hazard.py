@@ -91,11 +91,8 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
 
 
 def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments ):
+    
     task_count = 0
-
-    headers={"x-api-key":API_KEY}
-    toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
-
     extra_env = [
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_STAGE", value="PROD"),
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_REGION", value="ap-southeast-2"),
@@ -134,7 +131,6 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             print(task_arguments)
             print('==========================')
             print('')
-
 
             for srm_logic_tree in get_decomposed_logic_trees(
                 subtask_arguments['srm_logic_tree'], subtask_arguments['slt_decomposition']

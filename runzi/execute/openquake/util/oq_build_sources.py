@@ -3,7 +3,7 @@
 import itertools
 import logging
 from pathlib import Path
-from typing import Union, Dict, Any
+from typing import Union, Dict, Any, Generator
 import collections
 
 import zipfile
@@ -31,7 +31,7 @@ LogicTreeBranch = collections.namedtuple('LogicTreeBranch', 'tag inv_id bg_id we
 
 def get_decomposed_logic_trees(
         srm_logic_tree: SourceLogicTree, slt_decomposition: str
-) -> Union[SourceLogicTree, FlattenedSourceLogicTree]:
+) -> Generator[Union[SourceLogicTree, FlattenedSourceLogicTree], None, None]:
     """
     yield SourceLogicTree or FlattenedSourceLogicTree objects according to the decomposition scheme:
     'component': yield a SourceLogicTree with a single FaultSystem with a single Branch, for each component branch
@@ -44,7 +44,7 @@ def get_decomposed_logic_trees(
         raise ValueError("slt_decomposition must be one of 'none', 'composite', component'")
     
     if slt_decomposition == 'none':
-        return srm_logic_tree
+        yield srm_logic_tree
     elif slt_decomposition == 'component':
         for fault_system in srm_logic_tree.fault_system_lts:
             for branch in fault_system.branches:
@@ -79,8 +79,10 @@ def get_decomposed_logic_trees(
 def get_logic_tree_file_ids(logic_tree: Union[SourceLogicTree, FlattenedSourceLogicTree]):
 
     def get_ids(ids, branch, name=''):
-        ids.add((':'.join((name, str(branch.values), 'IFM')), branch.onfault_nrml_id))
-        ids.add((':'.join((name, str(branch.values), 'DSM')), branch.distributed_nrml_id))
+        if branch.onfault_nrml_id:
+            ids.add((':'.join((name, str(branch.values), 'IFM')), branch.onfault_nrml_id))
+        if branch.distributed_nrml_id:
+            ids.add((':'.join((name, str(branch.values), 'DSM')), branch.distributed_nrml_id))
         return (ids)
 
     ids = set()
@@ -90,8 +92,8 @@ def get_logic_tree_file_ids(logic_tree: Union[SourceLogicTree, FlattenedSourceLo
                 ids = get_ids(ids, branch, name=fault_system.short_name)
     elif isinstance(logic_tree, FlattenedSourceLogicTree):
         for composite_branch in logic_tree.branches:
-            for branch in composite_branch:
-                ids = get_ids(ids, branch, name=FlattenedSourceLogicTree.title)
+            for branch in composite_branch.branches:
+                ids = get_ids(ids, branch)
     
     return ids
 
@@ -201,13 +203,18 @@ def build_sources_xml(nrml_doc: NrmlDocument, source_file_mapping: Dict[str, Any
     UW = E.uncertaintyWeight
 
     nrml = NRML()
+    extended_model = False
     for logic_tree in nrml_doc.logic_trees:
         lt = LT(logicTreeID=logic_tree.logicTreeID)
         lt.text = None
         ltbl = LTBL(brachingLevelID="1")
         ltbl.text = None
         for branch_set in logic_tree.branch_sets:
-            bs = LTBS(uncertaintyType=branch_set.uncertaintyType, branchSetID=branch_set.branchSetID)
+            if extended_model:
+                bs = LTBS(uncertaintyType="extendedModel", branchSetID=branch_set.branchSetID)
+            else:
+                bs = LTBS(uncertaintyType=branch_set.uncertaintyType, branchSetID=branch_set.branchSetID)
+            extended_model = True
             bs.text = None
             for branch in branch_set.branches:
                 b = LTB(UW(str(branch.uncertainty_weight)), branchID=branch.branchID)
