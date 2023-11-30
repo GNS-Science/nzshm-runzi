@@ -77,8 +77,10 @@ def update_location_list(location_list: List[str]):
 def run_oq_hazard_f(config: Dict[Any, Any]):
 
     validate_config(config)
-    if config["slt_decomposition"] == "composite":
-        msg = "composite SRM logic tree not supported. See https://github.com/GNS-Science/nzshm-model/issues/23"
+    if config["slt_decomposition"] in ["composite", "none"]:
+        msg = (f"config['slt_decomposition'] SRM logic tree not supported. "
+               "See https://github.com/GNS-Science/nzshm-model/issues/23 and "
+               "https://github.com/GNS-Science/nzshm-runzi/issues/162")
         raise ValueError(msg)
 
     srm_logic_tree = from_config(config["srm_logic_tree"])

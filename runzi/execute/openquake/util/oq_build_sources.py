@@ -223,8 +223,8 @@ def build_sources_xml(nrml_doc: NrmlDocument, source_file_mapping: Dict[str, Any
                 for uncertainty_model in branch.uncertainty_models:
                     files += '\t' + '\t'.join(source_file_mapping[uncertainty_model.toshi_nrml_id]['sources'])
                 b.append(UM(files))
-            bs.append(b)
-        ltbl.append(bs)
+                bs.append(b)
+            ltbl.append(bs)
         lt.append(ltbl)
     nrml.append(lt)
 
