@@ -3,7 +3,7 @@
 import itertools
 import logging
 from pathlib import Path
-from typing import Union
+from typing import Union, Dict, Any
 import collections
 
 import zipfile
@@ -11,6 +11,7 @@ from lxml import etree
 from lxml.builder import ElementMaker # lxml only !
 
 from nzshm_model.source_logic_tree.logic_tree import SourceLogicTree, FaultSystemLogicTree, FlattenedSourceLogicTree
+from nzshm_model.nrml.logic_tree import NrmlDocument
 
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
@@ -75,7 +76,6 @@ def get_decomposed_logic_trees(
             )
 
 
-
 def get_logic_tree_file_ids(logic_tree: Union[SourceLogicTree, FlattenedSourceLogicTree]):
 
     def get_ids(ids, branch, name=''):
@@ -136,38 +136,22 @@ def single_permutation(permutations, task_id):
     return new_permutations
 
 
-
-
-
 class SourceModelLoader():
 
     def __init__(self):
         headers={"x-api-key":API_KEY}
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-    def unpack_sources(self, logic_tree_branch_permutations, source_path):
-        """download and extract the sources given a list of LTBS."""
+    def unpack_sources(self, id_list, source_path):
+        """download and extract the sources given a list of nrml source IDs."""
 
         sources = dict()
-
-        # ltbs = [x for x in get_logic_tree_file_ids(logic_tree_branch_permutations)]
-
-        # print(ltbs)
-        # print(len(ltbs))
-        print(logic_tree_branch_permutations)
-
-        for src_name, nrml_id in get_logic_tree_file_ids(logic_tree_branch_permutations):
+        for src_name, nrml_id in id_list:
             if nrml_id in sources.keys():
                 continue
 
             log.info(f"get src : {src_name} {nrml_id}")
-
             gen = get_output_file_id(self._toshi_api, nrml_id)
-
-            # g = list(gen)
-            # print(g)
-            # assert 0
-
             source_nrml = download_files(self._toshi_api, gen, str(WORK_PATH), overwrite=False)
             log.info(f"source_nrml: {source_nrml}")
 
@@ -201,54 +185,43 @@ class SourceModelLoader():
         return sources
 
 
-
-def build_sources_xml(logic_tree_branches, source_file_mapping):
-    """Build a source model for a set of LTBs with their source files."""
+def build_sources_xml(nrml_doc: NrmlDocument, source_file_mapping: Dict[str, Any]) -> str:
+    """
+    Build a source model for a NRML logic tree object with their source files.
+    This will ultimatly be replaced by a nzhsm-model method for writing nrml files.
+    """
     E = ElementMaker(namespace="http://openquake.org/xmlns/nrml/0.5",
                       nsmap={"gml" : "http://www.opengis.net/gml", None:"http://openquake.org/xmlns/nrml/0.5"})
     NRML = E.nrml
     LT = E.logicTree
-    LTBS = E.logicTreeBranchSet
     LTBL = E.logicTreeBranchingLevel
+    LTBS = E.logicTreeBranchSet
     LTB = E.logicTreeBranch
     UM = E.uncertaintyModel
     UW = E.uncertaintyWeight
 
-    ltbs = LTBS(uncertaintyType="sourceModel", branchSetID="BS-NONCE1")
+    nrml = NRML()
+    for logic_tree in nrml_doc.logic_trees:
+        lt = LT(logicTreeID=logic_tree.logicTreeID)
+        lt.text = None
+        ltbl = LTBL(brachingLevelID="1")
+        ltbl.text = None
+        for branch_set in logic_tree.branch_sets:
+            bs = LTBS(uncertaintyType=branch_set.uncertaintyType, branchSetID=branch_set.branchSetID)
+            bs.text = None
+            for branch in branch_set.branches:
+                b = LTB(UW(str(branch.uncertainty_weight)), branchID=branch.branchID)
+                b.text = None
+                files = ""
+                for uncertainty_model in branch.uncertainty_models:
+                    files += '\t' + '\t'.join(source_file_mapping[uncertainty_model.toshi_nrml_id]['sources'])
+                b.append(UM(files))
+            bs.append(b)
+        ltbl.append(bs)
+        lt.append(ltbl)
+    nrml.append(lt)
 
-    def get_branch_sources(ltb):
-        bs = ""
-        if ltb.inv_id:
-            bs += ltb.inv_id
-        if ltb.bg_id:
-            bs += f"|{ltb.bg_id}"
-        return bs
-
-    total_branch_weight = 0
-    branch_weight = 1.0 / len(logic_tree_branches)
-    for branch in logic_tree_branches:
-            files = ""
-            branch_name = "|".join([get_branch_sources(ltb) for ltb in branch])
-
-            for ltb in branch:
-                #print(ltb)
-                #name, src_id, wt = source_tuple
-                if ltb.inv_id:
-                    files += "\t".join(source_file_mapping[ltb.inv_id]['sources']) + "\t"
-                if ltb.bg_id:
-                    files += "\t".join(source_file_mapping[ltb.bg_id]['sources']) + "\t"
-                #branch_weight *= ltb.weight
-            #branch_weight = round(branch_weight, 10)
-            total_branch_weight += branch_weight
-            ltb = LTB( UM(files), UW(str(branch_weight)), branchID=branch_name)
-            ltbs.append(ltb)
-
-    print(f'total_branch_weight: {total_branch_weight}')
-    assert round(total_branch_weight, 8) == 1.0
-
-    nrml = NRML( LT( LTBL( ltbs, branchingLevelID="1" ), logicTreeID = "Combined"))
     return etree.tostring(nrml, pretty_print=True).decode()
-
 
 
 def build_disagg_sources_xml(source_files):
@@ -273,7 +246,6 @@ def build_disagg_sources_xml(source_files):
 
     nrml = NRML( LT( LTBL( ltbs, branchingLevelID="1" ), logicTreeID = "DISAGG"))
     return etree.tostring(nrml, pretty_print=True).decode()
-
 
 
 if __name__ == "__main__":

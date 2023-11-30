@@ -20,6 +20,7 @@ import requests
 
 from nshm_toshi_client.task_relation import TaskRelation
 from nzshm_model.source_logic_tree.logic_tree import SourceLogicTree, FlattenedSourceLogicTree
+from nzshm_model.nrml.logic_tree import NrmlDocument
 
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
@@ -403,11 +404,7 @@ class BuilderTask():
 
         # sources are the InversionSolutionNRML XML file(s) to include in the sources list
         logic_tree_id_list = get_logic_tree_file_ids(srm_logic_tree) # UPDATE
-        print(logic_tree_id_list)
-        assert 0
-
         log.info(f"sources: {logic_tree_id_list}")
-
 
         ############
         # API SETUP
@@ -438,14 +435,15 @@ class BuilderTask():
 
         sources_folder = Path(config_folder, 'sources')
 
-        source_file_mapping = SourceModelLoader().unpack_sources(logic_tree_permutations, sources_folder) # UPDATE
+        source_file_mapping = SourceModelLoader().unpack_sources(logic_tree_id_list, sources_folder) # UPDATE
         #print(f'sources_list: {sources_list}')
 
         # UPDATE: is there a nzshm_model method for this?
         # now the customised source_models.xml file must be written into the local configuration
-        ltbs = [ltb for ltb in get_logic_tree_branches(logic_tree_permutations)]
-        print("LTB:", len(ltbs), ltbs[0])
-        src_xml = build_sources_xml(ltbs, source_file_mapping)
+        # ltbs = [ltb for ltb in get_logic_tree_branches(logic_tree_permutations)]
+        # print("LTB:", len(ltbs), ltbs[0])
+        doc = NrmlDocument.from_model_slt(srm_logic_tree)
+        src_xml = build_sources_xml(doc, source_file_mapping)
         src_xml_file = Path(sources_folder, 'source_model.xml')
         write_sources(src_xml, src_xml_file)
 
