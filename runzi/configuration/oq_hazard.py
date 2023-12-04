@@ -104,7 +104,6 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             for v2 in v.values():
                 yield v2
 
-    task_count = 0
     extra_env = [
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_STAGE", value="PROD"),
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_REGION", value="ap-southeast-2"),
@@ -118,6 +117,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
     # )
     vs30s = subtask_arguments["vs30"] if isinstance(subtask_arguments["vs30"], list) else [subtask_arguments["vs30"], ]
     iter_keys = unpack_keys(iterate)
+    task_count = 0
     for vs30 in vs30s:
         for iter_values in itertools.product(*unpack_values(iterate)):
 
