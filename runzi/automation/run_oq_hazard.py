@@ -77,6 +77,8 @@ def update_location_list(location_list: List[str]):
 def run_oq_hazard_f(config: Dict[Any, Any]):
 
     # validate_config(config)
+    #TODO: - validate config
+    #      - parse max distance parameter
     if config["logic_tree"]["slt_decomposition"] in ["composite", "none"]:
         msg = (f"config['logic_tree']['slt_decomposition'] SRM logic tree not supported. "
                "See https://github.com/GNS-Science/nzshm-model/issues/23 and "

@@ -35,10 +35,7 @@ rupture_mesh_spacing = [2, 4]
 
 [openquake_single.calculation]
 truncation_level = 3
-# maximum_distance = { "Active Shallow Crust" = [[4.0, 0], [5.0, 100.0], [6.0, 200.0], [9.5, 250.0]], "Subduction Interface" = [[5.0, 0], [6.0, 200.0], [10, 600.0]], "Subduction Intraslab" = [[5.0, 0], [6.0, 200.0], [10, 700.0]] }
 
-# alternative method, though this can be prone to error because any TRT not overwritten will get the defaults
-# maximum_distance."Active Shallow Crust" = [[4.0, 0], [5.0, 100.0], [6.0, 200.0], [9.5, 250.0]]
-# maximum_distance."Subduction Interface" = [[5.0, 0], [6.0, 200.0], [10, 600.0]]
-# maximum_distance."Subduction Intraslab" = [[5.0, 0], [6.0, 200.0], [10, 700.0]]
+[openquake_iterate.calculation]
+maximum_distance = [{ "Active Shallow Crust" = "[[4.0, 0], [5.0, 100.0], [6.0, 200.0], [9.5, 250.0]]", "Subduction Interface" = "[[5.0, 0], [6.0, 200.0], [10, 600.0]]", "Subduction Intraslab" = "[[5.0, 0], [6.0, 200.0], [10, 700.0]]" }]
 

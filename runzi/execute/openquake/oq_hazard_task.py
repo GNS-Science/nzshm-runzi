@@ -469,6 +469,7 @@ class BuilderTask():
         config_filepath = Path(config_folder, config_filename)
         oq_config = OpenquakeConfig()\
             .set_sites("./sites.csv")\
+            .set_source_logic_tree_file('./sources/source_model.xml')\
             .set_gsim_logic_tree_file("./gsim_model.xml")\
             .set_disaggregation(enable = ta['disagg_conf']['enabled'],
                 values = ta['disagg_conf']['config'])\

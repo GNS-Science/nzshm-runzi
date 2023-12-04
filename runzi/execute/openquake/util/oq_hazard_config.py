@@ -56,9 +56,16 @@ class OpenquakeConfig():
         for k,v in self.DEFAULT_CONFIG.items():
             self.config[k] = v
 
+    def set_source_logic_tree_file(self, source_lt_filepath):
+        self.set_parameter("calculation", "source_model_logic_tree_file", source_lt_filepath)
+        return self
+
     def set_parameter(self, parameter_table, parameter_name, value):
         self.unset_parameter(parameter_table, parameter_name)
-        self.config[parameter_table][parameter_name] = str(value)
+        if (parameter_table == "calculation") & (parameter_name == "maximum_distance"):
+            self.set_maximum_distance(value)
+        else:
+            self.config[parameter_table][parameter_name] = str(value)
         return self
 
     def unset_parameter(self, parameter_table, parameter_name):
@@ -66,6 +73,14 @@ class OpenquakeConfig():
             return
         else:
             self.config[parameter_table].pop(parameter_name, None)
+    
+    def set_maximum_distance(self, value):
+        import ast
+        value_new = {}
+        for trt, dist_str in value.items():
+            value_new[trt] = [tuple(dm) for dm in ast.literal_eval(dist_str)]
+        self.config["calculation"]["maximum_distance"] = str(value_new)
+        return self
 
     # def set_rupture_mesh_spacing(self, rupture_mesh_spacing):
     #     """We can assume an erf section exists..."""
