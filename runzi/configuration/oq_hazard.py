@@ -91,7 +91,19 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
 
 
 def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments ):
-    
+
+    def unpack_keys(d):
+        keys = []
+        for k1,v in d.items():
+            for k2 in v.keys():
+                keys.append((k1, k2))
+        return keys
+
+    def unpack_values(d):
+        for v in d.values():
+            for v2 in v.values():
+                yield v2
+
     task_count = 0
     extra_env = [
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_STAGE", value="PROD"),
@@ -99,54 +111,52 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_NUM_WORKERS", value="1"),
     ]
 
-    for (
-        vs30,
-        location_list,
-        disagg_conf,
-        rupture_mesh_spacing,
-        ps_grid_spacing
-        )\
-        in itertools.product(
-            subtask_arguments['vs30s'],
-            subtask_arguments['location_lists'],
-            subtask_arguments['disagg_confs'],
-            subtask_arguments['rupture_mesh_spacings'],
-            subtask_arguments['ps_grid_spacings']
-            ):
+    iterate = subtask_arguments["config_iterate"]
+    # iterate["site_params"] = dict() if not iterate.get("site_params") else iterate["site_params"]
+    # iterate["site_params"]["vs30"] = (
+    #     subtask_arguments["vs30"] if isinstance(subtask_arguments["vs30"], list) else [subtask_arguments["vs30"]]
+    # )
+    vs30s = subtask_arguments["vs30"] if isinstance(subtask_arguments["vs30"], list) else [subtask_arguments["vs30"], ]
+    iter_keys = unpack_keys(iterate)
+    for vs30 in vs30s:
+        for iter_values in itertools.product(*unpack_values(iterate)):
 
-            task_arguments = dict(
-                config_archive_id = subtask_arguments["config_archive_id"], #File archive object
-                model_type = model_type.name,
-                intensity_spec = subtask_arguments["intensity_spec"],
-                vs30 = vs30,
-                location_list = location_list,
-                disagg_conf = disagg_conf,
-                rupture_mesh_spacing = rupture_mesh_spacing,
-                ps_grid_spacing = ps_grid_spacing
-            )
+                task_arguments = dict(
+                    gmcm_logic_tree=subtask_arguments["gmcm_logic_tree"],
+                    model_type = model_type.name,
+                    intensity_spec = subtask_arguments["intensity_spec"],
+                    location_list = subtask_arguments["location_list"],
+                    vs30 = vs30,
+                    disagg_conf = subtask_arguments["disagg_conf"],
+                )
+                task_arguments["oq"] = subtask_arguments["config_scalar"]
+                iter_dict = dict()
+                for k, v in zip(iter_keys, iter_values):
+                    iter_dict[k[0]] = {k[1]: v}
+                task_arguments["oq"].update(iter_dict)
 
-            print('')
-            print('task arguments MERGED')
-            print('==========================')
-            print(task_arguments)
-            print('==========================')
-            print('')
+                print('')
+                print('task arguments MERGED')
+                print('==========================')
+                print(task_arguments)
+                print('==========================')
+                print('')
 
-            for srm_logic_tree in get_decomposed_logic_trees(
-                subtask_arguments['srm_logic_tree'], subtask_arguments['slt_decomposition']
-                ):
+                for srm_logic_tree in get_decomposed_logic_trees(
+                    subtask_arguments['srm_logic_tree'], subtask_arguments['slt_decomposition']
+                    ):
 
-                task_count +=1
-                job_arguments = dict(
-                    task_id = task_count,
-                    general_task_id = general_task_id,
-                    use_api = USE_API,
-                    )
-                if subtask_arguments['slt_decomposition'] == 'composite':
-                    task_arguments['srm_flat_logic_tree'] = asdict(srm_logic_tree)
-                else:
-                    task_arguments['srm_logic_tree'] = asdict(srm_logic_tree) # serialize logic tree object?
-                yield build_task(task_arguments, job_arguments, task_count, extra_env)
+                    task_count +=1
+                    job_arguments = dict(
+                        task_id = task_count,
+                        general_task_id = general_task_id,
+                        use_api = USE_API,
+                        )
+                    if subtask_arguments['slt_decomposition'] == 'composite':
+                        task_arguments['srm_flat_logic_tree'] = asdict(srm_logic_tree)
+                    else:
+                        task_arguments['srm_logic_tree'] = asdict(srm_logic_tree) # serialize logic tree object?
+                    yield build_task(task_arguments, job_arguments, task_count, extra_env)
 
 
             # if not (SPLIT_SOURCE_BRANCHES or GRANULAR):

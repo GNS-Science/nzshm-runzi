@@ -1,49 +1,45 @@
+[general]
 title = "OpenQuake Hazard Calcs"
 description = "Logic Tree 9.0.1, locations for cave locations"
 
-imts = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)', 'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)', 'SA(6.0)','SA(7.5)', 'SA(10.0)']
-# era_measures_new = ["SA(0.15)",	"SA(0.25)", "SA(0.35)",	"SA(0.6)", "SA(0.8)", "SA(0.9)", "SA(1.25)", "SA(1.75)", "SA(2.5)", "SA(3.5)", "SA(4.5)"]
-# era_measures_mcverry = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)', 'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)']
+[calculation]
+num_workers = 4
+gsim_logic_tree_file = "/home/chrisdc/NSHM/oqconfigs/01.05.2023/NZ_NSHM_GMM_LT_final_EE.xml"
 
+[hazard_curve]
+imts = [
+    'PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)',
+    'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)', 'SA(6.0)','SA(7.5)', 'SA(10.0)']
 imtls = [
-    0.0001,
-    0.0002,
-    0.0004,
-    0.0006,
-    0.0008,
-    0.001,
-    0.002,
-    0.004,
-    0.006,
-    0.008,
-    0.01,
-    0.02,
-    0.04,
-    0.06,
-    0.08,
-    0.1,
-    0.2,
-    0.3,
-    0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2,
-    2.4, 2.6, 2.8, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0
+    0.0001, 0.0002, 0.0004, 0.0006, 0.0008,
+    0.001, 0.002, 0.004, 0.006, 0.008,
+    0.01, 0.02, 0.04, 0.06, 0.08,
+    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+    1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0
     ]
 
-vs30s = [1000]
+[site_params]
+vs30 = 1000
+location_list = ['WLG','AKL','DUD','CHC']
 
-# location_lists = [['NZ', 'NZ_0_1_NB_1_1', 'SRWG214']]
-# location_lists = [['NZ', 'NZ_0_1_NB_1_1']]
-# location_lists = [["NZ"]]
-# location_lists = [['-39.500~176.900', '-38.650~178.000']]
-# location_lists = [['HB']]
-# location_lists = [locations_from_csv('/home/chrisdc/NSHM/Locations/transpower_locations.csv')]
-location_lists = [["/home/chrisdc/NSHM/Locations/Cave coordinates for hazard curves.csv"]]
-# location_lists = [['WLG','AKL','DUD','CHC']]
-
-rupture_mesh_spacings = [4]
-ps_grid_spacings = [30]
-config_archive_id = "RmlsZToxMjkxNjk4" # GSIM LT v2, no sites
-
-num_workers = 4
-
+[logic_tree]
 srm_logic_tree = "/home/chrisdc/NSHM/DEV/COMPONENTS/nzshm-model/SRM_LTs/python/SLT_v9p0p0.py"
 slt_decomposition = "component"
+
+# override any of the defaults runzi uses for openquake here either for iteration or just a single value
+[openquake_iterate.general]
+ps_grid_spacing = [15, 30]
+
+[openquake_iterate.erf]
+rupture_mesh_spacing = [2, 4]
+
+[openquake_single.calculation]
+truncation_level = 3
+foobar = "hello"
+# maximum_distance = { "Active Shallow Crust" = [[4.0, 0], [5.0, 100.0], [6.0, 200.0], [9.5, 250.0]], "Subduction Interface" = [[5.0, 0], [6.0, 200.0], [10, 600.0]], "Subduction Intraslab" = [[5.0, 0], [6.0, 200.0], [10, 700.0]] }
+
+# alternative method, though this can be prone to error because any TRT not overwritten will get the defaults
+# maximum_distance."Active Shallow Crust" = [[4.0, 0], [5.0, 100.0], [6.0, 200.0], [9.5, 250.0]]
+# maximum_distance."Subduction Interface" = [[5.0, 0], [6.0, 200.0], [10, 600.0]]
+# maximum_distance."Subduction Intraslab" = [[5.0, 0], [6.0, 200.0], [10, 700.0]]
+

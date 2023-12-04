@@ -28,27 +28,28 @@ def transform_gsims(gsims: Dict):
 
 
 def build_gsim_xml(gsims):
-    """Build a gsim model for the suppliced TRs."""
-    E = ElementMaker(namespace="http://openquake.org/xmlns/nrml/0.5",
-                      nsmap={"gml" : "http://www.opengis.net/gml", None:"http://openquake.org/xmlns/nrml/0.5"})
-    NRML = E.nrml
-    LT = E.logicTree
-    LTBS = E.logicTreeBranchSet
-    LTB = E.logicTreeBranch
-    UM = E.uncertaintyModel
-    UW = E.uncertaintyWeight
+    # """Build a gsim model for the suppliced TRs."""
+    # E = ElementMaker(namespace="http://openquake.org/xmlns/nrml/0.5",
+    #                   nsmap={"gml" : "http://www.opengis.net/gml", None:"http://openquake.org/xmlns/nrml/0.5"})
+    # NRML = E.nrml
+    # LT = E.logicTree
+    # LTBS = E.logicTreeBranchSet
+    # LTB = E.logicTreeBranch
+    # UM = E.uncertaintyModel
+    # UW = E.uncertaintyWeight
 
-    logic_tree = LT()
-    branch_sets = 0
-    for tr, gsim in gsims.items():
-        bid = str(branch_sets)
-        branch_set = LTBS(uncertaintyType="gmpeModel", branchSetID=bid, applyToTectonicRegionType=tr )
-        branch_set.append( LTB( UM(gsim), UW("1.0"), branchID=bid))
-        logic_tree.append(branch_set)
-        branch_sets +=1
+    # logic_tree = LT()
+    # branch_sets = 0
+    # for tr, gsim in gsims.items():
+    #     bid = str(branch_sets)
+    #     branch_set = LTBS(uncertaintyType="gmpeModel", branchSetID=bid, applyToTectonicRegionType=tr )
+    #     branch_set.append( LTB( UM(gsim), UW("1.0"), branchID=bid))
+    #     logic_tree.append(branch_set)
+    #     branch_sets +=1
 
-    nrml = NRML( logic_tree )
-    return etree.tostring(nrml, pretty_print=True).decode()
+    # nrml = NRML( logic_tree )
+    # return etree.tostring(nrml, pretty_print=True).decode()
+    return gsims
 
 
 if __name__ == "__main__":

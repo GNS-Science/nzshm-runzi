@@ -76,19 +76,24 @@ def update_location_list(location_list: List[str]):
 
 def run_oq_hazard_f(config: Dict[Any, Any]):
 
-    validate_config(config)
-    if config["slt_decomposition"] in ["composite", "none"]:
-        msg = (f"config['slt_decomposition'] SRM logic tree not supported. "
+    # validate_config(config)
+    if config["logic_tree"]["slt_decomposition"] in ["composite", "none"]:
+        msg = (f"config['logic_tree']['slt_decomposition'] SRM logic tree not supported. "
                "See https://github.com/GNS-Science/nzshm-model/issues/23 and "
                "https://github.com/GNS-Science/nzshm-runzi/issues/162")
         raise ValueError(msg)
 
-    srm_logic_tree = from_config(config["srm_logic_tree"])
-    if not config.get("num_workers"):
-        config["num_workers"] = 1
-    location_lists = [
-        update_location_list(loc_list) for loc_list in config["location_lists"]
-    ]
+    srm_logic_tree = from_config(config["logic_tree"]["srm_logic_tree"])
+    with Path(config["calculation"]["gsim_logic_tree_file"]).open() as gltf:
+        gmcm_logic_tree = gltf.read()
+
+    if not config["calculation"].get("num_workers"):
+        config["calculation"]["num_workers"] = 1
+
+    location_list = update_location_list(config["site_params"]["location_list"])
+
+    imts = config["hazard_curve"]["imts"]
+    imtls = config["hazard_curve"]["imtls"]
 
     t0 = dt.datetime.utcnow()
 
@@ -108,17 +113,15 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     args = dict(
-        # a Toshi File containing zipped configuration
-        config_archive_id = config["config_archive_id"],
         srm_logic_tree =  srm_logic_tree,
-        slt_decomposition = config["slt_decomposition"],
-        intensity_spec = { "tag": "fixed", "measures": config["imts"], "levels": config["imtls"]},
-        vs30s = config["vs30s"],
-        location_lists = location_lists,
-        disagg_confs = [{'enabled': False, 'config': {}},
-        ],
-        rupture_mesh_spacings = config["rupture_mesh_spacings"],
-        ps_grid_spacings = config["ps_grid_spacings"],  # km
+        gmcm_logic_tree = gmcm_logic_tree,
+        slt_decomposition = config["logic_tree"]["slt_decomposition"],
+        intensity_spec = { "tag": "fixed", "measures": imts, "levels": imtls},
+        vs30 = config["site_params"]["vs30"],
+        location_list = location_list,
+        disagg_conf = {'enabled': False, 'config': {}},
+        config_iterate = config["openquake_iterate"],
+        config_scalar = config["openquake_single"],
     )
 
     args_list = []
@@ -129,7 +132,6 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
     model_type = ModelType.COMPOSITE
 
     if USE_API:
-
         #create new task in toshi_api
         gt_args = CreateGeneralTaskArgs(
             agent_name=pwd.getpwuid(os.getuid()).pw_name,
@@ -139,7 +141,6 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
             .set_argument_list(args_list)\
             .set_subtask_type(task_type)\
             .set_model_type(model_type)
-
         new_gt_id = toshi_api.general_task.create_task(gt_args)
     else:
         new_gt_id = None
@@ -147,10 +148,11 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
     print("GENERAL_TASK_ID:", new_gt_id)
 
     tasks = build_tasks(new_gt_id, args, task_type, model_type)
+    assert 0
     
-    print('worker count: ', config["num_workers"])
+    print('worker count: ', config["calculation"]["num_workers"])
     print(f'tasks to schedule: {len(tasks)}')
-    schedule_tasks(tasks, config["num_workers"])
+    schedule_tasks(tasks, config["calculation"]["num_workers"])
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())

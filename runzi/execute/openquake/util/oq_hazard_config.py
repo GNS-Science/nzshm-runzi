@@ -8,29 +8,6 @@ from pathlib import Path
 
 log = logging.getLogger(__name__)
 
-# commented out site lists w/o backarc flag
-# SITES = dict(
-#     WLG = {"sites": "174.7762 -41.2865"},
-#     # NZ4 = {"site_model_file": "site_model_nz_4.csv"},
-#     # NZ34 = {"site_model_file": "site_model_nz_34.csv"},
-#     # GRD1 = {"sites_csv": "NZ_whole_country_10k.csv"},
-#     # NZ6 =  {"site_model_file": "site_model_test.csv"},
-#     # GRD_NZ_0_5 = {"sites_csv": "./grids/grid-NZ-0.5-0.0003.nb1.csv" },               # 50km  240 sites, 0.5 degs 1 neighbour
-#     # GRD_NZ_0_25 = {"sites_csv": "./NZ_POLYS_0.25.csv" },                             # 25km  471 sites, 0.25 degs 0 neighbour
-#     # GRD_NZ_0_1 = {"sites_csv": "./grids/grid-NZ-0.1-0.0003.nb1.csv" },               # 10km 3618 sites, 0.1 degs, 1 neighbour
-#     # GRD_WLGREG_0_05 = {"sites_csv": "./grids/grid-Wellington-0.05.0003.nb1.csv" },   #  5km  62 sites
-#     # GRD_WLGREG_0_01 = {"sites_csv": "./grids/grid-Wellington-0.01.0003.nb1.csv" },   #  1km 764 sites
-#     # GRD_NZ_0_2_NZ34 = {"sites_csv": "./grid-NZ-0.2-0.0003.nb1.nz34.csv" },            # 20km 1050 site + NZ35 locations
-#     GRD_NZ_0_2_BA = {"site_model_file": "./grids/backarc2_02deg_1n.csv" },            # 20km 1097 site with backarc flag
-#     GRD_NZ_0_1_BA = {"site_model_file": "./grids/backarc2_01deg_1n.csv" },            # 10km 3740 site with backarc flag
-#     GRD_NZ_0_1_NZ34_BA = {"site_model_file": "./backarc2_01deg_1n_nz34.csv" },            # 10km 3740 site + NZ34 with backarc flag
-#     GRD_NZ_0_2_NZ34_BA = {"site_model_file": "./backarc2_02deg_1n_nz34.csv" },            # 20km 1097 site + NZ34 with backarc flag
-#     NZ34_BA = {"site_model_file": "./site_model_nz_34_BA.csv" },            # NZ34 with backarc flag
-#     SRWG214 = {"site_model_file": "./site_model_srwg214.csv" },            # SRWG locations (includes ba flag)
-#     SRWG214_NZ34 = {"site_model_file": "./site_model_srwg214_nz34.csv" },
-#     GRD_NZ_01_SRWG214_NZ34 = {"site_model_file": "./site_model_srwg214.csv" },          
-# )
-
 #Sanjay new values
 DEFAULT_DISAGG = dict(
     max_sites_disagg = 1,
@@ -44,34 +21,70 @@ DEFAULT_DISAGG = dict(
 
 class OpenquakeConfig():
 
-    def __init__(self, config):
+    DEFAULT_CONFIG = dict(
+        general = dict(
+            random_seed = 25,
+            calculation_mode = 'classical',
+            ps_grid_spacing = 30,
+        ),
+        logic_tree = dict(
+            number_of_logic_tree_samples = 0,
+        ),
+        erf = dict(
+            rupture_mesh_spacing = 5,
+            width_of_mfd_bin = 0.1,
+            complex_fault_mesh_spacing = 10.0,
+            area_source_discretization = 10.0,
+        ),
+        site_params = dict(
+            reference_vs30_type = 'measured',
+        ),
+        calculation = dict(
+            investigation_time = 1.0,
+            truncation_level = 4,
+            maximum_distance = {'Active Shallow Crust': [(4.0, 0), (5.0, 100.0), (6.0, 200.0), (9.5, 300.0)],
+                                'Subduction Interface': [(5.0, 0), (6.0, 200.0), (10, 500.0)],
+                                'Subduction Intraslab': [(5.0, 0), (6.0, 200.0), (10, 500.0)]}
+        ),
+        output = dict(
+            individual_curves = 'true',
+        ),
+    )
+
+    def __init__(self):
         self.config = configparser.ConfigParser()
-        self.config.read_file(config)
+        for k,v in self.DEFAULT_CONFIG.items():
+            self.config[k] = v
 
-    def set_ps_grid_spacing(self, value=30):
-        self.config.pop('ps_grid_spacing', None) # destroy any existing disagg settings
-        self.config['general']['ps_grid_spacing'] = str(value)
+    def set_parameter(self, parameter_table, parameter_name, value):
+        self.unset_parameter(parameter_table, parameter_name)
+        self.config[parameter_table][parameter_name] = str(value)
         return self
 
-    def set_rupture_mesh_spacing(self, rupture_mesh_spacing):
-        """We can assume an erf section exists..."""
-        self.config['erf']['rupture_mesh_spacing'] = str(rupture_mesh_spacing)
-        #self.config['erf']['complex_fault_mesh_spacing'] = str(rupture_mesh_spacing) #CDC thinks this is only for complex
-        return self
+    def unset_parameter(self, parameter_table, parameter_name):
+        if parameter_table not in self.config:
+            return
+        else:
+            self.config[parameter_table].pop(parameter_name, None)
 
-    def clear_sites(self):
-        #destroy any existing site configs
-        self.config['site_params'].pop('sites', None)
-        self.config['site_params'].pop('sites_csv', None)
-        self.config['site_params'].pop('site_model_file', None)
-        self.config.pop('geometry', None)
-        return self
+    # def set_rupture_mesh_spacing(self, rupture_mesh_spacing):
+    #     """We can assume an erf section exists..."""
+    #     self.config['erf']['rupture_mesh_spacing'] = str(rupture_mesh_spacing)
+    #     #self.config['erf']['complex_fault_mesh_spacing'] = str(rupture_mesh_spacing) #CDC thinks this is only for complex
+    #     return self
+
+    # def clear_sites(self):
+    #     #destroy any existing site configs
+    #     self.config['site_params'].pop('sites', None)
+    #     self.config['site_params'].pop('sites_csv', None)
+    #     self.config['site_params'].pop('site_model_file', None)
+    #     self.config.pop('geometry', None)
+    #     return self
 
     def set_sites(self, site_model_filename):
-        self.clear_sites()
         self.config['site_params']['site_model_file'] = site_model_filename
         return self
-
+    
     def set_disagg_site_model(self):
         self.clear_sites()
         self.config['site_params']['site_model_file'] = 'site.csv'
@@ -152,32 +165,9 @@ class OpenquakeConfig():
 
 if __name__ == "__main__":
 
-    sample_conf = """
-    [general]
-    calculation_mode = disaggregation
-
-    [logic_tree]
-
-    number_of_logic_tree_samples = 0
-
-    [erf]
-
-    [site_params]
-    sites = 174.7762 -41.2865
-    foo=bar
-    ps_grid_spacing = 10
-
-
-    [calculation]
-    intensity_measure_types_and_levels = {"SA(0.5)": logscale(0.005, 4.00, 30)}
-
-    """
-    sample = io.StringIO(sample_conf) #fake file for demo
-
-    nc = OpenquakeConfig(sample)\
-        .set_sites('GRD_NZ_0_2_NZ34')\
-        .set_disaggregation(False, {"num_rlz_disagg": 0})\
-        .set_ps_grid_spacing(20)
+    nc = OpenquakeConfig()\
+        .set_sites('./sites.csv')\
+        .set_parameter("general", "ps_grid_spacing", 20)
 
     measures = ['PGA', 'SA(0.5)']
     levels0 = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0]
@@ -187,7 +177,7 @@ if __name__ == "__main__":
 
     nc.set_iml(_4_sites_measures, _4_sites_levels)
     nc.set_vs30(250)
-    nc.set_rupture_mesh_spacing(42)
+    nc.set_parameter("erf", "rupture_mesh_spacing", 42)
 
     out = io.StringIO() #aother fake file
     nc.write(out)

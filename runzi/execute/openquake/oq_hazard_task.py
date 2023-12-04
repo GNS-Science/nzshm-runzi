@@ -45,6 +45,13 @@ logging.getLogger('gql.transport').setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
 
+REQUIRED_TASK_ARGS = [
+    "intensity_spec",
+    "location_list",
+    "disagg_conf",
+    "site_params",
+    "srm_logic_tree",
+]
 
 def write_sources(xml_str, filepath):
     with open(filepath, 'w') as mf:
@@ -123,20 +130,20 @@ class BuilderTask():
 
         return automation_task_id
 
-    def _store_modified_config(self, config_folder, task_arguments, oq_result, config_id):
-        # TODO: bundle up the sources and modified config for possible re-runs
-        log.info("create modified_configs")
-        modconf_zip = Path(config_folder, 'modified_config.zip')
-        with zipfile.ZipFile(modconf_zip, 'w') as zfile:
-            for filename in [config_file, src_xml_file]:
-                arcname = str(filename.relative_to(config_folder))
-                zfile.write(filename,  arcname )
+    # def _store_modified_config(self, config_folder, task_arguments, oq_result, config_id):
+    #     # TODO: bundle up the sources and modified config for possible re-runs
+    #     log.info("create modified_configs")
+    #     modconf_zip = Path(config_folder, 'modified_config.zip')
+    #     with zipfile.ZipFile(modconf_zip, 'w') as zfile:
+    #         for filename in [config_file, src_xml_file]:
+    #             arcname = str(filename.relative_to(config_folder))
+    #             zfile.write(filename,  arcname )
 
-        # save the modified config archives
-        modconf_id, post_url = self._toshi_api.file.create_file(modconf_zip)
-        self._toshi_api.file.upload_content(post_url, modconf_zip)
+    #     # save the modified config archives
+    #     modconf_id, post_url = self._toshi_api.file.create_file(modconf_zip)
+    #     self._toshi_api.file.upload_content(post_url, modconf_zip)
 
-        return modconf_id
+    #     return modconf_id
 
     def _store_api_result(self, automation_task_id, task_arguments, oq_result, config_id, modconf_id, duration):
         """Record results in API."""
@@ -418,36 +425,24 @@ class BuilderTask():
             automation_task_id = self._setup_automation_task(ta, ja, config_id, [id[1] for id in logic_tree_id_list], environment, task_type)
 
         #########################
-        # SETUP openquake CONFIG
+        # SETUP openquake CONFIG FOLDER
         #########################
-
         work_folder = WORK_PATH
+        task_no = ja["task_id"]
+        config_folder = Path(work_folder, f"config_{task_no}")
+        config_filename = "job.ini"
 
-        # TODO this doesn't work if we don't use the API!!
-        # get the configuration_archive, we created above (maybe don't need the API for this step)
-        #config_template_info = self._toshi_api.file.get_download_url(ta['config_archive_id'])
-        config_template_info = self._toshi_api.get_file_detail(ta['config_archive_id'])
-
-        print(config_template_info)
-
-        #unpack the templates
-        config_folder = explode_config_template(config_template_info, work_folder, ja['task_id'])
-
+        ##################
+        # SOURCES
+        ##################
         sources_folder = Path(config_folder, 'sources')
         source_file_mapping = SourceModelLoader().unpack_sources(logic_tree_id_list, sources_folder) # UPDATE
-        #print(f'sources_list: {sources_list}')
 
-        # UPDATE: is there a nzshm_model method for this?
-        # now the customised source_models.xml file must be written into the local configuration
-        # ltbs = [ltb for ltb in get_logic_tree_branches(logic_tree_permutations)]
-        # print("LTB:", len(ltbs), ltbs[0])
+        # UPDATE: This will be replaced by nzshm-model method when availalbe
         doc = NrmlDocument.from_model_slt(srm_logic_tree)
         src_xml = build_sources_xml(doc, source_file_mapping)
         src_xml_file = Path(sources_folder, 'source_model.xml')
         write_sources(src_xml, src_xml_file)
-        assert 0
-
-        config_filename = get_config_filename(config_template_info)
 
         ##################
         # SITES
@@ -461,26 +456,32 @@ class BuilderTask():
         write_sources(site_csv, site_csv_file)
         log.info(f'wrote csv site file: {site_csv_file}')
 
-        ###############
-        # HAZARD CONFIG
-        ###############
-        config_file = Path(config_folder, config_filename)
-        def modify_config(config_file, task_arguments):
-            "modify_config for openquake hazard task."""
-            ta = task_arguments
-            config = OpenquakeConfig(open(config_file))\
-                .set_sites("./sites.csv")\
-                .set_disaggregation(enable = ta['disagg_conf']['enabled'],
-                    values = ta['disagg_conf']['config'])\
-                .set_iml(ta['intensity_spec']['measures'],
-                    ta['intensity_spec']['levels'])\
-                .set_vs30(ta['vs30'])\
-                .set_rupture_mesh_spacing(ta['rupture_mesh_spacing'])\
-                .set_ps_grid_spacing(ta['ps_grid_spacing'])
-            config.write(open(config_file, 'w'))
+        ##################
+        # GMCM LOGIC TREE
+        ##################
+        gsim_xml = build_gsim_xml(ta["gmcm_logic_tree"])
+        gsim_xml_file = Path(config_folder, 'gsim_model.xml')
+        write_sources(gsim_xml, gsim_xml_file)
 
-        modify_config(config_file, task_arguments)
+        ###############
+        # OQ CONFIG
+        ###############
+        config_filepath = Path(config_folder, config_filename)
+        oq_config = OpenquakeConfig()\
+            .set_sites("./sites.csv")\
+            .set_gsim_logic_tree_file("./gsim_model.xml")\
+            .set_disaggregation(enable = ta['disagg_conf']['enabled'],
+                values = ta['disagg_conf']['config'])\
+            .set_iml(ta['intensity_spec']['measures'],
+                ta['intensity_spec']['levels'])\
+            .set_vs30(ta['vs30'])
+        for table, params in task_arguments['oq'].items():
+            for name, value in params.items():
+                oq_config.set_parameter(table, name, value)
+        with config_filepath.open("w") as config_file:
+            oq_config.write(config_file)
 
+        assert 0
         ##############
         # EXECUTE
         ##############
