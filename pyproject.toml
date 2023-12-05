@@ -18,7 +18,6 @@ python = ">=3.9,<3.13"
 gitpython = "3.1.11"
 gql = "^3.2.0"
 py4j = "0.10.9.1"
-python-dateutil = "2.8.1"
 pytz = "^2022.7"
 nshm-toshi-client = ">=1.0.0"
 prompt-toolkit = "3.0.20"
@@ -38,6 +37,7 @@ nzshm-model = "^0.4.0"
 nzshm-common = {version = "^0.6.0", extras = ["geometry"]}
 openquake-engine = {path = "../CALCULATION/oq-engine", optional = true, develop = true}
 openquake-converters-ucerf = {path = "../COMPONENTS/ucerf", optional = true, develop = true}
+python-dateutil = "^2.8.2"
 
 [tool.poetry.extras]
 openquake = ["openquake-engine", "fiona"]
