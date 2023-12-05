@@ -49,18 +49,15 @@ def build_tasks(new_gt_id, args, task_type, model_type):
 
 
 def validate_config(config: Dict[Any, Any]) -> None:
-    validate_path(config, "srm_logic_tree")
-    validate_entry(config, "imts", list, elm_type=str)
-    validate_entry(config, "imtls", list, elm_type=float)
-    validate_entry(config, "vs30s", list, elm_type=int)
-    validate_entry(config, "location_lists", list, elm_type=list)
-    validate_entry(config, "rupture_mesh_spacings", list, elm_type=int)
-    validate_entry(config, "ps_grid_spacings", list, elm_type=int)
-    validate_entry(config, "config_archive_id", str)
-    validate_entry(config, "title", str)
-    validate_entry(config, "description", str)
-    validate_entry(config, "slt_decomposition", str, choice=["none", "composite", "component"])
-    validate_entry(config, "num_workers", int, optional=True)
+    validate_path(config, "logic_tree", "srm_logic_tree")
+    validate_entry(config, "hazard_curve", "imts", [list], elm_type=str)
+    validate_entry(config, "hazard_curve", "imtls", [list], elm_type=float)
+    validate_entry(config, "site_params", "vs30", [list, int], elm_type=int)
+    validate_entry(config, "site_params", "location_list", [list], elm_type=str)
+    validate_entry(config, "general", "title", [str])
+    validate_entry(config, "general", "description", [str])
+    validate_entry(config, "logic_tree", "slt_decomposition", [str], choice=["none", "composite", "component"])
+    validate_entry(config, "calculation", "num_workers", [int], optional=True)
 
 
 def update_location_list(location_list: List[str]):
@@ -76,9 +73,7 @@ def update_location_list(location_list: List[str]):
 
 def run_oq_hazard_f(config: Dict[Any, Any]):
 
-    # validate_config(config)
-    #TODO: - validate config
-    #      - parse max distance parameter
+    validate_config(config)
     if config["logic_tree"]["slt_decomposition"] in ["composite", "none"]:
         msg = (f"config['logic_tree']['slt_decomposition'] SRM logic tree not supported. "
                "See https://github.com/GNS-Science/nzshm-model/issues/23 and "

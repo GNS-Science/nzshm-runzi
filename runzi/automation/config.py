@@ -3,22 +3,28 @@ import sys
 
 from pathlib import Path
 
-def validate_entry(config, name, type, elm_type=None, optional=False, choice=None):
+def validate_entry(config, table, name, types, elm_type=None, optional=False, choice=None):
 
     if not optional:
-        if not config.get(name):
+        if not config[table].get(name):
             msg = f"config missing required entry: {name}"
             raise ValueError(msg)
 
-    if optional and not config.get(name):
+    if optional and not config[table].get(name):
         return 
 
-    entry = config[name]
+    entry = config[table][name]
 
-    if not isinstance(entry, type):
-        msg = f"{name} must be type {type}"
+    correct_type = False
+    for tpe in types:
+        if isinstance(entry, tpe):
+            correct_type = True
+            break
+    if not correct_type:
+        msg = f"{table, name} must be type in {types}"
         raise ValueError(msg)
-    if type is list:
+
+    if isinstance(entry, list):
         if len(entry)<1:
             msg = f"{name} must be list with length > 0"
             raise ValueError(msg)
@@ -26,14 +32,14 @@ def validate_entry(config, name, type, elm_type=None, optional=False, choice=Non
             msg = f"all elements of {name} must be type {elm_type}"
             raise ValueError(msg)
     
-    if choice and (config[name] not in choice):
+    if choice and (entry not in choice):
         msg = f"{name} must be one of {choice}"
         raise ValueError(msg)
 
-def validate_path(config, name):
-    validate_entry(config, name, str)
-    if not Path(config[name]).exists():
-        msg = f"logic tree file {config[name]} does not exist"
+def validate_path(config, table, name):
+    validate_entry(config, table, name, [str])
+    if not Path(config[table][name]).exists():
+        msg = f"logic tree file {config[table][name]} does not exist"
         raise ValueError(msg)
     
 
