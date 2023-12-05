@@ -38,7 +38,6 @@ nzshm-model = "^0.4.0"
 nzshm-common = {version = "^0.6.0", extras = ["geometry"]}
 openquake-engine = {path = "../CALCULATION/oq-engine", optional = true, develop = true}
 openquake-converters-ucerf = {path = "../COMPONENTS/ucerf", optional = true, develop = true}
-fiona = {version = "1.9.5", optional = true}
 
 [tool.poetry.extras]
 openquake = ["openquake-engine", "fiona"]
