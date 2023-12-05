@@ -27,15 +27,15 @@ srm_logic_tree = "/home/chrisdc/NSHM/DEV/COMPONENTS/nzshm-model/SRM_LTs/python/S
 slt_decomposition = "component"
 
 # override any of the defaults runzi uses for openquake here either for iteration or just a single value
-[openquake_iterate.general]
-ps_grid_spacing = [15, 30]
+# [openquake_iterate.general]
+# ps_grid_spacing = [15, 30]
 
-[openquake_iterate.erf]
-rupture_mesh_spacing = [2, 4]
+# [openquake_iterate.erf]
+# rupture_mesh_spacing = [2, 4]
+
+# [openquake_single.calculation]
+# truncation_level = 3
 
 [openquake_single.calculation]
-truncation_level = 3
-
-[openquake_iterate.calculation]
-maximum_distance = [{ "Active Shallow Crust" = "[[4.0, 0], [5.0, 100.0], [6.0, 200.0], [9.5, 250.0]]", "Subduction Interface" = "[[5.0, 0], [6.0, 200.0], [10, 600.0]]", "Subduction Intraslab" = "[[5.0, 0], [6.0, 200.0], [10, 700.0]]" }]
+maximum_distance = { "Active Shallow Crust" = "[[4.0, 0], [5.0, 100.0], [6.0, 200.0], [9.5, 250.0]]", "Subduction Interface" = "[[5.0, 0], [6.0, 200.0], [10, 600.0]]", "Subduction Intraslab" = "[[5.0, 0], [6.0, 200.0], [10, 700.0]]" }
 

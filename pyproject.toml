@@ -31,20 +31,22 @@ requests-toolbelt = "^0.10.1"
 lxml = "^4.9.2"
 requests = "2.27.1"
 tqdm = "^4.65.0"
-openquake-engine = {path = "../CALCULATION/oq-engine", optional = true, develop = true}
-openquake-converters-ucerf = {path = "../COMPONENTS/ucerf", optional = true, develop = true}
 toshi-hazard-store = "^0.7.5"
 toml = "^0.10.2"
 click = "^8.1.7"
 nzshm-model = "^0.4.0"
-nzshm-common = {extras = ["geometry"], version = "^0.6.0"}
+nzshm-common = {version = "^0.6.0", extras = ["geometry"]}
+openquake-engine = {path = "../CALCULATION/oq-engine", optional = true, develop = true}
+openquake-converters-ucerf = {path = "../COMPONENTS/ucerf", optional = true, develop = true}
+fiona = {version = "1.9.5", optional = true}
 
 [tool.poetry.extras]
-openquake = ["openquake-engine"]
+openquake = ["openquake-engine", "fiona"]
 converter =["openquake-converters-ucerf"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
+
 
 [build-system]
 requires = ["poetry-core"]

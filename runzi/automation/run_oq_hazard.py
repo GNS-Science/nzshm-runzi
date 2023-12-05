@@ -114,7 +114,10 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
+    openquake_iterate = dict() if not config.get("openquake_iterate") else config["openquake_iterate"]
+    openquake_scalar = dict() if not config.get("openquake_single") else config["openquake_single"]
     args = dict(
+        general = config["general"],
         srm_logic_tree =  srm_logic_tree,
         gmcm_logic_tree = gmcm_logic_tree,
         slt_decomposition = config["logic_tree"]["slt_decomposition"],
@@ -122,8 +125,8 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
         vs30 = config["site_params"]["vs30"],
         location_list = location_list,
         disagg_conf = {'enabled': False, 'config': {}},
-        config_iterate = config["openquake_iterate"],
-        config_scalar = config["openquake_single"],
+        config_iterate = openquake_iterate,
+        config_scalar = openquake_scalar,
     )
 
     args_list = []

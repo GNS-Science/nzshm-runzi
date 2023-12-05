@@ -46,6 +46,36 @@ factory_class = get_factory(CLUSTER_MODE)
 factory_task = runzi.execute.openquake.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
+DEFAULT_CONFIG = dict(
+    general = dict(
+        random_seed = 25,
+        calculation_mode = 'classical',
+        ps_grid_spacing = 30,
+    ),
+    logic_tree = dict(
+        number_of_logic_tree_samples = 0,
+    ),
+    erf = dict(
+        rupture_mesh_spacing = 5,
+        width_of_mfd_bin = 0.1,
+        complex_fault_mesh_spacing = 10.0,
+        area_source_discretization = 10.0,
+    ),
+    site_params = dict(
+        reference_vs30_type = 'measured',
+    ),
+    calculation = dict(
+        investigation_time = 1.0,
+        truncation_level = 4,
+        maximum_distance = {'Active Shallow Crust': [(4.0, 0), (5.0, 100.0), (6.0, 200.0), (9.5, 300.0)],
+                            'Subduction Interface': [(5.0, 0), (6.0, 200.0), (10, 500.0)],
+                            'Subduction Intraslab': [(5.0, 0), (6.0, 200.0), (10, 500.0)]}
+    ),
+    output = dict(
+        individual_curves = 'true',
+    ),
+)
+
 def build_task(task_arguments, job_arguments, task_id, extra_env):
 
     if CLUSTER_MODE == EnvMode['AWS']:
@@ -89,6 +119,18 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
 
         return str(script_file_path)
 
+def update_arguments(dict1, dict2):
+
+    for name, table in dict2.items():
+        if dict2.get(name):
+            for k, v in table.items():
+                dict1[name][k] = v
+        else:
+            dict1[name] = table
+
+    # return dict1
+
+
 
 def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments ):
 
@@ -129,11 +171,16 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                     vs30 = vs30,
                     disagg_conf = subtask_arguments["disagg_conf"],
                 )
-                task_arguments["oq"] = subtask_arguments["config_scalar"]
+
+                task_arguments["oq"] = DEFAULT_CONFIG  # default openquake config
+                # overwrite with user specifiction
+                update_arguments(task_arguments["oq"], subtask_arguments["config_scalar"])
                 iter_dict = dict()
                 for k, v in zip(iter_keys, iter_values):
                     iter_dict[k[0]] = {k[1]: v}
-                task_arguments["oq"].update(iter_dict)
+                update_arguments(task_arguments["oq"], iter_dict)
+                description = ": ".join((subtask_arguments["general"].get("title"), subtask_arguments["general"].get("description")))
+                update_arguments(task_arguments["oq"], {"general": {"description": description}})
 
                 print('')
                 print('task arguments MERGED')
