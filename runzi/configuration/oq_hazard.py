@@ -56,7 +56,7 @@ DEFAULT_CONFIG = dict(
         number_of_logic_tree_samples = 0,
     ),
     erf = dict(
-        rupture_mesh_spacing = 5,
+        rupture_mesh_spacing = 4,
         width_of_mfd_bin = 0.1,
         complex_fault_mesh_spacing = 10.0,
         area_source_discretization = 10.0,
