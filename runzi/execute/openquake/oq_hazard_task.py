@@ -217,12 +217,15 @@ class BuilderTask():
             return
         raise ValueError("Invalid configuration.")
 
-
-
-    def _sterilize_task_arguments(self, ta):
+    def _sterilize_task_arguments_gsims(self, ta):
         ta_clean = copy.deepcopy(ta)
         for trt, gsim in ta_clean['disagg_config']['gsims'].items():
-            ta_clean['disagg_config']['gsims'][trt] = gsim.replace('"','``').replace('\n','-')
+            ta_clean['disagg_config']['gsims'][trt] = gsim.replace('"','``').replace('\n', '-')
+        return ta_clean
+
+    def _sterilize_task_arguments_gmcmlt(self, ta):
+        ta_clean = copy.deepcopy(ta)
+        ta_clean['gmcm_logic_tree'] = ta_clean['gmcm_logic_tree'].replace('"', '``').replace('\n', '-')
         return ta_clean
 
 
@@ -255,7 +258,7 @@ class BuilderTask():
         automation_task_id = None
         if self.use_api:
             task_type = HazardTaskType.DISAGG
-            ta_clean = self._sterilize_task_arguments(ta) if ta['disagg_config'].get('gsims') else ta                
+            ta_clean = self._sterilize_task_arguments_gsims(ta) if ta['disagg_config'].get('gsims') else ta
             archive_id = ta['hazard_config']
             config_id = self._save_config(archive_id, nrml_id_list)
             automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, nrml_id_list, environment, task_type)
@@ -338,7 +341,7 @@ class BuilderTask():
         if self.use_api:
             
             #TODO store modified config
-            ta_clean = self._sterilize_task_arguments(ta) if ta['disagg_config'].get('gsims') else ta
+            ta_clean = self._sterilize_task_arguments_gsims(ta) if ta['disagg_config'].get('gsims') else ta
             solution_id = self._store_api_result(automation_task_id, ta_clean, oq_result, config_id,
                 modconf_id=config_id, #  TODO use modified config id
                 duration = (dt.datetime.utcnow() - t0).total_seconds())
@@ -420,9 +423,11 @@ class BuilderTask():
         if self.use_api:
             task_type = HazardTaskType.HAZARD
             id_list = [_id[1] for _id in logic_tree_id_list]
-            archive_id = ta['config_archive_id']
-            config_id = self._save_config(archive_id, id_list)
-            automation_task_id = self._setup_automation_task(ta, ja, config_id, [id[1] for id in logic_tree_id_list], environment, task_type)
+            # archive_id = ta['config_archive_id']
+            # config_id = self._save_config(archive_id, id_list)
+            config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEyOTI0NA==" # old config id until we've removed need for config_id when creating task
+            ta_clean = self._sterilize_task_arguments_gmcmlt(ta)
+            automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, [id[1] for id in logic_tree_id_list], environment, task_type)
 
         #########################
         # SETUP openquake CONFIG FOLDER
@@ -485,14 +490,14 @@ class BuilderTask():
         ##############
         # EXECUTE
         ##############
-        oq_result = execute_openquake(config_file, ja['task_id'], automation_task_id)
+        oq_result = execute_openquake(config_filepath, ja['task_id'], automation_task_id)
 
         ######################
         # API STORE RESULTS #
         ######################
         if self.use_api:
             
-            solution_id = self._store_api_result(automation_task_id, task_arguments, oq_result, config_id,
+            solution_id = self._store_api_result(automation_task_id, ta_clean, oq_result, config_id,
                 modconf_id=config_id, #  TODO use modified config id
                 duration = (dt.datetime.utcnow() - t0).total_seconds())
 
@@ -518,14 +523,20 @@ class BuilderTask():
                   -h, --help           show this help message and exit
                   -c, --create-tables  Ensure tables exist.
                 """
-                ltb = ta['logic_tree_permutations'][0]['permute'][0]['members'][0] # UPDATE
+                ltb = ta['srm_logic_tree']['fault_system_lts'][0]['branches']
+                tag = ":".join((
+                    srm_logic_tree.fault_system_lts[0].short_name,
+                    str(srm_logic_tree.fault_system_lts[0].branches[0].values)
+                ))
+                inv_id = srm_logic_tree.fault_system_lts[0].branches[0].onfault_nrml_id
+                bg_id = srm_logic_tree.fault_system_lts[0].branches[0].distributed_nrml_id
                 cmd = ['store_hazard_v3',
                         str(oq_result['oq_calc_id']),
                         solution_id,
                         job_arguments['general_task_id'],
                         str(ta['location_list']),
-                        f'"{ltb["tag"]}"',
-                        f'"{ltb["inv_id"]}, {ltb["bg_id"]}"',
+                        f'"{tag}"',
+                        f'"{inv_id}, {bg_id}"',
                         '--verbose',
                         '--create-tables']
                 log.info(f'store_hazard: {cmd}')
