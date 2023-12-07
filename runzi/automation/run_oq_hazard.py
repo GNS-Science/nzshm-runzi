@@ -11,6 +11,7 @@ import datetime as dt
 from pathlib import Path
 from collections import namedtuple
 from typing import Any, Dict, List
+from dataclasses import asdict
 
 from nzshm_common.location.code_location import CodedLocation
 from nzshm_model.source_logic_tree.slt_config import from_config
@@ -126,7 +127,8 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
 
     args_list = []
     for key, value in args.items():
-        args_list.append(dict(k=key, v=value))
+        val = asdict(srm_logic_tree) if key == "srm_logic_tree" else value
+        args_list.append(dict(k=key, v=val))
 
     task_type = SubtaskType.OPENQUAKE_HAZARD
     model_type = ModelType.COMPOSITE
@@ -148,7 +150,6 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
     print("GENERAL_TASK_ID:", new_gt_id)
 
     tasks = build_tasks(new_gt_id, args, task_type, model_type)
-    assert 0
     
     print('worker count: ', config["calculation"]["num_workers"])
     print(f'tasks to schedule: {len(tasks)}')
