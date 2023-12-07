@@ -35,8 +35,6 @@ toml = "^0.10.2"
 click = "^8.1.7"
 nzshm-model = "^0.4.0"
 nzshm-common = {version = "^0.6.0", extras = ["geometry"]}
-openquake-engine = {path = "../CALCULATION/oq-engine", optional = true, develop = true}
-openquake-converters-ucerf = {path = "../COMPONENTS/ucerf", optional = true, develop = true}
 python-dateutil = "^2.8.2"
 
 [tool.poetry.extras]
