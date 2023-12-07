@@ -34,7 +34,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-# RUN git checkout feature/148-disagg-error-handling
+# RUN git checkout fix/nzshm-common-dep
 RUN pip3 install -e .
 
 
