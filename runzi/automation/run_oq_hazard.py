@@ -135,8 +135,8 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
         #create new task in toshi_api
         gt_args = CreateGeneralTaskArgs(
             agent_name=pwd.getpwuid(os.getuid()).pw_name,
-            title=config["title"],
-            description=config["description"]
+            title=config["general"]["title"],
+            description=config["general"]["description"]
             )\
             .set_argument_list(args_list)\
             .set_subtask_type(task_type)\
@@ -148,6 +148,7 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
     print("GENERAL_TASK_ID:", new_gt_id)
 
     tasks = build_tasks(new_gt_id, args, task_type, model_type)
+    assert 0
     
     print('worker count: ', config["calculation"]["num_workers"])
     print(f'tasks to schedule: {len(tasks)}')
