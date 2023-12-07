@@ -1,0 +1,12 @@
+hazard_model_id = "NSHM_v1.0.4"
+agg = "mean"
+inv_time = 50
+rupture_mesh_spacing = 4
+ps_grid_spacing = 30
+locations = ["NZ", "srg_164"]
+imts = ["SA(0.2)", "SA(0.5)", "SA(1.5)", "SA(3.0)"]
+vs30s = [750]
+poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
+gt_filename = "gtids_NZplus1_allIMT_allpoe_750.txt"
+num_workers = 1
+logic_tree = "/home/chrisdc/NSHM/DEV/nzshm-runzi/runzi/CONFIG/OQ/SLT_v9p0p0.py"

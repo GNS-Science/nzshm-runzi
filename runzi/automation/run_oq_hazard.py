@@ -8,25 +8,20 @@ import logging
 import pwd
 import os
 import datetime as dt
-from dateutil.tz import tzutc
 from pathlib import Path
 from collections import namedtuple
+from typing import Any, Dict, List
 
 from nzshm_common.location.code_location import CodedLocation
+from nzshm_model.source_logic_tree.slt_config import from_config
 
+from runzi.automation.config import validate_entry, load_logic_tree, validate_path
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
 from runzi.configuration.oq_hazard import build_hazard_tasks
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, CLUSTER_MODE, EnvMode )
+from runzi.automation.scaling.local_config import USE_API, API_KEY, API_URL
 
-
-from runzi.CONFIG.OQ.SLT_v9p0p1_IFMonly import logic_tree_permutations, gt_description
-# from runzi.CONFIG.OQ.SLT_test_against_OQ import logic_tree_permutations, gt_description
-
-# If you wish to override something in the main config, do so here ..
-WORKER_POOL_SIZE = 1
 
 def locations_from_csv(locations_filepath):
 
@@ -52,13 +47,55 @@ def build_tasks(new_gt_id, args, task_type, model_type):
 
     return scripts
 
-if __name__ == "__main__":
+
+def validate_config(config: Dict[Any, Any]) -> None:
+    validate_path(config, "logic_tree", "srm_logic_tree")
+    validate_entry(config, "hazard_curve", "imts", [list], elm_type=str)
+    validate_entry(config, "hazard_curve", "imtls", [list], elm_type=float)
+    validate_entry(config, "site_params", "vs30", [list, int], elm_type=int)
+    validate_entry(config, "site_params", "location_list", [list], elm_type=str)
+    validate_entry(config, "general", "title", [str])
+    validate_entry(config, "general", "description", [str])
+    validate_entry(config, "logic_tree", "slt_decomposition", [str], choice=["none", "composite", "component"])
+    validate_entry(config, "calculation", "num_workers", [int], optional=True)
+
+
+def update_location_list(location_list: List[str]):
+
+    location_list_new = []
+    for location in location_list:
+        if Path(location).exists():
+            location_list_new += locations_from_csv(location)
+        else:
+            location_list_new.append(location)
+
+    return location_list_new
+
+def run_oq_hazard_f(config: Dict[Any, Any]):
+
+    validate_config(config)
+    if config["logic_tree"]["slt_decomposition"] in ["composite", "none"]:
+        msg = (f"config['logic_tree']['slt_decomposition'] SRM logic tree not supported. "
+               "See https://github.com/GNS-Science/nzshm-model/issues/23 and "
+               "https://github.com/GNS-Science/nzshm-runzi/issues/162")
+        raise ValueError(msg)
+
+    srm_logic_tree = from_config(config["logic_tree"]["srm_logic_tree"])
+    with Path(config["calculation"]["gsim_logic_tree_file"]).open() as gltf:
+        gmcm_logic_tree = gltf.read()
+
+    if not config["calculation"].get("num_workers"):
+        config["calculation"]["num_workers"] = 1
+
+    location_list = update_location_list(config["site_params"]["location_list"])
+
+    imts = config["hazard_curve"]["imts"]
+    imtls = config["hazard_curve"]["imtls"]
 
     t0 = dt.datetime.utcnow()
 
-    logging.basicConfig(level=logging.INFO)
-
     loglevel = logging.INFO
+    logging.basicConfig(level=logging.INFO)
     logging.getLogger('py4j.java_gateway').setLevel(loglevel)
     logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
     logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
@@ -69,57 +106,22 @@ if __name__ == "__main__":
 
     log = logging.getLogger(__name__)
 
-    new_gt_id = None
-
-    # If using API give this task a descriptive setting...
-
-    TASK_TITLE = "Openquake Hazard calcs "
-    TASK_DESCRIPTION = gt_description
-
     headers={"x-api-key":API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
-    era_measures_orig = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)',
-        'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)', 'SA(6.0)','SA(7.5)', 'SA(10.0)']
-    era_measures_new = ["SA(0.15)",	"SA(0.25)", "SA(0.35)",	"SA(0.6)", "SA(0.8)", "SA(0.9)",
-                    "SA(1.25)", "SA(1.75)", "SA(2.5)", "SA(3.5)", "SA(4.5)"]
-    # era_measures = era_measures_orig + era_measures_new
-    era_measures = era_measures_orig
-
-    # era_measures_mcverry = ['PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)', 'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)']
-    # era_measures = era_measures_mcverry
-    era_levels = [0.0001, 0.0002, 0.0004, 0.0006, 0.0008, 0.001, 0.002, 0.004, 0.006, 0.008,
-                    0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
-                    1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
-
-    vs30s = [400]
-    # location_lists = [['NZ', 'NZ_0_1_NB_1_1', 'SRWG214']]
-    location_lists = [['NZ', 'NZ_0_1_NB_1_1']]
-    # location_lists = [["NZ"]]
-    # location_lists = [['-39.500~176.900', '-38.650~178.000']]
-    # location_lists = [['HB']]
-    # location_lists = [locations_from_csv('/home/chrisdc/NSHM/Locations/transpower_locations.csv')]
-    # location_lists = [['WLG','AKL','DUD','CHC']]
-
+    openquake_iterate = dict() if not config.get("openquake_iterate") else config["openquake_iterate"]
+    openquake_scalar = dict() if not config.get("openquake_single") else config["openquake_single"]
     args = dict(
-        config_archive_ids = [  # a Toshi File containing zipped configuration, ], #LOCAL'RmlsZToxOA=='],
-            # "RmlsZTo2MzI0MjY2", #McVerry
-            "RmlsZToxMjkxNjk4" # GSIM LT v2, no sites
-            ],
-        # NEW FORM
-        # makes better use of python
-        logic_tree_permutations =  logic_tree_permutations,
-
-        intensity_specs = [
-            { "tag": "fixed", "measures": era_measures, "levels": era_levels},
-        ],
-        vs30s = vs30s,
-        location_lists = location_lists,
-        disagg_confs = [{'enabled': False, 'config': {}},
-            # {'enabled': True, 'config': {}}
-        ],
-        rupture_mesh_spacings = [4], #1,2,3,4,5,6,7,8,9],
-        ps_grid_spacings = [30], #km 
+        general = config["general"],
+        srm_logic_tree =  srm_logic_tree,
+        gmcm_logic_tree = gmcm_logic_tree,
+        slt_decomposition = config["logic_tree"]["slt_decomposition"],
+        intensity_spec = { "tag": "fixed", "measures": imts, "levels": imtls},
+        vs30 = config["site_params"]["vs30"],
+        location_list = location_list,
+        disagg_conf = {'enabled': False, 'config': {}},
+        config_iterate = openquake_iterate,
+        config_scalar = openquake_scalar,
     )
 
     args_list = []
@@ -130,27 +132,26 @@ if __name__ == "__main__":
     model_type = ModelType.COMPOSITE
 
     if USE_API:
-
         #create new task in toshi_api
         gt_args = CreateGeneralTaskArgs(
             agent_name=pwd.getpwuid(os.getuid()).pw_name,
-            title=TASK_TITLE,
-            description=TASK_DESCRIPTION
+            title=config["title"],
+            description=config["description"]
             )\
             .set_argument_list(args_list)\
             .set_subtask_type(task_type)\
             .set_model_type(model_type)
-
         new_gt_id = toshi_api.general_task.create_task(gt_args)
+    else:
+        new_gt_id = None
 
     print("GENERAL_TASK_ID:", new_gt_id)
 
     tasks = build_tasks(new_gt_id, args, task_type, model_type)
     
-    # toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
-    print('worker count: ', WORKER_POOL_SIZE)
+    print('worker count: ', config["calculation"]["num_workers"])
     print(f'tasks to schedule: {len(tasks)}')
-    schedule_tasks(tasks, WORKER_POOL_SIZE)
+    schedule_tasks(tasks, config["calculation"]["num_workers"])
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())

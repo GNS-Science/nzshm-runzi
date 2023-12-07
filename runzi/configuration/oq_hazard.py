@@ -4,6 +4,7 @@ import itertools
 import stat
 import boto3
 from pathlib import PurePath
+from dataclasses import asdict
 
 import datetime as dt
 from dateutil.tz import tzutc
@@ -15,19 +16,18 @@ from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config, BatchEnvironmentSetting
-from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
 
 import runzi.execute.openquake.oq_hazard_task
-from runzi.execute.openquake.util import get_logic_tree_branches, get_granular_logic_tree_branches
+from runzi.execute.openquake.util import get_decomposed_logic_trees
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode, S3_URL, S3_REPORT_BUCKET)
 
 HAZARD_MAX_TIME = 48*60 #minutes
 
-SPLIT_SOURCE_BRANCHES = True
-SPLIT_TRUNCATION = 1 # set to None if you want all the split jobs, this is just for testing
-GRANULAR = True
+# SPLIT_SOURCE_BRANCHES = True
+# SPLIT_TRUNCATION = 1 # set to None if you want all the split jobs, this is just for testing
+# GRANULAR = True
 
 ##BL_CONF_0 = dict( job_def="BigLever_32GB_8VCPU_JD", job_queue="BigLever_32GB_8VCPU_JQ", mem=30000, cpu=8)
 BL_CONF_1 = dict( job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_32GB_8VCPU_v2_JQ", mem=30000, cpu=8)
@@ -45,6 +45,36 @@ BIGGER_LEVER_CONF = BL_CONF_1 #BL_CONF_32_120
 factory_class = get_factory(CLUSTER_MODE)
 factory_task = runzi.execute.openquake.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
+
+DEFAULT_CONFIG = dict(
+    general = dict(
+        random_seed = 25,
+        calculation_mode = 'classical',
+        ps_grid_spacing = 30,
+    ),
+    logic_tree = dict(
+        number_of_logic_tree_samples = 0,
+    ),
+    erf = dict(
+        rupture_mesh_spacing = 5,
+        width_of_mfd_bin = 0.1,
+        complex_fault_mesh_spacing = 10.0,
+        area_source_discretization = 10.0,
+    ),
+    site_params = dict(
+        reference_vs30_type = 'measured',
+    ),
+    calculation = dict(
+        investigation_time = 1.0,
+        truncation_level = 4,
+        maximum_distance = {'Active Shallow Crust': [(4.0, 0), (5.0, 100.0), (6.0, 200.0), (9.5, 300.0)],
+                            'Subduction Interface': [(5.0, 0), (6.0, 200.0), (10, 500.0)],
+                            'Subduction Intraslab': [(5.0, 0), (6.0, 200.0), (10, 500.0)]}
+    ),
+    output = dict(
+        individual_curves = 'true',
+    ),
+)
 
 def build_task(task_arguments, job_arguments, task_id, extra_env):
 
@@ -89,12 +119,32 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
 
         return str(script_file_path)
 
+def update_arguments(dict1, dict2):
+
+    for name, table in dict2.items():
+        if dict2.get(name):
+            for k, v in table.items():
+                dict1[name][k] = v
+        else:
+            dict1[name] = table
+
+    # return dict1
+
+
 
 def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments ):
-    task_count = 0
 
-    headers={"x-api-key":API_KEY}
-    toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
+    def unpack_keys(d):
+        keys = []
+        for k1,v in d.items():
+            for k2 in v.keys():
+                keys.append((k1, k2))
+        return keys
+
+    def unpack_values(d):
+        for v in d.values():
+            for v2 in v.values():
+                yield v2
 
     extra_env = [
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_STAGE", value="PROD"),
@@ -102,89 +152,92 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_NUM_WORKERS", value="1"),
     ]
 
-    for (config_archive_id,
-        logic_tree_permutations,
-        intensity_spec,
-        vs30,
-        location_list,
-        disagg_conf,
-        rupture_mesh_spacing,
-        ps_grid_spacing
-        )\
-        in itertools.product(
-            subtask_arguments["config_archive_ids"],
-            subtask_arguments['logic_tree_permutations'],
-            subtask_arguments['intensity_specs'],
-            subtask_arguments['vs30s'],
-            subtask_arguments['location_lists'],
-            subtask_arguments['disagg_confs'],
-            subtask_arguments['rupture_mesh_spacings'],
-            subtask_arguments['ps_grid_spacings']
-            ):
+    iterate = subtask_arguments["config_iterate"]
+    # iterate["site_params"] = dict() if not iterate.get("site_params") else iterate["site_params"]
+    # iterate["site_params"]["vs30"] = (
+    #     subtask_arguments["vs30"] if isinstance(subtask_arguments["vs30"], list) else [subtask_arguments["vs30"]]
+    # )
+    vs30s = subtask_arguments["vs30"] if isinstance(subtask_arguments["vs30"], list) else [subtask_arguments["vs30"], ]
+    iter_keys = unpack_keys(iterate)
+    task_count = 0
+    for vs30 in vs30s:
+        for iter_values in itertools.product(*unpack_values(iterate)):
 
-            task_count +=1
-
-            task_arguments = dict(
-
-                # nrml_id = nrml_info['id'], #One NRML, what about multiple NRMLs
-                # file_name = nrml_info['info']['file_name'],
-                config_archive_id = config_archive_id, #File archive object
-                #upstream_general_task=source_gt_id,
-                model_type = model_type.name,
-                logic_tree_permutations = logic_tree_permutations,
-                intensity_spec = intensity_spec,
-                vs30 = vs30,
-                location_list = location_list,
-                disagg_conf = disagg_conf,
-                rupture_mesh_spacing = rupture_mesh_spacing,
-                ps_grid_spacing = ps_grid_spacing
+                task_arguments = dict(
+                    gmcm_logic_tree=subtask_arguments["gmcm_logic_tree"],
+                    model_type = model_type.name,
+                    intensity_spec = subtask_arguments["intensity_spec"],
+                    location_list = subtask_arguments["location_list"],
+                    vs30 = vs30,
+                    disagg_conf = subtask_arguments["disagg_conf"],
                 )
 
-            print('')
-            print('task arguments MERGED')
-            print('==========================')
-            print(task_arguments)
-            print('==========================')
-            print('')
+                task_arguments["oq"] = DEFAULT_CONFIG  # default openquake config
+                # overwrite with user specifiction
+                update_arguments(task_arguments["oq"], subtask_arguments["config_scalar"])
+                iter_dict = dict()
+                for k, v in zip(iter_keys, iter_values):
+                    iter_dict[k[0]] = {k[1]: v}
+                update_arguments(task_arguments["oq"], iter_dict)
+                description = ": ".join((subtask_arguments["general"].get("title"), subtask_arguments["general"].get("description")))
+                update_arguments(task_arguments["oq"], {"general": {"description": description}})
 
-            job_arguments = dict(
-                task_id = task_count,
-                general_task_id = general_task_id,
-                use_api = USE_API,
-                )
+                print('')
+                print('task arguments MERGED')
+                print('==========================')
+                print(task_arguments)
+                print('==========================')
+                print('')
 
-            if not (SPLIT_SOURCE_BRANCHES or GRANULAR):
-                yield build_task(task_arguments, job_arguments, task_count, extra_env)
-                continue
+                for srm_logic_tree in get_decomposed_logic_trees(
+                    subtask_arguments['srm_logic_tree'], subtask_arguments['slt_decomposition']
+                    ):
 
-            if GRANULAR:
-                #SMALLEST BUIL
-                pass
-                granular_id = 0
-                for ltb in get_granular_logic_tree_branches(logic_tree_permutations):
-                    # print(f'granular ltb {ltb} task_id {job_arguments["task_id"]}')
-                    # task_arguments['split_source_branches'] = SPLIT_SOURCE_BRANCHES
-                    # task_arguments['split_source_id'] = split_id
-                    granular_id +=1
-                    new_task_id = job_arguments['task_id'] * granular_id
-                    new_permuations = [{'tag': 'GRANULAR', 'weight': 1.0, 'permute': [{'group': 'ALL', 'members': [ltb._asdict()] }]}]
-                    task_arguments['logic_tree_permutations'] = new_permuations
-                    task_arguments['split_source_branches'] = False
-                    # # job_arguments['task_id'] = new_task_id
-                    # #TODO replace logic_tree_permuations here!
-                    # print('new_task_id', new_task_id)
-                    yield build_task(task_arguments, job_arguments, new_task_id, extra_env)
+                    task_count +=1
+                    job_arguments = dict(
+                        task_id = task_count,
+                        general_task_id = general_task_id,
+                        use_api = USE_API,
+                        )
+                    if subtask_arguments['slt_decomposition'] == 'composite':
+                        task_arguments['srm_flat_logic_tree'] = asdict(srm_logic_tree)
+                    else:
+                        task_arguments['srm_logic_tree'] = asdict(srm_logic_tree) # serialize logic tree object?
+                    yield build_task(task_arguments, job_arguments, task_count, extra_env)
 
-                continue
 
-            if SPLIT_SOURCE_BRANCHES:
-                split_range = SPLIT_TRUNCATION if SPLIT_TRUNCATION else len(ltbs) # how many split  jobs to actually run
-                print(f'logic_tree_permutations: {logic_tree_permutations}')
-                ltbs = list(get_logic_tree_branches(logic_tree_permutations))
-                for split_id in range(split_range):
-                    print(f'split_id {split_id} task_idL {job_arguments["task_id"]}')
-                    task_arguments['split_source_branches'] = SPLIT_SOURCE_BRANCHES
-                    task_arguments['split_source_id'] = split_id
-                    new_task_id = job_arguments['task_id'] * (split_id +1)
-                    # job_arguments['task_id'] = new_task_id
-                    yield build_task(task_arguments, job_arguments, new_task_id, extra_env)
+            # if not (SPLIT_SOURCE_BRANCHES or GRANULAR):
+            #     yield build_task(task_arguments, job_arguments, task_count, extra_env)
+            #     continue
+
+            # if GRANULAR:
+            #     #SMALLEST BUIL
+            #     pass
+            #     granular_id = 0
+                # for ltb in get_granular_logic_tree_branches(logic_tree_permutations):
+            #         # print(f'granular ltb {ltb} task_id {job_arguments["task_id"]}')
+            #         # task_arguments['split_source_branches'] = SPLIT_SOURCE_BRANCHES
+            #         # task_arguments['split_source_id'] = split_id
+            #         granular_id +=1
+            #         new_task_id = job_arguments['task_id'] * granular_id
+            #         new_permuations = [{'tag': 'GRANULAR', 'weight': 1.0, 'permute': [{'group': 'ALL', 'members': [ltb._asdict()] }]}]
+            #         task_arguments['logic_tree_permutations'] = new_permuations
+            #         task_arguments['split_source_branches'] = False
+            #         # # job_arguments['task_id'] = new_task_id
+            #         # #TODO replace logic_tree_permuations here!
+            #         # print('new_task_id', new_task_id)
+            #         yield build_task(task_arguments, job_arguments, new_task_id, extra_env)
+
+            #     continue
+
+            # if SPLIT_SOURCE_BRANCHES:
+            #     split_range = SPLIT_TRUNCATION if SPLIT_TRUNCATION else len(ltbs) # how many split  jobs to actually run
+            #     print(f'logic_tree_permutations: {logic_tree_permutations}')
+            #     ltbs = list(get_logic_tree_branches(logic_tree_permutations))
+            #     for split_id in range(split_range):
+            #         print(f'split_id {split_id} task_idL {job_arguments["task_id"]}')
+            #         task_arguments['split_source_branches'] = SPLIT_SOURCE_BRANCHES
+            #         task_arguments['split_source_id'] = split_id
+            #         new_task_id = job_arguments['task_id'] * (split_id +1)
+            #         # job_arguments['task_id'] = new_task_id
+            #         yield build_task(task_arguments, job_arguments, new_task_id, extra_env)

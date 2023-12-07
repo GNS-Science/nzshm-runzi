@@ -13,27 +13,26 @@ import itertools
 from collections import namedtuple
 import datetime as dt
 from pathlib import Path
+from typing import Dict, Any
 
 from nzshm_common.location.location import location_by_id, LOCATION_LISTS
 from nzshm_common.grids import load_grid
 from nzshm_common.location.code_location import CodedLocation
 
-
+from runzi.automation.run_oq_hazard import update_location_list
+from runzi.automation.config import validate_entry, validate_path, load_logic_tree
+from runzi.execute.openquake.util.oq_build_sites import get_coded_locations
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
 from runzi.configuration.oq_disagg import build_hazard_tasks, get_disagg_configs
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, CLUSTER_MODE, EnvMode )
+from runzi.automation.scaling.local_config import (USE_API, 
+    API_KEY, API_URL)
 
-from runzi.CONFIG.OQ.SLT_v9p0p0 import logic_tree_permutations as logic_trees
-# If you wish to override something in the main config, do so here ..
-WORKER_POOL_SIZE = 1
-# USE_API = False
 
 Disagg = namedtuple("Disagg", "location imt vs30 poe")
 
-def launch_gt(gt_config):
+def launch_gt(gt_config, logic_tree, num_workers):
 
     t0 = dt.datetime.utcnow()
 
@@ -65,7 +64,7 @@ def launch_gt(gt_config):
         # disagg_outputs = "TRT Mag Dist Mag_Dist Mag_Dist_TRT_Eps"
     )
 
-    disagg_configs = get_disagg_configs(gt_config, logic_trees)
+    disagg_configs = get_disagg_configs(gt_config, logic_tree)
     for disagg_config in disagg_configs:
         disagg_config['disagg_settings'] = disagg_settings
 
@@ -111,9 +110,9 @@ def launch_gt(gt_config):
         toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
 
     print(tasks)
-    print('worker count: ', WORKER_POOL_SIZE)
+    print('worker count: ', num_workers)
     print(f'tasks to schedule: {len(tasks)}')
-    schedule_tasks(tasks, WORKER_POOL_SIZE)
+    schedule_tasks(tasks, num_workers)
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
@@ -132,120 +131,59 @@ def generate_gt_configs(task_args, locations, poes, vs30s, imts):
         )
 
 
-# def generate_single_gt_config(task_args, config):
+def start_disagg_jobs(task_args, locations, imts, vs30s, poes, gt_filename, logic_tree, num_workers):
 
-#     loc = config['location']
-#     poe = config['poe']
-#     vs30 = config['vs30']
-#     imt = config['imt']
-
-#     breakpoint()
-#     return dict(
-#         location = loc,
-#         poe = poe,
-#         vs30 = vs30,
-#         imt = imt,
-#         inv_time = task_args['inv_time'],
-#         agg = task_args['agg'],
-#         hazard_model_id = task_args['hazard_model_id'],
-#         rupture_mesh_spacing = task_args['rupture_mesh_spacing'],
-#         ps_grid_spacing = task_args['ps_grid_spacing'],
-#     ) 
-
-def run_main(task_args, locations, imts, vs30s, poes, gt_filename):
-
-    # gt_filepath = Path(gt_filename)
-
-    # if gt_filepath.exists(): 
-    #     raise Exception('file %s already exists, cannot overwrite' % gt_filepath)
-
-    # with open(gt_filepath, 'w') as df:
-    #     disagg_writer = csv.writer(df)
-    #     disagg_writer.writerow(['GT_ID', 'date', 'time', 'time_zone'] + list(Disagg._fields))
-    #     if rerun['rerun']:
-    #         DISAGG_LIST = os.environ['NZSHM22_DISAGG_LIST']
-    #         with open(DISAGG_LIST, 'r') as gt_list_file:
-    #             reader = csv.reader(gt_list_file)
-    #             gt_datas = []
-    #             GTData = namedtuple("GTData", next(reader)[:-1], rename=True)
-    #             for row in reader:
-    #                 gt_datas.append(GTData(*row))
-            
-
-    #         with open(DISAGG_LIST, 'r') as gt_list_file:
-    #             reader = csv.reader(gt_list_file)
-    #             GTData = namedtuple("GTData", next(reader)[:-1], rename=True)
-    #             for row in reader:
-    #                 gt_data = GTData(*row)
-    #                 if gt_data.success == 'N':
-    #                     gt_success = [
-    #                             g for g in gt_datas if
-    #                                 (g.location == gt_data.location) &
-    #                                 (g.imt==gt_data.imt) &
-    #                                 (g.vs30==gt_data.vs30) &
-    #                                 (g.poe==gt_data.poe) & 
-    #                                 (g.success=='Y')
-    #                     ]
-    #                     if not gt_success:
-    #                         gt_config, disagg_config = next(generate_gt_configs(
-    #                             task_args,
-    #                             [gt_data.location],
-    #                             [float(gt_data.poe)],
-    #                             [int(gt_data.vs30)],
-    #                             [gt_data.imt]))
-    #                         if rerun['dry']:
-    #                             print(gt_config, disagg_config)
-    #                         else:
-    #                             gt_id = launch_gt(gt_config) 
-    #                             now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
-    #                             disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
-    #     else:
     gt_ids = []
     with open(gt_filename, 'w', buffering=1) as gtfile:
         for gt_config in generate_gt_configs(task_args, locations, poes, vs30s, imts): 
-            gt_id = launch_gt(gt_config)
+            gt_id = launch_gt(gt_config, logic_tree, num_workers)
             gt_ids.append(gt_id)
-            # now = dt.datetime.now(dt.datetime.now().astimezone().tzinfo)
-            # disagg_writer.writerow([gt_id, now.date().isoformat(), now.time().isoformat('seconds'), now.tzname()] + list(disagg_config))
             gtfile.write(gt_id + '\n')
     return gt_ids
 
+def validate_config(config: Dict[Any, Any]) -> None:
+    validate_path(config, "logic_tree")
+    validate_entry(config, "hazard_model_id", str)
+    validate_entry(config, "agg", str)
+    validate_entry(config, "inv_time", int)
+    validate_entry(config, "rupture_mesh_spacing", int)
+    validate_entry(config, "ps_grid_spacing", int)
+    validate_entry(config, "locations", list, elm_type=str)
+    validate_entry(config, "imts", list, elm_type=str)
+    validate_entry(config, "vs30s", list, elm_type=int)
+    validate_entry(config, "poes", list, elm_type=float)
+    validate_entry(config, "gt_filename", str)
+    validate_entry(config, "num_workers", int, optional=True)
 
-if __name__ == "__main__":
+def run_oq_disagg_f(config: Dict[Any, Any]) -> None:
 
-    parser = argparse.ArgumentParser(description="run disaggregations")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-r', '--rerun' , action='store_true', help="rerun the failed jobs in NZSHM22_DISAGG_LIST")
-    group.add_argument('-d', '--dry-rerun' , action='store_true', help="print what jobs would be rerun if --rerun were used but don't run them")
-    args = parser.parse_args()
-    rerun = {'rerun': args.rerun | args.dry_rerun, 'dry': args.dry_rerun}
+    validate_config(config)
+    logic_tree = load_logic_tree(config["logic_tree"])
+    if not config.get("num_workers"):
+        config["num_workers"] = 1
+    location_list = update_location_list(config["locations"])
+    print(location_list)
 
     task_args = dict(
-        hazard_model_id = 'NSHM_v1.0.4',
-        agg = 'mean',
-        inv_time = 50,
-        rupture_mesh_spacing = 4,
-        ps_grid_spacing = 30, #km 
+        hazard_model_id = config["hazard_model_id"],
+        agg = config["agg"],
+        inv_time = config["inv_time"],
+        rupture_mesh_spacing = config["rupture_mesh_spacing"],
+        ps_grid_spacing = config["ps_grid_spacing"], #km 
     )
 
-    locations = LOCATION_LISTS['NZ']['locations'] + ['srg_164']
-    # grid_01 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_1_NB_1_1')])
-    # grid_02 = set([CodedLocation(*pt, 0.001).code for pt in load_grid('NZ_0_2_NB_1_1')])
-    # locations = list(grid_01.intersection(grid_02))
-    # locations = list(grid_01.difference(grid_02))
-    # locations.sort()
-    # h = int(len(locations)/2)
-    # locations = locations[:h]
-    # locations = locations[h:]
-    # imts = ["PGA"]
-    imts = ["SA(0.2)", "SA(0.5)", "SA(1.5)", "SA(3.0)"]
-    vs30s = [750]
+    location_codes, junk = get_coded_locations(location_list)
 
-    poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
-    gt_filename = 'gtids_NZplus1_allIMT_allpoe_750.txt'
-
-    gt_ids = run_main(task_args, locations, imts, vs30s, poes, gt_filename)
-
+    gt_ids = start_disagg_jobs(
+        task_args,
+        location_codes,
+        config["imts"],
+        config["vs30s"],
+        config["poes"],
+        config["gt_filename"],
+        logic_tree,
+        config["num_workers"],
+    )
 
     print("_____________________GT IDs______________________")
     for id in gt_ids:
