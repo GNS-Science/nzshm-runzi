@@ -148,7 +148,6 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
     print("GENERAL_TASK_ID:", new_gt_id)
 
     tasks = build_tasks(new_gt_id, args, task_type, model_type)
-    assert 0
     
     print('worker count: ', config["calculation"]["num_workers"])
     print(f'tasks to schedule: {len(tasks)}')

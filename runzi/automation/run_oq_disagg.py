@@ -163,8 +163,6 @@ def run_oq_disagg_f(config: Dict[Any, Any]) -> None:
         config["num_workers"] = 1
     location_list = update_location_list(config["locations"])
     print(location_list)
-    assert 0
-
 
     task_args = dict(
         hazard_model_id = config["hazard_model_id"],

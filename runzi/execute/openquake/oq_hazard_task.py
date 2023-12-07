@@ -482,7 +482,6 @@ class BuilderTask():
         with config_filepath.open("w") as config_file:
             oq_config.write(config_file)
 
-        assert 0
         ##############
         # EXECUTE
         ##############
