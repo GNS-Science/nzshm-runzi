@@ -19,17 +19,18 @@ from dateutil.tz import tzutc
 import requests
 
 from nshm_toshi_client.task_relation import TaskRelation
-from nzshm_model.source_logic_tree.logic_tree import SourceLogicTree, FlattenedSourceLogicTree
-from nzshm_model.nrml.logic_tree import NrmlDocument
+# from nzshm_model.source_logic_tree import SourceLogicTree # , FlattenedSourceLogicTree
+# from nzshm_model.nrml.logic_tree import NrmlDocument
 
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 
 from runzi.util.aws import decompress_config
-from runzi.execute.openquake.util import ( OpenquakeConfig, SourceModelLoader, build_sources_xml,
+from runzi.execute.openquake.util import ( OpenquakeConfig, SourceModelLoader, #  build_sources_xml,
     get_logic_tree_file_ids, get_logic_tree_branches, single_permutation, build_disagg_sources_xml, build_gsim_xml,
-    build_site_csv, get_coded_locations)
+)
+#  build_site_csv, get_coded_locations)
 from runzi.execute.openquake.execute_openquake import execute_openquake
 
 logging.basicConfig(level=logging.DEBUG)
@@ -130,20 +131,6 @@ class BuilderTask():
 
         return automation_task_id
 
-    # def _store_modified_config(self, config_folder, task_arguments, oq_result, config_id):
-    #     # TODO: bundle up the sources and modified config for possible re-runs
-    #     log.info("create modified_configs")
-    #     modconf_zip = Path(config_folder, 'modified_config.zip')
-    #     with zipfile.ZipFile(modconf_zip, 'w') as zfile:
-    #         for filename in [config_file, src_xml_file]:
-    #             arcname = str(filename.relative_to(config_folder))
-    #             zfile.write(filename,  arcname )
-
-    #     # save the modified config archives
-    #     modconf_id, post_url = self._toshi_api.file.create_file(modconf_zip)
-    #     self._toshi_api.file.upload_content(post_url, modconf_zip)
-
-    #     return modconf_id
 
     def _store_api_result(self, automation_task_id, task_arguments, oq_result, config_id, modconf_id, duration):
         """Record results in API."""
@@ -165,16 +152,6 @@ class BuilderTask():
             hdf5_archive_id, post_url = self._toshi_api.file.create_file(oq_result['hdf5_archive'])
             self._toshi_api.file.upload_content(post_url, oq_result['hdf5_archive'])
 
-        # # Predecessors...
-        # log.info(f'logic_tree_id_list: {logic_tree_id_list[:5]} ...')
-        # predecessors = list(map(lambda ssid: dict(id=ssid[1], depth=-1), logic_tree_id_list))
-        # log.info(f'predecessors: {predecessors[:5]}')
-        # source_predecessors = list(itertools.chain.from_iterable(map(lambda ssid: self._toshi_api.get_predecessors(ssid[1]), logic_tree_id_list)))
-
-        # if source_predecessors:
-        #     for predecessor in source_predecessors:
-        #         predecessor['depth'] += -1
-        #         predecessors.append(predecessor)
         predecessors = []
 
         # Save the hazard solution
@@ -402,13 +379,12 @@ class BuilderTask():
         # HAZARD sources and ltbs
         #############
         if ta.get('srm_logic_tree'):
-            srm_logic_tree = dacite.from_dict(
-                data_class=SourceLogicTree, data=ta['srm_logic_tree']
-            )
-        elif ta.get('srm_flat_logic_tree'):
-            srm_logic_tree = dacite.from_dict(
-                data_class=FlattenedSourceLogicTree, data=ta['srm_flat_logic_tree']
-            )
+            srm_logic_tree = SourceLogicTree.from_dict(json.loads(ta['srm_logic_tree']))
+            print(srm_logic_tree)
+        # elif ta.get('srm_flat_logic_tree'):
+        #     srm_logic_tree = dacite.from_dict(
+        #         data_class=FlattenedSourceLogicTree, data=ta['srm_flat_logic_tree']
+        #     )
         else:
             raise ValueError("task_arguments must have 'srm_logic_tree' or 'srm_flat_logic_tree' key")
 
