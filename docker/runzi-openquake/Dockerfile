@@ -3,8 +3,8 @@
 # needs openquake/engine >= 3.15.0
 #nightly
 # FROM openquake/engine:3.16.2
-FROM openquake/engine:nightly
-
+# FROM openquake/engine:nightly
+FROM openquake/engine:3.17
 
 
 USER root
@@ -30,11 +30,12 @@ COPY script/container_task.sh .
 RUN chmod +x container_task.sh
 
 WORKDIR /app
-RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
+RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 RUN git fetch
 # RUN git checkout fix/nzshm-common-dep
+RUN git checkout feature/use_nshzm-model_openquake_adapter
 RUN pip3 install -e .
 
 
