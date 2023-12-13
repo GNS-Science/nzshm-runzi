@@ -1,37 +1,19 @@
 import os
-import pwd
-import sys
 import itertools
 import stat
-import boto3
 from pathlib import PurePath
 from dataclasses import asdict
 
-import datetime as dt
-from dateutil.tz import tzutc
-
-from itertools import chain
-
 from nzshm_model.source_logic_tree import SourceLogicTree
 
-from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
-
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config, BatchEnvironmentSetting
-
 import runzi.execute.openquake.oq_hazard_task
-# from runzi.execute.openquake.util import get_decomposed_logic_trees
-
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
-    API_KEY, API_URL, CLUSTER_MODE, EnvMode, S3_URL, S3_REPORT_BUCKET)
+    API_URL, CLUSTER_MODE, EnvMode, S3_URL, S3_REPORT_BUCKET)
 
 HAZARD_MAX_TIME = 48*60 #minutes
-
-
-# SPLIT_SOURCE_BRANCHES = True
-# SPLIT_TRUNCATION = 1 # set to None if you want all the split jobs, this is just for testing
-# GRANULAR = True
 
 ##BL_CONF_0 = dict( job_def="BigLever_32GB_8VCPU_JD", job_queue="BigLever_32GB_8VCPU_JQ", mem=30000, cpu=8)
 BL_CONF_1 = dict( job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_32GB_8VCPU_v2_JQ", mem=30000, cpu=8)
@@ -134,8 +116,6 @@ def update_arguments(dict1, dict2):
 
     # return dict1
 
-
-
 def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments ):
 
     def unpack_keys(d):
@@ -157,10 +137,6 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
     ]
 
     iterate = subtask_arguments["config_iterate"]
-    # iterate["site_params"] = dict() if not iterate.get("site_params") else iterate["site_params"]
-    # iterate["site_params"]["vs30"] = (
-    #     subtask_arguments["vs30"] if isinstance(subtask_arguments["vs30"], list) else [subtask_arguments["vs30"]]
-    # )
     vs30s = subtask_arguments["vs30"] if isinstance(subtask_arguments["vs30"], list) else [subtask_arguments["vs30"], ]
     iter_keys = unpack_keys(iterate)
     task_count = 0
@@ -193,9 +169,6 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 print('==========================')
                 print('')
 
-                # for srm_logic_tree in get_decomposed_logic_trees(
-                #     subtask_arguments['srm_logic_tree'], subtask_arguments['slt_decomposition']
-                #     ):
                 for branch in subtask_arguments['srm_logic_tree']:
                     slt = SourceLogicTree.from_branches([branch])
 
@@ -207,40 +180,3 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                         )
                     task_arguments['srm_logic_tree'] = asdict(slt) 
                     yield build_task(task_arguments, job_arguments, task_count, extra_env)
-
-
-            # if not (SPLIT_SOURCE_BRANCHES or GRANULAR):
-            #     yield build_task(task_arguments, job_arguments, task_count, extra_env)
-            #     continue
-
-            # if GRANULAR:
-            #     #SMALLEST BUIL
-            #     pass
-            #     granular_id = 0
-                # for ltb in get_granular_logic_tree_branches(logic_tree_permutations):
-            #         # print(f'granular ltb {ltb} task_id {job_arguments["task_id"]}')
-            #         # task_arguments['split_source_branches'] = SPLIT_SOURCE_BRANCHES
-            #         # task_arguments['split_source_id'] = split_id
-            #         granular_id +=1
-            #         new_task_id = job_arguments['task_id'] * granular_id
-            #         new_permuations = [{'tag': 'GRANULAR', 'weight': 1.0, 'permute': [{'group': 'ALL', 'members': [ltb._asdict()] }]}]
-            #         task_arguments['logic_tree_permutations'] = new_permuations
-            #         task_arguments['split_source_branches'] = False
-            #         # # job_arguments['task_id'] = new_task_id
-            #         # #TODO replace logic_tree_permuations here!
-            #         # print('new_task_id', new_task_id)
-            #         yield build_task(task_arguments, job_arguments, new_task_id, extra_env)
-
-            #     continue
-
-            # if SPLIT_SOURCE_BRANCHES:
-            #     split_range = SPLIT_TRUNCATION if SPLIT_TRUNCATION else len(ltbs) # how many split  jobs to actually run
-            #     print(f'logic_tree_permutations: {logic_tree_permutations}')
-            #     ltbs = list(get_logic_tree_branches(logic_tree_permutations))
-            #     for split_id in range(split_range):
-            #         print(f'split_id {split_id} task_idL {job_arguments["task_id"]}')
-            #         task_arguments['split_source_branches'] = SPLIT_SOURCE_BRANCHES
-            #         task_arguments['split_source_id'] = split_id
-            #         new_task_id = job_arguments['task_id'] * (split_id +1)
-            #         # job_arguments['task_id'] = new_task_id
-            #         yield build_task(task_arguments, job_arguments, new_task_id, extra_env)
