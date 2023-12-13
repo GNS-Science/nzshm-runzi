@@ -14,9 +14,11 @@ from typing import Any, Dict, List
 from dataclasses import asdict
 
 from nzshm_common.location.code_location import CodedLocation
-from nzshm_model.source_logic_tree.slt_config import from_config
+from nzshm_model.source_logic_tree.version1.slt_config import from_config
+from nzshm_model.source_logic_tree import SourceLogicTree
+from nzshm_model import get_model_version
 
-from runzi.automation.config import validate_entry, load_logic_tree, validate_path
+from runzi.automation.config import validate_entry, validate_path
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
 from runzi.configuration.oq_hazard import build_hazard_tasks
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
@@ -50,7 +52,10 @@ def build_tasks(new_gt_id, args, task_type, model_type):
 
 
 def validate_config(config: Dict[Any, Any]) -> None:
-    validate_path(config, "logic_tree", "srm_logic_tree")
+
+    if not config["model"].get("nshm_model_version"):
+        validate_path(config, "model", "srm_logic_tree")
+        validate_path(config, "model", "gmcm_logic_tree")
     validate_entry(config, "hazard_curve", "imts", [list], elm_type=str)
     validate_entry(config, "hazard_curve", "imtls", [list], elm_type=float)
     validate_entry(config, "site_params", "vs30", [list, int], elm_type=int)
@@ -72,6 +77,27 @@ def update_location_list(location_list: List[str]):
 
     return location_list_new
 
+
+def load_gmcm_str(gmcm_logic_tree_path):
+    """temporoary until we can serialize a gmcm logic tree object"""
+    with Path(gmcm_logic_tree_path).open() as gltf:
+        return gltf.read()
+
+
+def load_model(config):
+    if config["model"].get("nshm_model_version"):
+        model = get_model_version(config["model"]["nshm_model_version"])
+        srm_logic_tree = model.source_logic_tree()
+        # gmcm_logic_tree = model.gmm_logic_tree()
+        gmcm_logic_tree = load_gmcm_str(model._gmm_xml)
+    else:
+        srm_logic_tree = from_config(config["model"]["srm_logic_tree"])
+        srm_logic_tree = SourceLogicTree.from_source_logic_tree(from_config(config["model"]["srm_logic_tree"]))
+        gmcm_logic_tree = load_gmcm_str(config["model"]["gmcm_logic_tree"])
+
+    return srm_logic_tree, gmcm_logic_tree
+
+
 def run_oq_hazard_f(config: Dict[Any, Any]):
 
     validate_config(config)
@@ -81,9 +107,7 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
                "https://github.com/GNS-Science/nzshm-runzi/issues/162")
         raise ValueError(msg)
 
-    srm_logic_tree = from_config(config["logic_tree"]["srm_logic_tree"])
-    with Path(config["calculation"]["gsim_logic_tree_file"]).open() as gltf:
-        gmcm_logic_tree = gltf.read()
+    srm_logic_tree, gmcm_logic_tree = load_model(config)
 
     if not config["calculation"].get("num_workers"):
         config["calculation"]["num_workers"] = 1

@@ -39,7 +39,7 @@ python-dateutil = "^2.8.2"
 # openquake = ["openquake-engine", "fiona"]
 # converter =["openquake-converters-ucerf"]
 nzshm-common = {git = "https://github.com/GNS-Science/nzshm-common-py.git", rev = "fix/shapely-dep", extras = ["geometry"]}
-nzshm-model = {git = "https://github.com/GNS-Science/nzshm-model.git", rev = "fbf41baeaf547dddfa0c58172edbe46e26bf469e"}
+nzshm-model = "^0.5.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"

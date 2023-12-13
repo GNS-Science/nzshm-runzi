@@ -20,6 +20,7 @@ import requests
 
 from nshm_toshi_client.task_relation import TaskRelation
 from nzshm_model.source_logic_tree import SourceLogicTree 
+from nzshm_model.psha_adapter.openquake import OpenquakeSimplePshaAdapter
 # from nzshm_model.source_logic_tree import SourceLogicTree # , FlattenedSourceLogicTree
 # from nzshm_model.nrml.logic_tree import NrmlDocument
 
@@ -28,11 +29,11 @@ from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task i
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF_HAZARD)
 
 from runzi.util.aws import decompress_config
-from runzi.execute.openquake.util import ( OpenquakeConfig, # SourceModelLoader, #  build_sources_xml,
-    #get_logic_tree_file_ids, get_logic_tree_branches, single_permutation, build_disagg_sources_xml, 
-    build_gsim_xml,
-)
-#  build_site_csv, get_coded_locations)
+# from runzi.execute.openquake.util import ( OpenquakeConfig, # SourceModelLoader, #  build_sources_xml,
+#     #get_logic_tree_file_ids, get_logic_tree_branches, single_permutation, build_disagg_sources_xml, 
+#     build_gsim_xml,
+# )
+from runzi.execute.openquake.util import OpenquakeConfig, build_site_csv, get_coded_locations, build_gsim_xml
 from runzi.execute.openquake.execute_openquake import execute_openquake
 
 logging.basicConfig(level=logging.DEBUG)
@@ -377,12 +378,30 @@ class BuilderTask():
         t0 = dt.datetime.utcnow()
         ta, ja = task_arguments, job_arguments
 
-        #############
+        ################
+        # API SETUP
+        ################
+        automation_task_id = None
+        if self.use_api:
+            task_type = HazardTaskType.HAZARD
+            config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEyOTI0NA==" # old config id until we've removed need for config_id when creating task
+            ta_clean = self._sterilize_task_arguments_gmcmlt(ta)
+            automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, environment, task_type)
+
+        #################################
+        # SETUP openquake CONFIG FOLDER
+        #################################
+        work_folder = WORK_PATH
+        task_no = ja["task_id"]
+        config_folder = Path(work_folder, f"config_{task_no}")
+        config_filename = "job.ini"
+
+        ###########################
         # HAZARD sources and ltbs
-        #############
+        ###########################
         if ta.get('srm_logic_tree'):
             # using new version2 SourceLogicTree from nzshm_model>=0.5.0
-            srm_logic_tree = SourceLogicTree.from_dict(json.loads(ta['srm_logic_tree']))
+            srm_logic_tree = SourceLogicTree.from_dict(ta['srm_logic_tree'])
             print(srm_logic_tree)
         # elif ta.get('srm_flat_logic_tree'):
         #     srm_logic_tree = dacite.from_dict(
@@ -391,50 +410,16 @@ class BuilderTask():
         else:
             raise ValueError("task_arguments must have 'srm_logic_tree' or 'srm_flat_logic_tree' key")
 
-        # # sources are the InversionSolutionNRML XML file(s) to include in the sources list
-        # logic_tree_id_list = get_logic_tree_file_ids(srm_logic_tree) # UPDATE
-        # log.info(f"sources: {logic_tree_id_list}")
-
-        ############
-        # API SETUP
-        ############
-        automation_task_id = None
-        if self.use_api:
-            task_type = HazardTaskType.HAZARD
-            # id_list = [_id[1] for _id in logic_tree_id_list]
-            # archive_id = ta['config_archive_id']
-            # config_id = self._save_config(archive_id, id_list)
-            config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEyOTI0NA==" # old config id until we've removed need for config_id when creating task
-            ta_clean = self._sterilize_task_arguments_gmcmlt(ta)
-            automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, environment, task_type)
-
-        #########################
-        # SETUP openquake CONFIG FOLDER
-        #########################
-        work_folder = WORK_PATH
-        task_no = ja["task_id"]
-        config_folder = Path(work_folder, f"config_{task_no}")
-        config_filename = "job.ini"
-
-        ##################
-        # SOURCES
-        ##################
-        # sources_folder = Path(config_folder, 'sources')
-        # source_file_mapping = SourceModelLoader().unpack_sources(logic_tree_id_list, sources_folder) # UPDATE
-
-        # # UPDATE: This will be replaced by nzshm-model method when availalbe
-        # doc = NrmlDocument.from_model_slt(srm_logic_tree)
-        # src_xml = build_sources_xml(doc, source_file_mapping)
-        # src_xml_file = Path(sources_folder, 'source_model.xml')
-        # write_sources(src_xml, src_xml_file)
+        sources_folder = Path(config_folder, 'sources')
+        cache_folder = Path(config_folder, 'downloads')
         cache_folder.mkdir(parents=True, exist_ok=True)
-        output_folder.mkdir(parents=True, exist_ok=True)
-    
-        for branch in list(slt)[:1]:
-            print(branch.values, branch.fslt.long_name, branch.slt.title)
-            small_slt = SourceLogicTree.from_filtered_branches([branch])        
-            adapter = small_slt.psha_adapter(provider=OpenquakeSimplePshaAdapter)
-            adapter.write_config(cache_folder, output_folder) 
+        sources_folder.mkdir(parents=True, exist_ok=True)
+        adapter = srm_logic_tree.psha_adapter(provider=OpenquakeSimplePshaAdapter)
+        sources_filepath = adapter.write_config(cache_folder, sources_folder)
+        sources_filepath = sources_filepath.relative_to(config_folder)
+        for f in cache_folder.glob("*"):
+            f.unlink()
+        cache_folder.rmdir()
 
 
         ##################
@@ -462,7 +447,7 @@ class BuilderTask():
         config_filepath = Path(config_folder, config_filename)
         oq_config = OpenquakeConfig()\
             .set_sites("./sites.csv")\
-            .set_source_logic_tree_file('./sources/source_model.xml')\
+            .set_source_logic_tree_file(str(sources_filepath))\
             .set_gsim_logic_tree_file("./gsim_model.xml")\
             .set_disaggregation(enable = ta['disagg_conf']['enabled'],
                 values = ta['disagg_conf']['config'])\

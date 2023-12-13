@@ -1,5 +1,6 @@
 import os
 import pwd
+import sys
 import itertools
 import stat
 import boto3
@@ -11,6 +12,8 @@ from dateutil.tz import tzutc
 
 from itertools import chain
 
+from nzshm_model.source_logic_tree import SourceLogicTree
+
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 
@@ -18,12 +21,13 @@ from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config, BatchEnvironmentSetting
 
 import runzi.execute.openquake.oq_hazard_task
-from runzi.execute.openquake.util import get_decomposed_logic_trees
+# from runzi.execute.openquake.util import get_decomposed_logic_trees
 
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_KEY, API_URL, CLUSTER_MODE, EnvMode, S3_URL, S3_REPORT_BUCKET)
 
 HAZARD_MAX_TIME = 48*60 #minutes
+
 
 # SPLIT_SOURCE_BRANCHES = True
 # SPLIT_TRUNCATION = 1 # set to None if you want all the split jobs, this is just for testing
@@ -189,9 +193,11 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 print('==========================')
                 print('')
 
-                for srm_logic_tree in get_decomposed_logic_trees(
-                    subtask_arguments['srm_logic_tree'], subtask_arguments['slt_decomposition']
-                    ):
+                # for srm_logic_tree in get_decomposed_logic_trees(
+                #     subtask_arguments['srm_logic_tree'], subtask_arguments['slt_decomposition']
+                #     ):
+                for branch in subtask_arguments['srm_logic_tree']:
+                    slt = SourceLogicTree.from_branches([branch])
 
                     task_count +=1
                     job_arguments = dict(
@@ -199,10 +205,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                         general_task_id = general_task_id,
                         use_api = USE_API,
                         )
-                    if subtask_arguments['slt_decomposition'] == 'composite':
-                        task_arguments['srm_flat_logic_tree'] = asdict(srm_logic_tree)
-                    else:
-                        task_arguments['srm_logic_tree'] = asdict(srm_logic_tree) # serialize logic tree object?
+                    task_arguments['srm_logic_tree'] = asdict(slt) 
                     yield build_task(task_arguments, job_arguments, task_count, extra_env)
 
 
