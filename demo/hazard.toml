@@ -24,7 +24,7 @@ imtls = [
 
 [site_params]
 vs30 = 1000
-location_list = ['WLG','AKL','DUD','CHC']
+locations = ['WLG','AKL','DUD','CHC']
 
 [logic_tree]
 slt_decomposition = "component"

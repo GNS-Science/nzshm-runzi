@@ -59,7 +59,7 @@ def validate_config(config: Dict[Any, Any]) -> None:
     validate_entry(config, "hazard_curve", "imts", [list], elm_type=str)
     validate_entry(config, "hazard_curve", "imtls", [list], elm_type=float)
     validate_entry(config, "site_params", "vs30", [list, int], elm_type=int)
-    validate_entry(config, "site_params", "location_list", [list], elm_type=str)
+    validate_entry(config, "site_params", "locations", [list], elm_type=str)
     validate_entry(config, "general", "title", [str])
     validate_entry(config, "general", "description", [str])
     validate_entry(config, "logic_tree", "slt_decomposition", [str], choice=["none", "composite", "component"])
@@ -112,7 +112,7 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
     if not config["calculation"].get("num_workers"):
         config["calculation"]["num_workers"] = 1
 
-    location_list = update_location_list(config["site_params"]["location_list"])
+    location_list = update_location_list(config["site_params"]["locations"])
 
     imts = config["hazard_curve"]["imts"]
     imtls = config["hazard_curve"]["imtls"]
