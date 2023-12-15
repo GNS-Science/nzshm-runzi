@@ -1,12 +1,44 @@
+[general]
+title = "OpenQuake Disaggregation Calcs"
+description = "Disaggregation for NZ and srg_164 at several IMTs and PoEs"
+
+[model]
+srm_logic_tree = "/home/chrisdc/NSHM/DEV/nzshm-runzi/runzi/CONFIG/OQ/SLT_v9p0p0.py"
+gmcm_logic_tree = "/home/chrisdc/NSHM/oqconfigs/01.05.2023/NZ_NSHM_GMM_LT_final_EE.xml"
+# nshm_model_version = "NSHM_v1.0.4"
+
+[hazard_curve]
 hazard_model_id = "NSHM_v1.0.4"
 agg = "mean"
+imts = ["PGA", "SA(1.5)"]
+
+[site_params]
+vs30 = 750
+locations = ["WLG", "AKL"]
+
+[disagg]
 inv_time = 50
-rupture_mesh_spacing = 4
-ps_grid_spacing = 30
-locations = ["NZ", "srg_164"]
-imts = ["SA(0.2)", "SA(0.5)", "SA(1.5)", "SA(3.0)"]
-vs30s = [750]
 poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
-gt_filename = "gtids_NZplus1_allIMT_allpoe_750.txt"
+
+[calculation]
 num_workers = 1
-logic_tree = "/home/chrisdc/NSHM/DEV/nzshm-runzi/runzi/CONFIG/OQ/SLT_v9p0p0.py"
+
+[output]
+gt_filename = "gtids_NZplus1_allIMT_allpoe_750.txt"
+
+# [openquake_single.erf]
+# rupture_mesh_spacing = 4
+
+# [openquake_single.general]
+# ps_grid_spacing = 30
+
+# [openquake_single.disagg]
+# num_epsilon_bins = 16
+# mag_bin_width = 0.1999
+# coordinate_bin_width = 5
+# disagg_outputs = "TRT Mag Dist Mag_Dist TRT_Mag_Dist_Eps"
+
+# [openquake_single.disagg_bin_edges]
+# dist = [0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0, 140.0, 180.0, 220.0, 260.0, 320.0, 380.0, 500.0] # optional
+
+

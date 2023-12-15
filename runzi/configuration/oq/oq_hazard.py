@@ -6,6 +6,7 @@ from dataclasses import asdict
 
 from nzshm_model.source_logic_tree import SourceLogicTree
 
+from .util import unpack_keys, unpack_values, update_oq_args
 from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config, BatchEnvironmentSetting
@@ -32,7 +33,7 @@ factory_class = get_factory(CLUSTER_MODE)
 factory_task = runzi.execute.openquake.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
-DEFAULT_CONFIG = dict(
+DEFAULT_HAZARD_CONFIG = dict(
     general = dict(
         random_seed = 25,
         calculation_mode = 'classical',
@@ -105,30 +106,8 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
 
         return str(script_file_path)
 
-def update_arguments(dict1, dict2):
-
-    for name, table in dict2.items():
-        if dict2.get(name):
-            for k, v in table.items():
-                dict1[name][k] = v
-        else:
-            dict1[name] = table
-
-    # return dict1
 
 def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments ):
-
-    def unpack_keys(d):
-        keys = []
-        for k1,v in d.items():
-            for k2 in v.keys():
-                keys.append((k1, k2))
-        return keys
-
-    def unpack_values(d):
-        for v in d.values():
-            for v2 in v.values():
-                yield v2
 
     extra_env = [
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_STAGE", value="PROD"),
@@ -137,10 +116,9 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
     ]
 
     iterate = subtask_arguments["config_iterate"]
-    vs30s = subtask_arguments["vs30"] if isinstance(subtask_arguments["vs30"], list) else [subtask_arguments["vs30"], ]
     iter_keys = unpack_keys(iterate)
     task_count = 0
-    for vs30 in vs30s:
+    for vs30 in subtask_arguments["vs30s"]:
         for iter_values in itertools.product(*unpack_values(iterate)):
 
                 task_arguments = dict(
@@ -152,15 +130,14 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                     disagg_conf = subtask_arguments["disagg_conf"],
                 )
 
-                task_arguments["oq"] = DEFAULT_CONFIG  # default openquake config
+                task_arguments["oq"] = DEFAULT_HAZARD_CONFIG  # default openquake config
                 # overwrite with user specifiction
-                update_arguments(task_arguments["oq"], subtask_arguments["config_scalar"])
-                iter_dict = dict()
-                for k, v in zip(iter_keys, iter_values):
-                    iter_dict[k[0]] = {k[1]: v}
-                update_arguments(task_arguments["oq"], iter_dict)
-                description = ": ".join((subtask_arguments["general"].get("title"), subtask_arguments["general"].get("description")))
-                update_arguments(task_arguments["oq"], {"general": {"description": description}})
+                description = ": ".join(
+                    (subtask_arguments["general"].get("title"), subtask_arguments["general"].get("description"))
+                )
+                update_oq_args(
+                    task_arguments["oq"], subtask_arguments["config_scaler"], iter_keys, iter_values, description
+                )
 
                 print('')
                 print('task arguments MERGED')

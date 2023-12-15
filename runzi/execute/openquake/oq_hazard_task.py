@@ -228,6 +228,7 @@ class BuilderTask():
         ta['logic_tree_permutations'] = [{'permute':[{'members':[{'tag': 'DISAGG', 'inv_id': inv_id, 'bg_id': bg_id, 'weight': 1.0}]}]}] 
 
         # get the InversionSolutionNRML XML file(s) to include in the sources list
+        # filter out empty strings (e.g. when ther isn't an inversion source)
         nrml_id_list = list(filter(lambda _id: len(_id), ta['disagg_config']['source_ids']))
 
         log.info(f"sources: {nrml_id_list}")

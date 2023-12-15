@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 
-from runzi.configuration.oq_disagg import get_disagg_configs
+from runzi.configuration.oq.oq_disagg import get_disagg_configs
 from runzi.CONFIG.OQ.SLT_v9p0p0 import logic_tree_permutations 
 
 class TestDisaggConfigs(unittest.TestCase):
