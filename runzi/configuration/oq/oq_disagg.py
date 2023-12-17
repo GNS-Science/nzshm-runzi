@@ -1,3 +1,4 @@
+import copy
 import os
 import pwd
 import itertools
@@ -47,7 +48,7 @@ dist_bin_edges = [
     0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0,
     100.0, 140.0, 180.0, 220.0, 260.0, 320.0, 380.0, 500.0
 ]
-DEFAULT_DISAGG_CONFIG = DEFAULT_HAZARD_CONFIG.copy()
+DEFAULT_DISAGG_CONFIG = copy.deepcopy(DEFAULT_HAZARD_CONFIG)
 DEFAULT_DISAGG_CONFIG["general"]["calculation_mode"] = "disaggregation"
 DEFAULT_DISAGG_CONFIG["disagg"] = dict(
     max_sites_disagg=1,

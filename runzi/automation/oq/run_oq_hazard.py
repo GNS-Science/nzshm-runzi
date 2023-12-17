@@ -163,7 +163,7 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
         gmcm_logic_tree=gmcm_logic_tree,
         slt_decomposition=config["logic_tree"]["slt_decomposition"],
         intensity_spec={"tag": "fixed", "measures": imts, "levels": imtls},
-        vs30=vs30s,
+        vs30s=vs30s,
         location_list=location_list,
         disagg_conf={'enabled': False, 'config': {}},
         config_iterate=openquake_iterate,
@@ -200,6 +200,7 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
 
     print('worker count: ', num_workers)
     print(f'tasks to schedule: {len(tasks)}')
+    assert 0
     schedule_tasks(tasks, num_workers)
 
     print("GENERAL_TASK_ID:", new_gt_id)

@@ -174,7 +174,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 (subtask_arguments["general"].get("title"), subtask_arguments["general"].get("description"))
             )
             update_oq_args(
-                task_arguments["oq"], subtask_arguments["config_scaler"], iter_keys, iter_values, description
+                task_arguments["oq"], subtask_arguments["config_scalar"], iter_keys, iter_values, description
             )
 
             print('')
