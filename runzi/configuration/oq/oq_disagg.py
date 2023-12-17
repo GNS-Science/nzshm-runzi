@@ -13,7 +13,7 @@ import toshi_hazard_store
 from .util import unpack_values, unpack_keys, update_oq_args
 from .oq_hazard import DEFAULT_HAZARD_CONFIG
 
-
+from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType, ModelType, CreateGeneralTaskArgs
 
 from runzi.automation.scaling.python_task_factory import get_factory
@@ -36,7 +36,7 @@ factory_task = runzi.execute.openquake.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
 DEFAULT_DISAGG_CONFIG = DEFAULT_HAZARD_CONFIG.copy()
-DEFAULT_DISAGG_CONFIG["calculation_mode"] = "disaggregation"
+DEFAULT_DISAGG_CONFIG["general"]["calculation_mode"] = "disaggregation"
 DEFAULT_DISAGG_CONFIG["disagg"] = dict(
     max_sites_disagg = 1,
     mag_bin_width = 0.1999,
@@ -266,15 +266,16 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
 
         for iter_values in itertools.product(*unpack_values(iterate)):
             task_arguments = dict(
-                    gmcm_logic_tree=args["gmcm_logic_tree"],
-                    model_type = model_type.name,
-                    location = location,
-                    vs30 = vs30,
-                    imt = imt,
-                    agg = agg,
-                    poe = poe,
-                    inv_time = args["inv_time"],
-                    level = target_level,
+                task_type=HazardTaskType.DISAGG.name,
+                gmcm_logic_tree=args["gmcm_logic_tree"],
+                model_type = model_type.name,
+                location = location,
+                vs30 = vs30,
+                imt = imt,
+                agg = agg,
+                poe = poe,
+                inv_time = args["inv_time"],
+                level = target_level,
                 )
             task_arguments["oq"] = DEFAULT_DISAGG_CONFIG # default openquake config
             # overwrite with user specifiction

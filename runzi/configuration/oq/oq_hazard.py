@@ -10,6 +10,7 @@ from .util import unpack_keys, unpack_values, update_oq_args
 from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config, BatchEnvironmentSetting
+from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 import runzi.execute.openquake.oq_hazard_task
 from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
     API_URL, CLUSTER_MODE, EnvMode, S3_URL, S3_REPORT_BUCKET)
@@ -122,6 +123,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
         for iter_values in itertools.product(*unpack_values(iterate)):
 
                 task_arguments = dict(
+                    task_type=HazardTaskType.HAZARD.name,
                     gmcm_logic_tree=subtask_arguments["gmcm_logic_tree"],
                     model_type = model_type.name,
                     intensity_spec = subtask_arguments["intensity_spec"],

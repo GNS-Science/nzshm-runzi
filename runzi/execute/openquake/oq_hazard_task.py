@@ -188,14 +188,14 @@ class BuilderTask():
             "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version"
         }
 
-        if ta.get('srm_logic_tree') or ta.get('srm_flat_logic_tree'):
-            # This is LTB based oqenquake hazard job
+        if HazardTaskType[ta["task_type"]] is HazardTaskType.HAZARD:
             self.run_hazard(task_arguments, job_arguments, environment)
             return
-        if ta.get('disagg_config'):
+        elif HazardTaskType[ta["task_type"]] is HazardTaskType.DISAGG:
             self.run_disaggregation(task_arguments, job_arguments, environment)
             return
-        raise ValueError("Invalid configuration.")
+        else:
+            raise ValueError("Invalid configuration.")
 
     def _sterilize_task_arguments_gsims(self, ta):
         ta_clean = copy.deepcopy(ta)
@@ -222,16 +222,16 @@ class BuilderTask():
         #############
         # DISAGG sources are in the config
         #############
-        disagg_config = ta['disagg_config']
-        ta['vs30'] = disagg_config['vs30']
-        inv_id, bg_id = disagg_config['source_ids']
-        ta['logic_tree_permutations'] = [{'permute':[{'members':[{'tag': 'DISAGG', 'inv_id': inv_id, 'bg_id': bg_id, 'weight': 1.0}]}]}] 
+        # disagg_config = ta['disagg_config']
+        # ta['vs30'] = disagg_config['vs30']
+        # inv_id, bg_id = disagg_config['source_ids']
+        # ta['logic_tree_permutations'] = [{'permute':[{'members':[{'tag': 'DISAGG', 'inv_id': inv_id, 'bg_id': bg_id, 'weight': 1.0}]}]}] 
 
         # get the InversionSolutionNRML XML file(s) to include in the sources list
         # filter out empty strings (e.g. when ther isn't an inversion source)
-        nrml_id_list = list(filter(lambda _id: len(_id), ta['disagg_config']['source_ids']))
+        # nrml_id_list = list(filter(lambda _id: len(_id), ta['disagg_config']['source_ids']))
 
-        log.info(f"sources: {nrml_id_list}")
+        # log.info(f"sources: {nrml_id_list}")
 
         ############
         # API SETUP
@@ -239,34 +239,63 @@ class BuilderTask():
         automation_task_id = None
         if self.use_api:
             task_type = HazardTaskType.DISAGG
-            ta_clean = self._sterilize_task_arguments_gsims(ta) if ta['disagg_config'].get('gsims') else ta
-            archive_id = ta['hazard_config']
-            config_id = self._save_config(archive_id, nrml_id_list)
-            automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, nrml_id_list, environment, task_type)
+            config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEyOTI0NA==" # old config id until we've removed need for config_id when creating task
+            ta_clean = self._sterilize_task_arguments_gmcmlt(ta)
+            automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, environment, task_type)
+
+            # ta_clean = self._sterilize_task_arguments_gsims(ta) if ta['disagg_config'].get('gsims') else ta
+            # archive_id = ta['hazard_config']
+            # config_id = self._save_config(archive_id, nrml_id_list)
+            # automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, nrml_id_list, environment, task_type)
 
         #########################
         # Baseline CONFIG
         #########################
-        work_folder = WORK_PATH
-        config_template_info = self._toshi_api.get_file_detail(ta['hazard_config'])
-        config_filename = "job.ini" #  get_config_filename(config_template_info) TODO not set int meta?
+        # work_folder = WORK_PATH
+        # config_template_info = self._toshi_api.get_file_detail(ta['hazard_config'])
+        # config_filename = "job.ini" #  get_config_filename(config_template_info) TODO not set int meta?
 
         #unpack the templates
-        config_folder = explode_config_template(config_template_info, work_folder, ja['task_id'])
-        sources_folder = Path(config_folder, 'sources')
-        source_file_mapping = SourceModelLoader().unpack_sources_in_list(nrml_id_list, sources_folder)
+        # config_folder = explode_config_template(config_template_info, work_folder, ja['task_id'])
+        # sources_folder = Path(config_folder, 'sources')
+        # source_file_mapping = SourceModelLoader().unpack_sources_in_list(nrml_id_list, sources_folder)
 
-        flattened_files = []
-        for key, val in source_file_mapping.items():
-            flattened_files += val['sources']
+        # flattened_files = []
+        # for key, val in source_file_mapping.items():
+        #     flattened_files += val['sources']
+
+        #################################
+        # SETUP openquake CONFIG FOLDER
+        #################################
+        work_folder = WORK_PATH
+        task_no = ja["task_id"]
+        config_folder = Path(work_folder, f"config_{task_no}")
+        config_filename = "job.ini"
+
+        ###########################
+        # HAZARD sources and ltbs
+        ###########################
+        # using new version2 SourceLogicTree from nzshm_model>=0.5.0
+        srm_logic_tree = SourceLogicTree.from_dict(ta['srm_logic_tree'])
+        print(srm_logic_tree)
+        sources_folder = Path(config_folder, 'sources')
+        cache_folder = Path(config_folder, 'downloads')
+        cache_folder.mkdir(parents=True, exist_ok=True)
+        sources_folder.mkdir(parents=True, exist_ok=True)
+        adapter = srm_logic_tree.psha_adapter(provider=OpenquakeSimplePshaAdapter)
+        sources_filepath = adapter.write_config(cache_folder, sources_folder)
+        sources_filepath = sources_filepath.relative_to(config_folder)
+        for f in cache_folder.glob("*"):
+            f.unlink()
+        cache_folder.rmdir()
 
         ##################
         # SOURCE XML
         ##################
-        source_xml = build_disagg_sources_xml(flattened_files)
-        src_xml_file = Path(sources_folder, 'source_model.xml')
-        write_sources(source_xml, src_xml_file)
-        log.info(f'wrote xml sources file: {src_xml_file}')
+        # source_xml = build_disagg_sources_xml(flattened_files)
+        # src_xml_file = Path(sources_folder, 'source_model.xml')
+        # write_sources(source_xml, src_xml_file)
+        # log.info(f'wrote xml sources file: {src_xml_file}')
 
         ##################
         # GSIMS XML
@@ -280,40 +309,68 @@ class BuilderTask():
         ##################
         # SITE
         ##################
-        site_csv = build_site_csv([disagg_config['location']])
+        site_csv = build_site_csv([ta['location']])
         site_csv_file = Path(config_folder, 'site.csv')
         write_sources(site_csv, site_csv_file)
         log.info(f'wrote csv site file: {site_csv_file}')
+        
+        ##################
+        # GMCM LOGIC TREE
+        ##################
+        gsim_xml = build_gsim_xml(ta["gmcm_logic_tree"])
+        gsim_xml_file = Path(config_folder, 'gsim_model.xml')
+        write_sources(gsim_xml, gsim_xml_file)
 
 
         ###############
         # CONFIGURE JOB
         ###############
-        disagg_settings = disagg_config.get('disagg_settings')
-        lat, lon = disagg_config["location"].split("~")
-        config_file = Path(config_folder, config_filename)
-        def modify_config(config_file, task_arguments):
-            "modify_config for openquake hazard task."""
-            ta = task_arguments
-            config = OpenquakeConfig(open(config_file))\
-                .set_description(f"Disaggregation for site: {disagg_config.get('site_name')}, vs30: {disagg_config['vs30']}, IMT: {disagg_config['imt']}, level: {round(disagg_config['level'], 12)}")\
-                .set_disaggregation(enable = True, values=disagg_settings)\
-                .set_iml_disagg(imt=disagg_config['imt'], level=round(disagg_config['level'], 12))\
-                .clear_iml()\
-                .set_rupture_mesh_spacing(ta["rupture_mesh_spacing"])\
-                .set_ps_grid_spacing(ta["ps_grid_spacing"])\
-                .set_vs30(disagg_config['vs30'])\
-                .set_disagg_site_model()
-                # .set_rlz_index(disagg_config['nrlz'])\
-                # .set_gsim_logic_tree_file("./gsim_model.xml")\
-                # .set_disagg_site(lat, lon)
-            config.write(open(config_file, 'w'))
+        # disagg_settings = disagg_config.get('disagg_settings')
+        # lat, lon = disagg_config["location"].split("~")
+        # config_file = Path(config_folder, config_filename)
+        # def modify_config(config_file, task_arguments):
+        #     "modify_config for openquake hazard task."""
+        #     ta = task_arguments
+        #     config = OpenquakeConfig(open(config_file))\
+        #         .set_description(f"Disaggregation for site: {disagg_config.get('site_name')}, vs30: {disagg_config['vs30']}, IMT: {disagg_config['imt']}, level: {round(disagg_config['level'], 12)}")\
+        #         .set_disaggregation(enable = True, values=disagg_settings)\
+        #         .clear_iml()\
+        #         .set_rupture_mesh_spacing(ta["rupture_mesh_spacing"])\
+        #         .set_ps_grid_spacing(ta["ps_grid_spacing"])\
+        #         .set_vs30(disagg_config['vs30'])\
+        #         .set_disagg_site_model()
+        #         # .set_rlz_index(disagg_config['nrlz'])\
+        #         # .set_gsim_logic_tree_file("./gsim_model.xml")\
+        #         # .set_disagg_site(lat, lon)
+        #     config.write(open(config_file, 'w'))
 
-        modify_config(config_file, task_arguments)
+        # modify_config(config_file, task_arguments)
+
+        ###############
+        # OQ CONFIG
+        ###############
+        description = (f"Disaggregation for site: {ta['location']}, vs30: {ta['vs30']}, "
+                       f"IMT: {ta['imt']}, level: {round(ta['level'], 12)}")
+        config_filepath = Path(config_folder, config_filename)
+        oq_config = OpenquakeConfig()\
+            .set_description(description)\
+            .set_sites("./sites.csv")\
+            .set_source_logic_tree_file(str(sources_filepath))\
+            .set_gsim_logic_tree_file("./gsim_model.xml")\
+            .set_vs30(ta['vs30'])\
+            .set_iml_disagg(imt=ta['imt'], level=ta['level'])
+        task_arguments['oq']['general'].pop('description')
+        for table, params in task_arguments['oq'].items():
+            for name, value in params.items():
+                oq_config.set_parameter(table, name, value)
+        with config_filepath.open("w") as config_file:
+            oq_config.write(config_file)
+
 
         ##############
         # EXECUTE
         ##############
+        assert 0
         oq_result = execute_openquake(config_file, ja['task_id'], automation_task_id)
 
         ######################
@@ -450,7 +507,7 @@ class BuilderTask():
             .set_sites("./sites.csv")\
             .set_source_logic_tree_file(str(sources_filepath))\
             .set_gsim_logic_tree_file("./gsim_model.xml")\
-            .set_disaggregation(enable = ta['disagg_conf']['enabled'],
+            .set_disaggregation(enable = ta['disagg_conf']['enabled'], # TODO: git rid of this?
                 values = ta['disagg_conf']['config'])\
             .set_iml(ta['intensity_spec']['measures'],
                 ta['intensity_spec']['levels'])\
