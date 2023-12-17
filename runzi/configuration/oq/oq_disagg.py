@@ -21,39 +21,52 @@ from runzi.util.aws import get_ecs_job_config, BatchEnvironmentSetting
 
 import runzi.execute.openquake.oq_hazard_task
 
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
-    API_KEY, API_URL, CLUSTER_MODE, EnvMode, S3_URL, S3_REPORT_BUCKET)
+from runzi.automation.scaling.local_config import (
+    WORK_PATH,
+    USE_API,
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    EnvMode,
+    S3_URL,
+    S3_REPORT_BUCKET
+)
 
-HAZARD_MAX_TIME = 20 #minutes
+HAZARD_MAX_TIME = 20  # minutes
 
-BL_CONF_1 = dict( job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_32GB_8VCPU_v2_JQ", mem=30000, cpu=8)
-BL_CONF_2 = dict( job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_16GB_4VCPU_JQ", mem=15000, cpu=4)
-BIGGER_LEVER = True # FALSE uses fargate
-BIGGER_LEVER_CONF = BL_CONF_2 #BL_CONF_32_120
+BL_CONF_1 = dict(job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_32GB_8VCPU_v2_JQ", mem=30000, cpu=8)
+BL_CONF_2 = dict(job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_16GB_4VCPU_JQ", mem=15000, cpu=4)
+BIGGER_LEVER = True  # FALSE uses fargate
+BIGGER_LEVER_CONF = BL_CONF_2  # BL_CONF_32_120
 
 factory_class = get_factory(CLUSTER_MODE)
 factory_task = runzi.execute.openquake.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
+dist_bin_edges = [
+    0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0,
+    100.0, 140.0, 180.0, 220.0, 260.0, 320.0, 380.0, 500.0
+]
 DEFAULT_DISAGG_CONFIG = DEFAULT_HAZARD_CONFIG.copy()
 DEFAULT_DISAGG_CONFIG["general"]["calculation_mode"] = "disaggregation"
 DEFAULT_DISAGG_CONFIG["disagg"] = dict(
-    max_sites_disagg = 1,
-    mag_bin_width = 0.1999,
-    distance_bin_width = 10, 
-    coordinate_bin_width = 5,
-    num_epsilon_bins = 16, 
-    disagg_outputs = "TRT Mag Dist Mag_Dist TRT_Mag_Dist_Eps",
-    disagg_bin_edges = {'dist': [0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0, 140.0, 180.0, 220.0, 260.0, 320.0, 380.0, 500.0]},
+    max_sites_disagg=1,
+    mag_bin_width=0.1999,
+    distance_bin_width=10,
+    coordinate_bin_width=5,
+    num_epsilon_bins=16,
+    disagg_outputs="TRT Mag Dist Mag_Dist TRT_Mag_Dist_Eps",
+    disagg_bin_edges={'dist': dist_bin_edges},
 )
 
 GT_COUNTER = 0
 
+
 def compute_hazard_at_poe(levels, values, poe, inv_time):
-    
     rp = -inv_time / np.log(1 - poe)
     haz = np.exp(np.interp(np.log(1 / rp), np.flip(np.log(values)), np.flip(np.log(levels))))
     return haz
+
 
 def get_target_level(
     hazard_model_id,
@@ -70,93 +83,9 @@ def get_target_level(
     hazard_vals = []
     for v in hc.values:
         levels.append(float(v.lvl))
-        hazard_vals.append(float(v.val)) 
+        hazard_vals.append(float(v.val))
 
     return compute_hazard_at_poe(levels, hazard_vals, poe, inv_time)
-
-
-#TODO: using custom function here to also retrive the nrlz from the logic tree.
-# Once LT has it's onwn class that includes GMCM, we can unify the LT functions
-# def get_granular_logic_tree_branches_wnrlz(ltb_groups):
-
-#     for group in ltb_groups: #dict in list (len = 1)
-#         for fault_system in group['permute']:
-#             nrlz = fault_system['nrlz']
-#             for member in fault_system['members']:
-#                 member['nrlz'] = nrlz
-#                 yield member
-
-
-# def get_lt_branches(logic_trees):
-#     """
-#     Get branch information for logic tree without combinations across fault system logic trees.
-
-#     Parameters
-#     ----------
-#     logic_trees: list
-#         logic tree definition
-    
-#     Returns
-#     -------
-#     lt_branches: List[dict]
-#         each dict contains 'source_ids' and 'nrlz' of logic tree branch
-#     """
-
-#     lt_branches = []
-#     for logic_tree in logic_trees: 
-#         # print(logic_tree)
-#         for ltb in get_granular_logic_tree_branches_wnrlz(logic_tree):
-#             # print(ltb)
-#             source_ids = [v for k,v in ltb.items() if '_id' in k]
-#             lt_branches.append({'source_ids': source_ids, 'nrlz': ltb['nrlz']})
-
-#     return lt_branches
-
-# def get_disagg_configs(gt_config, logic_trees):
-#     """
-#     Get a configuration used for launching oq-engine disaggregations for
-#     every branch of a logic tree without forming combinations between fault system logic trees.
-
-#     Parameters
-#     ----------
-#     gt_config : dict
-#         contains information about location, vs30, poe, etc for disaggregation
-#         {
-#         'location':str, (could be site_code or encoded lat~lon)
-#         'poe':float (0-1),
-#         'vs30':float,
-#         'imt': str,
-#         'inv_time': float,
-#         'agg': str,
-#         'hazard_model_id': str
-#         }
-#     logic_trees : list
-#         logic tree definition
-
-#     Returns
-#     -------
-#     list
-#         Format matches output from THP --deagg CONFIG but does not contain 'source_tree_hazid' key
-#     """
-
-#     configs = gt_config.copy()
-#     if location_by_id(configs['location']):
-#         configs['site_code'] = configs['location']
-#         configs['site_name'] = location_by_id(configs['location'])['name']
-#         resolution = 0.001
-#         lat = location_by_id(configs['location'])['latitude']
-#         lon = location_by_id(configs['location'])['longitude']
-#         location = CodedLocation(lat, lon, resolution).code
-#         configs['location'] = location
-#     elif '~' in configs['location']:
-#         location = configs['location']
-#     else:
-#         raise Exception('location must be valid site_code or coded location string')
-
-#     configs['target_level'] = get_target_level(gt_config, location)
-#     configs['deagg_specs'] = get_lt_branches(logic_trees)
-
-#     return [configs]
 
 
 def build_task(task_arguments, job_arguments, task_id, extra_env):
@@ -164,30 +93,34 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
     if CLUSTER_MODE == EnvMode['AWS']:
         job_name = f"Runzi-automation-oq-disagg-{task_id}"
         config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
- 
+
         if BIGGER_LEVER:
-            return get_ecs_job_config(job_name,
+            return get_ecs_job_config(
+                job_name,
                 'N/A', config_data,
                 toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
                 task_module=runzi.execute.openquake.oq_hazard_task.__name__,
                 time_minutes=int(HAZARD_MAX_TIME),
                 memory=BIGGER_LEVER_CONF["mem"],
                 vcpu=BIGGER_LEVER_CONF["cpu"],
-                job_definition=BIGGER_LEVER_CONF["job_def"], # "BigLeverOnDemandEC2-JD", # "BiggerLever-runzi-openquake-JD", #"getting-started-job-definition-jun7",
+                job_definition=BIGGER_LEVER_CONF["job_def"],  # "BigLeverOnDemandEC2-JD", # "BiggerLever-runzi-openquake-JD", #"getting-started-job-definition-jun7",
                 job_queue=BIGGER_LEVER_CONF["job_queue"],
-                extra_env = extra_env,
-                use_compression = True)
+                extra_env=extra_env,
+                use_compression=True
+            )
         else:
-            return get_ecs_job_config(job_name,
+            return get_ecs_job_config(
+                job_name,
                 'N/A', config_data,
                 toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
                 task_module=runzi.execute.openquake.oq_hazard_task.__name__,
                 time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4,
                 job_definition="Fargate-runzi-openquake-JD",
-                extra_env = extra_env,
-                use_compression = True)
+                extra_env=extra_env,
+                use_compression=True
+            )
     else:
-        #write a config
+        # write a config
         task_factory.write_task_config(task_arguments, job_arguments)
         script = task_factory.get_task_script()
 
@@ -195,7 +128,7 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
         with open(script_file_path, 'w') as f:
             f.write(script)
 
-        #make file executable
+        # make file executable
         st = os.stat(script_file_path)
         os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
@@ -208,8 +141,8 @@ def new_general_task(gt_arguments, title, description, subtask_type, model_type)
         global GT_COUNTER
         GT_COUNTER += 1
         return f'none_{GT_COUNTER}'
-    
-    headers={"x-api-key":API_KEY}
+
+    headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     args_list = []
@@ -218,12 +151,12 @@ def new_general_task(gt_arguments, title, description, subtask_type, model_type)
 
     if USE_API:
 
-        #create new task in toshi_api
+        # create new task in toshi_api
         gt_args = CreateGeneralTaskArgs(
             agent_name=pwd.getpwuid(os.getuid()).pw_name,
             title=title,
             description=description,
-            )\
+        )\
             .set_argument_list(args_list)\
             .set_subtask_type(subtask_type)\
             .set_model_type(model_type)
@@ -235,8 +168,6 @@ def new_general_task(gt_arguments, title, description, subtask_type, model_type)
 
 def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
     task_count = 0
-    headers={"x-api-key":API_KEY}
-    toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     extra_env = [
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_STAGE", value="PROD"),
@@ -268,16 +199,16 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
             task_arguments = dict(
                 task_type=HazardTaskType.DISAGG.name,
                 gmcm_logic_tree=args["gmcm_logic_tree"],
-                model_type = model_type.name,
-                location = location,
-                vs30 = vs30,
-                imt = imt,
-                agg = agg,
-                poe = poe,
-                inv_time = args["inv_time"],
-                level = target_level,
-                )
-            task_arguments["oq"] = DEFAULT_DISAGG_CONFIG # default openquake config
+                model_type=model_type.name,
+                location=location,
+                vs30=vs30,
+                imt=imt,
+                agg=agg,
+                poe=poe,
+                inv_time=args["inv_time"],
+                level=target_level,
+            )
+            task_arguments["oq"] = DEFAULT_DISAGG_CONFIG  # default openquake config
             # overwrite with user specifiction
             description = ": ".join(
                 (args["general"].get("title"), args["general"].get("description"))
@@ -310,12 +241,11 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
                     new_gt_id = gt_id
                 slt = SourceLogicTree.from_branches([branch])
 
-                task_count +=1
+                task_count += 1
                 job_arguments = dict(
-                    task_id = task_count,
-                    general_task_id = gt_id,
-                    use_api = USE_API,
-                    )
-                task_arguments['srm_logic_tree'] = asdict(slt) 
+                    task_id=task_count,
+                    general_task_id=gt_id,
+                    use_api=USE_API,
+                )
+                task_arguments['srm_logic_tree'] = asdict(slt)
                 yield build_task(task_arguments, job_arguments, task_count, extra_env), gt_id
-

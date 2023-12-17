@@ -37,6 +37,7 @@ logging.getLogger('gql.transport').setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
 
+
 def locations_from_csv(locations_filepath):
 
     locations = []
@@ -77,11 +78,10 @@ def validate_config(config: Dict[Any, Any], mode: str) -> None:
     validate_entry(config, "general", "description", [str])
     validate_entry(config, "calculation", "num_workers", [int], optional=True)
 
-    if mode=='hazard':
+    if mode == 'hazard':
         validate_config_hazard(config)
-    elif mode=='disagg':
+    elif mode == 'disagg':
         validate_config_disagg(config)
-
 
 
 def update_location_list(location_list: List[str]):
@@ -115,6 +115,7 @@ def load_model(config):
 
     return srm_logic_tree, gmcm_logic_tree
 
+
 def get_num_workers(config: Dict[Any, Any]) -> int:
     if not config["calculation"].get("num_workers"):
         return 1
@@ -139,7 +140,7 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
 
     validate_config(config, mode='hazard')
     if config["logic_tree"]["slt_decomposition"] in ["composite", "none"]:
-        msg = (f"config['logic_tree']['slt_decomposition'] SRM logic tree not supported. "
+        msg = (f"{config['logic_tree']['slt_decomposition']} SRM logic tree not supported. "
                "See https://github.com/GNS-Science/nzshm-model/issues/23 and "
                "https://github.com/GNS-Science/nzshm-runzi/issues/162")
         raise ValueError(msg)
@@ -157,16 +158,16 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
     openquake_iterate = dict() if not config.get("openquake_iterate") else config["openquake_iterate"]
     openquake_scalar = dict() if not config.get("openquake_single") else config["openquake_single"]
     args = dict(
-        general = config["general"],
-        srm_logic_tree =  srm_logic_tree,
-        gmcm_logic_tree = gmcm_logic_tree,
-        slt_decomposition = config["logic_tree"]["slt_decomposition"],
-        intensity_spec = { "tag": "fixed", "measures": imts, "levels": imtls},
-        vs30 = vs30s,
-        location_list = location_list,
-        disagg_conf = {'enabled': False, 'config': {}},
-        config_iterate = openquake_iterate,
-        config_scalar = openquake_scalar,
+        general=config["general"],
+        srm_logic_tree=srm_logic_tree,
+        gmcm_logic_tree=gmcm_logic_tree,
+        slt_decomposition=config["logic_tree"]["slt_decomposition"],
+        intensity_spec={"tag": "fixed", "measures": imts, "levels": imtls},
+        vs30=vs30s,
+        location_list=location_list,
+        disagg_conf={'enabled': False, 'config': {}},
+        config_iterate=openquake_iterate,
+        config_scalar=openquake_scalar,
     )
 
     args_list = []
@@ -178,14 +179,14 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
     model_type = ModelType.COMPOSITE
 
     if USE_API:
-        headers={"x-api-key":API_KEY}
+        headers = {"x-api-key": API_KEY}
         toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
-        #create new task in toshi_api
+        # create new task in toshi_api
         gt_args = CreateGeneralTaskArgs(
             agent_name=pwd.getpwuid(os.getuid()).pw_name,
             title=config["general"]["title"],
             description=config["general"]["description"]
-            )\
+        )\
             .set_argument_list(args_list)\
             .set_subtask_type(task_type)\
             .set_model_type(model_type)
@@ -196,7 +197,7 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
     print("GENERAL_TASK_ID:", new_gt_id)
 
     tasks = build_tasks(new_gt_id, args, task_type, model_type)
-    
+
     print('worker count: ', num_workers)
     print(f'tasks to schedule: {len(tasks)}')
     schedule_tasks(tasks, num_workers)

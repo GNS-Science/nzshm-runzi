@@ -507,8 +507,6 @@ class BuilderTask():
             .set_sites("./sites.csv")\
             .set_source_logic_tree_file(str(sources_filepath))\
             .set_gsim_logic_tree_file("./gsim_model.xml")\
-            .set_disaggregation(enable = ta['disagg_conf']['enabled'], # TODO: git rid of this?
-                values = ta['disagg_conf']['config'])\
             .set_iml(ta['intensity_spec']['measures'],
                 ta['intensity_spec']['levels'])\
             .set_vs30(ta['vs30'])
