@@ -20,7 +20,7 @@ from nzshm_model import get_model_version
 
 from runzi.automation.config import validate_entry, validate_path
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
-from runzi.configuration.oq.oq_hazard import build_hazard_tasks
+from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
 from runzi.automation.scaling.local_config import USE_API, API_KEY, API_URL

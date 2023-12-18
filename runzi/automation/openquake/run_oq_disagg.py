@@ -8,7 +8,7 @@ from collections import namedtuple
 from typing import Dict, Any
 
 from .run_oq_hazard import update_location_list, validate_config, load_model, get_num_workers, single_to_list
-from runzi.configuration.oq.oq_disagg import build_disagg_tasks
+from runzi.configuration.openquake.oq_disagg import build_disagg_tasks
 from runzi.execute.openquake.util.oq_build_sites import get_coded_locations
 from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 from runzi.automation.scaling.schedule_tasks import schedule_tasks

@@ -15,18 +15,6 @@ transforms_map = dict(
     KuehnEtAl2020 = 'region'
     )
 
-def transform_gsims(gsims: Dict):
-    """Depreciated. convert gsims ito form expected in NRML."""
-    new_gsims = {}
-    for trt, value in gsims.items():
-        for name, arg_name in transforms_map.items():
-            if name in value:
-                n, a = value.split("_") # only two values allowed
-                value = f'[{n}]\n{arg_name} = "{a}"'
-            new_gsims[trt] = value
-    return new_gsims
-
-
 def build_gsim_xml(gsims):
     # """Build a gsim model for the suppliced TRs."""
     # E = ElementMaker(namespace="http://openquake.org/xmlns/nrml/0.5",
