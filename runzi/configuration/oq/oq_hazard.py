@@ -159,6 +159,8 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
     for vs30 in subtask_arguments["vs30s"]:
         for iter_values in itertools.product(*unpack_values(iterate)):
             task_arguments = dict(
+                title=subtask_arguments["general"]["title"],
+                description=subtask_arguments["general"]["description"],
                 task_type=HazardTaskType.HAZARD.name,
                 gmcm_logic_tree=subtask_arguments["gmcm_logic_tree"],
                 model_type=model_type.name,
@@ -169,12 +171,10 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             )
 
             task_arguments["oq"] = DEFAULT_HAZARD_CONFIG  # default openquake config
+            
             # overwrite with user specifiction
-            description = ": ".join(
-                (subtask_arguments["general"].get("title"), subtask_arguments["general"].get("description"))
-            )
             update_oq_args(
-                task_arguments["oq"], subtask_arguments["config_scalar"], iter_keys, iter_values, description
+                task_arguments["oq"], subtask_arguments["config_scalar"], iter_keys, iter_values,
             )
 
             print('')

@@ -27,11 +27,10 @@ def update_arguments(dict1, dict2):
     # return dict1
 
 
-def update_oq_args(oq_args, config_scaler, iter_keys, iter_values, description):
+def update_oq_args(oq_args, config_scaler, iter_keys, iter_values):
 
     update_arguments(oq_args, config_scaler)
     iter_dict = dict()
     for k, v in zip(iter_keys, iter_values):
         iter_dict[k[0]] = {k[1]: v}
     update_arguments(oq_args, iter_dict)
-    update_arguments(oq_args, {"general": {"description": description}})

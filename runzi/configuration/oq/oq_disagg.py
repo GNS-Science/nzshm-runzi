@@ -198,6 +198,8 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
 
         for iter_values in itertools.product(*unpack_values(iterate)):
             task_arguments = dict(
+                title=args["general"]["title"],
+                description=args["general"]["description"],
                 task_type=HazardTaskType.DISAGG.name,
                 gmcm_logic_tree=args["gmcm_logic_tree"],
                 model_type=model_type.name,
@@ -210,12 +212,10 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
                 level=target_level,
             )
             task_arguments["oq"] = DEFAULT_DISAGG_CONFIG  # default openquake config
+            
             # overwrite with user specifiction
-            description = ": ".join(
-                (args["general"].get("title"), args["general"].get("description"))
-            )
             update_oq_args(
-                task_arguments["oq"], args["config_scalar"], iter_keys, iter_values, description
+                task_arguments["oq"], args["config_scalar"], iter_keys, iter_values,
             )
 
             print('')

@@ -79,7 +79,6 @@ def run_oq_disagg_f(config: Dict[Any, Any]) -> None:
     print('worker count: ', num_workers)
     print(f'tasks to schedule: {len(tasks)}')
     print(gt_ids)
-    assert 0
     schedule_tasks(tasks, num_workers)
 
     with open(config["output"]["gt_filename"], 'w', buffering=1) as gtfile:

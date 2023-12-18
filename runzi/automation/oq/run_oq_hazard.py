@@ -55,7 +55,7 @@ def locations_from_csv(locations_filepath):
 
 def validate_config_hazard(config: Dict[Any, Any]) -> None:
     validate_entry(config, "hazard_curve", "imtls", [list], elm_type=float)
-    validate_entry(config, "logic_tree", "slt_decomposition", [str], choice=["none", "composite", "component"])
+    validate_entry(config, "logic_tree", "slt_decomposition", [str], choice=["component"])
 
 
 def validate_config_disagg(config: Dict[Any, Any]) -> None:
@@ -200,7 +200,6 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
 
     print('worker count: ', num_workers)
     print(f'tasks to schedule: {len(tasks)}')
-    assert 0
     schedule_tasks(tasks, num_workers)
 
     print("GENERAL_TASK_ID:", new_gt_id)
