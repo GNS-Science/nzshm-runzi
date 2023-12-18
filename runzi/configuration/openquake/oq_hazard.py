@@ -6,7 +6,7 @@ from dataclasses import asdict
 
 from nzshm_model.source_logic_tree import SourceLogicTree
 
-from .util import unpack_keys, unpack_values, update_oq_args
+from .util import unpack_keys, unpack_values, update_oq_args, ComputePlatform, EC2_CONFIGS
 from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config, BatchEnvironmentSetting
@@ -24,41 +24,8 @@ from runzi.automation.scaling.local_config import (
 
 HAZARD_MAX_TIME = 48 * 60  # minutes
 
-# BL_CONF_0 = dict( job_def="BigLever_32GB_8VCPU_JD", job_queue="BigLever_32GB_8VCPU_JQ", mem=30000, cpu=8)
-BL_CONF_1 = dict(job_def="BigLever_32GB_8VCPU_v2_JD", job_queue="BigLever_32GB_8VCPU_v2_JQ", mem=30000, cpu=8)
-
-BL_CONF_0 = dict(  # r5.12xlarge or similar
-    job_def="BigLeverOnDemandEC2-JD",
-    job_queue="BigLeverOnDemandEC2-job-queue",
-    mem=380000, cpu=48
-)
-BL_CONF_16_120 = dict(  # r5.12xlarge or similar
-    job_def="BigLeverOnDemandEC2-JD",
-    job_queue="BigLeverOnDemandEC2-job-queue",
-    mem=120000, cpu=16)
-BL_CONF_32_60 = dict(
-    job_def="BigLeverOnDemandEC2-JD",
-    job_queue="BigLeverOnDemandEC2-job-queue",
-    mem=60000, cpu=32
-)
-BL_CONF_16_30 = dict(
-    job_def="BigLeverOnDemandEC2-JD",
-    job_queue="BigLeverOnDemandEC2-job-queue",
-    mem=30000, cpu=16
-)
-BL_CONF_8_20 = dict(
-    job_def="BigLeverOnDemandEC2-JD",
-    job_queue="BigLeverOnDemandEC2-job-queue",
-    mem=20000, cpu=8
-)
-BL_CONF_32_120 = dict(  # r5.12xlarge or similar
-    job_def="BigLeverOnDemandEC2-JD",
-    job_queue="BigLeverOnDemandEC2-job-queue",
-    mem=120000, cpu=32
-)
-
-BIGGER_LEVER = True  # FALSE uses fargate
-BIGGER_LEVER_CONF = BL_CONF_1  # BL_CONF_32_120
+COMPUTE_PLATFORM = ComputePlatform.EC2
+EC2_CONFIG = EC2_CONFIGS["BL_CONF_1"]  # BL_CONF_32_120
 
 factory_class = get_factory(CLUSTER_MODE)
 factory_task = runzi.execute.openquake.oq_hazard_task
@@ -103,21 +70,21 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
         job_name = f"Runzi-automation-oq-hazard-{task_id}"
         config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
 
-        if BIGGER_LEVER:
+        if COMPUTE_PLATFORM is ComputePlatform.EC2:
             return get_ecs_job_config(
                 job_name,
                 'N/A', config_data,
                 toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
                 task_module=runzi.execute.openquake.oq_hazard_task.__name__,
                 time_minutes=int(HAZARD_MAX_TIME),
-                memory=BIGGER_LEVER_CONF["mem"],
-                vcpu=BIGGER_LEVER_CONF["cpu"],
-                job_definition=BIGGER_LEVER_CONF["job_def"],  # "BigLeverOnDemandEC2-JD", # "BiggerLever-runzi-openquake-JD", #"getting-started-job-definition-jun7",
-                job_queue=BIGGER_LEVER_CONF["job_queue"],
+                memory=EC2_CONFIG["mem"],
+                vcpu=EC2_CONFIG["cpu"],
+                job_definition=EC2_CONFIG["job_def"],  # "BigLeverOnDemandEC2-JD", # "BiggerLever-runzi-openquake-JD", #"getting-started-job-definition-jun7",
+                job_queue=EC2_CONFIG["job_queue"],
                 extra_env=extra_env,
                 use_compression=True
             )
-        else:
+        elif COMPUTE_PLATFORM is ComputePlatform.Fargate:
             return get_ecs_job_config(
                 job_name,
                 'N/A', config_data,
