@@ -263,7 +263,7 @@ class BuilderTask():
         config_filepath = Path(config_folder, config_filename)
 
         if HazardTaskType[ta["task_type"]] is HazardTaskType.DISAGG:
-            description = (f"Disaggregation for site: {ta['location']}, vs30: {ta['vs30']}, "
+            description = (f"Disaggregation for site: {ta['location_list'][0]}, vs30: {ta['vs30']}, "
                        f"IMT: {ta['imt']}, level: {round(ta['level'], 12)}")
         else:
             description = '-'.join((ta["title"], ta["description"]))

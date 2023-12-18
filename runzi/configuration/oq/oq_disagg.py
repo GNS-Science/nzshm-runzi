@@ -203,7 +203,7 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
                 task_type=HazardTaskType.DISAGG.name,
                 gmcm_logic_tree=args["gmcm_logic_tree"],
                 model_type=model_type.name,
-                location=location,
+                location_list=[location],
                 vs30=vs30,
                 imt=imt,
                 agg=agg,

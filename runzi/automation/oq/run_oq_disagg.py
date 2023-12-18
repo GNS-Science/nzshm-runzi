@@ -82,7 +82,7 @@ def run_oq_disagg_f(config: Dict[Any, Any]) -> None:
     schedule_tasks(tasks, num_workers)
 
     with open(config["output"]["gt_filename"], 'w', buffering=1) as gtfile:
-        gtfile.write('\n'.join(*gt_ids))
+        gtfile.write('\n'.join(gt_ids))
 
     print("_____________________GT IDs______________________")
     for _id in gt_ids:

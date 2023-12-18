@@ -195,7 +195,6 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
         new_gt_id = None
 
     print("GENERAL_TASK_ID:", new_gt_id)
-
     tasks = build_tasks(new_gt_id, args, task_type, model_type)
 
     print('worker count: ', num_workers)
