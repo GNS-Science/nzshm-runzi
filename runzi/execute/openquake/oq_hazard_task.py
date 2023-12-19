@@ -259,7 +259,7 @@ class BuilderTask():
         elif HazardTaskType[ta["task_type"]] is HazardTaskType.DISAGG:
             oq_config.set_iml_disagg(imt=ta['imt'], level=ta['level'])
 
-        for table, params in task_arguments['oq'].items():
+        for table, params in ta['oq'].items():
             for name, value in params.items():
                 oq_config.set_parameter(table, name, value)
         with config_filepath.open("w") as config_file:
@@ -313,7 +313,7 @@ class BuilderTask():
                     'store_hazard_v3',
                     str(oq_result['oq_calc_id']),
                     solution_id,
-                    job_arguments['general_task_id'],
+                    ja['general_task_id'],
                     str(ta['location_list']),
                     f'"{tag}"',
                     f'"{source_ids}"',
