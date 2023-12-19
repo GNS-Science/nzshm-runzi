@@ -40,14 +40,6 @@ logging.getLogger('gql.transport').setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
 
-REQUIRED_TASK_ARGS = [
-    "intensity_spec",
-    "location_list",
-    "disagg_conf",
-    "site_params",
-    "srm_logic_tree",
-]
-
 
 def write_sources(xml_str, filepath):
     with open(filepath, 'w') as mf:
