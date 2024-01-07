@@ -2,9 +2,13 @@
 title = "OpenQuake Hazard Calcs"
 description = "Logic Tree 9.0.1, locations for cave locations"
 
+[model]
+# nshm_model_version = "NSHM_v1.0.4"
+gmcm_logic_tree = "/home/chrisdc/NSHM/oqconfigs/01.05.2023/NZ_NSHM_GMM_LT_final_EE.xml"
+srm_logic_tree = "/home/chrisdc/NSHM/DEV/COMPONENTS/nzshm-model/SRM_LTs/python/SLT_v9p0p0.py"
+
 [calculation]
 num_workers = 4
-gsim_logic_tree_file = "/home/chrisdc/NSHM/oqconfigs/01.05.2023/NZ_NSHM_GMM_LT_final_EE.xml"
 
 [hazard_curve]
 imts = [
@@ -20,10 +24,9 @@ imtls = [
 
 [site_params]
 vs30 = 1000
-location_list = ['WLG','AKL','DUD','CHC']
+locations = ['WLG','AKL','DUD','CHC']
 
 [logic_tree]
-srm_logic_tree = "/home/chrisdc/NSHM/DEV/COMPONENTS/nzshm-model/SRM_LTs/python/SLT_v9p0p0.py"
 slt_decomposition = "component"
 
 # override any of the defaults runzi uses for openquake here either for iteration or just a single value
@@ -36,6 +39,6 @@ slt_decomposition = "component"
 # [openquake_single.calculation]
 # truncation_level = 3
 
-[openquake_single.calculation]
-maximum_distance = { "Active Shallow Crust" = "[[4.0, 0], [5.0, 100.0], [6.0, 200.0], [9.5, 250.0]]", "Subduction Interface" = "[[5.0, 0], [6.0, 200.0], [10, 600.0]]", "Subduction Intraslab" = "[[5.0, 0], [6.0, 200.0], [10, 700.0]]" }
+# [openquake_single.calculation]
+# maximum_distance = { "Active Shallow Crust" = "[[4.0, 0], [5.0, 100.0], [6.0, 200.0], [9.5, 250.0]]", "Subduction Interface" = "[[5.0, 0], [6.0, 200.0], [10, 600.0]]", "Subduction Intraslab" = "[[5.0, 0], [6.0, 200.0], [10, 700.0]]" }
 

@@ -1,8 +1,8 @@
 import click
 import toml
 
-from runzi.automation.run_oq_disagg import run_oq_disagg_f
-from runzi.automation.run_oq_hazard import run_oq_hazard_f
+from runzi.automation.openquake.run_oq_disagg import run_oq_disagg_f
+from runzi.automation.openquake.run_oq_hazard import run_oq_hazard_f
 
 def load_config(config_filename: str):
     return toml.load(config_filename)
