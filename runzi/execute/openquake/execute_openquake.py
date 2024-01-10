@@ -8,7 +8,13 @@ import shutil
 import re
 
 from pathlib import Path
-from openquake.commonlib.datastore import get_datadir
+
+try:
+    import openquake
+except ImportError:
+    print("openquake not installed, not importing")
+else:
+    from openquake.commonlib.datastore import get_datadir
 
 from runzi.automation.scaling.local_config import (WORK_PATH, SPOOF_HAZARD)
 

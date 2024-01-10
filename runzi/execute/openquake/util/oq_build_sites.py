@@ -7,10 +7,15 @@ from nzshm_common.location.code_location import CodedLocation
 from shapely.geometry import Point
 
 try:
-    from openquake.hazardlib.site import calculate_z1pt0, calculate_z2pt5
+    import openquake
 except ImportError:
-    from openquake.commands.prepare_site_model import calculate_z1pt0
-    from openquake.commands.prepare_site_model import calculate_z2pt5_ngaw2 as calculate_z2pt5
+    print("openquake not installed, not importing")
+else:
+    try:
+        from openquake.hazardlib.site import calculate_z1pt0, calculate_z2pt5
+    except ImportError:
+        from openquake.commands.prepare_site_model import calculate_z1pt0
+        from openquake.commands.prepare_site_model import calculate_z2pt5_ngaw2 as calculate_z2pt5
 
 def coded_location_by_id(lid: str) -> str:
     loc = location_by_id(lid)
