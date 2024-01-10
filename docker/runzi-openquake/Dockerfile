@@ -3,8 +3,8 @@
 # needs openquake/engine >= 3.15.0
 #nightly
 # FROM openquake/engine:3.16.2
-# FROM openquake/engine:nightly
-FROM openquake/engine:3.17
+FROM openquake/engine:nightly
+# FROM openquake/engine:3.17
 
 
 USER root
@@ -23,6 +23,15 @@ RUN pip install tqdm
 # RUN pip uninstall -y numba
 RUN pip install pytest
 
+RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/precision_option-high/openquake/baselib/__init__.py\
+    -O /usr/src/oq-engine/openquake/baselib/__init__.py
+
+RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/precision_option-high/openquake/engine/openquake.cfg\
+    -O /usr/src/oq-engine/openquake/engine/openquake.cfg
+
+RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/precision_option-high/openquake/hazardlib/probability_map.py\
+    -O /usr/src/oq-engine/openquake/hazardlib/probability_map.py
+
 
 # Install Runzi TODO:is this only for these test configs ??
 WORKDIR /app
@@ -34,8 +43,7 @@ WORKDIR /app
 RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-# RUN git checkout fix/nzshm-common-dep
-RUN git checkout feature/use_nshzm-model_openquake_adapter
+# RUN git checkout feature/use_nshzm-model_openquake_adapter
 RUN pip3 install -e .
 
 

@@ -39,7 +39,7 @@ python-dateutil = "^2.8.2"
 # openquake = ["openquake-engine", "fiona"]
 # converter =["openquake-converters-ucerf"]
 nzshm-model = "^0.5.1"
-nzshm-common = "^0.6.1"
+nzshm-common = {extras = ["geometry"], version = "^0.6.1"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
