@@ -236,6 +236,7 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
             for branch in args['srm_logic_tree']:
                 if not new_gt_id:
                     new_gt_id = gt_id
+                branch.weight = 1.0
                 slt = SourceLogicTree.from_branches([branch])
 
                 task_count += 1
