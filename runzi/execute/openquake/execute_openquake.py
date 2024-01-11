@@ -57,10 +57,11 @@ def execute_openquake(configfile, task_no, toshi_task_id):
 
         filtered_txt1 = 'Filtered away all ruptures??'
         filtered_txt2 = 'There are no ruptures close to the site'
-        if 'error' in oq_out.lower() and (not filtered_txt1 in oq_out) and (not filtered_txt2 in oq_out):
+        filtered_txt3 = 'The site is far from all seismic sources'
+        if 'error' in oq_out.lower() and (not filtered_txt1 in oq_out) and (not filtered_txt2 in oq_out) and (not filtered_txt3 in oq_out):
             raise Exception("Unknown error encountered by openquake")
 
-        if (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (re.findall('No \[.*\] contributions for site', oq_out)):
+        if (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out) or (re.findall('No \[.*\] contributions for site', oq_out)):
             oq_result['no_ruptures'] = True
         else:
 
