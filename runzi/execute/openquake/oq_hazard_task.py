@@ -168,16 +168,16 @@ class BuilderTask():
         }
 
         try:
-            HazardTaskType[ta["task_type"]]
+            task_type = HazardTaskType[ta["task_type"]]
         except KeyError:
             raise ValueError("Invalid configuration.")
+        print(task_type)
 
         ################
         # API SETUP
         ################
         automation_task_id = None
         if self.use_api:
-            task_type = HazardTaskType.HAZARD
             config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEyOTI0NA=="  # old config id until we've removed need for config_id when creating task
             ta_clean = self._sterilize_task_arguments_gmcmlt(ta)
             automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, environment, task_type)
