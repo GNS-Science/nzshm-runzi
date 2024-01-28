@@ -119,9 +119,9 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
     else:
         # write a config
         task_factory.write_task_config(task_arguments, job_arguments)
-        script = task_factory.get_task_script()
+        script, task_number = task_factory.get_task_script()
 
-        script_file_path = PurePath(WORK_PATH, f"task_{task_id}.sh")
+        script_file_path = PurePath(WORK_PATH, f"task_{task_number}.sh")
         with open(script_file_path, 'w') as f:
             f.write(script)
 
@@ -174,7 +174,6 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
 
     iterate = args["config_iterate"]
     iter_keys = unpack_keys(iterate)
-    task_count = 0
     for location, vs30, poe, imt, agg in itertools.product(
         args["location_codes"],
         args["vs30s"],
@@ -194,6 +193,7 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
 
         for iter_values in itertools.product(*unpack_values(iterate)):
             task_arguments = dict(
+                hazard_model_id=args["hazard_model_id"],
                 title=args["general"]["title"],
                 description=args["general"]["description"],
                 task_type=HazardTaskType.DISAGG.name,
@@ -233,6 +233,7 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
 
             # iterate over every branch of the logic tree to create a task
             new_gt_id = None
+            task_count = 0
             for branch in args['srm_logic_tree']:
                 if not new_gt_id:
                     new_gt_id = gt_id

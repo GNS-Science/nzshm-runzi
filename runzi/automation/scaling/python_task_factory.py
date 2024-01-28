@@ -31,7 +31,7 @@ class PythonTaskFactory():
             json.dump(data, f, ensure_ascii=False, indent=4)
 
     def get_task_script(self):
-        return self._get_bash_script()
+        return self._get_bash_script(), self._next_task - 1
 
     def _get_bash_script(self):
         """
