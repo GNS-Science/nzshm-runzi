@@ -144,6 +144,7 @@ def get_deagg_gtids(
 
 def parse_args():
     parser = argparse.ArgumentParser(description="add general task and subtasks to index")
+    parser.add_argument("--force", action="store_true")
     group = parser.add_mutually_exclusive_group(required=True) 
     group.add_argument("--add-ids", nargs="+", help="list of GeneralTask IDs to add to index")
     group.add_argument("--remove", nargs="+", help="remove GT IDs rather than adding to the index")
@@ -221,7 +222,8 @@ def get_tasks(gt_id):
         task['subtasks'].append(get_subtask_info(child['node']['child']))
     task['subtask_type'] = task['subtasks'][0]['subtask_type']
     if haz_task_type := task['subtasks'][0]['task_type']:
-        task['hazard_subtask_type'] = haz_task_type
+        task['hazard_subtask_type'] = 'DISAGG'  # workaround because the disagg task is setting the incorrect subtask_type (temporary)
+        # task['hazard_subtask_type'] = haz_task_type
     
     entry = dict(
         subtask_type = task['subtask_type'],
@@ -229,6 +231,7 @@ def get_tasks(gt_id):
         arguments = task['subtasks'][0]['arguments'],
         num_success = get_num_success_old(task)
     )
+    entry['arguments'].update(convert_args_to_old(entry))
 
     return entry
 
@@ -277,13 +280,13 @@ def read_ids_from_file(ids_filepath):
     with open(ids_filepath, 'r') as ids_file:
         return list(map(str.strip, ids_file.readlines()))
 
-def append_gts(index, ids):
+def append_gts(index, ids, force=False):
 
     if len(ids) == 1 and Path(ids[0]).exists():
         ids = read_ids_from_file(ids[0])
 
     for gt_id in ids:
-        if index.get(gt_id):
+        if index.get(gt_id) and not force:
             raise Exception(f"GT ID {gt_id} already exists in the index")
         index[gt_id] = get_tasks(gt_id)
 
@@ -295,6 +298,36 @@ def append_gts(index, ids):
     # for entry in index:
     #     new_index[entry['id']]  = entry
     # return new_index
+
+def clean_json_str(string):
+    return string.replace("'", '"').replace('None', 'null')
+
+
+def convert_args_to_old(entry):
+    location = json.loads(clean_json_str(entry['arguments']['location_list']))[0]
+    inv_time = int(entry['arguments']['inv_time'])
+    poe = float(entry['arguments']['poe'])
+    imt = entry['arguments']['imt']
+    vs30 = int(entry['arguments']['vs30'])
+    hazard_model_id = entry['arguments']['description'][15:]
+    hazard_agg_target = entry['arguments']['agg']
+    
+    deagg_task_config = dict(
+        location=location,
+        inv_time=inv_time,
+        poe=poe,
+        imt=imt,
+        vs30=vs30,
+    )
+
+    args_old = dict(
+        disagg_config=json.dumps(deagg_task_config),
+        hazard_model_id=hazard_model_id,
+        hazard_agg_target=hazard_agg_target,
+    )
+
+    return args_old
+
 
 def extract_deagg_config(entry):
     deagg_task_config = json.loads(entry['arguments']['disagg_config'].replace("'", '"').replace('None', 'null'))
@@ -397,7 +430,7 @@ def run(args):
         # index = convert_index(index)
     elif args.add_ids:
         save = True
-        index = append_gts(index, args.add_ids)
+        index = append_gts(index, args.add_ids, args.force)
 
     if save: 
         save_index(index)
