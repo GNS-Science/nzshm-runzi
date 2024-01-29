@@ -245,6 +245,7 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
                     task_id=task_count,
                     general_task_id=gt_id,
                     use_api=USE_API,
+                    sleep_multiplier=args["sleep_multiplier"]
                 )
                 task_arguments['srm_logic_tree'] = asdict(slt)
                 yield build_task(task_arguments, job_arguments, task_count, extra_env), gt_id

@@ -341,6 +341,8 @@ if __name__ == "__main__":
         # for AWS this must now be a compressed JSON string
         config = json.loads(decompress_config(args.config))
 
-    time.sleep(int(config['job_arguments']['task_id']) * 2)
+    sleep_multiplier = config['job_arguments'].get('sleep_multiplier', 2)
+    sleep_multiplier = sleep_multiplier if sleep_multiplier else 2
+    time.sleep(int(config['job_arguments']['task_id']) * sleep_multiplier)
     task = BuilderTask(config['job_arguments'])
     task.run(**config)

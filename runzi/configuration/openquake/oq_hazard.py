@@ -159,6 +159,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                     task_id=task_count,
                     general_task_id=general_task_id,
                     use_api=USE_API,
+                    sleep_multiplier=subtask_arguments["sleep_multiplier"],
                 )
                 task_arguments['srm_logic_tree'] = asdict(slt)
                 yield build_task(task_arguments, job_arguments, task_count, extra_env)
