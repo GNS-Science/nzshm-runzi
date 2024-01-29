@@ -77,7 +77,7 @@ def validate_config(config: Dict[Any, Any], mode: str) -> None:
     validate_entry(config, "general", "title", [str])
     validate_entry(config, "general", "description", [str])
     validate_entry(config, "calculation", "num_workers", [int], optional=True)
-    validate_entry(config, "calculation", "sleep_multiplier", [int], optional=True)
+    validate_entry(config, "calculation", "sleep_multiplier", [float], optional=True)
 
     if mode == 'hazard':
         validate_config_hazard(config)
