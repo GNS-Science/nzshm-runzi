@@ -99,7 +99,7 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
     else:
         # write a config
         task_factory.write_task_config(task_arguments, job_arguments)
-        script = task_factory.get_task_script()
+        script, task_number = task_factory.get_task_script()
 
         script_file_path = PurePath(WORK_PATH, f"task_{task_id}.sh")
         with open(script_file_path, 'w') as f:
