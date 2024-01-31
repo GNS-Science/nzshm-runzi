@@ -17,6 +17,7 @@ from typing import List, Generator, Tuple
 
 from nzshm_common.util import compress_string, decompress_string
 from nzshm_common.location.code_location import CodedLocation
+from nzshm_common.location.location import location_by_id
 
 from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, S3_REPORT_BUCKET)
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -153,6 +154,7 @@ def parse_args():
     group.add_argument("--convert", action="store_true", help="one-time conversion of index from old to new format")
     group.add_argument("--list-ids", action="store_true", help="list the ids in the index")
     group.add_argument("--list-disaggs", action="store_true", help="list the disaggregations stored in the index")
+    group.add_argument("--find-disaggs", type=str, help="find a specific disaggregations matching")
     group.add_argument("--find-bad", type=int, help="list the disaggregations with failed subtaks, specify number expected")
     args = parser.parse_args()
 
@@ -364,6 +366,30 @@ def list_disaggs(index):
             print('-' * 50)
             print('')
 
+def find_disaggs(index, search_str):
+    """
+    hazard_model_id= NSHM_v1.0.4, location=-39.500~176.900, inv_time=50, agg=mean, poe=0.02, imt=PGA, vs30=200
+    """
+    search_str = "".join(search_str.split())
+    kv = lambda x: x.split("=")
+    search_terms = {kv(item)[0]: kv(item)[1] for item in search_str.split(",")}
+    for gt_id , entry in index.items():
+        match = True
+        disagg_config = extract_deagg_config(entry)
+        for search_key, search_value in search_terms.items():
+            if search_key == "location" and ("~" not in search_value):
+                sv = CodedLocation(location_by_id(search_value)['latitude'], location_by_id(search_value)['longitude'], 0.001).code
+            else:
+                sv = search_value
+            if str(getattr(disagg_config, search_key)) != sv:
+                match = False
+                break
+        if match:
+            print(f"id: {gt_id}")
+            print(disagg_config)
+            print('-' * 50)
+            print('')
+
 
 def list_bad_disaggs(index, n_expected):
     for gt_id, entry in index.items():
@@ -399,6 +425,8 @@ def run(args):
     save = False 
     if args.list_ids:
         print(*index.keys(),sep='\n')
+    elif args.find_disaggs:
+        find_disaggs(index, args.find_disaggs)
     elif args.find_bad:
         list_bad_disaggs(index, args.find_bad)
     elif args.list_disaggs:
