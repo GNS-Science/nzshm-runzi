@@ -26,7 +26,9 @@ log = logging.getLogger(__name__)
 
 def execute_openquake(configfile, task_no, toshi_task_id):
     """Do the actusal openquake work."""
-    toshi_task_id = toshi_task_id or "DUMMY_toshi_TASK_ID"
+    toshi_task_id = toshi_task_id or f"DUMMY{task_no}_toshi_TASK_ID"
+    # if not toshi_task_id:
+    #     toshi_task_id = f"DUMMY{task_no}_toshi_TASK_ID"
     output_path = Path(WORK_PATH, f"output_{task_no}")
     logfile = Path(output_path, f'openquake.{task_no}.log')
 
@@ -61,7 +63,8 @@ def execute_openquake(configfile, task_no, toshi_task_id):
         if 'error' in oq_out.lower() and (not filtered_txt1 in oq_out) and (not filtered_txt2 in oq_out) and (not filtered_txt3 in oq_out):
             raise Exception("Unknown error encountered by openquake")
 
-        if (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out) or (re.findall('No \[.*\] contributions for site', oq_out)):
+        # if (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out) or (re.findall('No \[.*\] contributions for site', oq_out)):
+        if (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out):
             oq_result['no_ruptures'] = True
         else:
 
