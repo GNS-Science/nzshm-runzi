@@ -152,6 +152,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             print('')
 
             for branch in subtask_arguments['srm_logic_tree']:
+                branch.weight = 1.0
                 slt = SourceLogicTree.from_branches([branch])
 
                 task_count += 1
