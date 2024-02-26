@@ -110,7 +110,6 @@ def load_model(config):
         # gmcm_logic_tree = model.gmm_logic_tree()
         gmcm_logic_tree = load_gmcm_str(model._gmm_xml)
     else:
-        srm_logic_tree = from_config(config["model"]["srm_logic_tree"])
         srm_logic_tree = SourceLogicTree.from_source_logic_tree(from_config(config["model"]["srm_logic_tree"]))
         gmcm_logic_tree = load_gmcm_str(config["model"]["gmcm_logic_tree"])
 
