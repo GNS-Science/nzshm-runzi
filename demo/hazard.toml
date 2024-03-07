@@ -1,19 +1,17 @@
 [general]
 title = "OpenQuake Hazard Calcs"
-description = "Logic Tree 9.0.1, locations for cave locations"
+description = "small test model"
 
 [model]
 # nshm_model_version = "NSHM_v1.0.4"
-gmcm_logic_tree = "/home/chrisdc/NSHM/oqconfigs/01.05.2023/NZ_NSHM_GMM_LT_final_EE.xml"
-srm_logic_tree = "/home/chrisdc/NSHM/DEV/COMPONENTS/nzshm-model/SRM_LTs/python/SLT_v9p0p0.py"
+gmcm_logic_tree = "/home/chrisdc/NSHM/oqruns/runzi_config_test/gmm_3branch.xml"
+srm_logic_tree = "/home/chrisdc/NSHM/oqruns/runzi_config_test/SLT_v9p0p0_3branch.py"
 
 [calculation]
-num_workers = 4
+num_workers = 1
 
 [hazard_curve]
-imts = [
-    'PGA', 'SA(0.1)', 'SA(0.2)', 'SA(0.3)', 'SA(0.4)', 'SA(0.5)', 'SA(0.7)',
-    'SA(1.0)', 'SA(1.5)', 'SA(2.0)', 'SA(3.0)', 'SA(4.0)', 'SA(5.0)', 'SA(6.0)','SA(7.5)', 'SA(10.0)']
+imts = ['PGA', 'SA(0.5)', 'SA(1.5)', 'SA(3.0)']
 imtls = [
     0.0001, 0.0002, 0.0004, 0.0006, 0.0008,
     0.001, 0.002, 0.004, 0.006, 0.008,
@@ -23,7 +21,7 @@ imtls = [
     ]
 
 [site_params]
-vs30 = 1000
+vs30 = 400
 locations = ['WLG','AKL','DUD','CHC']
 
 [logic_tree]
