@@ -994,13 +994,13 @@ geometry = ["shapely (>=2.0.2,<3.0.0)"]
 
 [[package]]
 name = "nzshm-model"
-version = "0.6.0"
+version = "0.6.1"
 description = "The logic tree definitions, final configurations, and versioning of the New Zealand | Aotearoa National Seismic Hazard Model"
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "nzshm_model-0.6.0-py3-none-any.whl", hash = "sha256:dede32b57c31152fd3f81703cd1f9180e122351fddd2e3051bcf582498ef9d45"},
-    {file = "nzshm_model-0.6.0.tar.gz", hash = "sha256:ec51c12a04fec0b02b56e6881c37d59c7494598897c8fb49fd996b075214a162"},
+    {file = "nzshm_model-0.6.1-py3-none-any.whl", hash = "sha256:0ff94f330dad9a6c4a5526a95c370acb30eecd229b8628256baffe5810cc52b0"},
+    {file = "nzshm_model-0.6.1.tar.gz", hash = "sha256:d4651f53c3458f4b3a85a66344c8ca549435605b9da1845422910ef387d47d83"},
 ]
 
 [package.dependencies]
@@ -1670,4 +1670,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "30e2c3dbb2e2b5ac327fec74df15b8429e6aad78c167f57d127b2a9660b8748e"
+content-hash = "1a8997201f0a80ea58174d463b0ef8bcecb8613df9be8b8d5ff65cc5ef0523f7"
