@@ -3,7 +3,9 @@
 # needs openquake/engine >= 3.15.0
 #nightly
 # FROM openquake/engine:3.16.2
-FROM openquake/engine:nightly
+# FROM openquake/engine:nightly
+FROM openquake/engine:3.19.0
+
 # FROM openquake/engine:3.17
 
 
