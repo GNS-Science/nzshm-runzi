@@ -260,7 +260,7 @@ class BuilderTask():
         ##############
         # EXECUTE
         ##############
-        oq_result = execute_openquake(config_filepath, ja['task_id'], automation_task_id)
+        oq_result = execute_openquake(config_filepath, ja['task_id'], automation_task_id, HazardTaskType[ta["task_type"]])
 
         ######################
         # API STORE RESULTS #

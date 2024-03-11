@@ -8,6 +8,8 @@ import shutil
 import re
 
 from pathlib import Path
+from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
+
 
 try:
     import openquake
@@ -24,7 +26,7 @@ from runzi.util import archive
 log = logging.getLogger(__name__)
 
 
-def execute_openquake(configfile, task_no, toshi_task_id):
+def execute_openquake(configfile, task_no, toshi_task_id, hazard_task_type):
     """Do the actusal openquake work."""
     toshi_task_id = toshi_task_id or f"DUMMY{task_no}_toshi_TASK_ID"
     # if not toshi_task_id:
@@ -62,9 +64,12 @@ def execute_openquake(configfile, task_no, toshi_task_id):
         filtered_txt3 = 'The site is far from all seismic sources'
         if 'error' in oq_out.lower() and (not filtered_txt1 in oq_out) and (not filtered_txt2 in oq_out) and (not filtered_txt3 in oq_out):
             raise Exception("Unknown error encountered by openquake")
+        if hazard_task_type is HazardTaskType.DISAGG:
+            filtered = (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out) or (re.findall('No \[.*\] contributions for site', oq_out))
+        else:
+            filtered = (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out)
 
-        # if (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out) or (re.findall('No \[.*\] contributions for site', oq_out)):
-        if (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out):
+        if filtered:
             oq_result['no_ruptures'] = True
         else:
 
