@@ -25,17 +25,17 @@ RUN pip install tqdm
 # RUN pip uninstall -y numba
 RUN pip install pytest
 
-RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/precision_option-high/openquake/baselib/__init__.py\
-    -O /usr/src/oq-engine/openquake/baselib/__init__.py
+# RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/precision_option-high/openquake/baselib/__init__.py\
+#     -O /usr/src/oq-engine/openquake/baselib/__init__.py
 
-RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/precision_option-high/openquake/engine/openquake.cfg\
-    -O /usr/src/oq-engine/openquake/engine/openquake.cfg
+# RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/precision_option-high/openquake/engine/openquake.cfg\
+#     -O /usr/src/oq-engine/openquake/engine/openquake.cfg
 
-RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/precision_option-high/openquake/hazardlib/probability_map.py\
-    -O /usr/src/oq-engine/openquake/hazardlib/probability_map.py
+# RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/precision_option-high/openquake/hazardlib/probability_map.py\
+#     -O /usr/src/oq-engine/openquake/hazardlib/probability_map.py
 
-RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/read_ctx_return_type/openquake/hazardlib/contexts.py\
-    -O /usr/src/oq-engine/openquake/hazardlib/contexts.py
+# RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/read_ctx_return_type/openquake/hazardlib/contexts.py\
+#     -O /usr/src/oq-engine/openquake/hazardlib/contexts.py
 
 
 # Install Runzi TODO:is this only for these test configs ??
