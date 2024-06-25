@@ -17,7 +17,7 @@ from dateutil.tz import tzutc
 import requests
 
 from nshm_toshi_client.task_relation import TaskRelation
-from nzshm_model.source_logic_tree import SourceLogicTree
+from nzshm_model.logic_tree import SourceLogicTree, GMCMLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeSimplePshaAdapter
 
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -179,8 +179,9 @@ class BuilderTask():
         automation_task_id = None
         if self.use_api:
             config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEyOTI0NA=="  # old config id until we've removed need for config_id when creating task
-            ta_clean = self._sterilize_task_arguments_gmcmlt(ta)
-            automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, environment, task_type)
+            # ta_clean = self._sterilize_task_arguments_gmcmlt(ta)
+            # automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, environment, task_type)
+            automation_task_id = self._setup_automation_task(ta, ja, config_id, environment, task_type)
 
         #################################
         # SETUP openquake CONFIG FOLDER
@@ -200,8 +201,8 @@ class BuilderTask():
         cache_folder = Path(config_folder, 'downloads')
         cache_folder.mkdir(parents=True, exist_ok=True)
         sources_folder.mkdir(parents=True, exist_ok=True)
-        adapter = srm_logic_tree.psha_adapter(provider=OpenquakeSimplePshaAdapter)
-        sources_filepath = adapter.write_config(cache_folder, sources_folder)
+        srm_adapter = srm_logic_tree.psha_adapter(provider=OpenquakeSimplePshaAdapter)
+        sources_filepath = srm_adapter.write_config(cache_folder, sources_folder)
         sources_filepath = sources_filepath.relative_to(config_folder)
         for f in cache_folder.glob("*"):
             f.unlink()
@@ -222,10 +223,15 @@ class BuilderTask():
         ##################
         # GMCM LOGIC TREE
         ##################
-        gsim_xml = build_gsim_xml(ta["gmcm_logic_tree"])
-        gsim_xml_file = Path(config_folder, 'gsim_model.xml')
-        write_sources(gsim_xml, gsim_xml_file)
-
+        # gsim_xml = build_gsim_xml(ta["gmcm_logic_tree"])
+        gsim_xml_filepath = Path(config_folder, 'gsim_model.xml')
+        # write_sources(gsim_xml, gsim_xml_file)
+        gmcm_logic_tree = GMCMLogicTree.from_dict(ta['gmcm_logic_tree'])
+        gmcm_adapter = gmcm_logic_tree.psha_adapter(provider=OpenquakeSimplePshaAdapter)
+        xmlstr = gmcm_adapter.build_gmcm_xml()
+        with open(gsim_xml_filepath, 'w') as fout:
+            fout.write(xmlstr)
+        
         ###############
         # OQ CONFIG
         ###############
@@ -267,7 +273,7 @@ class BuilderTask():
         ######################
         if self.use_api:
             solution_id = self._store_api_result(
-                automation_task_id, ta_clean, oq_result, config_id,
+                automation_task_id, ta, oq_result, config_id,
                 modconf_id=config_id,  # TODO use modified config id
                 duration=(dt.datetime.utcnow() - t0).total_seconds()
             )
@@ -295,8 +301,8 @@ class BuilderTask():
                   -c, --create-tables  Ensure tables exist.
                 """
                 tag = ":".join((
-                    srm_logic_tree.fault_systems[0].short_name,
-                    srm_logic_tree.fault_systems[0].branches[0].tag()
+                    srm_logic_tree.branch_sets[0].short_name,
+                    srm_logic_tree.branch_sets[0].branches[0].tag
                 ))
                 source_ids = ', '.join(
                     [b.nrml_id for b in srm_logic_tree.fault_systems[0].branches[0].sources]

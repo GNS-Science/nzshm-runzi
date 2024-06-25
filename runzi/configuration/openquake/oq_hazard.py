@@ -4,7 +4,7 @@ import stat
 from pathlib import PurePath
 from dataclasses import asdict
 
-from nzshm_model.source_logic_tree import SourceLogicTree
+from nzshm_model.logic_tree import SourceLogicTree
 
 from .util import unpack_keys, unpack_values, update_oq_args, ComputePlatform, EC2_CONFIGS
 from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
@@ -129,7 +129,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                 title=subtask_arguments["general"]["title"],
                 description=subtask_arguments["general"]["description"],
                 task_type=HazardTaskType.HAZARD.name,
-                gmcm_logic_tree=subtask_arguments["gmcm_logic_tree"],
+                gmcm_logic_tree=subtask_arguments["gmcm_logic_tree"].to_dict(),
                 model_type=model_type.name,
                 intensity_spec=subtask_arguments["intensity_spec"],
                 location_list=subtask_arguments["location_list"],
@@ -162,5 +162,5 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
                     use_api=USE_API,
                     sleep_multiplier=subtask_arguments["sleep_multiplier"],
                 )
-                task_arguments['srm_logic_tree'] = asdict(slt)
+                task_arguments['srm_logic_tree'] = slt.to_dict()
                 yield build_task(task_arguments, job_arguments, task_count, extra_env)

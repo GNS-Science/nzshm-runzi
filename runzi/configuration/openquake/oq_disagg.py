@@ -8,7 +8,7 @@ from pathlib import PurePath
 
 import numpy as np
 
-from nzshm_model.source_logic_tree import SourceLogicTree
+from nzshm_model.logic_tree import SourceLogicTree
 import toshi_hazard_store
 
 from .util import unpack_values, unpack_keys, update_oq_args, EC2_CONFIGS, ComputePlatform
@@ -144,7 +144,7 @@ def new_general_task(gt_arguments, title, description, subtask_type, model_type)
 
     args_list = []
     for key, value in gt_arguments.items():
-        args_list.append(dict(k=key, v=value))
+        args_list.append(dict(k=key, v=str(value)))
 
     if USE_API:
 
@@ -197,7 +197,7 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
                 title=args["general"]["title"],
                 description=args["general"]["description"],
                 task_type=HazardTaskType.DISAGG.name,
-                gmcm_logic_tree=args["gmcm_logic_tree"],
+                gmcm_logic_tree=args["gmcm_logic_tree"].to_dict(),
                 model_type=model_type.name,
                 location_list=[location],
                 vs30=vs30,
@@ -247,5 +247,5 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
                     use_api=USE_API,
                     sleep_multiplier=args["sleep_multiplier"]
                 )
-                task_arguments['srm_logic_tree'] = asdict(slt)
+                task_arguments['srm_logic_tree'] = slt.to_dict()
                 yield build_task(task_arguments, job_arguments, task_count, extra_env), gt_id

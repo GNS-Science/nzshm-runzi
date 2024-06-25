@@ -14,8 +14,7 @@ from typing import Any, Dict, List
 from dataclasses import asdict
 
 from nzshm_common.location.code_location import CodedLocation
-from nzshm_model.source_logic_tree.version1.slt_config import from_config
-from nzshm_model.source_logic_tree import SourceLogicTree
+from nzshm_model.logic_tree import SourceLogicTree, GMCMLogicTree
 from nzshm_model import get_model_version
 
 from runzi.automation.config import validate_entry, validate_path
@@ -106,12 +105,11 @@ def load_gmcm_str(gmcm_logic_tree_path):
 def load_model(config):
     if config["model"].get("nshm_model_version"):
         model = get_model_version(config["model"]["nshm_model_version"])
-        srm_logic_tree = model.source_logic_tree()
-        # gmcm_logic_tree = model.gmm_logic_tree()
-        gmcm_logic_tree = load_gmcm_str(model._gmm_xml)
+        srm_logic_tree = model.source_logic_tree
+        gmcm_logic_tree = model.gmm_logic_tree
     else:
-        srm_logic_tree = SourceLogicTree.from_source_logic_tree(from_config(config["model"]["srm_logic_tree"]))
-        gmcm_logic_tree = load_gmcm_str(config["model"]["gmcm_logic_tree"])
+        srm_logic_tree = SourceLogicTree.from_json(config["model"]["srm_logic_tree"])
+        gmcm_logic_tree = GMCMLogicTree.from_json(config["model"]["gmcm_logic_tree"])
 
     return srm_logic_tree, gmcm_logic_tree
 
@@ -173,7 +171,8 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
 
     args_list = []
     for key, value in args.items():
-        val = asdict(srm_logic_tree) if key == "srm_logic_tree" else value
+        val = srm_logic_tree.to_dict() if key == "srm_logic_tree" else value
+        val = gmcm_logic_tree.to_dict() if key == "gmcm_logic_tree" else value
         args_list.append(dict(k=key, v=val))
 
     task_type = SubtaskType.OPENQUAKE_HAZARD
