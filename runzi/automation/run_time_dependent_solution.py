@@ -69,7 +69,7 @@ def run(source_solution_ids, current_years, mre_enums, forecast_timespans, aperi
 
     args_list = []
     for key, value in args.items():
-        args_list.append(dict(k=key, v=value))
+        args_list.append(dict(k=key, v=str(value)))
     print(args_list)
     
     if USE_API:
