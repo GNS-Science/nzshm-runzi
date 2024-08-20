@@ -154,7 +154,11 @@ def parse_args():
     group.add_argument("--convert", action="store_true", help="one-time conversion of index from old to new format")
     group.add_argument("--list-ids", action="store_true", help="list the ids in the index")
     group.add_argument("--list-disaggs", action="store_true", help="list the disaggregations stored in the index")
-    group.add_argument("--find-disaggs", type=str, help="find a specific disaggregations matching")
+    group.add_argument(
+        "--find-disaggs", type=str,
+        help="""find a specific disaggregations matching
+        hazard_model_id= NSHM_v1.0.4, location=-39.500~176.900, inv_time=50, agg=mean, poe=0.02, imt=PGA, vs30=200"""
+    )
     group.add_argument("--find-bad", type=int, help="list the disaggregations with failed subtaks, specify number expected")
     args = parser.parse_args()
 

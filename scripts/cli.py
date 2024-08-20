@@ -25,5 +25,15 @@ def run_oq_hazard(config_filename):
     run_oq_disagg_f(config)
 
 
+# @rnz.command(name="gt-index", help="search or modify the GT index")
+# @click.option("--force", default=True)
+# def gt_index(force):
+#     pass
+
+# @gt_index.command(name="list-ids")
+# def list_ids():
+
+
+
 if __name__ == "__main__":
     rnz()  # pragma: no cover

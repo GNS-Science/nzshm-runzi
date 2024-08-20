@@ -151,6 +151,9 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
             print('==========================')
             print('')
 
+            # model = nm.get_model_version('NSHM_v1.0.4')
+            # fslt = model.source_logic_tree
+            # for branch in slt:
             for branch in subtask_arguments['srm_logic_tree']:
                 branch.weight = 1.0
                 slt = SourceLogicTree.from_branches([branch])

@@ -25,6 +25,9 @@ RUN pip install tqdm
 # RUN pip uninstall -y numba
 RUN pip install pytest
 
+# RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/v3.19.0-kuehn_2020_interp_edge/openquake/hazardlib/gsim/kuehn_2020.py\
+#     -O /opt/openquake/lib/python3.11/site-packages/openquake/hazardlib/gsim/kuehn_2020.py
+    
 # RUN wget https://raw.githubusercontent.com/chrisdicaprio/oq-engine/precision_option-high/openquake/baselib/__init__.py\
 #     -O /usr/src/oq-engine/openquake/baselib/__init__.py
 
