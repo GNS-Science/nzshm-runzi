@@ -65,7 +65,8 @@ def execute_openquake(configfile, task_no, toshi_task_id, hazard_task_type):
         if 'error' in oq_out.lower() and (not filtered_txt1 in oq_out) and (not filtered_txt2 in oq_out) and (not filtered_txt3 in oq_out):
             raise Exception("Unknown error encountered by openquake")
         if hazard_task_type is HazardTaskType.DISAGG:
-            filtered = (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out) or (re.findall('No \[.*\] contributions for site', oq_out))
+            # filtered = (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out) or (re.findall('No \[.*\] contributions for site', oq_out))
+            filtered = (filtered_txt3 in oq_out)
         else:
             filtered = (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out)
 
