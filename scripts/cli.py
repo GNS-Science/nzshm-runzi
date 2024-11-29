@@ -1,8 +1,8 @@
 import click
 import toml
 
-from runzi.automation.openquake.run_oq_disagg import run_oq_disagg_f
-from runzi.automation.openquake.run_oq_hazard import run_oq_hazard_f
+from runzi.automation.openquake.run_oq_disagg import run_oq_disagg
+from runzi.automation.openquake.run_oq_hazard import run_oq_hazard
 
 def load_config(config_filename: str):
     return toml.load(config_filename)
@@ -13,16 +13,16 @@ def rnz():
 
 @rnz.command(name="oq-hazard", help="launch OpenQuake hazard calculation jobs")
 @click.argument("config-filename", type=click.Path(exists=True))
-def run_oq_hazard(config_filename):
+def run_oq_hazard_cli(config_filename):
     config = load_config(config_filename)
-    run_oq_hazard_f(config)
+    run_oq_hazard(config)
 
 
 @rnz.command(name="oq-disagg", help="launch OpenQuake disagg calculation jobs")
 @click.argument("config-filename", type=click.Path(exists=True))
-def run_oq_hazard(config_filename):
+def run_oq_hazard_cli(config_filename):
     config = load_config(config_filename)
-    run_oq_disagg_f(config)
+    run_oq_disagg(config)
 
 
 # @rnz.command(name="gt-index", help="search or modify the GT index")

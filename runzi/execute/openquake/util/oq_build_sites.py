@@ -3,7 +3,7 @@ from typing import List, Tuple
 from nzshm_common.geometry.geometry import backarc_polygon
 from nzshm_common.location.location import LOCATION_LISTS, location_by_id
 from nzshm_common.grids.region_grid import RegionGrid, load_grid
-from nzshm_common.location.code_location import CodedLocation
+from nzshm_common.location import CodedLocation
 from shapely.geometry import Point
 
 try:

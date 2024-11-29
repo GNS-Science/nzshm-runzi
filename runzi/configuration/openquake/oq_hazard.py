@@ -3,8 +3,11 @@ import itertools
 import stat
 from pathlib import PurePath
 from dataclasses import asdict
+from typing import Any, Dict
 
-from nzshm_model.logic_tree import SourceLogicTree
+from nzshm_model.logic_tree import SourceLogicTree, GMCMLogicTree
+from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
+from nzshm_model import get_model_version
 
 from .util import unpack_keys, unpack_values, update_oq_args, ComputePlatform, EC2_CONFIGS
 from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
@@ -112,7 +115,7 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
         return str(script_file_path)
 
 
-def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments):
+def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, task_args: Dict[str, Any]):
 
     extra_env = [
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_STAGE", value="PROD"),
@@ -120,50 +123,48 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_NUM_WORKERS", value="1"),
     ]
 
-    iterate = subtask_arguments["config_iterate"]
-    iter_keys = unpack_keys(iterate)
     task_count = 0
-    for vs30 in subtask_arguments["vs30s"]:
-        for iter_values in itertools.product(*unpack_values(iterate)):
-            task_arguments = dict(
-                title=subtask_arguments["general"]["title"],
-                description=subtask_arguments["general"]["description"],
-                task_type=HazardTaskType.HAZARD.name,
-                gmcm_logic_tree=subtask_arguments["gmcm_logic_tree"].to_dict(),
-                model_type=model_type.name,
-                intensity_spec=subtask_arguments["intensity_spec"],
-                location_list=subtask_arguments["location_list"],
-                vs30=vs30,
-                disagg_conf=subtask_arguments["disagg_conf"],
-            )
 
-            task_arguments["oq"] = DEFAULT_HAZARD_CONFIG  # default openquake config
-            
-            # overwrite with user specifiction
-            update_oq_args(
-                task_arguments["oq"], subtask_arguments["config_scalar"], iter_keys, iter_values,
-            )
+    if (model_version := task_args["model"].get("nshm_model_version")):
+        model = get_model_version(model_version)
+        source_logic_tree = model.source_logic_tree
+        gmcm_logic_tree = model.gmm_logic_tree
+        hazard_config = model.hazard_config
 
-            print('')
-            print('task arguments MERGED')
-            print('==========================')
-            print(task_arguments)
-            print('==========================')
-            print('')
+    if (gmcm_lt_fp := task_args["model"].get("gmcm_logic_tree")):
+        gmcm_logic_tree = GMCMLogicTree.from_json(gmcm_lt_fp)
+    if (srm_lt_fp := task_args["model"].get("srm_logic_tree")):
+        source_logic_tree = SourceLogicTree.from_json(srm_lt_fp)
+    if (hc_lt_fp := task_args["model"].get("hazard_config")):
+        hazard_config = OpenquakeConfig.from_json(hc_lt_fp)
+    
+    task_args["model"]["gmcm_logic_tree"] = gmcm_logic_tree.to_dict()
+    task_args["model"]["hazard_config"] = hazard_config.to_dict()
 
-            # model = nm.get_model_version('NSHM_v1.0.4')
-            # fslt = model.source_logic_tree
-            # for branch in slt:
-            for branch in subtask_arguments['srm_logic_tree']:
-                branch.weight = 1.0
-                slt = SourceLogicTree.from_branches([branch])
+    task_args.update(
+        dict(
+            title=task_args["general"]["title"],
+            description=task_args["general"]["description"],
+            task_type=HazardTaskType.HAZARD.name,
+            model_type=model_type.name,
+        )
+    )
 
-                task_count += 1
-                job_arguments = dict(
-                    task_id=task_count,
-                    general_task_id=general_task_id,
-                    use_api=USE_API,
-                    sleep_multiplier=subtask_arguments["sleep_multiplier"],
-                )
-                task_arguments['srm_logic_tree'] = slt.to_dict()
-                yield build_task(task_arguments, job_arguments, task_count, extra_env)
+    if (slt_filepath := task_args["model"].get("srm_logic_tree")):
+        source_logic_tree = SourceLogicTree(slt_filepath)
+    else:
+        model = get_model_version(task_args["model"]["nshm_model_version"])
+        source_logic_tree = model.source_logic_tree
+    for branch in source_logic_tree:
+        branch.weight = 1.0
+        slt = SourceLogicTree.from_branches([branch])
+
+        task_count += 1
+        job_arguments = dict(
+            task_id=task_count,
+            general_task_id=general_task_id,
+            use_api=USE_API,
+            sleep_multiplier=task_args["calculation"].get("sleep_multiplier", 2)
+        )
+        task_args["model"]["srm_logic_tree"] = slt.to_dict()
+        yield build_task(task_args, job_arguments, task_count, extra_env)

@@ -1,9 +1,36 @@
 import importlib.util
 import sys
+from typing import Dict, Any, TypeAlias, List, Optional, Iterable
 
 from pathlib import Path
 
-def validate_entry(config, table, name, types, elm_type=None, optional=False, choice=None):
+Config: TypeAlias = Dict[str, Dict[str, Any]]
+
+def validate_entry(
+        config: Config,
+        table: str,
+        name: str,
+        types: Iterable[type],
+        subtype: Optional[type]=None,
+        optional: Optional[bool]=False,
+        choice: Optional[List[Any]]=None,
+):
+    """
+    Validate a config variable.
+    Every entry in a config is assumed to be under a table, i.e. config is type Dict[str, Dict[Any]]
+
+    Args:
+        config: the configuration
+        table: the table name for the variable
+        name: the name of the variable
+        tyes: the list of possible types the variable is allowed to be
+        subtype: if the varible is a list, the type of the elements of the list
+        optional: true if the variable is not required
+        choice: list of possible values the variable is allowed to take
+
+    Raises:
+        ValueError: if variable is not valid
+    """
 
     if not optional:
         if not config[table].get(name):
@@ -15,12 +42,7 @@ def validate_entry(config, table, name, types, elm_type=None, optional=False, ch
 
     entry = config[table][name]
 
-    correct_type = False
-    for tpe in types:
-        if isinstance(entry, tpe):
-            correct_type = True
-            break
-    if not correct_type:
+    if not isinstance(entry, tuple(types)):
         msg = f"{table, name} must be type in {types}"
         raise ValueError(msg)
 
@@ -28,15 +50,25 @@ def validate_entry(config, table, name, types, elm_type=None, optional=False, ch
         if len(entry)<1:
             msg = f"{name} must be list with length > 0"
             raise ValueError(msg)
-        if not all(isinstance(x,elm_type) for x in entry):
-            msg = f"all elements of {name} must be type {elm_type}"
+        if not all(isinstance(x,subtype) for x in entry):
+            msg = f"all elements of {name} must be type {subtype}"
             raise ValueError(msg)
     
     if choice and (entry not in choice):
         msg = f"{name} must be one of {choice}"
         raise ValueError(msg)
 
-def validate_path(config, table, name):
+def validate_path(config: Config, table: str, name: str):
+    """validate a path variable in a configuration
+    
+    Args:
+        config: the configuration dict
+        table: the name of the table where the variable is stored
+        name: the name of the path variable
+        
+    Raises:
+        ValueError: if path does not exist
+    """
     validate_entry(config, table, name, [str])
     if not Path(config[table][name]).exists():
         msg = f"logic tree file {config[table][name]} does not exist"
