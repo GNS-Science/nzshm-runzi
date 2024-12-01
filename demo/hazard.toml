@@ -5,10 +5,11 @@ description = "small test model"
 [model]
 nshm_model_version = "NSHM_v1.0.4"
 
-# these entries will overwrite anything in the nshm_model_version and are required if a nshm_model_version is not specified
-# gmcm_logic_tree = "/home/chrisdc/NSHM/oqruns/runzi_config_test/gmcm_lt.json"
-# srm_logic_tree = "/home/chrisdc/NSHM/oqruns/runzi_config_test/srm_lt.json"
-# hazard_config = "/home/chrisdc/NSHM/oqruns/runzi_config_test/hazard_config.toml"
+# these entries will overwrite anything in the nshm_model_version.
+# all 3 are required if a nshm_model_version is not specified
+gmcm_logic_tree = "demo/gmcm_small.json"
+srm_logic_tree = "demo/srm_small.json"
+hazard_config = "demo/hazard_config.json"
 
 [calculation]
 num_workers = 1

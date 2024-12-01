@@ -1,0 +1,53 @@
+{
+  "title": "lt1",
+  "version": "",
+  "branch_sets": [
+    {
+      "short_name": "CRU",
+      "long_name": "Crustal",
+      "branches": [
+        {
+          "branch_id": "",
+          "weight": 1.0,
+          "gsim_name": "Stafford2022",
+          "gsim_args": {
+            "mu_branch": "Central"
+          },
+          "tectonic_region_type": "Active Shallow Crust"
+        }
+      ]
+    },
+    {
+      "short_name": "INTER",
+      "long_name": "Subduction Interface",
+      "branches": [
+        {
+          "branch_id": "",
+          "weight": 1.0,
+          "gsim_name": "Atkinson2022SInter",
+          "gsim_args": {
+            "epistemic": "Central",
+            "modified_sigma": "true"
+          },
+          "tectonic_region_type": "Subduction Interface"
+        }
+      ]
+    },
+    {
+      "short_name": "SLAB",
+      "long_name": "Subduction Intraslab",
+      "branches": [
+        {
+          "branch_id": "",
+          "weight": 1.0,
+          "gsim_name": "Atkinson2022SSlab",
+          "gsim_args": {
+            "epistemic": "Central",
+            "modified_sigma": "true"
+          },
+          "tectonic_region_type": "Subduction Intraslab"
+        }
+      ]
+    }
+  ]
+}

@@ -137,7 +137,7 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
         source_logic_tree = SourceLogicTree.from_json(srm_lt_fp)
     if (hc_lt_fp := task_args["model"].get("hazard_config")):
         hazard_config = OpenquakeConfig.from_json(hc_lt_fp)
-    
+
     task_args["model"]["gmcm_logic_tree"] = gmcm_logic_tree.to_dict()
     task_args["model"]["hazard_config"] = hazard_config.to_dict()
 
@@ -150,11 +150,6 @@ def build_hazard_tasks(general_task_id: str, subtask_type: SubtaskType, model_ty
         )
     )
 
-    if (slt_filepath := task_args["model"].get("srm_logic_tree")):
-        source_logic_tree = SourceLogicTree(slt_filepath)
-    else:
-        model = get_model_version(task_args["model"]["nshm_model_version"])
-        source_logic_tree = model.source_logic_tree
     for branch in source_logic_tree:
         branch.weight = 1.0
         slt = SourceLogicTree.from_branches([branch])
