@@ -16,13 +16,14 @@ from dataclasses import asdict
 from nzshm_common.location import CodedLocation
 from nzshm_model.logic_tree import SourceLogicTree, GMCMLogicTree
 from nzshm_model import get_model_version, NshmModel
+from nshm_toshi_client import ToshiFile
 
 from runzi.automation.config import validate_entry, validate_path
 from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
 from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
-from runzi.automation.scaling.local_config import USE_API, API_KEY, API_URL
+from runzi.automation.scaling.local_config import USE_API, API_KEY, API_URL, CLUSTER_MODE, EnvMode
 
 loglevel = logging.INFO
 logging.basicConfig(level=logging.INFO)
@@ -66,6 +67,9 @@ def validate_config_disagg(config: Dict[Any, Any]) -> None:
 
 def validate_config(config: Dict[Any, Any], mode: str) -> None:
 
+    if config["site_params"].get("locations") and config["site_params"].get("locations_file"):
+        raise ValueError("cannot specify both locations and locations_file in site_params table of config")
+
     has_srm_lt = has_gmcm_lt = has_hazard_config = False
     if config["model"].get("srm_logic_tree"):
         validate_path(config, "model", "srm_logic_tree")
@@ -85,14 +89,26 @@ def validate_config(config: Dict[Any, Any], mode: str) -> None:
             """if nshm_model_version not specified, must provide all of
             gmcm_logic_tree, srm_logic_tree, and hazard_config file paths"""
         )
-    
+
+    if config["site_params"].get("locations"):
+        validate_entry(config, "site_params", "locations", [list], subtype=str)
+    else:
+        validate_path(config, "site_params", "locations_file")
     validate_entry(config, "hazard_curve", "imts", [list], subtype=str)
-    validate_entry(config, "site_params", "vs30", [list, int], subtype=int)
-    validate_entry(config, "site_params", "locations", [list], subtype=str)
     validate_entry(config, "general", "title", [str])
     validate_entry(config, "general", "description", [str])
     validate_entry(config, "calculation", "num_workers", [int], optional=True)
     validate_entry(config, "calculation", "sleep_multiplier", [float], optional=True)
+
+    # config must either have a vs30 to apply to all sites (uniform site parameter) or
+    # the locations file must have site-specific vs30s
+    if config["site_params"].get("vs30"):
+        validate_entry(config, "site_params", "vs30", [list, int], subtype=int)
+    else:
+        with open(config["site_params"]["locations_file"], 'r') as lf:
+            header = lf.readline()
+            if "vs30" not in header:
+                raise ValueError("locations file must have vs30 column")
 
     if mode == 'hazard':
         validate_config_hazard(config)
@@ -156,12 +172,19 @@ def build_tasks(new_gt_id, args, task_type, model_type):
 
 def run_oq_hazard(config: Dict[Any, Any]):
 
-    validate_config(config, mode='hazard')
-    num_workers = get_num_workers(config)
-
     t0 = dt.datetime.now(dt.timezone.utc)
 
+    validate_config(config, mode='hazard')
     args = config
+
+    # if using a locations file and cloud compute, save the file using ToshiAPI for later retrieval by each task
+    if config["site_params"].get("locations_file") and CLUSTER_MODE is EnvMode['AWS']:
+        headers = {"x-api-key": API_KEY}
+        file_api = ToshiFile(API_URL, None, None, with_schema_validation=True, headers=headers) 
+        args["site_params"]["locations_file_id"], _ = file_api.create_file(config["site_params"]["locations_file"])
+        del args["site_params"]["locations_file"] should I do this?
+
+    num_workers = get_num_workers(config)
 
     args_list = []
     for key, value in args.items():
