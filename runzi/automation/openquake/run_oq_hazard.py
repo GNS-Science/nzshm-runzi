@@ -94,6 +94,10 @@ def validate_config(config: Dict[Any, Any], mode: str) -> None:
         validate_entry(config, "site_params", "locations", [list], subtype=str)
     else:
         validate_path(config, "site_params", "locations_file")
+        with Path(config["site_params"]["locations_file"]).open() as lf:
+            header = lf.readline()
+            file_has_vs30 = True if "vs30" in header else False
+
     validate_entry(config, "hazard_curve", "imts", [list], subtype=str)
     validate_entry(config, "general", "title", [str])
     validate_entry(config, "general", "description", [str])
@@ -103,12 +107,11 @@ def validate_config(config: Dict[Any, Any], mode: str) -> None:
     # config must either have a vs30 to apply to all sites (uniform site parameter) or
     # the locations file must have site-specific vs30s
     if config["site_params"].get("vs30"):
+        if file_has_vs30:
+            raise ValueError("cannot specify both uniform and site-specific vs30")
         validate_entry(config, "site_params", "vs30", [list, int], subtype=int)
-    else:
-        with open(config["site_params"]["locations_file"], 'r') as lf:
-            header = lf.readline()
-            if "vs30" not in header:
-                raise ValueError("locations file must have vs30 column")
+    elif not file_has_vs30:
+        raise ValueError("locations file must have vs30 column if uniform vs30 not given")
 
     if mode == 'hazard':
         validate_config_hazard(config)
@@ -182,7 +185,6 @@ def run_oq_hazard(config: Dict[Any, Any]):
         headers = {"x-api-key": API_KEY}
         file_api = ToshiFile(API_URL, None, None, with_schema_validation=True, headers=headers) 
         args["site_params"]["locations_file_id"], _ = file_api.create_file(config["site_params"]["locations_file"])
-        del args["site_params"]["locations_file"] should I do this?
 
     num_workers = get_num_workers(config)
 

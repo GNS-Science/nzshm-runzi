@@ -2,8 +2,10 @@
 #!python3 openquake_hazard_task.py
 
 import argparse
+import tempfile
 import json
 import os
+import csv
 import zipfile
 import subprocess
 import time
@@ -19,12 +21,13 @@ import requests
 from shapely.geometry import Point
 
 from nshm_toshi_client.task_relation import TaskRelation
+from nshm_toshi_client import ToshiFile
 from nzshm_model.logic_tree import SourceLogicTree, GMCMLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model import get_model_version, NshmModel
 from nzshm_model.psha_adapter.openquake import OpenquakeConfig
 from nzshm_common.location.location import get_locations
-from nzshm_common.geometry.geometry import backarc_polygon
+from nzshm_common.geometry.geometry import backarc_polygon, within_polygon
 
 
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -210,17 +213,38 @@ class BuilderTask():
         imtls = task_arguments["hazard_curve"]["imtls"]
         model.hazard_config.set_iml(imts, imtls)
 
-        # set sites
-        locations = get_locations(task_arguments["site_params"]["locations"])
-        points = [Point(loc.lon, loc.lat) for loc in locations]
-        backarc_flags = [1 if backarc_polygon().contains(point) else 0 for point in points]
-        model.hazard_config.set_sites(locations, backarc=backarc_flags)
-
-        # set site parameters
+        # set sites and site parameters
         if (vs30 := task_arguments["site_params"].get("vs30")):
             model.hazard_config.set_uniform_site_params(vs30)
+
+        if task_arguments["site_params"].get("locations"):
+            locations = get_locations(task_arguments["site_params"]["locations"])
         else:
-            raise NotImplementedError
+            with tempfile.TemporaryDirectory() as temp_dir:
+                if (file_id := task_arguments["site_params"].get("locations_file_id")):
+                    headers = {"x-api-key": API_KEY}
+                    file_api = ToshiFile(API_URL, None, None, with_schema_validation=True, headers=headers) 
+                    file_api.download_file(file_id, target_dir=temp_dir, target_name='sites.csv')
+                    locations_file = temp_dir / 'sites.csv'
+                else:
+                    locations_file = Path(task_arguments["site_params"]["locations_file"])
+                locations = get_locations([locations_file])
+                with locations_file.open() as lf:
+                    reader = csv.reader(lf)
+                    header = next(reader)
+                    if 'vs30' in header:
+                        ind = header.index('vs30')
+                        vs30s = []
+                        for row in reader:
+                            vs30s.append(int(row[ind]))
+
+
+        backarc_flags = map(int, within_polygon(locations, backarc_polygon()))
+        if any(model.hazard_config.get_uniform_site_params()):
+            model.hazard_config.set_sites(locations, backarc=backarc_flags)
+        else:
+            model.hazard_config.set_sites(locations, vs30=vs30s, backarc=backarc_flags)
+
 
         # write
         cache_folder = config_folder / 'downloads'

@@ -25,5 +25,14 @@ imtls = [
     ]
 
 [site_params]
+
+# do not use if locations file has site-specific vs30 values
 vs30 = 400
-locations = ['WLG','AKL','DUD','CHC']
+
+# can provide locations or locations_file, not both
+# locations = ['WLG','AKL','DUD','CHC']
+
+locations_file = 'demo/sites.csv'
+
+# locations_file can have site-specific vs30. In this case, do not provide vs30 variable
+# locations_file = 'demo/sites_vs30.csv'
