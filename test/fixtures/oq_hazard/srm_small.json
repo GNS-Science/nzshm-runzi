@@ -1,0 +1,399 @@
+{
+  "title": "For NSHM version 1.0.4, corrected fault geometry",
+  "version": "SLT_v9p0p0",
+  "branch_sets": [
+    {
+      "short_name": "PUY",
+      "long_name": "Puysegur",
+      "branches": [
+        {
+          "branch_id": "0",
+          "weight": 0.4,
+          "values": [
+            {
+              "name": "dm",
+              "long_name": "deformation model",
+              "value": "0.7"
+            },
+            {
+              "name": "bN",
+              "long_name": "bN pair",
+              "value": [
+                0.902,
+                4.6
+              ]
+            },
+            {
+              "name": "C",
+              "long_name": "area-magnitude scaling",
+              "value": 4.0
+            },
+            {
+              "name": "s",
+              "long_name": "moment rate scaling",
+              "value": 0.28
+            }
+          ],
+          "sources": [
+            {
+              "nrml_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEyOTE2NTc=",
+              "rupture_rate_scaling": null,
+              "inversion_id": "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTI5MTM3OA==",
+              "rupture_set_id": "RmlsZToxMjkwOTg0",
+              "inversion_solution_type": "",
+              "type": "inversion"
+            },
+            {
+              "nrml_id": "RmlsZToxMzA3NTM=",
+              "rupture_rate_scaling": null,
+              "type": "distributed"
+            }
+          ],
+          "rupture_rate_scaling": 1.0,
+          "tectonic_region_types": [
+            "Subduction Interface"
+          ]
+        },
+        {
+          "branch_id": "1",
+          "weight": 0.6,
+          "values": [
+            {
+              "name": "dm",
+              "long_name": "deformation model",
+              "value": "0.7"
+            },
+            {
+              "name": "bN",
+              "long_name": "bN pair",
+              "value": [
+                0.902,
+                4.6
+              ]
+            },
+            {
+              "name": "C",
+              "long_name": "area-magnitude scaling",
+              "value": 4.0
+            },
+            {
+              "name": "s",
+              "long_name": "moment rate scaling",
+              "value": 1.0
+            }
+          ],
+          "sources": [
+            {
+              "nrml_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEyOTE2NjE=",
+              "rupture_rate_scaling": null,
+              "inversion_id": "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTI5MTM4Mg==",
+              "rupture_set_id": "RmlsZToxMjkwOTg0",
+              "inversion_solution_type": "",
+              "type": "inversion"
+            },
+            {
+              "nrml_id": "RmlsZToxMzA3NTQ=",
+              "rupture_rate_scaling": null,
+              "type": "distributed"
+            }
+          ],
+          "rupture_rate_scaling": 1.0,
+          "tectonic_region_types": [
+            "Subduction Interface"
+          ]
+        }
+      ]
+    },
+    {
+      "short_name": "HIK",
+      "long_name": "Hikurangi-Kermadec",
+      "branches": [
+        {
+          "branch_id": "5",
+          "weight": 0.25,
+          "values": [
+            {
+              "name": "dm",
+              "long_name": "deformation model",
+              "value": "TL"
+            },
+            {
+              "name": "bN",
+              "long_name": "bN pair",
+              "value": [
+                1.097,
+                21.5
+              ]
+            },
+            {
+              "name": "C",
+              "long_name": "area-magnitude scaling",
+              "value": 4.0
+            },
+            {
+              "name": "s",
+              "long_name": "moment rate scaling",
+              "value": 1.58
+            }
+          ],
+          "sources": [
+            {
+              "nrml_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEyOTE2MTM=",
+              "rupture_rate_scaling": null,
+              "inversion_id": "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTE0MTk4",
+              "rupture_set_id": "RmlsZTo3MTQ3LjVramh3Rg==",
+              "inversion_solution_type": "",
+              "type": "inversion"
+            },
+            {
+              "nrml_id": "RmlsZToxMzA3NDI=",
+              "rupture_rate_scaling": null,
+              "type": "distributed"
+            }
+          ],
+          "rupture_rate_scaling": 1.0,
+          "tectonic_region_types": [
+            "Subduction Interface"
+          ]
+        },
+        {
+          "branch_id": "6",
+          "weight": 0.25,
+          "values": [
+            {
+              "name": "dm",
+              "long_name": "deformation model",
+              "value": "TL"
+            },
+            {
+              "name": "bN",
+              "long_name": "bN pair",
+              "value": [
+                1.241,
+                27.9
+              ]
+            },
+            {
+              "name": "C",
+              "long_name": "area-magnitude scaling",
+              "value": 4.0
+            },
+            {
+              "name": "s",
+              "long_name": "moment rate scaling",
+              "value": 0.42
+            }
+          ],
+          "sources": [
+            {
+              "nrml_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEyOTE1OTg=",
+              "rupture_rate_scaling": null,
+              "inversion_id": "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTE0MTY0",
+              "rupture_set_id": "RmlsZTo3MTQ3LjVramh3Rg==",
+              "inversion_solution_type": "",
+              "type": "inversion"
+            },
+            {
+              "nrml_id": "RmlsZToxMzA3NDQ=",
+              "rupture_rate_scaling": null,
+              "type": "distributed"
+            }
+          ],
+          "rupture_rate_scaling": 1.0,
+          "tectonic_region_types": [
+            "Subduction Interface"
+          ]
+        },
+        {
+          "branch_id": "7",
+          "weight": 0.25,
+          "values": [
+            {
+              "name": "dm",
+              "long_name": "deformation model",
+              "value": "TL"
+            },
+            {
+              "name": "bN",
+              "long_name": "bN pair",
+              "value": [
+                1.241,
+                27.9
+              ]
+            },
+            {
+              "name": "C",
+              "long_name": "area-magnitude scaling",
+              "value": 4.0
+            },
+            {
+              "name": "s",
+              "long_name": "moment rate scaling",
+              "value": 1.0
+            }
+          ],
+          "sources": [
+            {
+              "nrml_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEyOTE1OTA=",
+              "rupture_rate_scaling": null,
+              "inversion_id": "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTE0MTY2",
+              "rupture_set_id": "RmlsZTo3MTQ3LjVramh3Rg==",
+              "inversion_solution_type": "",
+              "type": "inversion"
+            },
+            {
+              "nrml_id": "RmlsZToxMzA3NDY=",
+              "rupture_rate_scaling": null,
+              "type": "distributed"
+            }
+          ],
+          "rupture_rate_scaling": 1.0,
+          "tectonic_region_types": [
+            "Subduction Interface"
+          ]
+        },
+        {
+          "branch_id": "8",
+          "weight": 0.25,
+          "values": [
+            {
+              "name": "dm",
+              "long_name": "deformation model",
+              "value": "TL"
+            },
+            {
+              "name": "bN",
+              "long_name": "bN pair",
+              "value": [
+                1.241,
+                27.9
+              ]
+            },
+            {
+              "name": "C",
+              "long_name": "area-magnitude scaling",
+              "value": 4.0
+            },
+            {
+              "name": "s",
+              "long_name": "moment rate scaling",
+              "value": 1.58
+            }
+          ],
+          "sources": [
+            {
+              "nrml_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEyOTE1OTE=",
+              "rupture_rate_scaling": null,
+              "inversion_id": "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTE0MTY4",
+              "rupture_set_id": "RmlsZTo3MTQ3LjVramh3Rg==",
+              "inversion_solution_type": "",
+              "type": "inversion"
+            },
+            {
+              "nrml_id": "RmlsZToxMzA3NDg=",
+              "rupture_rate_scaling": null,
+              "type": "distributed"
+            }
+          ],
+          "rupture_rate_scaling": 1.0,
+          "tectonic_region_types": [
+            "Subduction Interface"
+          ]
+        }
+      ]
+    },
+    {
+      "short_name": "CRU",
+      "long_name": "Crustal",
+      "branches": [
+        {
+          "branch_id": "0",
+          "weight": 1.0,
+          "values": [
+            {
+              "name": "dm",
+              "long_name": "deformation model",
+              "value": "geodetic"
+            },
+            {
+              "name": "td",
+              "long_name": "time dependent",
+              "value": false
+            },
+            {
+              "name": "bN",
+              "long_name": "bN pair",
+              "value": [
+                0.823,
+                2.7
+              ]
+            },
+            {
+              "name": "C",
+              "long_name": "area-magnitude scaling",
+              "value": 4.2
+            },
+            {
+              "name": "s",
+              "long_name": "moment rate scaling",
+              "value": 0.66
+            }
+          ],
+          "sources": [
+            {
+              "nrml_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEyOTE1MDE=",
+              "rupture_rate_scaling": null,
+              "inversion_id": "U2NhbGVkSW52ZXJzaW9uU29sdXRpb246MTIwNzIy",
+              "rupture_set_id": "RmlsZToxMDAwODc=",
+              "inversion_solution_type": "",
+              "type": "inversion"
+            },
+            {
+              "nrml_id": "RmlsZToxMzA3MDc=",
+              "rupture_rate_scaling": null,
+              "type": "distributed"
+            }
+          ],
+          "rupture_rate_scaling": 1.0,
+          "tectonic_region_types": [
+            "Active Shallow Crust"
+          ]
+        }
+      ]
+    },
+    {
+      "short_name": "SLAB",
+      "long_name": "Intra-slab",
+      "branches": [
+        {
+          "branch_id": "0",
+          "weight": 1.0,
+          "values": [
+            {
+              "name": "r",
+              "long_name": "earthquake rates",
+              "value": "uniform"
+            },
+            {
+              "name": "d",
+              "long_name": "hypocentral depths",
+              "value": 1
+            }
+          ],
+          "sources": [
+            {
+              "nrml_id": "RmlsZToxMjEwMzM=",
+              "rupture_rate_scaling": null,
+              "type": "distributed"
+            }
+          ],
+          "rupture_rate_scaling": 1.0,
+          "tectonic_region_types": [
+            "Subduction Intraslab"
+          ]
+        }
+      ]
+    }
+  ],
+  "logic_tree_version": 2
+}
