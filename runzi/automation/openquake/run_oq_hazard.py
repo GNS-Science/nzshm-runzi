@@ -90,13 +90,15 @@ def validate_config(config: Dict[Any, Any], mode: str) -> None:
             gmcm_logic_tree, srm_logic_tree, and hazard_config file paths"""
         )
 
+    file_has_vs30 = False
     if config["site_params"].get("locations"):
         validate_entry(config, "site_params", "locations", [list], subtype=str)
     else:
         validate_path(config, "site_params", "locations_file")
         with Path(config["site_params"]["locations_file"]).open() as lf:
             header = lf.readline()
-            file_has_vs30 = True if "vs30" in header else False
+            if "vs30" in header:
+                file_has_vs30 = True
 
     validate_entry(config, "hazard_curve", "imts", [list], subtype=str)
     validate_entry(config, "general", "title", [str])

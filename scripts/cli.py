@@ -1,11 +1,17 @@
 import click
 import toml
 
+from typing import Union
+
+from pathlib import Path
+
 from runzi.automation.openquake.run_oq_disagg import run_oq_disagg
 from runzi.automation.openquake.run_oq_hazard import run_oq_hazard
 
-def load_config(config_filename: str):
-    return toml.load(config_filename)
+def load_config(config_filename: Union[Path, str]):
+    config = toml.load(config_filename)
+    config["path"] = str(Path(config_filename).absolute())
+    return config
 
 @click.group()
 def rnz():

@@ -59,7 +59,9 @@ def validate_entry(
         raise ValueError(msg)
 
 def validate_path(config: Config, table: str, name: str):
-    """validate a path variable in a configuration
+    """
+    Validate a path variable in a configuration and store as absolute path. If the path is not
+    aboslute, it will be resolved relative to the path of the config file.
     
     Args:
         config: the configuration dict
@@ -70,9 +72,13 @@ def validate_path(config: Config, table: str, name: str):
         ValueError: if path does not exist
     """
     validate_entry(config, table, name, [str])
-    if not Path(config[table][name]).exists():
+    path = Path(config[table][name])
+    if not path.is_absolute():
+        path = Path(config["path"]).parent / path
+    if not path.exists():
         msg = f"logic tree file {config[table][name]} does not exist"
         raise ValueError(msg)
+    config[table][name] = str(path)
     
 
 def load_logic_tree(file_path):
