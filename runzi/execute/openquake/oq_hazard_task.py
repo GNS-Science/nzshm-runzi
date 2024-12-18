@@ -237,9 +237,7 @@ class BuilderTask:
         task_no = job_arguments["task_id"]
         config_folder = work_folder / f"config_{task_no}"
 
-        source_logic_tree = (
-            SourceLogicTree.from_dict(task_arguments["model"]["srm_logic_tree"]),
-        )
+        source_logic_tree = SourceLogicTree.from_dict(task_arguments["model"]["srm_logic_tree"])
         model = NshmModel(
             version="",
             title=task_arguments["title"],
@@ -300,7 +298,7 @@ class BuilderTask:
 
         # write
         cache_folder = config_folder / "downloads"
-        model.psha_adapter(OpenquakeModelPshaAdapter).write_config(
+        job_file = model.psha_adapter(OpenquakeModelPshaAdapter).write_config(
             cache_folder, config_folder
         )
 
@@ -308,7 +306,7 @@ class BuilderTask:
         # EXECUTE
         ##############
         oq_result = execute_openquake(
-            config_folder,
+            job_file,
             job_arguments["task_id"],
             automation_task_id,
             HazardTaskType[task_arguments["task_type"]],
