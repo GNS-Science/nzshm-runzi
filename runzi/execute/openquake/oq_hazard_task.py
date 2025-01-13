@@ -40,7 +40,6 @@ from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task i
     HazardTaskType,
 )
 
-# from runzi.execute.openquake.util import OpenquakeConfig, build_site_csv, get_coded_locations, build_gsim_xml
 from runzi.execute.openquake.execute_openquake import execute_openquake
 from runzi.util.aws import decompress_config
 
