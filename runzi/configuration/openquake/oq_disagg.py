@@ -12,7 +12,7 @@ from nzshm_model.logic_tree import SourceLogicTree
 import toshi_hazard_store
 
 from .util import unpack_values, unpack_keys, update_oq_args, EC2_CONFIGS, ComputePlatform
-from .oq_hazard import DEFAULT_HAZARD_CONFIG
+# from .oq_hazard import DEFAULT_HAZARD_CONFIG
 
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType, ModelType, CreateGeneralTaskArgs
@@ -44,17 +44,17 @@ dist_bin_edges = [
     0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0,
     100.0, 140.0, 180.0, 220.0, 260.0, 320.0, 380.0, 500.0
 ]
-DEFAULT_DISAGG_CONFIG = copy.deepcopy(DEFAULT_HAZARD_CONFIG)
-DEFAULT_DISAGG_CONFIG["general"]["calculation_mode"] = "disaggregation"
-DEFAULT_DISAGG_CONFIG["disagg"] = dict(
-    max_sites_disagg=1,
-    mag_bin_width=0.1999,
-    distance_bin_width=10,
-    coordinate_bin_width=5,
-    num_epsilon_bins=16,
-    disagg_outputs="TRT Mag Dist Mag_Dist TRT_Mag_Dist_Eps",
-    disagg_bin_edges={'dist': dist_bin_edges},
-)
+# DEFAULT_DISAGG_CONFIG = copy.deepcopy(DEFAULT_HAZARD_CONFIG)
+# DEFAULT_DISAGG_CONFIG["general"]["calculation_mode"] = "disaggregation"
+# DEFAULT_DISAGG_CONFIG["disagg"] = dict(
+#     max_sites_disagg=1,
+#     mag_bin_width=0.1999,
+#     distance_bin_width=10,
+#     coordinate_bin_width=5,
+#     num_epsilon_bins=16,
+#     disagg_outputs="TRT Mag Dist Mag_Dist TRT_Mag_Dist_Eps",
+#     disagg_bin_edges={'dist': dist_bin_edges},
+# )
 
 GT_COUNTER = 0
 
