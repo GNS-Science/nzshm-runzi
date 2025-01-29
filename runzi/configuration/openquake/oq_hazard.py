@@ -38,43 +38,6 @@ factory_class = get_factory(CLUSTER_MODE)
 factory_task = runzi.execute.openquake.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
-DEFAULT_HAZARD_CONFIG = dict(
-    general=dict(
-        random_seed=25,
-        calculation_mode="classical",
-        ps_grid_spacing=30,
-    ),
-    logic_tree=dict(
-        number_of_logic_tree_samples=0,
-    ),
-    erf=dict(
-        rupture_mesh_spacing=4,
-        width_of_mfd_bin=0.1,
-        complex_fault_mesh_spacing=10.0,
-        area_source_discretization=10.0,
-    ),
-    site_params=dict(
-        reference_vs30_type="measured",
-    ),
-    calculation=dict(
-        investigation_time=1.0,
-        truncation_level=4,
-        maximum_distance={
-            "Active Shallow Crust": [
-                (4.0, 0),
-                (5.0, 100.0),
-                (6.0, 200.0),
-                (9.5, 300.0),
-            ],
-            "Subduction Interface": [(5.0, 0), (6.0, 200.0), (10, 500.0)],
-            "Subduction Intraslab": [(5.0, 0), (6.0, 200.0), (10, 500.0)],
-        },
-    ),
-    output=dict(
-        individual_curves="true",
-    ),
-)
-
 
 def build_task(task_arguments, job_arguments, task_id, extra_env):
     if CLUSTER_MODE == EnvMode["AWS"]:
