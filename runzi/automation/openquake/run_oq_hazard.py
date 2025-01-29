@@ -45,22 +45,6 @@ logging.getLogger("gql.transport").setLevel(logging.WARN)
 log = logging.getLogger(__name__)
 
 
-def locations_from_csv(locations_filepath):
-    locations = []
-    locations_filepath = Path(locations_filepath)
-    with locations_filepath.open("r") as locations_file:
-        reader = csv.reader(locations_file)
-        Location = namedtuple("Location", next(reader), rename=True)
-        for row in reader:
-            location = Location(*row)
-            locations.append(
-                CodedLocation(
-                    lat=float(location.lat), lon=float(location.lon), resolution=0.001
-                ).code
-            )
-    return locations
-
-
 def validate_config_hazard(config: Dict[Any, Any]) -> None:
     validate_entry(config, "hazard_curve", "imtls", [list], subtype=float)
 
@@ -131,17 +115,6 @@ def validate_config(config: Dict[Any, Any], mode: str) -> None:
         validate_config_hazard(config)
     elif mode == "disagg":
         validate_config_disagg(config)
-
-
-def update_location_list(location_list: List[str]):
-    location_list_new = []
-    for location in location_list:
-        if Path(location).exists():
-            location_list_new += locations_from_csv(location)
-        else:
-            location_list_new.append(location)
-
-    return location_list_new
 
 
 def load_gmcm_str(gmcm_logic_tree_path):
