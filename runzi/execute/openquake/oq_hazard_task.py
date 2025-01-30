@@ -274,7 +274,7 @@ class BuilderTask:
                     file_api.download_file(
                         file_id, target_dir=temp_dir, target_name="sites.csv"
                     )
-                    locations_file = temp_dir / "sites.csv"
+                    locations_file = Path(temp_dir) / "sites.csv"
                 else:
                     locations_file = Path(
                         task_arguments["site_params"]["locations_file"]
