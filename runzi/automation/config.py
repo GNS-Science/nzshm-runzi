@@ -23,7 +23,7 @@ def validate_entry(
         config: the configuration
         table: the table name for the variable
         name: the name of the variable
-        tyes: the list of possible types the variable is allowed to be
+        types: the list of possible types the variable is allowed to be
         subtype: if the varible is a list, the type of the elements of the list
         optional: true if the variable is not required
         choice: list of possible values the variable is allowed to take
