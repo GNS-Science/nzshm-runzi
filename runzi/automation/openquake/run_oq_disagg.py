@@ -7,9 +7,8 @@ import logging
 from collections import namedtuple
 from typing import Dict, Any
 
-from .run_oq_hazard import update_location_list, validate_config, load_model, get_num_workers, single_to_list
+# from .run_oq_hazard import update_location_list, validate_config, get_model, get_num_workers, single_to_list
 from runzi.configuration.openquake.oq_disagg import build_disagg_tasks
-from runzi.execute.openquake.util.oq_build_sites import get_coded_locations
 from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
@@ -41,13 +40,13 @@ def build_tasks(args, task_type, model_type):
     return scripts, gt_ids
 
 
-def run_oq_disagg_f(config: Dict[Any, Any]) -> None:
+def run_oq_disagg(config: Dict[Any, Any]) -> None:
 
     task_type = SubtaskType.OPENQUAKE_HAZARD
     model_type = ModelType.COMPOSITE
 
     validate_config(config, mode='disagg')
-    srm_logic_tree, gmcm_logic_tree = load_model(config)
+    srm_logic_tree, gmcm_logic_tree = get_model(config)
     num_workers = get_num_workers(config)
     location_list = update_location_list(config["site_params"]["locations"])
     vs30s = single_to_list(config["site_params"]["vs30"])

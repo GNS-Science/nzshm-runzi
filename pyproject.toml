@@ -34,14 +34,15 @@ python-dateutil = "^2.8.2"
 # [tool.poetry.extras]
 # openquake = ["openquake-engine", "fiona"]
 # converter =["openquake-converters-ucerf"]
-nzshm-common = {extras = ["geometry"], version = "^0.6.1"}
-toshi-hazard-store = "^0.7.9"
-nzshm-model = "0.10.6"
+nzshm-common = {extras = ["geometry"], version = "^0.8.4"}
+toshi-hazard-store = {git = "https://github.com/GNS-Science/toshi-hazard-store.git", rev = "update-nzshm-model"}
+nzshm-model = {git = "https://github.com/GNS-Science/nzshm-model.git", rev = "pre-release"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
 flake8 = "^6.1.0"
 black = "^23.12.0"
+isort = "^5.13.2"
 
 
 [build-system]

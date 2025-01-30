@@ -4,114 +4,123 @@ This script produces tasks in either AWS, PBS or LOCAL that run OpenquakeHazard
 
 """
 import csv
-import logging
-import pwd
-import os
 import datetime as dt
-from pathlib import Path
+import logging
+import os
+import pwd
 from collections import namedtuple
+from pathlib import Path
 from typing import Any, Dict, List
-from dataclasses import asdict
 
-from nzshm_common.location.code_location import CodedLocation
-from nzshm_model.logic_tree import SourceLogicTree, GMCMLogicTree
-from nzshm_model import get_model_version
+from nshm_toshi_client import ToshiFile
+from nzshm_common.location import CodedLocation
 
 from runzi.automation.config import validate_entry, validate_path
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
-from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    USE_API,
+    EnvMode,
+)
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
-
-from runzi.automation.scaling.local_config import USE_API, API_KEY, API_URL
+from runzi.automation.scaling.toshi_api import (
+    CreateGeneralTaskArgs,
+    ModelType,
+    SubtaskType,
+    ToshiApi,
+)
+from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
 
 loglevel = logging.INFO
 logging.basicConfig(level=logging.INFO)
-logging.getLogger('py4j.java_gateway').setLevel(loglevel)
-logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
-logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
-logging.getLogger('urllib3').setLevel(loglevel)
-logging.getLogger('botocore').setLevel(loglevel)
-logging.getLogger('git.cmd').setLevel(loglevel)
-logging.getLogger('gql.transport').setLevel(logging.WARN)
+logging.getLogger("py4j.java_gateway").setLevel(loglevel)
+logging.getLogger("nshm_toshi_client.toshi_client_base").setLevel(loglevel)
+logging.getLogger("nshm_toshi_client.toshi_file").setLevel(loglevel)
+logging.getLogger("urllib3").setLevel(loglevel)
+logging.getLogger("botocore").setLevel(loglevel)
+logging.getLogger("git.cmd").setLevel(loglevel)
+logging.getLogger("gql.transport").setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
 
 
-def locations_from_csv(locations_filepath):
-
-    locations = []
-    locations_filepath = Path(locations_filepath)
-    with locations_filepath.open('r') as locations_file:
-        reader = csv.reader(locations_file)
-        Location = namedtuple("Location", next(reader), rename=True)
-        for row in reader:
-            location = Location(*row)
-            locations.append(
-                CodedLocation(lat=float(location.lat), lon=float(location.lon), resolution=0.001).code
-            )
-    return locations
-
-
 def validate_config_hazard(config: Dict[Any, Any]) -> None:
-    validate_entry(config, "hazard_curve", "imtls", [list], elm_type=float)
-    validate_entry(config, "logic_tree", "slt_decomposition", [str], choice=["component"])
+    validate_entry(config, "hazard_curve", "imtls", [list], subtype=float)
 
 
 def validate_config_disagg(config: Dict[Any, Any]) -> None:
     validate_entry(config, "hazard_curve", "hazard_model_id", [str])
     validate_entry(config, "disagg", "inv_time", [int])
-    validate_entry(config, "disagg", "poes", [list], elm_type=float)
+    validate_entry(config, "disagg", "poes", [list], subtype=float)
     validate_entry(config, "output", "gt_filename", [str])
-    validate_entry(config, "hazard_curve", "agg", [list, str], elm_type=str)
+    validate_entry(config, "hazard_curve", "agg", [list, str], subtype=str)
 
 
 def validate_config(config: Dict[Any, Any], mode: str) -> None:
+    if config["site_params"].get("locations") and config["site_params"].get(
+        "locations_file"
+    ):
+        raise ValueError(
+            "cannot specify both locations and locations_file in site_params table of config"
+        )
 
-    if not config["model"].get("nshm_model_version"):
+    has_srm_lt = has_gmcm_lt = has_hazard_config = False
+    if config["model"].get("srm_logic_tree"):
         validate_path(config, "model", "srm_logic_tree")
+        has_srm_lt = True
+    if config["model"].get("gmcm_logic_tree"):
         validate_path(config, "model", "gmcm_logic_tree")
-    validate_entry(config, "hazard_curve", "imts", [list], elm_type=str)
-    validate_entry(config, "site_params", "vs30", [list, int], elm_type=int)
-    validate_entry(config, "site_params", "locations", [list], elm_type=str)
+        has_gmcm_lt = True
+    if config["model"].get("hazard_config"):
+        validate_path(config, "model", "hazard_config")
+        has_hazard_config = True
+
+    if not config["model"].get("nshm_model_version") and not (
+        has_srm_lt and has_gmcm_lt and has_hazard_config
+    ):
+        raise ValueError(
+            """if nshm_model_version not specified, must provide all of
+            gmcm_logic_tree, srm_logic_tree, and hazard_config file paths"""
+        )
+
+    file_has_vs30 = False
+    if config["site_params"].get("locations"):
+        validate_entry(config, "site_params", "locations", [list], subtype=str)
+    else:
+        validate_path(config, "site_params", "locations_file")
+        with Path(config["site_params"]["locations_file"]).open() as lf:
+            header = lf.readline()
+            if "vs30" in header:
+                file_has_vs30 = True
+
+    validate_entry(config, "hazard_curve", "imts", [list], subtype=str)
     validate_entry(config, "general", "title", [str])
     validate_entry(config, "general", "description", [str])
     validate_entry(config, "calculation", "num_workers", [int], optional=True)
     validate_entry(config, "calculation", "sleep_multiplier", [float], optional=True)
 
-    if mode == 'hazard':
+    # config must either have a vs30 to apply to all sites (uniform site parameter) or
+    # the locations file must have site-specific vs30s
+    if config["site_params"].get("vs30"):
+        if file_has_vs30:
+            raise ValueError("cannot specify both uniform and site-specific vs30")
+        validate_entry(config, "site_params", "vs30", [list, int], subtype=int)
+    elif not file_has_vs30:
+        raise ValueError(
+            "locations file must have vs30 column if uniform vs30 not given"
+        )
+
+    if mode == "hazard":
         validate_config_hazard(config)
-    elif mode == 'disagg':
+    elif mode == "disagg":
         validate_config_disagg(config)
-
-
-def update_location_list(location_list: List[str]):
-
-    location_list_new = []
-    for location in location_list:
-        if Path(location).exists():
-            location_list_new += locations_from_csv(location)
-        else:
-            location_list_new.append(location)
-
-    return location_list_new
 
 
 def load_gmcm_str(gmcm_logic_tree_path):
     """temporoary until we can serialize a gmcm logic tree object"""
     with Path(gmcm_logic_tree_path).open() as gltf:
         return gltf.read()
-
-
-def load_model(config):
-    if config["model"].get("nshm_model_version"):
-        model = get_model_version(config["model"]["nshm_model_version"])
-        srm_logic_tree = model.source_logic_tree
-        gmcm_logic_tree = model.gmm_logic_tree
-    else:
-        srm_logic_tree = SourceLogicTree.from_json(config["model"]["srm_logic_tree"])
-        gmcm_logic_tree = GMCMLogicTree.from_json(config["model"]["gmcm_logic_tree"])
-
-    return srm_logic_tree, gmcm_logic_tree
 
 
 def get_num_workers(config: Dict[Any, Any]) -> int:
@@ -125,71 +134,55 @@ def single_to_list(param: Any) -> List[Any]:
 
 
 def build_tasks(new_gt_id, args, task_type, model_type):
-
     scripts = []
     for script_file in build_hazard_tasks(new_gt_id, task_type, model_type, args):
-        print('scheduling: ', script_file)
+        print("scheduling: ", script_file)
         scripts.append(script_file)
 
     return scripts
 
 
-def run_oq_hazard_f(config: Dict[Any, Any]):
+def run_oq_hazard(config: Dict[Any, Any]):
+    t0 = dt.datetime.now(dt.timezone.utc)
 
-    validate_config(config, mode='hazard')
-    if config["logic_tree"]["slt_decomposition"] in ["composite", "none"]:
-        msg = (f"{config['logic_tree']['slt_decomposition']} SRM logic tree not supported. "
-               "See https://github.com/GNS-Science/nzshm-model/issues/23 and "
-               "https://github.com/GNS-Science/nzshm-runzi/issues/162")
-        raise ValueError(msg)
+    validate_config(config, mode="hazard")
+    args = config
 
-    srm_logic_tree, gmcm_logic_tree = load_model(config)
+    # if using a locations file and cloud compute, save the file using ToshiAPI for later retrieval by each task
+    if config["site_params"].get("locations_file") and CLUSTER_MODE is EnvMode["AWS"]:
+        headers = {"x-api-key": API_KEY}
+        file_api = ToshiFile(
+            API_URL, None, None, with_schema_validation=True, headers=headers
+        )
+        args["site_params"]["locations_file_id"], _ = file_api.create_file(
+            config["site_params"]["locations_file"]
+        )
+
     num_workers = get_num_workers(config)
-    location_list = update_location_list(config["site_params"]["locations"])
-    vs30s = single_to_list(config["site_params"]["vs30"])
-
-    imts = config["hazard_curve"]["imts"]
-    imtls = config["hazard_curve"]["imtls"]
-
-    t0 = dt.datetime.utcnow()
-
-    openquake_iterate = dict() if not config.get("openquake_iterate") else config["openquake_iterate"]
-    openquake_scalar = dict() if not config.get("openquake_single") else config["openquake_single"]
-    args = dict(
-        general=config["general"],
-        srm_logic_tree=srm_logic_tree,
-        gmcm_logic_tree=gmcm_logic_tree,
-        slt_decomposition=config["logic_tree"]["slt_decomposition"],
-        intensity_spec={"tag": "fixed", "measures": imts, "levels": imtls},
-        vs30s=vs30s,
-        location_list=location_list,
-        disagg_conf={'enabled': False, 'config': {}},
-        config_iterate=openquake_iterate,
-        config_scalar=openquake_scalar,
-        sleep_multiplier=config["calculation"].get("sleep_multiplier")
-    )
 
     args_list = []
     for key, value in args.items():
-        val = srm_logic_tree.to_dict() if key == "srm_logic_tree" else value
-        val = gmcm_logic_tree.to_dict() if key == "gmcm_logic_tree" else value
-        args_list.append(dict(k=key, v=val))
+        args_list.append(dict(k=key, v=value))
 
     task_type = SubtaskType.OPENQUAKE_HAZARD
     model_type = ModelType.COMPOSITE
 
     if USE_API:
         headers = {"x-api-key": API_KEY}
-        toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
+        toshi_api = ToshiApi(
+            API_URL, None, None, with_schema_validation=True, headers=headers
+        )
         # create new task in toshi_api
-        gt_args = CreateGeneralTaskArgs(
-            agent_name=pwd.getpwuid(os.getuid()).pw_name,
-            title=config["general"]["title"],
-            description=config["general"]["description"]
-        )\
-            .set_argument_list(args_list)\
-            .set_subtask_type(task_type)\
+        gt_args = (
+            CreateGeneralTaskArgs(
+                agent_name=pwd.getpwuid(os.getuid()).pw_name,
+                title=config["general"]["title"],
+                description=config["general"]["description"],
+            )
+            .set_argument_list(args_list)
+            .set_subtask_type(task_type)
             .set_model_type(model_type)
+        )
         new_gt_id = toshi_api.general_task.create_task(gt_args)
     else:
         new_gt_id = None
@@ -197,9 +190,9 @@ def run_oq_hazard_f(config: Dict[Any, Any]):
     print("GENERAL_TASK_ID:", new_gt_id)
     tasks = build_tasks(new_gt_id, args, task_type, model_type)
 
-    print('worker count: ', num_workers)
-    print(f'tasks to schedule: {len(tasks)}')
+    print("worker count: ", num_workers)
+    print(f"tasks to schedule: {len(tasks)}")
     schedule_tasks(tasks, num_workers)
 
     print("GENERAL_TASK_ID:", new_gt_id)
-    print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+    print("Done! in %s secs" % (dt.datetime.now(dt.timezone.utc) - t0).total_seconds())

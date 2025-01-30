@@ -1,11 +1,15 @@
 [general]
 title = "OpenQuake Hazard Calcs"
-description = "small test model"
+description = "hazard demo"
 
 [model]
-# nshm_model_version = "NSHM_v1.0.4"
-gmcm_logic_tree = "/home/chrisdc/NSHM/oqruns/runzi_config_test/gmm_3branch.xml"
-srm_logic_tree = "/home/chrisdc/NSHM/oqruns/runzi_config_test/SLT_v9p0p0_3branch.py"
+nshm_model_version = "NSHM_v1.0.4"
+
+# these entries will overwrite anything in the nshm_model_version.
+# all 3 are required if a nshm_model_version is not specified
+# gmcm_logic_tree = "gmcm_small.json"
+srm_logic_tree = "srm_small.json"
+# hazard_config = "hazard_config.json"
 
 [calculation]
 num_workers = 1
@@ -21,22 +25,14 @@ imtls = [
     ]
 
 [site_params]
+
+# do not use if locations file has site-specific vs30 values
 vs30 = 400
-locations = ['WLG','AKL','DUD','CHC']
 
-[logic_tree]
-slt_decomposition = "component"
+# can provide locations or locations_file, not both
+# locations = ['WLG','AKL','DUD','CHC']
 
-# override any of the defaults runzi uses for openquake here either for iteration or just a single value
-# [openquake_iterate.general]
-# ps_grid_spacing = [15, 30]
+locations_file = 'sites.csv'
 
-# [openquake_iterate.erf]
-# rupture_mesh_spacing = [2, 4]
-
-# [openquake_single.calculation]
-# truncation_level = 3
-
-# [openquake_single.calculation]
-# maximum_distance = { "Active Shallow Crust" = "[[4.0, 0], [5.0, 100.0], [6.0, 200.0], [9.5, 250.0]]", "Subduction Interface" = "[[5.0, 0], [6.0, 200.0], [10, 600.0]]", "Subduction Intraslab" = "[[5.0, 0], [6.0, 200.0], [10, 700.0]]" }
-
+# locations_file can have site-specific vs30. In this case, do not provide vs30 variable
+# locations_file = 'demo/sites_vs30.csv'
