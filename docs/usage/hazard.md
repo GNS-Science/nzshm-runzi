@@ -11,7 +11,7 @@ This will split the SRM logic tree into component branches and spawn an OpenQuak
 - `SPOOF_HAZARD`: if set to true will not spawn an OpenQuake job. All OpenQuake input files will be generated, but OpenQuake will not be run.
 
 ## Configuration File
-The configuration file is in toml format. The following tables and variables are used to specify the hazard job.
+The configuration file is in toml format. The following tables and variables are used to specify the hazard job. [A sample configuration file can be found here](example_hazard_config_file.md).
 
 ### `[general]`
 - `title`: a string title for the model
