@@ -222,15 +222,10 @@ class BuilderTask:
             return input_str.replace('"', "``").replace("\n", "-")
         
         ta_clean = copy.deepcopy(task_arguments)
-        slt = ta_clean["model"]["srm_logic_tree"]
-        glt = ta_clean["model"]["gmcm_logic_tree"]
-        config = ta_clean["model"]["hazard_config"]
-        ta_clean["model"]["srm_logic_tree"] = clean_string(str(slt))
-        ta_clean["model"]["gmcm_logic_tree"] = clean_string(str(glt))
-        ta_clean["model"]["hazard_config"] = clean_string(str(config))
+        ta_clean["model"]["srm_logic_tree"] = clean_string(str(ta_clean["model"]["srm_logic_tree"]))
+        ta_clean["model"]["gmcm_logic_tree"] = clean_string(str(ta_clean["model"]["gmcm_logic_tree"]))
+        ta_clean["model"]["hazard_config"] = clean_string(str(ta_clean["model"]["hazard_config"]))
         return flatten_dict(ta_clean)
-
-
 
 
     def run(self, task_arguments, job_arguments):
@@ -248,6 +243,11 @@ class BuilderTask:
         except KeyError:
             raise ValueError("Invalid configuration.")
         print(task_type)
+
+        # convert the dict representations of complex objects (from nzshm_model lib) in the args to the correct type
+        task_arguments["model"]["srm_logic_tree"] = SourceLogicTree.from_dict(task_arguments["model"]["srm_logic_tree"])
+        task_arguments["model"]["gmcm_logic_tree"] = GMCMLogicTree.from_dict(task_arguments["model"]["gmcm_logic_tree"])
+        task_arguments["model"]["hazard_config"] = OpenquakeConfig.from_dict(task_arguments["model"]["hazard_config"])
 
         ################
         # API SETUP
@@ -269,17 +269,12 @@ class BuilderTask:
         task_no = job_arguments["task_id"]
         config_folder = work_folder / f"config_{task_no}"
 
-        source_logic_tree = SourceLogicTree.from_dict(task_arguments["model"]["srm_logic_tree"])
         model = NshmModel(
             version="",
             title=task_arguments["title"],
-            source_logic_tree=source_logic_tree,
-            gmcm_logic_tree=GMCMLogicTree.from_dict(
-                task_arguments["model"]["gmcm_logic_tree"]
-            ),
-            hazard_config=OpenquakeConfig.from_dict(
-                task_arguments["model"]["hazard_config"]
-            ),
+            source_logic_tree=task_arguments["model"]["srm_logic_tree"],
+            gmcm_logic_tree=task_arguments["model"]["gmcm_logic_tree"],
+            hazard_config=task_arguments["model"]["hazard_config"],
         )
 
         # set IMTs, IMTLs
