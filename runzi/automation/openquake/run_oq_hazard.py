@@ -5,6 +5,7 @@ This script produces tasks in either AWS, PBS or LOCAL that run OpenquakeHazard
 """
 import csv
 import datetime as dt
+import json
 import logging
 import os
 import pwd
@@ -19,6 +20,7 @@ from runzi.automation.config import validate_entry, validate_path
 from runzi.automation.scaling.local_config import (
     API_KEY,
     API_URL,
+    S3_URL,
     CLUSTER_MODE,
     USE_API,
     EnvMode,
@@ -149,29 +151,34 @@ def run_oq_hazard(config: Dict[Any, Any]):
     args = config
 
     # if using a locations file and cloud compute, save the file using ToshiAPI for later retrieval by each task
+    toshi_api = None
     if config["site_params"].get("locations_file") and CLUSTER_MODE is EnvMode["AWS"]:
-        headers = {"x-api-key": API_KEY}
-        file_api = ToshiFile(
-            API_URL, None, None, with_schema_validation=True, headers=headers
-        )
-        args["site_params"]["locations_file_id"], _ = file_api.create_file(
-            config["site_params"]["locations_file"]
-        )
+        filepath = Path(config["site_params"]["locations_file"])
+        headers={"x-api-key":API_KEY}
+        toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+        file_id, post_url = toshi_api.file.create_file(filepath)
+        toshi_api.file.upload_content(post_url, filepath)
+        args["site_params"]["locations_file_id"] = file_id
+        print("site file ID", file_id)
 
     num_workers = get_num_workers(config)
 
     args_list = []
     for key, value in args.items():
-        args_list.append(dict(k=key, v=value))
+        val = value
+        if not isinstance(val, str):
+            val = json.dumps(val)
+        args_list.append(dict(k=key, v=val))
 
     task_type = SubtaskType.OPENQUAKE_HAZARD
     model_type = ModelType.COMPOSITE
 
     if USE_API:
-        headers = {"x-api-key": API_KEY}
-        toshi_api = ToshiApi(
-            API_URL, None, None, with_schema_validation=True, headers=headers
-        )
+        if not toshi_api:
+            headers = {"x-api-key": API_KEY}
+            toshi_api = ToshiApi(
+                API_URL, None, None, with_schema_validation=True, headers=headers
+            )
         # create new task in toshi_api
         gt_args = (
             CreateGeneralTaskArgs(

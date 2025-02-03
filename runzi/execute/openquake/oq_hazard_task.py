@@ -14,6 +14,7 @@ import tempfile
 import time
 import zipfile
 from pathlib import Path
+from typing import Dict, Any
 
 import requests
 from dateutil.tz import tzutc
@@ -199,6 +200,33 @@ class BuilderTask:
             ta_clean["gmcm_logic_tree"].replace('"', "``").replace("\n", "-")
         )
         return ta_clean
+    
+
+    # TODO: we need to consider the best way to pass args to toshiAPI and make the args such as logic
+    # trees and hazard config readable and (possibly) searchable.
+    @staticmethod
+    def _clean_task_args(task_arguments: Dict[str, Any]) -> Dict[str, str]:
+        """This is a somewhat clunky way to clean the arguments so they can be passed to the toshAPI"""
+
+        def flatten_dict(data, parent_key='', separator="-"):
+            flat_dict = {}
+            for k, v in data.items():
+                key = parent_key + separator + k if parent_key else k
+                if isinstance(v, dict):
+                    flat_dict.update(flatten_dict(v, key))
+                else:
+                    flat_dict[key] = v
+            return flat_dict
+
+        def clean_string(input_str):
+            return input_str.replace('"', "``").replace("\n", "-")
+        
+        ta_clean = copy.deepcopy(task_arguments)
+        ta_clean["model"]["srm_logic_tree"] = clean_string(str(ta_clean["model"]["srm_logic_tree"]))
+        ta_clean["model"]["gmcm_logic_tree"] = clean_string(str(ta_clean["model"]["gmcm_logic_tree"]))
+        ta_clean["model"]["hazard_config"] = clean_string(str(ta_clean["model"]["hazard_config"]))
+        return flatten_dict(ta_clean)
+
 
     def run(self, task_arguments, job_arguments):
         t0 = dt.datetime.now(dt.timezone.utc)
@@ -216,17 +244,22 @@ class BuilderTask:
             raise ValueError("Invalid configuration.")
         print(task_type)
 
+        # convert the dict representations of complex objects (from nzshm_model lib) in the args to the correct type
+        task_arguments["model"]["srm_logic_tree"] = SourceLogicTree.from_dict(task_arguments["model"]["srm_logic_tree"])
+        task_arguments["model"]["gmcm_logic_tree"] = GMCMLogicTree.from_dict(task_arguments["model"]["gmcm_logic_tree"])
+        task_arguments["model"]["hazard_config"] = OpenquakeConfig.from_dict(task_arguments["model"]["hazard_config"])
+
         ################
         # API SETUP
         ################
         automation_task_id = None
         if self.use_api:
             # old config id until we've removed need for config_id when creating task
-            config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEyOTI0NA=="
-            # ta_clean = self._sterilize_task_arguments_gmcmlt(ta)
-            # automation_task_id = self._setup_automation_task(ta_clean, ja, config_id, environment, task_type)
+            # config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEyOTI0NA=="  # PROD
+            config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEwMTU3MA=="  # TEST
+            ta_clean = self._clean_task_args(task_arguments)
             automation_task_id = self._setup_automation_task(
-                task_arguments, job_arguments, config_id, environment, task_type
+                ta_clean, job_arguments, config_id, environment, task_type
             )
 
         #################################
@@ -236,17 +269,12 @@ class BuilderTask:
         task_no = job_arguments["task_id"]
         config_folder = work_folder / f"config_{task_no}"
 
-        source_logic_tree = SourceLogicTree.from_dict(task_arguments["model"]["srm_logic_tree"])
         model = NshmModel(
             version="",
             title=task_arguments["title"],
-            source_logic_tree=source_logic_tree,
-            gmcm_logic_tree=GMCMLogicTree.from_dict(
-                task_arguments["model"]["gmcm_logic_tree"]
-            ),
-            hazard_config=OpenquakeConfig.from_dict(
-                task_arguments["model"]["hazard_config"]
-            ),
+            source_logic_tree=task_arguments["model"]["srm_logic_tree"],
+            gmcm_logic_tree=task_arguments["model"]["gmcm_logic_tree"],
+            hazard_config=task_arguments["model"]["hazard_config"],
         )
 
         # set IMTs, IMTLs
@@ -274,7 +302,7 @@ class BuilderTask:
                     file_api.download_file(
                         file_id, target_dir=temp_dir, target_name="sites.csv"
                     )
-                    locations_file = temp_dir / "sites.csv"
+                    locations_file = Path(temp_dir) / "sites.csv"
                 else:
                     locations_file = Path(
                         task_arguments["site_params"]["locations_file"]
@@ -317,7 +345,7 @@ class BuilderTask:
         if self.use_api:
             solution_id = self._store_api_result(
                 automation_task_id,
-                task_arguments,
+                ta_clean,
                 oq_result,
                 config_id,
                 modconf_id=config_id,  # TODO use modified config id
