@@ -1,18 +1,16 @@
-from hashlib import new
+import base64
 import os
 import stat
-import base64
+from hashlib import new
+from itertools import chain
 from pathlib import PurePath
 
-from itertools import chain
-
-from runzi.automation.scaling.toshi_api import SubtaskType, ModelType, ToshiApi
-from runzi.automation.scaling.python_task_factory import get_factory
-from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-
 import runzi.execute.average_solutions_task
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id
+from runzi.automation.scaling.local_config import CLUSTER_MODE, USE_API, WORK_PATH, EnvMode
+from runzi.automation.scaling.python_task_factory import get_factory
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
 
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, CLUSTER_MODE, EnvMode )
 
 def build_average_tasks(general_task_id: str, task_type: SubtaskType, model_type: ModelType, subtask_arguments, toshi_api: ToshiApi):
 

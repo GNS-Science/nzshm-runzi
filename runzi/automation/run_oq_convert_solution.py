@@ -7,24 +7,31 @@ into source NRML XML files
  - A GT containing Inversion Solutions
 
 """
-import logging
-import pwd
-import os
 import base64
 import datetime as dt
-from dateutil.tz import tzutc
-from subprocess import check_call
+import logging
+import os
+import pwd
 from multiprocessing.dummy import Pool
+from subprocess import check_call
 
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
-from runzi.automation.scaling.toshi_api.general_task import ModelType
-from runzi.configuration.oq_opensha_nrml_convert import build_nrml_tasks
-from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
+from dateutil.tz import tzutc
+
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    JAVA_THREADS,
+    USE_API,
+    WORK_PATH,
+    EnvMode,
+)
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
-
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, CLUSTER_MODE, EnvMode )
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
+from runzi.automation.scaling.toshi_api.general_task import ModelType
+from runzi.configuration.oq_opensha_nrml_convert import build_nrml_tasks
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 27

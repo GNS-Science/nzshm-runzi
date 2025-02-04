@@ -1,14 +1,14 @@
 
+import datetime as dt
 import os
 import sys
 from io import StringIO
-from pathlib import PurePath
-from pathlib import Path
-import datetime as dt
-
 from itertools import permutations
+from pathlib import Path, PurePath
+
 from dateutil.tz import tzutc
 from py4j.java_gateway import JavaGateway, java_import
+
 
 def report_meta():
     src_folder = PurePath("/tmp")

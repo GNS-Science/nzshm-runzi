@@ -7,16 +7,17 @@ only to be used until we have automated rupture reporting
 
 """
 
+import base64
+import collections
+import fnmatch
+import json
 import os
+
 # import os.path
 import shutil
-import fnmatch
-from pathlib import PurePath, Path
-
-import base64
-import json
-import collections
 from copy import copy
+from pathlib import Path, PurePath
+
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import WORK_PATH
 

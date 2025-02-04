@@ -1,18 +1,18 @@
 import argparse
-import json
-import git
-import os
 import base64
-from pathlib import PurePath, Path
-import platform
-
-from py4j.java_gateway import JavaGateway, GatewayParameters
 import datetime as dt
-from dateutil.tz import tzutc
-
+import json
+import os
+import platform
 import time
+from pathlib import Path, PurePath
+
+import git
+from dateutil.tz import tzutc
+from py4j.java_gateway import GatewayParameters, JavaGateway
+
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
 from runzi.util.aws.s3_folder_upload import upload_to_bucket
-from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET)
 
 
 class BuilderTask():

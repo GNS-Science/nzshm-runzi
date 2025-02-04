@@ -1,11 +1,11 @@
 from pickle import FALSE
-from runzi.automation.scaling.toshi_api.general_task import ModelType
-import runzi.automation.run_scale_solution as scale_solution
-import runzi.automation.run_oq_convert_solution as convert_solution
-from runzi.automation.scaling.file_utils import get_output_file_ids
-from runzi.automation.scaling.toshi_api import ToshiApi
 
-from runzi.automation.scaling.local_config import (API_KEY, API_URL)
+import runzi.automation.run_oq_convert_solution as convert_solution
+import runzi.automation.run_scale_solution as scale_solution
+from runzi.automation.scaling.file_utils import get_output_file_ids
+from runzi.automation.scaling.local_config import API_KEY, API_URL
+from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.automation.scaling.toshi_api.general_task import ModelType
 
 WORKER_POOL_SIZE = 2
 

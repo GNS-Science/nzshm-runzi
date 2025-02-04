@@ -1,24 +1,21 @@
+import datetime as dt
+import itertools
 import os
 import pwd
-import itertools
 import stat
-import boto3
+from itertools import chain
 from pathlib import PurePath
 
-import datetime as dt
+import boto3
 from dateutil.tz import tzutc
 
-from itertools import chain
-
-from runzi.automation.scaling.toshi_api import SubtaskType, ModelType, ToshiApi
-from runzi.automation.scaling.python_task_factory import get_factory
-from runzi.util.aws import get_ecs_job_config
-from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
-
 import runzi.execute.oq_opensha_convert_task
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
+from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, USE_API, WORK_PATH, EnvMode
+from runzi.automation.scaling.python_task_factory import get_factory
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
+from runzi.util.aws import get_ecs_job_config
 
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
-    API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 def build_nrml_tasks(general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments, toshi_api: ToshiApi):
 

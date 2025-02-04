@@ -1,26 +1,25 @@
 import argparse
+import datetime as dt
 import json
-import git
+import logging
 import os
-import uuid
-from pathlib import PurePath
 import platform
 import time
 import urllib.parse
-
-from py4j.java_gateway import JavaGateway, GatewayParameters
-import datetime as dt
-from dateutil.tz import tzutc
+import uuid
+from pathlib import PurePath
 from types import SimpleNamespace
 
+import git
+from dateutil.tz import tzutc
 from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
+from py4j.java_gateway import GatewayParameters, JavaGateway
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_INVERSION, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL, SPOOF_INVERSION)
 
-import logging
 logging.basicConfig(level=logging.INFO)
 
 loglevel = logging.INFO

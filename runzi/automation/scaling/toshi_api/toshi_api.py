@@ -1,24 +1,24 @@
+import base64
+import copy
+import json
 from datetime import datetime as dt
 from hashlib import md5
 from pathlib import PurePath
 
-import base64
-import copy
-import json
 import requests
-
 from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 from nshm_toshi_client.toshi_file import ToshiFile
 from nshm_toshi_client.toshi_task_file import ToshiTaskFile
 
+from .aggregate_inversion_solution import AggregateInversionSolution
+from .automation_task import AutomationTask
+from .general_task import CreateGeneralTaskArgs, GeneralTask, ModelType, SubtaskType
 from .inversion_solution import InversionSolution
+from .inversion_solution_nrml import InversionSolutionNrml
+from .openquake_hazard import OpenquakeHazardConfig, OpenquakeHazardSolution, OpenquakeHazardTask
 from .scaled_inversion_solution import ScaledInversionSolution
 from .time_dependent_inversion_solution import TimeDependentInversionSolution
-from .general_task import GeneralTask, CreateGeneralTaskArgs, SubtaskType, ModelType
-from .automation_task import AutomationTask
-from .inversion_solution_nrml import InversionSolutionNrml
-from .aggregate_inversion_solution import AggregateInversionSolution
-from .openquake_hazard import OpenquakeHazardConfig, OpenquakeHazardTask, OpenquakeHazardSolution
+
 
 class ToshiApi(ToshiClientBase):
 

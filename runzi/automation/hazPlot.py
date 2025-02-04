@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 # expects data as an array of x,y pairs
 def plotHazardCurve(tabData, years, title, subtitle, fileName):
   curveData = np.transpose(tabData)

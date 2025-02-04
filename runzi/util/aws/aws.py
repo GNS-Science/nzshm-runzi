@@ -2,16 +2,16 @@
 # If you need more information about configurations or implementing the sample code, visit the AWS docs:   
 # https://aws.amazon.com/developers/getting-started/python/
 
-import boto3
 import base64
-import io
-import zipfile
-
-import urllib.parse
-from botocore.exceptions import ClientError
-import json
 import collections
+import io
+import json
+import urllib.parse
+import zipfile
 from typing import List
+
+import boto3
+from botocore.exceptions import ClientError
 
 BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')
 

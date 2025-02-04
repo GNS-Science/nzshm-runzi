@@ -1,6 +1,7 @@
-import itertools
 import copy
+import itertools
 import json
+
 
 def branch_permutations_generator_34(args, rupture_set_info):
     """

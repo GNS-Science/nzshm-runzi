@@ -1,6 +1,7 @@
 import itertools
 import json
 
+
 def all_permutations_generator(args, rupture_set_info):
 
     for (_round, completion_energy, max_inversion_time,

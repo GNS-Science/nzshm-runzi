@@ -5,12 +5,13 @@ This script produces disagg tasks in either AWS, PBS or LOCAL that run Openquake
 """
 import logging
 from collections import namedtuple
-from typing import Dict, Any
+from typing import Any, Dict
+
+from runzi.automation.scaling.schedule_tasks import schedule_tasks
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 
 # from .run_oq_hazard import update_location_list, validate_config, get_model, get_num_workers, single_to_list
 from runzi.configuration.openquake.oq_disagg import build_disagg_tasks
-from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
-from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
 loglevel = logging.INFO
 logging.basicConfig(level=logging.INFO)

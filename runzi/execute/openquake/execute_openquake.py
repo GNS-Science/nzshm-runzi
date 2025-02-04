@@ -2,14 +2,13 @@
 #!python3
 
 import io
-import subprocess
 import logging
-import shutil
 import re
-
+import shutil
+import subprocess
 from pathlib import Path
-from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 
+from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 
 try:
     import openquake
@@ -18,9 +17,7 @@ except ImportError:
 else:
     from openquake.commonlib.datastore import get_datadir
 
-from runzi.automation.scaling.local_config import (WORK_PATH, SPOOF_HAZARD)
-
-
+from runzi.automation.scaling.local_config import SPOOF_HAZARD, WORK_PATH
 from runzi.util import archive
 
 log = logging.getLogger(__name__)

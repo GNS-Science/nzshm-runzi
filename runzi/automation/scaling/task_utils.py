@@ -1,5 +1,6 @@
 from runzi.automation.scaling.toshi_api.general_task import ModelType
 
+
 def _get_model_type(id, toshi_api):
     # get the type
     qry = '''

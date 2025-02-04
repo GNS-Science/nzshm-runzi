@@ -1,8 +1,9 @@
 #! meta_munge.py
 
-import json
-from jsonpath_ng import jsonpath, parse
 import hashlib
+import json
+
+from jsonpath_ng import jsonpath, parse
 
 """
 merge the meta data from openquake hazard job with meta from ToshiAPI

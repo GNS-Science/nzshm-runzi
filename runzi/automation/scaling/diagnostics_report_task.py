@@ -1,20 +1,19 @@
 import argparse
-import json
-import git
-import os
 import base64
-from pathlib import PurePath, Path
-import platform
-
-from py4j.java_gateway import JavaGateway, GatewayParameters
 import datetime as dt
-from dateutil.tz import tzutc
+import json
+import os
+import platform
+import time
+from pathlib import Path, PurePath
 from types import SimpleNamespace
 
-from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
+import git
+from dateutil.tz import tzutc
 from nshm_toshi_client.general_task import GeneralTask
+from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
-import time
+from py4j.java_gateway import GatewayParameters, JavaGateway
 
 API_URL  = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
 API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")

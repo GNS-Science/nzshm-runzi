@@ -19,15 +19,10 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import (
-    HazardTaskType,
-)
+from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.util.aws import BatchEnvironmentSetting, get_ecs_job_config
 
-from .util import (
-    EC2_CONFIGS,
-    ComputePlatform,
-)
+from .util import EC2_CONFIGS, ComputePlatform
 
 HAZARD_MAX_TIME = 48 * 60  # minutes
 

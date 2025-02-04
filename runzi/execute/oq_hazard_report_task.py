@@ -1,17 +1,16 @@
-from pathlib import PurePath, Path
 import argparse
-import json
-import urllib
-import time
 import datetime as dt
+import json
+import time
+import urllib
+from pathlib import Path, PurePath
 
 from nshm_toshi_client.task_relation import TaskRelation
 from oq_hazard_report.report_builder import ReportBuilder
 
-from runzi.util.aws.s3_folder_upload import upload_to_bucket
-
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET)
+from runzi.util.aws.s3_folder_upload import upload_to_bucket
 
 
 class BuilderTask():

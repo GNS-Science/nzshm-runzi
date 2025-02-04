@@ -1,29 +1,39 @@
+import datetime as dt
+import json
+import logging
 import os
 import pwd
-
 import stat
-import json
+from multiprocessing.dummy import Pool
 from pathlib import PurePath
 from subprocess import check_call
-from multiprocessing.dummy import Pool
+
 import boto3
 
-import datetime as dt
-import logging
-
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs
-from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
 
+# Set up your local config, from environment variables, with some sone defaults
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    FATJAR,
+    JAVA_THREADS,
+    JVM_HEAP_MAX,
+    JVM_HEAP_START,
+    OPENSHA_JRE,
+    OPENSHA_ROOT,
+    S3_REPORT_BUCKET,
+    S3_URL,
+    USE_API,
+    WORK_PATH,
+    EnvMode,
+)
+from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
+from runzi.configuration.crustal_inversion_permutations import *
 from runzi.execute import inversion_solution_builder_task
 from runzi.util.aws import get_ecs_job_config
-
-# Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
-    JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, EnvMode)
-
-from runzi.configuration.crustal_inversion_permutations import *
 
 #JAVA_THREADS = 4
 

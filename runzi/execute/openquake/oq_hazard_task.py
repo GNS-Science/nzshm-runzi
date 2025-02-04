@@ -14,7 +14,7 @@ import tempfile
 import time
 import zipfile
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 import requests
 from dateutil.tz import tzutc
@@ -24,23 +24,11 @@ from nzshm_common.geometry.geometry import backarc_polygon, within_polygon
 from nzshm_common.location.location import get_locations
 from nzshm_model import NshmModel
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
-from nzshm_model.psha_adapter.openquake import (
-    OpenquakeConfig,
-    OpenquakeModelPshaAdapter,
-)
+from nzshm_model.psha_adapter.openquake import OpenquakeConfig, OpenquakeModelPshaAdapter
 
-from runzi.automation.scaling.local_config import (
-    API_KEY,
-    API_URL,
-    S3_URL,
-    SPOOF_HAZARD,
-    WORK_PATH,
-)
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_HAZARD, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import (
-    HazardTaskType,
-)
-
+from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.execute.openquake.execute_openquake import execute_openquake
 from runzi.util.aws import decompress_config
 

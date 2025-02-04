@@ -1,21 +1,17 @@
-from operator import mod
-import pwd
+import datetime as dt
 import logging
 import os
-import datetime as dt
+import pwd
+from operator import mod
 from pyexpat import model
 from statistics import mode
 
-from runzi.configuration.average_inversion_solutions import build_average_tasks
+from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, USE_API, WORK_PATH, EnvMode
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
-from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.automation.scaling.task_utils import get_model_type
-
-
-
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
-    API_KEY, API_URL, CLUSTER_MODE, EnvMode )
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
+from runzi.automation.scaling.toshi_api.general_task import ModelType
+from runzi.configuration.average_inversion_solutions import build_average_tasks
 
 # If you wish to override something in the main config, do so here ..
 #WORKER_POOL_SIZE = 2 

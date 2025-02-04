@@ -1,12 +1,14 @@
-import json
-import git
 import csv
+import datetime as dt
+import json
 import os
 from pathlib import PurePath
-from py4j.java_gateway import JavaGateway, java_import
-import datetime as dt
-from dateutil.tz import tzutc
 from types import SimpleNamespace
+
+import git
+from dateutil.tz import tzutc
+from py4j.java_gateway import JavaGateway, java_import
+
 
 def inversion():
     inversion_runner = app.getRunner()

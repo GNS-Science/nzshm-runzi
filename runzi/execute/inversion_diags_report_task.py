@@ -1,21 +1,21 @@
 import argparse
+import base64
+import datetime as dt
 import json
+import os
+import platform
+import time
+import urllib
+from pathlib import Path, PurePath
 
 import git
-import os
-import base64
-from pathlib import PurePath, Path
-import platform
-import urllib
-import time
-import datetime as dt
 from dateutil.tz import tzutc
+from py4j.java_gateway import GatewayParameters, JavaGateway
 
-from runzi.util.build_named_fault_mfd_index import build_named_fault_mfd_index
-from py4j.java_gateway import JavaGateway, GatewayParameters
-
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
 from runzi.util.aws.s3_folder_upload import upload_to_bucket
-from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET)
+from runzi.util.build_named_fault_mfd_index import build_named_fault_mfd_index
+
 
 class BuilderTask():
     """

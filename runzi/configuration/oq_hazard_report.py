@@ -1,19 +1,16 @@
 
 import os
 import stat
+from itertools import chain
 from pathlib import PurePath
 
-from itertools import chain
-
-from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.python_task_factory import get_factory
-from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
-from runzi.automation.scaling.hazard_output_helper import HazardOutputHelper
-
 import runzi.execute.oq_hazard_report_task
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
+from runzi.automation.scaling.hazard_output_helper import HazardOutputHelper
+from runzi.automation.scaling.local_config import CLUSTER_MODE, USE_API, WORK_PATH, EnvMode
+from runzi.automation.scaling.python_task_factory import get_factory
+from runzi.automation.scaling.toshi_api import ToshiApi
 
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API,
-   CLUSTER_MODE, EnvMode )
 
 def build_hazard_report_tasks(subtask_arguments, toshi_api: ToshiApi):
 

@@ -3,23 +3,31 @@
 This script produces tasks that modify InversionSolution event rates based on Most Recevnt Events to produce a Time Dependent Solution
 
 """
-import logging
-import pwd
-import os
 import base64
 import datetime as dt
-from dateutil.tz import tzutc
-from subprocess import check_call
+import logging
+import os
+import pwd
 from multiprocessing.dummy import Pool
+from subprocess import check_call
 
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
+from dateutil.tz import tzutc
+
+from runzi.automation.scaling.file_utils import get_output_file_ids
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    JAVA_THREADS,
+    USE_API,
+    WORK_PATH,
+    EnvMode,
+)
+from runzi.automation.scaling.schedule_tasks import schedule_tasks
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.configuration.time_dependent_inversion_solution import build_time_dependent_tasks
-from runzi.automation.scaling.schedule_tasks import schedule_tasks
-from runzi.automation.scaling.file_utils import get_output_file_ids
 
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, CLUSTER_MODE, EnvMode )
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     scripts = []

@@ -1,12 +1,13 @@
 from ast import Num
-
-from termcolor import cprint
-from runzi.cli.cli_helpers import unique_id
-from prompt_toolkit import prompt 
-import inquirer
-from runzi.cli.config.inversion_builder import CrustalConfig, SubductionConfig
-from runzi.cli.cli_helpers import NumberValidator, display
 from datetime import date
+
+import inquirer
+from prompt_toolkit import prompt
+from termcolor import cprint
+
+from runzi.cli.cli_helpers import NumberValidator, display, unique_id
+from runzi.cli.config.inversion_builder import CrustalConfig, SubductionConfig
+
 
 def base_config():
     global global_vars

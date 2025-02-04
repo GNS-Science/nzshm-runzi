@@ -1,26 +1,37 @@
 """
 Configuration for building subduction rupture sets.
 """
+import datetime as dt
+import itertools
 import os
 import pwd
-import itertools
 import stat
+from multiprocessing.dummy import Pool
 from pathlib import PurePath
 from subprocess import check_call
-from multiprocessing.dummy import Pool
 
-import datetime as dt
 from dateutil.tz import tzutc
 
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
-from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.automation.scaling import subduction_rupture_set_builder_task
-
-
 # Set up your local config, from environment variables, with some sone defaults
-from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
-    JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, CLUSTER_MODE, EnvMode)
+from scaling.local_config import (
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    FATJAR,
+    JAVA_THREADS,
+    JVM_HEAP_MAX,
+    JVM_HEAP_START,
+    OPENSHA_JRE,
+    OPENSHA_ROOT,
+    S3_URL,
+    USE_API,
+    WORK_PATH,
+    EnvMode,
+)
+
+from runzi.automation.scaling import subduction_rupture_set_builder_task
+from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1

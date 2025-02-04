@@ -8,7 +8,6 @@ basically take the slip rate in col22 (for) 30km tiles) and then for each row-wi
 import csv
 from pathlib import Path
 
-
 folder = Path("/home/chrisbc/DEV/GNS/opensha-new/nshm-nz-opensha/src/main/resources/faultModels")
 assert folder.exists()
 hkm30_tiles = csv.reader(open(Path(folder, "hk_tile_parameters_10-short.csv"),'r'))

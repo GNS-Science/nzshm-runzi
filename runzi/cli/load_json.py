@@ -1,11 +1,12 @@
 import json
 import os
 from pathlib import Path
+
 import inquirer
 
+import runzi.cli.inv_setup
 from runzi.cli.cli_helpers import display, from_json_format
 from runzi.cli.config.inversion_builder import Config
-import runzi.cli.inv_setup
 
 
 def load_crustal(*args): load_from_json("INVERSION", "CRUSTAL")

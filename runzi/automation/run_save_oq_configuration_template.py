@@ -13,16 +13,16 @@ inputs:-
 
 """
 import argparse
+import datetime as dt
 import logging
 import os
 import zipfile
-import datetime as dt
+from pathlib import Path, PurePath
+
 from dateutil.tz import tzutc
 
-from pathlib import Path, PurePath
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, USE_API, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.local_config import (WORK_PATH,
-    USE_API, API_KEY, API_URL, S3_URL)
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

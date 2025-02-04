@@ -1,22 +1,36 @@
+import datetime as dt
 import os
 import stat
-import boto3
-import datetime as dt
-import inquirer
+from multiprocessing.dummy import Pool
 from pathlib import PurePath
 from subprocess import check_call
-from multiprocessing.dummy import Pool
 
-from runzi.configuration.inversion_diagnostics import generate_tasks_or_configs
-from runzi.automation.scaling.toshi_api import ToshiApi
+import boto3
+import inquirer
+
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids
-from runzi.automation.scaling.opensha_task_factory import get_factory
-# Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import (EnvMode, OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
-    JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, CLUSTER_MODE, WORKER_POOL_SIZE)
 
-    
+# Set up your local config, from environment variables, with some sone defaults
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    FATJAR,
+    JAVA_THREADS,
+    JVM_HEAP_MAX,
+    JVM_HEAP_START,
+    OPENSHA_JRE,
+    OPENSHA_ROOT,
+    S3_URL,
+    USE_API,
+    WORK_PATH,
+    WORKER_POOL_SIZE,
+    EnvMode,
+)
+from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.configuration.inversion_diagnostics import generate_tasks_or_configs
+
 
 def inversion_diagnostic_runner(general_task_id):
     t0 = dt.datetime.utcnow()

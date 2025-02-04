@@ -1,22 +1,22 @@
-import json
-from typing import List
-import sys
-import logging
-import time
 import datetime as dt
-from pathlib import Path
-import tempfile
+import json
+import logging
 import multiprocessing
-from zipfile import ZipFile
+import sys
+import tempfile
+import time
 from collections import namedtuple
+from pathlib import Path
+from typing import List
+from zipfile import ZipFile
 
 from openquake.commonlib import datastore
 from toshi_hazard_store.oq_import import export_meta_v3, export_rlzs_v3
 
-from runzi.automation.scaling.hazard_output_helper import HazardOutputHelper
-from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.local_config import (API_KEY, API_URL, WORK_PATH)
 from runzi.automation.run_gt_index import parse_task_args
+from runzi.automation.scaling.hazard_output_helper import HazardOutputHelper
+from runzi.automation.scaling.local_config import API_KEY, API_URL, WORK_PATH
+from runzi.automation.scaling.toshi_api import ToshiApi
 
 log = logging.getLogger()
 logging.basicConfig(level=logging.INFO)

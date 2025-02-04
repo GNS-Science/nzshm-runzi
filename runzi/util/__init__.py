@@ -1,6 +1,7 @@
 import zipfile
 from pathlib import Path, PurePath
 
+
 def archive(source_path, output_zip):
     '''
     zip contents of source path and return the full archive path.

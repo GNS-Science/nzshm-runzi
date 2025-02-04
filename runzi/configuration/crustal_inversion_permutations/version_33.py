@@ -1,6 +1,7 @@
 import itertools
 import json
 
+
 def branch_permutations_generator_33(args, rupture_set_info):
     """
     Generate Uncertainty Constraint argument forms

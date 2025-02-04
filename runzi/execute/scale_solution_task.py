@@ -1,24 +1,22 @@
 import argparse
-import json
-
-import os
 import base64
-from pathlib import PurePath, Path
+import datetime as dt
+import json
+import os
 import platform
+import time
 import urllib
 import uuid
-import time
-import datetime as dt
-from dateutil.tz import tzutc
-from runzi.automation.scaling.toshi_api.general_task import SubtaskType
+from pathlib import Path, PurePath
 
+from dateutil.tz import tzutc
+from nshm_toshi_client.task_relation import TaskRelation
 from solvis import *
 
 from runzi.automation.scaling.file_utils import get_file_meta
-
-from nshm_toshi_client.task_relation import TaskRelation
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL)
+from runzi.automation.scaling.toshi_api.general_task import SubtaskType
 
 
 class BuilderTask():

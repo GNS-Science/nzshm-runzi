@@ -1,34 +1,35 @@
 import copy
+import itertools
 import os
 import pwd
-import itertools
 import stat
 from dataclasses import asdict
 from pathlib import PurePath
 
 import numpy as np
-
-from nzshm_model.logic_tree import SourceLogicTree
 import toshi_hazard_store
+from nzshm_model.logic_tree import SourceLogicTree
 
-from .util import unpack_values, unpack_keys, update_oq_args, EC2_CONFIGS, ComputePlatform
-# from .oq_hazard import DEFAULT_HAZARD_CONFIG
-
-from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
-from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType, ModelType, CreateGeneralTaskArgs
-from runzi.automation.scaling.python_task_factory import get_factory
-from runzi.util.aws import get_ecs_job_config, BatchEnvironmentSetting
 import runzi.execute.openquake.oq_hazard_task
 from runzi.automation.scaling.local_config import (
-    WORK_PATH,
-    USE_API,
     API_KEY,
     API_URL,
     CLUSTER_MODE,
-    EnvMode,
+    S3_REPORT_BUCKET,
     S3_URL,
-    S3_REPORT_BUCKET
+    USE_API,
+    WORK_PATH,
+    EnvMode,
 )
+from runzi.automation.scaling.python_task_factory import get_factory
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
+from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
+from runzi.util.aws import BatchEnvironmentSetting, get_ecs_job_config
+
+from .util import EC2_CONFIGS, ComputePlatform, unpack_keys, unpack_values, update_oq_args
+
+# from .oq_hazard import DEFAULT_HAZARD_CONFIG
+
 
 HAZARD_MAX_TIME = 20  # minutes
 

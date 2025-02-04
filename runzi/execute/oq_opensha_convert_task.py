@@ -1,30 +1,25 @@
 #!python3 oq_opensha_convert.py
 import argparse
-import json
 import base64
-import uuid
-import urllib
-
-import os
-
-import zipfile
-
-from pathlib import Path, PurePath
-from importlib import import_module
 import datetime as dt
-from dateutil.tz import tzutc
+import json
+import os
+import urllib
+import uuid
+import zipfile
+from importlib import import_module
+from pathlib import Path, PurePath
 
-from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType
+from dateutil.tz import tzutc
+from nshm_toshi_client.task_relation import TaskRelation  # TODO deprecate
+from openquake.baselib import sap
+from openquake.converters.ucerf.parsers.sections_geojson import get_multi_fault_source
+from openquake.hazardlib.sourcewriter import write_source_model
 
 from runzi.automation.scaling.file_utils import get_file_meta
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL
+from runzi.automation.scaling.toshi_api import SubtaskType, ToshiApi
 
-from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL)
-from nshm_toshi_client.task_relation import TaskRelation #TODO deprecate
-
-from openquake.baselib import sap
-from openquake.hazardlib.sourcewriter import write_source_model
-from openquake.converters.ucerf.parsers.sections_geojson import (
-    get_multi_fault_source)
 
 class BuilderTask():
 

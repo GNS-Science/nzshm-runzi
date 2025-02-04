@@ -1,7 +1,8 @@
-from distutils.util import execute
 import os
-import requests
+from distutils.util import execute
 from pathlib import Path, PurePath
+
+import requests
 
 #TODO convert return to yield?
 

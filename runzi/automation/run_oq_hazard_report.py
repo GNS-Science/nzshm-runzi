@@ -4,18 +4,22 @@ This script produces tasks in either AWS, PBS or LOCAL to produce a hazard repor
 
 """
 
-import logging
 import datetime as dt
+import logging
 from operator import gt
 
-from runzi.automation.scaling.toshi_api import ToshiApi
-
-from runzi.configuration.oq_hazard_report import build_hazard_report_tasks
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    JAVA_THREADS,
+    USE_API,
+    WORK_PATH,
+    EnvMode,
+)
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
-
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, CLUSTER_MODE, EnvMode )
-
+from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.configuration.oq_hazard_report import build_hazard_report_tasks
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1

@@ -7,17 +7,18 @@ only to be used until we have automated rupture reporting
 
 """
 
+import base64
+import collections
+import fnmatch
+import json
 import os
+
 # import os.path
 import shutil
-import fnmatch
-from pathlib import PurePath, Path
-
-import base64
-import json
-import collections
+from pathlib import Path, PurePath
 
 from nshm_toshi_client.toshi_client_base import ToshiClientBase
+
 
 class ToshiFile(ToshiClientBase):
 

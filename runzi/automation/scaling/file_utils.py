@@ -4,8 +4,10 @@ helpers for upstream file retrieval
 
 """
 import os
-import requests
 from pathlib import Path, PurePath
+
+import requests
+
 
 def get_output_file_ids(general_task_api, upstream_task_id, file_extension='zip'):
     

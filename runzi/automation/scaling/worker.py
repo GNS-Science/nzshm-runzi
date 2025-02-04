@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from mpi4py import MPI
 import numpy
+from mpi4py import MPI
 
 comm = MPI.Comm.Get_parent()
 size = comm.Get_size()

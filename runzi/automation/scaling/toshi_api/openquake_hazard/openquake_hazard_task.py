@@ -1,17 +1,16 @@
 
-from datetime import datetime as dt
-from dateutil.tz import tzutc
-from hashlib import md5
-from pathlib import PurePath
-from enum import Enum
-
 import base64
 import json
-import requests
+import logging
+from datetime import datetime as dt
+from enum import Enum
+from hashlib import md5
+from pathlib import PurePath
 
+import requests
+from dateutil.tz import tzutc
 from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 
-import logging
 log = logging.getLogger(__name__)
 
 class HazardTaskType(Enum):

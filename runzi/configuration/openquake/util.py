@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import Dict, Any, Generator
+from typing import Any, Dict, Generator
+
 
 class ComputePlatform(Enum):
     EC2 = 10

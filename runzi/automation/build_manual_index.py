@@ -6,21 +6,20 @@ only to be used until we have automated rupture reporting
 
 """
 
-import os
-
-import urllib.request
-import shutil
+import base64
+import collections
 import fnmatch
-from pathlib import PurePath, Path
+import json
+import os
+import shutil
+import urllib.request
 from datetime import datetime as dt
+from pathlib import Path, PurePath
+
 import pytz
 
-import base64
-import json
-import collections
-
-from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.local_config import WORK_PATH
+from runzi.automation.scaling.toshi_api import ToshiApi
 
 
 class GeneralTaskBuilder:

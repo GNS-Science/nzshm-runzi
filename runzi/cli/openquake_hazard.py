@@ -1,9 +1,11 @@
-import subprocess
 import os
-import inquirer
 import pathlib
+import subprocess
+
+import inquirer
 
 from runzi.automation.scaling.local_config import WORK_PATH
+
 
 def openquake_hazard_query(*args):
     file_list = []

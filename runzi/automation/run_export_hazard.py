@@ -1,7 +1,8 @@
 import csv
 import datetime as dt
-from scaling.toshi_api import ToshiApi#, CreateGeneralTaskArgs
-from scaling.local_config import (API_KEY, API_URL, S3_URL)
+
+from scaling.local_config import API_KEY, API_URL, S3_URL
+from scaling.toshi_api import ToshiApi  # , CreateGeneralTaskArgs
 
 if __name__ == "__main__":
 

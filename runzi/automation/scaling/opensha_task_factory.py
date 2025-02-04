@@ -14,11 +14,13 @@ The job is responsible for
  The job is either a bash script (for local machine) or
  a PBS script for the cluster environment
 """
-import os
 import json
-# import scaling.rupture_set_builder_task
+import os
 
 from .local_config import EnvMode
+
+# import scaling.rupture_set_builder_task
+
 
 
 class OpenshaTaskFactory():

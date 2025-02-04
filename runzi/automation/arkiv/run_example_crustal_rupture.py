@@ -2,11 +2,12 @@
 # import json
 # import git
 # import csv
+import datetime as dt
 import os
 from pathlib import PurePath
-from py4j.java_gateway import JavaGateway
-import datetime as dt
+
 from dateutil.tz import tzutc
+from py4j.java_gateway import JavaGateway
 
 
 def run_task(builder,

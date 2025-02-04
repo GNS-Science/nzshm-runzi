@@ -1,30 +1,39 @@
+import datetime as dt
+import itertools
+import logging
 import os
 import pwd
-import itertools
 import stat
+from multiprocessing.dummy import Pool
 from pathlib import PurePath
 from subprocess import check_call
-from multiprocessing.dummy import Pool
-
-import datetime as dt
-from dateutil.tz import tzutc
-
-from nshm_toshi_client.general_task import GeneralTask
-from nshm_toshi_client.toshi_file import ToshiFile
-from scaling.toshi_api import ToshiApi
-
-from scaling.opensha_task_factory import OpenshaTaskFactory
-from scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
 
 import scaling.ruptset_diags_report_task
-
+from dateutil.tz import tzutc
+from nshm_toshi_client.general_task import GeneralTask
+from nshm_toshi_client.toshi_file import ToshiFile
+from scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
 
 # Set up your local config, from environment variables, with some sone defaults
-from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
-    JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, REPORT_LEVEL)
+from scaling.local_config import (
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    FATJAR,
+    JAVA_THREADS,
+    JVM_HEAP_MAX,
+    JVM_HEAP_START,
+    OPENSHA_JRE,
+    OPENSHA_ROOT,
+    REPORT_LEVEL,
+    S3_REPORT_BUCKET,
+    S3_URL,
+    USE_API,
+    WORK_PATH,
+)
+from scaling.opensha_task_factory import OpenshaTaskFactory
+from scaling.toshi_api import ToshiApi
 
-import logging
 logging.basicConfig(level=logging.INFO)
 
 loglevel = logging.INFO

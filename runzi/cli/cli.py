@@ -1,12 +1,13 @@
 # import logging, logging.config
 import os
-from runzi.cli.inv_setup import change_job_values, change_task_values, add_task_arg
-from runzi.cli.load_json import load_crustal, load_subduction
+
+from openquake_hazard import openquake_hazard_query
+
 from runzi.cli.cli_helpers import MenuHandler, build_inversion_index, display_env, landing_banner
 from runzi.cli.inv_setup import *
-from runzi.cli.load_json import load_from_json
+from runzi.cli.inv_setup import add_task_arg, change_job_values, change_task_values
 from runzi.cli.inversion_diagnostic_runner import inversion_diagnostic_query
-from openquake_hazard import openquake_hazard_query
+from runzi.cli.load_json import load_crustal, load_from_json, load_subduction
 
 context = 'runziCLI'
 

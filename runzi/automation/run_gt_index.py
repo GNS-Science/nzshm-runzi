@@ -7,19 +7,19 @@ Structure of index is: List[Dict[str,Any]]
 """
 import argparse
 import itertools
-from dataclasses import dataclass
 import json
-import boto3.session
-import urllib.request
 import tempfile
+import urllib.request
+from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Generator, Tuple
+from typing import Generator, List, Tuple
 
-from nzshm_common.util import compress_string, decompress_string
+import boto3.session
 from nzshm_common.location.code_location import CodedLocation
 from nzshm_common.location.location import location_by_id
+from nzshm_common.util import compress_string, decompress_string
 
-from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH, S3_REPORT_BUCKET)
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.util.aws.s3_folder_upload import mimetype
 

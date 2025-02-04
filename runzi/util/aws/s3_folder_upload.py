@@ -1,16 +1,16 @@
-from botocore.errorfactory import ClientError
+import datetime as dt
+import logging
+import mimetypes
+import os
+import shutil
+from logging import error, info
+from multiprocessing.pool import ThreadPool
+
 import boto3
 import boto3.session
-import os
-from multiprocessing.pool import ThreadPool
-import datetime as dt
-import shutil
-import mimetypes 
-import logging
-from logging import info, error
+from botocore.errorfactory import ClientError
 
-from runzi.automation.scaling.local_config import WORK_PATH, S3_UPLOAD_WORKERS
-
+from runzi.automation.scaling.local_config import S3_UPLOAD_WORKERS, WORK_PATH
 
 logging.basicConfig(level="INFO")
 S3_REPORT_BUCKET_ROOT = 'opensha/DATA'

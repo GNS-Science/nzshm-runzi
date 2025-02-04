@@ -3,10 +3,12 @@ This module exports comfiguration forthe current system
 and is imported  by the various run_xxx.py scripts
 """
 
-import os
 import enum
+import os
 from pathlib import PurePath
-from runzi.util.aws import get_secret 
+
+from runzi.util.aws import get_secret
+
 
 class EnvMode(enum.IntEnum):
     LOCAL = 0

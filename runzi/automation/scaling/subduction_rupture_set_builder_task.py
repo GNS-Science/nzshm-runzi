@@ -1,20 +1,19 @@
 import argparse
-import json
-import git
 import csv
-import os
-import pwd
-from pathlib import PurePath
-import platform
-
-from py4j.java_gateway import JavaGateway, GatewayParameters
 import datetime as dt
-from dateutil.tz import tzutc
-
-from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
-from nshm_toshi_client.general_task import GeneralTask
-from nshm_toshi_client.task_relation import TaskRelation
+import json
+import os
+import platform
+import pwd
 import time
+from pathlib import PurePath
+
+import git
+from dateutil.tz import tzutc
+from nshm_toshi_client.general_task import GeneralTask
+from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
+from nshm_toshi_client.task_relation import TaskRelation
+from py4j.java_gateway import GatewayParameters, JavaGateway
 
 CLUSTER_MODE = os.getenv('NZSHM22_SCRIPT_CLUSTER_MODE', False)
 

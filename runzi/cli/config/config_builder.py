@@ -1,10 +1,12 @@
 import json
 import os
+from datetime import datetime
+from pathlib import Path
+
+from runzi.cli.cli_helpers import display, from_json_format, to_json_format, unique_id
 from runzi.cli.crustal_inversion_runner import run_crustal_inversion
 from runzi.cli.subduction_inversion_runner import run_subduction_inversion
-from runzi.cli.cli_helpers import display, to_json_format, from_json_format, unique_id
-from pathlib import Path
-from datetime import datetime
+
 
 class Config:
     non_task_args = ['_worker_pool_size',

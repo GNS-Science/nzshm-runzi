@@ -10,13 +10,13 @@ inputs:-
 
 """
 import argparse
-import logging
-import csv
 import collections
-
+import csv
+import logging
 from pathlib import Path
+
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.local_config import (WORK_PATH, API_KEY, API_URL, S3_URL)
 from runzi.util import archive
 
 log = logging.getLogger(__name__)

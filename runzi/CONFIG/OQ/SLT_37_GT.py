@@ -1678,6 +1678,7 @@ OLDdata = {
 
 import json
 from collections import namedtuple
+
 from SLT_37_GRANULAR_RELEASE_1 import logic_tree_permutations
 
 Member = namedtuple("Member", "group tag weight inv_id bg_id hazard_solution_id")

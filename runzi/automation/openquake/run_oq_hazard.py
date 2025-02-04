@@ -17,21 +17,9 @@ from nshm_toshi_client import ToshiFile
 from nzshm_common.location import CodedLocation
 
 from runzi.automation.config import validate_entry, validate_path
-from runzi.automation.scaling.local_config import (
-    API_KEY,
-    API_URL,
-    S3_URL,
-    CLUSTER_MODE,
-    USE_API,
-    EnvMode,
-)
+from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, EnvMode
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
-from runzi.automation.scaling.toshi_api import (
-    CreateGeneralTaskArgs,
-    ModelType,
-    SubtaskType,
-    ToshiApi,
-)
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
 
 loglevel = logging.INFO

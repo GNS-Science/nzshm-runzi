@@ -9,10 +9,11 @@ The job is responsible for configuring and executing the python script
  The job is either a bash script (for local machine) or
  a PBS script for the cluster environment
 """
-import os
 import json
+import os
 
 from .local_config import EnvMode
+
 
 class PythonTaskFactory():
 

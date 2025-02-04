@@ -1,25 +1,40 @@
+import datetime as dt
+import itertools
 import os
 import pwd
-import itertools
 import stat
+from multiprocessing.dummy import Pool
 from pathlib import PurePath
 from subprocess import check_call
-from multiprocessing.dummy import Pool
 
-import datetime as dt
 from dateutil.tz import tzutc
 
-from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids
-from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.util.aws import get_ecs_job_config
-from runzi.execute import inversion_diags_report_task
 
 # Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
-    JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, BUILD_PLOTS, REPORT_LEVEL, EnvMode,
-    HACK_FAULT_MODEL)
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    BUILD_PLOTS,
+    CLUSTER_MODE,
+    FATJAR,
+    HACK_FAULT_MODEL,
+    JAVA_THREADS,
+    JVM_HEAP_MAX,
+    JVM_HEAP_START,
+    OPENSHA_JRE,
+    OPENSHA_ROOT,
+    REPORT_LEVEL,
+    S3_REPORT_BUCKET,
+    S3_URL,
+    USE_API,
+    WORK_PATH,
+    EnvMode,
+)
+from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.execute import inversion_diags_report_task
+from runzi.util.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 MAX_JOB_TIME_SECS = 60*30 #Change this soon

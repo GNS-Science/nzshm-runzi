@@ -3,11 +3,13 @@
 common function to schedule tasks as needed for given environment
 """
 
-import boto3
-from subprocess import check_call
 from multiprocessing.dummy import Pool
+from subprocess import check_call
 
-from runzi.automation.scaling.local_config import (WORKER_POOL_SIZE, CLUSTER_MODE, EnvMode )
+import boto3
+
+from runzi.automation.scaling.local_config import CLUSTER_MODE, WORKER_POOL_SIZE, EnvMode
+
 
 def schedule_tasks(scripts,worker_pool_size=None):
 

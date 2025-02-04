@@ -1,27 +1,41 @@
-from logging import Manager
-import sys
+import os
 import random
 import string
-import os
+import sys
+from logging import Manager
 
-from pygments.formatters.terminal256 import TerminalTrueColorFormatter
-from prompt_toolkit import prompt
-from prompt_toolkit.validation import Validator, ValidationError
+from prompt_toolkit import PromptSession, prompt
 from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit import PromptSession
+from prompt_toolkit.validation import ValidationError, Validator
+from pygments.formatters.terminal256 import TerminalTrueColorFormatter
 
 session = PromptSession()
 
-from pygments import highlight
-from pygments.lexers.python import PythonLexer
-from pygments.formatters import Terminal256Formatter
 from pprint import pformat
-from pyfiglet import Figlet
-from termcolor import cprint
-import inquirer
-from runzi.automation.build_manual_index import build_manual_index
 
-from runzi.automation.scaling.local_config import (JAVA_THREADS, JVM_HEAP_MAX, JVM_HEAP_START, S3_URL, S3_UPLOAD_WORKERS, USE_API, WORKER_POOL_SIZE, WORK_PATH, CLUSTER_MODE, API_URL, S3_REPORT_BUCKET, EnvMode)
+import inquirer
+from pyfiglet import Figlet
+from pygments import highlight
+from pygments.formatters import Terminal256Formatter
+from pygments.lexers.python import PythonLexer
+from termcolor import cprint
+
+from runzi.automation.build_manual_index import build_manual_index
+from runzi.automation.scaling.local_config import (
+    API_URL,
+    CLUSTER_MODE,
+    JAVA_THREADS,
+    JVM_HEAP_MAX,
+    JVM_HEAP_START,
+    S3_REPORT_BUCKET,
+    S3_UPLOAD_WORKERS,
+    S3_URL,
+    USE_API,
+    WORK_PATH,
+    WORKER_POOL_SIZE,
+    EnvMode,
+)
+
 
 def landing_banner():
 

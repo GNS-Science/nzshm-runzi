@@ -1,19 +1,33 @@
+import datetime as dt
 import os
 import pwd
-import datetime as dt
-import boto3
-from subprocess import check_call
 from multiprocessing.dummy import Pool
+from subprocess import check_call
 
-from runzi.configuration.crustal_inversions import build_crustal_tasks
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType, ModelType
+import boto3
+
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
-from runzi.util.aws import get_secret
 
 # Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
-    JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, CLUSTER_MODE, EnvMode)
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    FATJAR,
+    JAVA_THREADS,
+    JVM_HEAP_MAX,
+    JVM_HEAP_START,
+    OPENSHA_JRE,
+    OPENSHA_ROOT,
+    S3_URL,
+    USE_API,
+    WORK_PATH,
+    EnvMode,
+)
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
+from runzi.configuration.crustal_inversions import build_crustal_tasks
+from runzi.util.aws import get_secret
+
 
 def run_crustal_inversion(config):
     t0 = dt.datetime.utcnow()

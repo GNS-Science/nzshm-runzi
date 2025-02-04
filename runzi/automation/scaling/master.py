@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-from mpi4py import MPI
-import numpy
 import sys
+
+import numpy
+from mpi4py import MPI
 
 comm = MPI.COMM_SELF.Spawn(sys.executable,
                            args=['worker.py'],

@@ -1,16 +1,16 @@
 
-import datetime as dt
-from dateutil.tz import tzutc
-from hashlib import md5
-from pathlib import PurePath
-from enum import Enum
-
 import base64
 import copy
+import datetime as dt
 import json
-import requests
+from enum import Enum
+from hashlib import md5
+from pathlib import PurePath
 
+import requests
+from dateutil.tz import tzutc
 from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
+
 
 class SubtaskType(Enum):
     RUPTURE_SET = 10

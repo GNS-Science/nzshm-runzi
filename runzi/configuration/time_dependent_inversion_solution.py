@@ -1,23 +1,32 @@
+import datetime as dt
+import itertools
 import os
 import pwd
-import itertools
 import stat
-import boto3
 from pathlib import PurePath
 
-import datetime as dt
+import boto3
 from dateutil.tz import tzutc
 
-
-from runzi.automation.scaling.toshi_api import SubtaskType, ModelType, ToshiApi
-from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.util.aws import get_ecs_job_config
-from runzi.automation.scaling.file_utils import download_files, get_output_file_ids, get_output_file_id
-
 import runzi.execute.time_dependent_solution_task
-
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, API_KEY, API_URL, CLUSTER_MODE, EnvMode,
-    OPENSHA_ROOT, OPENSHA_JRE, FATJAR, JVM_HEAP_MAX, JVM_HEAP_START, JAVA_THREADS)
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    FATJAR,
+    JAVA_THREADS,
+    JVM_HEAP_MAX,
+    JVM_HEAP_START,
+    OPENSHA_JRE,
+    OPENSHA_ROOT,
+    USE_API,
+    WORK_PATH,
+    EnvMode,
+)
+from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
+from runzi.util.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533 #set this to ensure that concurrent scheduled tasks won't clash
 

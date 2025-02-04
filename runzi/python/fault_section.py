@@ -1,6 +1,7 @@
 import csv
-from shapely.geometry import Point
+
 import numpy as np
+from shapely.geometry import Point
 
 
 class FaultSubSectionFactory():

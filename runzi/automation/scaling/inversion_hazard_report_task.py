@@ -1,17 +1,19 @@
 import argparse
-import json
-import git
-import time
-import urllib
+import copy
 import datetime as dt
 import itertools
-import copy
-from pathlib import PurePath, Path
-from py4j.java_gateway import JavaGateway, GatewayParameters
-from runzi.automation.scaling.toshi_api import ToshiApi
+import json
+import time
+import urllib
+from pathlib import Path, PurePath
+
+import git
+from py4j.java_gateway import GatewayParameters, JavaGateway
 
 # Set up local config, from environment variables, with some some defaults
-from runzi.automation.scaling.local_config import (API_KEY, API_URL, S3_URL, WORK_PATH)
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
+from runzi.automation.scaling.toshi_api import ToshiApi
+
 #from runzi.automation.hazPlot import plotHazardCurve
 
 class BuilderTask():
