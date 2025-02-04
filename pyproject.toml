@@ -86,6 +86,7 @@ exclude = '''
   | buck-out
   | build
   | dist
+  | runzi/CONFIG
 )/
 '''
 
