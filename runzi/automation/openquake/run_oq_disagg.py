@@ -69,7 +69,7 @@ def run_oq_disagg(config: Dict[Any, Any]) -> None:
         location_codes=location_codes,
         config_iterate=openquake_iterate,
         config_scalar=openquake_scalar,
-        sleep_multiplier=config["calculation"].get("sleep_multiplier")
+        sleep_multiplier=config["calculation"].get("sleep_multiplier"),
     )
 
     # we don't create a new GT (if using the API) here because there is a GT created for each disaggregation

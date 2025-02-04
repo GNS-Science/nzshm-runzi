@@ -55,14 +55,21 @@ gt_description = "Archived Tasks"
 logic_tree_permutations = [
     [
         {
-            "tag": "all rate combinations", "weight": 1.0,
-            "permute" : [
-	            {   "group": "HIK",
-                    "members" : [
-                        {"tag": "HTC_b0.957_N16.5_C4.1_s1", "weight": 1.0, "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDc2NA==", "bg_id": "RmlsZToxMDEyMDU=" }
-                     ]
+            "tag": "all rate combinations",
+            "weight": 1.0,
+            "permute": [
+                {
+                    "group": "HIK",
+                    "members": [
+                        {
+                            "tag": "HTC_b0.957_N16.5_C4.1_s1",
+                            "weight": 1.0,
+                            "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDc2NA==",
+                            "bg_id": "RmlsZToxMDEyMDU=",
+                        }
+                    ],
                 }
-            ]
+            ],
         }
     ],
 ]

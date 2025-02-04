@@ -51,9 +51,7 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
                 time_minutes=int(HAZARD_MAX_TIME),
                 memory=EC2_CONFIG["mem"],
                 vcpu=EC2_CONFIG["cpu"],
-                job_definition=EC2_CONFIG[
-                    "job_def"
-                ],
+                job_definition=EC2_CONFIG["job_def"],
                 job_queue=EC2_CONFIG["job_queue"],
                 extra_env=extra_env,
                 use_compression=True,
@@ -99,9 +97,7 @@ def build_hazard_tasks(
 ):
     extra_env = [
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_STAGE", value="PROD"),
-        BatchEnvironmentSetting(
-            name="NZSHM22_HAZARD_STORE_REGION", value="ap-southeast-2"
-        ),
+        BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_REGION", value="ap-southeast-2"),
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_NUM_WORKERS", value="1"),
     ]
 

@@ -1,4 +1,3 @@
-
 import base64
 import json
 import logging
@@ -10,7 +9,8 @@ import requests
 from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 
 log = logging.getLogger(__name__)
-#logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
+
 
 class InversionSolution(object):
 
@@ -23,7 +23,7 @@ class InversionSolution(object):
         file_id, post_url = self._create_inversion_solution(filepath, task_id, mfd_table, meta, predecessors, metrics)
         self.upload_content(post_url, filepath)
 
-        #link file to task in role
+        # link file to task in role
         self.api.task_file.create_task_file(task_id, file_id, 'WRITE')
         return file_id
 
@@ -33,14 +33,13 @@ class InversionSolution(object):
         files = {'file': filedata}
         log.debug(f'upload_content() _s3_url: {self.api._s3_url}')
 
-        response = requests.post(
-            url=self.api._s3_url,
-            data=post_url,
-            files=files)
+        response = requests.post(url=self.api._s3_url, data=post_url, files=files)
         log.debug(f'response {response}')
         response.raise_for_status()
 
-    def _create_inversion_solution(self, filepath, produced_by, mfd_table=None, meta=None, predecessors=None, metrics=None):
+    def _create_inversion_solution(
+        self, filepath, produced_by, mfd_table=None, meta=None, predecessors=None, metrics=None
+    ):
         qry = '''
             mutation ($created: DateTime!, $digest: String!, $file_name: String!, $file_size: BigInt!, $produced_by: ID!, $predecessors: [PredecessorInput]) {
               create_inversion_solution(input: {
@@ -71,28 +70,34 @@ class InversionSolution(object):
         if mfd_table:
             qry = qry.replace("##MFD_TABLE##", f'mfd_table_id: "{mfd_table}"')
 
-        #print(qry)
+        # print(qry)
 
         filedata = open(filepath, 'rb')
         digest = base64.b64encode(md5(filedata.read()).digest()).decode()
         # print('DIGEST:', digest)
 
-        filedata.seek(0) #important!
+        filedata.seek(0)  # important!
         size = len(filedata.read())
         filedata.close()
 
         created = dt.utcnow().isoformat() + 'Z'
-        variables = dict(digest=digest, file_name=filepath.parts[-1], file_size=size,
-          produced_by=produced_by, mfd_table=mfd_table, created=created, predecessors=predecessors)
+        variables = dict(
+            digest=digest,
+            file_name=filepath.parts[-1],
+            file_size=size,
+            produced_by=produced_by,
+            mfd_table=mfd_table,
+            created=created,
+            predecessors=predecessors,
+        )
 
-        #result = self.api.client.execute(qry, variable_values = variables)
-        #print(result)
+        # result = self.api.client.execute(qry, variable_values = variables)
+        # print(result)
         executed = self.api.run_query(qry, variables)
-        #print("executed", executed)
+        # print("executed", executed)
         post_url = json.loads(executed['create_inversion_solution']['inversion_solution']['post_url'])
 
         return (executed['create_inversion_solution']['inversion_solution']['id'], post_url)
-
 
     def append_hazard_table(self, inversion_solution_id, mfd_table_id, label, table_type, dimensions):
         qry = '''
@@ -113,10 +118,11 @@ class InversionSolution(object):
               }
             }
         '''
-        input_args = dict(id=inversion_solution_id, tables=[
-            dict(label=label, table_id=mfd_table_id, table_type=table_type, dimensions=dimensions)])
+        input_args = dict(
+            id=inversion_solution_id,
+            tables=[dict(label=label, table_id=mfd_table_id, table_type=table_type, dimensions=dimensions)],
+        )
         return self.api.run_query(qry, dict(input=input_args))
-
 
     def get_solution(self, solution_id):
 

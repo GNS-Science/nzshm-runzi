@@ -34,6 +34,7 @@ tile_param_csv = """along_strike_index,down_dip_index,lon1(deg),lat1(deg),lon2(d
 2,3,172.50885961053964,-43.39625111045,172.4570818809257,-43.478006540612846,7.576237730260184,25.25189169403127,26.570344616308496
 """
 
+
 @pytest.mark.skip("broken test")
 class TestSubductionZoneFault(unittest.TestCase):
 
@@ -46,8 +47,7 @@ class TestSubductionZoneFault(unittest.TestCase):
         self.assertEqual(len(sf.sub_sections), 0)
 
     def test_load_sub_sections_from_csv(self):
-        sf = SheetFault("9 part Subduction Zone")\
-                .build_surface_from_csv(self.factory, StringIO(tile_param_csv))
+        sf = SheetFault("9 part Subduction Zone").build_surface_from_csv(self.factory, StringIO(tile_param_csv))
         self.assertEqual(len(sf.sub_sections), 24)
         self.assertIsInstance(sf.sub_sections[0], FaultSubSection)
 
@@ -56,9 +56,9 @@ class TestSubductionZoneFault(unittest.TestCase):
 
     def test_load_sub_sections_from_invalid_csv_exception(self):
         with self.assertRaises((ValueError, IndexError)):
-            SheetFault("24 part Subduction Zone")\
-                .build_surface_from_csv(self.factory,
-                                        StringIO('Sorry this is not csv_data'))
+            SheetFault("24 part Subduction Zone").build_surface_from_csv(
+                self.factory, StringIO('Sorry this is not csv_data')
+            )
 
 
 @pytest.mark.skip("broken test")
@@ -72,12 +72,10 @@ class TestFaultSubSection(unittest.TestCase):
 
     def test_create_from_invalid_csvrow_exception(self):
         with self.assertRaises((KeyError,)):
-            FaultSubSection.from_csv_row(self.factory,
-                                         dict(x='Sorry this is not csv_data'))
+            FaultSubSection.from_csv_row(self.factory, dict(x='Sorry this is not csv_data'))
 
     def test_create_from_csv_row(self):
-        fss = FaultSubSection\
-                .from_csv_row(self.factory, self.csvrows[0], parent=None)
+        fss = FaultSubSection.from_csv_row(self.factory, self.csvrows[0], parent=None)
 
         self.assertEqual(0, fss.id)
         self.assertAlmostEqual(-43.6606619468, fss.top_trace[0].x)
@@ -95,8 +93,7 @@ class TestGenerateRectangularRuptures(unittest.TestCase):
 
     def setUp(self):
         self.factory = FaultSubSectionFactory()
-        self.sf = SheetFault("9 part Subduction Zone")\
-            .build_surface_from_csv(self.factory, StringIO(tile_param_csv))
+        self.sf = SheetFault("9 part Subduction Zone").build_surface_from_csv(self.factory, StringIO(tile_param_csv))
 
     # @unittest.skip("WIP")
     def test_rupture_one_by_one(self):
@@ -112,36 +109,35 @@ class TestGenerateRectangularRuptures(unittest.TestCase):
         shape_spec = dict(name="1 by 2", scale=1, aspect=2)
         ruptures = [r for r in self.sf.get_ruptures(shape_spec)]
 
-        self.assertEqual(ruptures[0], [(0, 0), (1, 0)])     # begin col 0
+        self.assertEqual(ruptures[0], [(0, 0), (1, 0)])  # begin col 0
         self.assertEqual(ruptures[1], [(0, 1), (1, 1)])
 
-        self.assertEqual(ruptures[7], [(1, 0), (2, 0)])     # begin col 1
+        self.assertEqual(ruptures[7], [(1, 0), (2, 0)])  # begin col 1
         self.assertEqual(ruptures[8], [(1, 1), (2, 1)])
 
     def test_rupture_two_by_one(self):
         shape_spec = dict(name="1 by 2", scale=2, aspect=0.5)
         ruptures = [r for r in self.sf.get_ruptures(shape_spec)]
 
-        self.assertEqual(ruptures[0], [(0, 0), (0, 1)])     # begin col 0
+        self.assertEqual(ruptures[0], [(0, 0), (0, 1)])  # begin col 0
         self.assertEqual(ruptures[5], [(0, 5), (0, 6)])
 
-        self.assertEqual(ruptures[6], [(1, 0), (1, 1)])     # begin col 1
+        self.assertEqual(ruptures[6], [(1, 0), (1, 1)])  # begin col 1
         self.assertEqual(ruptures[17], [(1, 11), (1, 12)])
 
-        self.assertEqual(ruptures[-1], [(2, 2), (2, 3)])    # last
+        self.assertEqual(ruptures[-1], [(2, 2), (2, 3)])  # last
 
     def test_rupture_two_by_three(self):
         shape_spec = dict(name="2 by 3", scale=2, aspect=1.5)
         ruptures = [r for r in self.sf.get_ruptures(shape_spec)]
 
-        self.assertEqual(ruptures[0], [(0, 0), (0, 1), (1, 0),
-                                       (1, 1), (2, 0), (2, 1)])  # col 0
+        self.assertEqual(ruptures[0], [(0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (2, 1)])  # col 0
 
     def test_rupture_four_by_four(self):
         shape_spec = dict(name="4x4", scale=4, aspect=1, min_fill_factor=0.9)
         ruptures = [r for r in self.sf.get_ruptures(shape_spec)]
 
-        self.assertEqual(ruptures[0], [
-            (0, 0), (0, 1), (0, 2), (0, 3),
-            (1, 0), (1, 1), (1, 2), (1, 3),
-            (2, 0), (2, 1), (2, 2), (2, 3)])
+        self.assertEqual(
+            ruptures[0],
+            [(0, 0), (0, 1), (0, 2), (0, 3), (1, 0), (1, 1), (1, 2), (1, 3), (2, 0), (2, 1), (2, 2), (2, 3)],
+        )

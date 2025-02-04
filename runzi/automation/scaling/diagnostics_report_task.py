@@ -15,19 +15,21 @@ from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
-API_URL  = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
+API_URL = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
 API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
-S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL',"http://localhost:4569")
+S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL', "http://localhost:4569")
 
-class BuilderTask():
+
+class BuilderTask:
     """
     The python client for a Diagpostics Report
     """
+
     def __init__(self, job_args):
 
         self.use_api = job_args.get('use_api', False)
 
-        #setup the java gateway binding
+        # setup the java gateway binding
         self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=job_args['java_gateway_port']))
         self._report_builder = self._gateway.entry_point.getInversionDiagnosticsReportBuilder()
 
@@ -51,11 +53,12 @@ class BuilderTask():
 
         environment = {
             "host": platform.node(),
-            "gitref_opensha":self._repoheads['opensha'],
-            "gitref_nshm-nz-opensha":self._repoheads['nshm-nz-opensha'] }
+            "gitref_opensha": self._repoheads['opensha'],
+            "gitref_nshm-nz-opensha": self._repoheads['nshm-nz-opensha'],
+        }
 
         if self.use_api:
-            #create new task in toshi_api
+            # create new task in toshi_api
             # task_id = self._ruptgen_api.create_task(
             #     dict(created=dt.datetime.now(tzutc()).isoformat()),
             #     arguments=task_arguments,
@@ -76,8 +79,8 @@ class BuilderTask():
         # Run the task....
         ta, ja = task_arguments, job_arguments
 
-        #skippping other faults models for now
-        fault_model_name = ta["short_name"].split("-")[0] # "CFM_0_9_SANSTVZ_D90-0.0" remove thinning value
+        # skippping other faults models for now
+        fault_model_name = ta["short_name"].split("-")[0]  # "CFM_0_9_SANSTVZ_D90-0.0" remove thinning value
         if not (fault_model_name == "CFM_0_9_SANSTVZ_D90"):
             return
 
@@ -86,7 +89,7 @@ class BuilderTask():
 
         meta_folder = Path(self._output_folder, ta['rupture_set_file_id'])
         meta_folder.mkdir(parents=True, exist_ok=True)
-        #dump the job metadata
+        # dump the job metadata
         with open(Path(meta_folder, "metadata.json"), "w") as write_file:
             json.dump(dict(job_arguments=ja, task_arguments=ta), write_file, indent=4)
 
@@ -115,30 +118,27 @@ class BuilderTask():
         named_mfds_folder.mkdir(parents=True, exist_ok=True)
 
         plot_builder = self._gateway.entry_point.getMFDPlotBuilder()
-        plot_builder \
-            .setOutputDir(str(named_mfds_folder))\
-            .setFaultModel(fault_model_name)\
-            .setSolution(ta['solution_file'])\
-            .plot()
-
+        plot_builder.setOutputDir(str(named_mfds_folder)).setFaultModel(fault_model_name).setSolution(
+            ta['solution_file']
+        ).plot()
 
         t1 = dt.datetime.utcnow()
-        print("Report took %s secs" % (t1-t0).total_seconds())
+        print("Report took %s secs" % (t1 - t0).total_seconds())
 
-        #capture task metrics
+        # capture task metrics
         duration = (dt.datetime.utcnow() - t0).total_seconds()
 
         if self.use_api:
-            #record the completed task
+            # record the completed task
             # done_args = {
             #  'task_id':task_id,
             #  'duration':duration,
             #  'result':"SUCCESS",
             #  'state':"DONE",
             # }
-            #self._ruptgen_api.complete_task(done_args, metrics)
+            # self._ruptgen_api.complete_task(done_args, metrics)
 
-            #upload the task output
+            # upload the task output
             # self._ruptgen_api.upload_task_file(task_id, output_file, 'WRITE', meta=task_arguments)
 
             # #and the log files, why not
@@ -161,6 +161,7 @@ def get_repo_heads(rootdir, repos):
         result[reponame] = headcommit.hexsha
     return result
 
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -168,7 +169,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config_file = args.config
-    f= open(config_file, 'r', encoding='utf-8')
+    f = open(config_file, 'r', encoding='utf-8')
     config = json.load(f)
 
     # maybe the JVM App is a little slow to get listening

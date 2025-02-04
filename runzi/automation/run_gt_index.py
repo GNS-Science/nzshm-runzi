@@ -5,6 +5,7 @@ uploaded to S3.
 Structure of index is: List[Dict[str,Any]]
 
 """
+
 import argparse
 import itertools
 import json
@@ -26,9 +27,8 @@ from runzi.util.aws.s3_folder_upload import mimetype
 INDEX_URL = "https://nzshm22-static-reports.s3.ap-southeast-2.amazonaws.com/gt-index/gt-index.json"
 
 headers = {"x-api-key": API_KEY}
-toshi_api = ToshiApi(
-    API_URL, S3_URL, None, with_schema_validation=True, headers=headers
-)
+toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+
 
 @dataclass
 class DeaggConfig:
@@ -44,7 +44,7 @@ class DeaggConfig:
 
     def __repr__(self) -> str:
         repr = ''
-        for k,v in self.__dict__.items():
+        for k, v in self.__dict__.items():
             repr += f"{k}={v}\n"
         repr = repr[:-1]
         return repr
@@ -62,7 +62,7 @@ def requested_configs(
     vs30s: List[int],
     deagg_hazard_model_target: str,
     inv_time: int,
-    iter_method: str = ''
+    iter_method: str = '',
 ) -> Generator[DeaggConfig, None, None]:
 
     if not iter_method or iter_method.lower() == 'product':
@@ -107,7 +107,7 @@ def get_deagg_gtids(
     inv_time: int,
     iter_method: str = '',
 ) -> List[str]:
-    
+
     def extract_deagg_config(subtask):
         deagg_task_config = json.loads(subtask['arguments']['disagg_config'].replace("'", '"').replace('None', 'null'))
 
@@ -127,7 +127,14 @@ def get_deagg_gtids(
         gtids = []
         index = get_index_from_s3()
         for deagg in requested_configs(
-            locations, deagg_agg_targets, poes, imts, vs30s, deagg_hazard_model_target, inv_time, iter_method,
+            locations,
+            deagg_agg_targets,
+            poes,
+            imts,
+            vs30s,
+            deagg_hazard_model_target,
+            inv_time,
+            iter_method,
         ):
             gtids_tmp = []
             for gt, entry in index.items():
@@ -146,7 +153,7 @@ def get_deagg_gtids(
 def parse_args():
     parser = argparse.ArgumentParser(description="add general task and subtasks to index")
     parser.add_argument("--force", action="store_true")
-    group = parser.add_mutually_exclusive_group(required=True) 
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--add-ids", nargs="+", help="list of GeneralTask IDs to add to index")
     group.add_argument("--remove", nargs="+", help="remove GT IDs rather than adding to the index")
     group.add_argument("--read", action="store_true", help="read stored index")
@@ -155,11 +162,14 @@ def parse_args():
     group.add_argument("--list-ids", action="store_true", help="list the ids in the index")
     group.add_argument("--list-disaggs", action="store_true", help="list the disaggregations stored in the index")
     group.add_argument(
-        "--find-disaggs", type=str,
+        "--find-disaggs",
+        type=str,
         help="""find a specific disaggregations matching
-        hazard_model_id= NSHM_v1.0.4, location=-39.500~176.900, inv_time=50, agg=mean, poe=0.02, imt=PGA, vs30=200"""
+        hazard_model_id= NSHM_v1.0.4, location=-39.500~176.900, inv_time=50, agg=mean, poe=0.02, imt=PGA, vs30=200""",
     )
-    group.add_argument("--find-bad", type=int, help="list the disaggregations with failed subtaks, specify number expected")
+    group.add_argument(
+        "--find-bad", type=int, help="list the disaggregations with failed subtaks, specify number expected"
+    )
     args = parser.parse_args()
 
     return args
@@ -177,6 +187,7 @@ def parse_task_args(args):
     if args:
         return {arg['k']: arg['v'] for arg in args}
     return {}
+
 
 def parse_oqhazard_task(id):
     qry = """
@@ -196,7 +207,7 @@ def parse_oqhazard_task(id):
                     }
             }
         }"""
-    
+
     input_variables = dict(id=id)
     subtask = toshi_api.run_query(qry, input_variables)['node']
     subtask["subtask_type"] = "OpenquakeHazardTask"
@@ -205,7 +216,7 @@ def parse_oqhazard_task(id):
 
 
 def get_subtask_info(subtask):
-    
+
     subtask_type = subtask.pop("__typename")
     if subtask_type != "OpenquakeHazardTask":
         subtask["subtask_type"] = subtask_type
@@ -217,7 +228,7 @@ def get_subtask_info(subtask):
 def get_tasks(gt_id):
     # query toshiapi on requested GT IDs for GT data and subtasks
     # query subtasks for data depending on subtask type
-    
+
     task = toshi_api.get_general_task_subtasks(gt_id)
     typename = task.pop("__typename")
     if typename != "GeneralTask":
@@ -228,23 +239,27 @@ def get_tasks(gt_id):
         task['subtasks'].append(get_subtask_info(child['node']['child']))
     task['subtask_type'] = task['subtasks'][0]['subtask_type']
     if haz_task_type := task['subtasks'][0]['task_type']:
-        task['hazard_subtask_type'] = 'DISAGG'  # workaround because the disagg task is setting the incorrect subtask_type (temporary)
+        task['hazard_subtask_type'] = (
+            'DISAGG'  # workaround because the disagg task is setting the incorrect subtask_type (temporary)
+        )
         # task['hazard_subtask_type'] = haz_task_type
-    
+
     entry = dict(
-        subtask_type = task['subtask_type'],
-        hazard_subtask_type = task['hazard_subtask_type'],
-        arguments = task['subtasks'][0]['arguments'],
-        num_success = get_num_success_old(task)
+        subtask_type=task['subtask_type'],
+        hazard_subtask_type=task['hazard_subtask_type'],
+        arguments=task['subtasks'][0]['arguments'],
+        num_success=get_num_success_old(task),
     )
     entry['arguments'].update(convert_args_to_old(entry))
 
     return entry
 
+
 def write_index(index, index_filepath):
     index_comp = compress_string(json.dumps(index))
     with open(index_filepath, 'w') as index_file:
         index_file.write(index_comp)
+
 
 def save_index(index):
     # save index as serialized json file
@@ -261,18 +276,19 @@ def save_index(index):
         session = boto3.session.Session()
         client = session.client('s3')
         try:
-            client.upload_file(index_filepath, S3_REPORT_BUCKET, "gt-index/gt-index.json",
-                ExtraArgs={
-                    'ACL':'public-read',
-                    'ContentType': mimetype(index_filepath)
-                    })
+            client.upload_file(
+                index_filepath,
+                S3_REPORT_BUCKET,
+                "gt-index/gt-index.json",
+                ExtraArgs={'ACL': 'public-read', 'ContentType': mimetype(index_filepath)},
+            )
             print("Uploading %s..." % S3_REPORT_BUCKET)
         except Exception as e:
             raise e
 
 
 def remove_gts(index, ids):
-    
+
     if len(ids) == 1 and Path(ids[0]).exists():
         ids = read_ids_from_file(ids[0])
 
@@ -286,6 +302,7 @@ def read_ids_from_file(ids_filepath):
     with open(ids_filepath, 'r') as ids_file:
         return list(map(str.strip, ids_file.readlines()))
 
+
 def append_gts(index, ids, force=False):
 
     if len(ids) == 1 and Path(ids[0]).exists():
@@ -298,12 +315,14 @@ def append_gts(index, ids, force=False):
 
     return index
 
+
 # def convert_index(index):
-    
-    # new_index = {}
-    # for entry in index:
-    #     new_index[entry['id']]  = entry
-    # return new_index
+
+# new_index = {}
+# for entry in index:
+#     new_index[entry['id']]  = entry
+# return new_index
+
 
 def clean_json_str(string):
     return string.replace("'", '"').replace('None', 'null')
@@ -317,7 +336,7 @@ def convert_args_to_old(entry):
     vs30 = int(entry['arguments']['vs30'])
     hazard_model_id = entry['arguments']['description'][15:]
     hazard_agg_target = entry['arguments']['agg']
-    
+
     deagg_task_config = dict(
         location=location,
         inv_time=inv_time,
@@ -348,6 +367,7 @@ def extract_deagg_config(entry):
         vs30=deagg_task_config['vs30'],
     )
 
+
 def get_num_success_old(gt):
     count = 0
     for subtask in gt['subtasks']:
@@ -355,8 +375,10 @@ def get_num_success_old(gt):
             count += 1
     return count
 
+
 def get_num_success(gt):
     return gt['num_success']
+
 
 def list_disaggs(index):
 
@@ -370,6 +392,7 @@ def list_disaggs(index):
             print('-' * 50)
             print('')
 
+
 def find_disaggs(index, search_str):
     """
     hazard_model_id= NSHM_v1.0.4, location=-39.500~176.900, inv_time=50, agg=mean, poe=0.02, imt=PGA, vs30=200
@@ -377,12 +400,14 @@ def find_disaggs(index, search_str):
     search_str = "".join(search_str.split())
     kv = lambda x: x.split("=")
     search_terms = {kv(item)[0]: kv(item)[1] for item in search_str.split(",")}
-    for gt_id , entry in index.items():
+    for gt_id, entry in index.items():
         match = True
         disagg_config = extract_deagg_config(entry)
         for search_key, search_value in search_terms.items():
             if search_key == "location" and ("~" not in search_value):
-                sv = CodedLocation(location_by_id(search_value)['latitude'], location_by_id(search_value)['longitude'], 0.001).code
+                sv = CodedLocation(
+                    location_by_id(search_value)['latitude'], location_by_id(search_value)['longitude'], 0.001
+                ).code
             else:
                 sv = search_value
             if str(getattr(disagg_config, search_key)) != sv:
@@ -406,29 +431,28 @@ def list_bad_disaggs(index, n_expected):
             print('-' * 50)
             print('')
 
+
 def convert_index(index):
-    index_new = {k: dict(
-            subtask_type = v['subtask_type'],
-            hazard_subtask_type = v['hazard_subtask_type']
-        )
-    for k,v in index.items()
+    index_new = {
+        k: dict(subtask_type=v['subtask_type'], hazard_subtask_type=v['hazard_subtask_type']) for k, v in index.items()
     }
 
     for k in index.keys():
         index_new[k]['arguments'] = index[k]['subtasks'][0]['arguments']
         index_new[k]['num_success'] = get_num_success_old(index[k])
-    
+
     return index_new
+
 
 def run(args):
     # index_filepath = Path(WORK_PATH, "gt-index", "gt-index.json")
     # if not index_filepath.parent.exists():
     #     index_filepath.parent.mkdir()
-    
+
     index = get_index_from_s3()
-    save = False 
+    save = False
     if args.list_ids:
-        print(*index.keys(),sep='\n')
+        print(*index.keys(), sep='\n')
     elif args.find_disaggs:
         find_disaggs(index, args.find_disaggs)
     elif args.find_bad:
@@ -442,8 +466,8 @@ def run(args):
             index = {}
     elif args.read:
         index_tmp = {}
-        for i,(k,v) in enumerate(index.items()):
-            if i>2:
+        for i, (k, v) in enumerate(index.items()):
+            if i > 2:
                 break
             index_tmp[k] = v
 
@@ -452,7 +476,9 @@ def run(args):
         # print(index)
     elif args.remove:
         save = True
-        proceed = input(f"WARNING: THIS WILL CLEAR ALL ENTRIES {args.remove} IN THE INDEX, DO YOU WANT TO PROCEED? [y/N]")
+        proceed = input(
+            f"WARNING: THIS WILL CLEAR ALL ENTRIES {args.remove} IN THE INDEX, DO YOU WANT TO PROCEED? [y/N]"
+        )
         if proceed.lower() == "y":
             index = remove_gts(index, args.remove)
     elif args.convert:
@@ -464,7 +490,7 @@ def run(args):
         save = True
         index = append_gts(index, args.add_ids, args.force)
 
-    if save: 
+    if save:
         save_index(index)
 
 

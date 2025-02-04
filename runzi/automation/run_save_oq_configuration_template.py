@@ -27,8 +27,10 @@ from runzi.automation.scaling.toshi_api import ToshiApi
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+
 def is_valid(source_path, config_filename):
     return Path(source_path).exists() and Path(source_path, config_filename).exists()
+
 
 def archive(source_path, working_path, archive_name='config.zip'):
     '''
@@ -41,9 +43,10 @@ def archive(source_path, working_path, archive_name='config.zip'):
         for file in files:
             filename = str(PurePath(root, file))
             arcname = str(filename).replace(source_path, '')
-            zip.write(filename, arcname )
+            zip.write(filename, arcname)
 
     return output_zip
+
 
 def create_configuration_archive(source_path, config_filename, working_path):
     """
@@ -55,19 +58,22 @@ def create_configuration_archive(source_path, config_filename, working_path):
     else:
         raise Exception("source_path and/or config file do not exist.")
 
+
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="""produce a zip archive of openquake configuration inputs
-and save this as a ToshiAPI File object""")
+    parser = argparse.ArgumentParser(
+        description="""produce a zip archive of openquake configuration inputs
+and save this as a ToshiAPI File object"""
+    )
     parser.add_argument("config_folder", help="the path containing the configuration files")
-    parser.add_argument("config_filename", help = "the main configuration filename, within the {config_folder} path")
-    parser.add_argument("-t", "--tag", help = "add tag to metadata")
+    parser.add_argument("config_filename", help="the main configuration filename, within the {config_folder} path")
+    parser.add_argument("-t", "--tag", help="add tag to metadata")
     args = parser.parse_args()
 
     archive_path = create_configuration_archive(args.config_folder, args.config_filename, WORK_PATH)
 
     if archive_path and USE_API:
-        headers={"x-api-key":API_KEY}
+        headers = {"x-api-key": API_KEY}
         toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
         meta = dict(config_filename=args.config_filename, tag=args.tag)

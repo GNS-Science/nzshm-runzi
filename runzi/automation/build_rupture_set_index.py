@@ -1,4 +1,4 @@
-#build_rupture_set_index
+# build_rupture_set_index
 
 """
 Simple script to creawte valid URLs to the rupture sets built
@@ -22,10 +22,9 @@ from nshm_toshi_client.toshi_client_base import ToshiClientBase
 
 class ToshiFile(ToshiClientBase):
 
-    def __init__(self, url, s3_url, auth_token, with_schema_validation=True, headers=None ):
+    def __init__(self, url, s3_url, auth_token, with_schema_validation=True, headers=None):
         super(ToshiFile, self).__init__(url, auth_token, with_schema_validation, headers)
         self._s3_url = s3_url
-
 
     def get_file_meta_as_dict(self, id):
         qry = '''
@@ -48,15 +47,16 @@ class ToshiFile(ToshiClientBase):
         return retval
 
 
-
-API_URL  = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
+API_URL = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
 API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
-S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL',"http://localhost:4569")
+S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL', "http://localhost:4569")
 
 
-class IndexBuilder():
+class IndexBuilder:
 
-    _patterns = ['index.html',]# '*.zip']
+    _patterns = [
+        'index.html',
+    ]  # '*.zip']
 
     # iso_date = "2021-05-26"
     set_number = '01'
@@ -65,24 +65,20 @@ class IndexBuilder():
     round_number = 1
     index_file = None
 
-    def __init__(self, path, date_path ):
+    def __init__(self, path, date_path):
         self._dir_name = path
         self._date_path = date_path
 
-
     def old_get_template(self, index_file, short_name, round_number, max_inv_time, thin_factor):
-        return  f'''
+        return f'''
     <li><a href="{self._date_path}-{self.set_number}/{index_file}">
             Solution ({short_name}) {self._rupture_class}, thin({thin_factor}), {max_inv_time} mins, Round {round_number}</a>
     </li>'''
 
-
     def get_template(self, index_file):
-        return  f'''<li><a href="{self._date_path}-{self.set_number}{index_file}">{str(index_file)[1:].replace('-', ' ').replace('/index.html', '')}</a></li>'''
-
+        return f'''<li><a href="{self._date_path}-{self.set_number}{index_file}">{str(index_file)[1:].replace('-', ' ').replace('/index.html', '')}</a></li>'''
 
     def build_line(self, root, filename):
-
 
         # short_name = file_meta['fault_model']
         # round_number = file_meta['round_number']
@@ -93,8 +89,6 @@ class IndexBuilder():
         index_file = PurePath(root.replace(self._dir_name, ''), filename)
 
         return self.get_template(index_file)
-
-
 
     def build(self):
         file_meta = dict()
@@ -127,7 +121,7 @@ class IndexBuilder():
 
                     #     file_meta[metakey] = metadata
 
-                    lines. append(self.build_line(root, filename))
+                    lines.append(self.build_line(root, filename))
         return lines
         # #sort
         # od = collections.OrderedDict(sorted(file_meta.items()))
@@ -136,24 +130,25 @@ class IndexBuilder():
         #     self.build_line(key, value)
 
 
+class DownloadBuilder:
 
-class DownloadBuilder():
-
-    _patterns = ['*.zip',]
+    _patterns = [
+        '*.zip',
+    ]
     set_number = '01'
 
-    def __init__(self, path, date_path ):
+    def __init__(self, path, date_path):
         self._dir_name = path
         self._date_path = date_path
 
     def get_template(self, solution_file):
-        return  f'''<li><a href="{self._date_path}-{self.set_number}/{solution_file}">Download {solution_file}</a></li>'''
-
+        return (
+            f'''<li><a href="{self._date_path}-{self.set_number}/{solution_file}">Download {solution_file}</a></li>'''
+        )
 
     def build_line(self, root, filename):
         index_file = PurePath(root.replace(self._dir_name, ''), filename)
         return self.get_template(index_file)
-
 
     def build(self):
         lines = []
@@ -161,18 +156,21 @@ class DownloadBuilder():
             for pattern in self._patterns:
                 for filename in fnmatch.filter(files, pattern):
 
-                    lines. append(self.build_line(root, filename))
+                    lines.append(self.build_line(root, filename))
         return lines
 
 
-class ReportMetaBuilder():
+class ReportMetaBuilder:
     """
     find the metadata.json and make this available for the HTML
     """
-    _patterns = ['metadata.json',]# '*.zip']
+
+    _patterns = [
+        'metadata.json',
+    ]  # '*.zip']
     set_number = '01'
 
-    def __init__(self, path, date_path ):
+    def __init__(self, path, date_path):
         self._dir_name = path
         self._date_path = date_path
 
@@ -186,39 +184,44 @@ class ReportMetaBuilder():
                 for filename in fnmatch.filter(files, pattern):
                     folder_path = PurePath(root)
                     if len(folder_path.parts) - len(PurePath(self._dir_name).parts) == 1:
-                        #print(root, filename)
+                        # print(root, filename)
                         key = PurePath(root).parts[-1]
-                        #print(key)
+                        # print(key)
                         value = json.load(open(PurePath(folder_path, filename), 'r'))
-                        #print(value['task_arguments'])
+                        # print(value['task_arguments'])
                         '''
                         e.g {'rupture_set_file_id': 'RmlsZTo0ODMuMFN3cTRN', 'generation_task_id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4M0FoblN5',
                         'solution_file': '/home/chrisbc/DEV/GNS/opensha-new/nshm-nz-opensha/src/python/automation/tmp/UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4M0FoblN5/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo0ODMuMFN3cTRN.zip',
                         'short_name': 'CFM_0_9_SANSTVZ_D90-0.1', 'rupture_class': 'Azimuth', 'max_inversion_time': '1380', 'completion_energy': '0.05', 'round_number': '0'}
                         '''
 
-                        solution_name = PurePath( value['task_arguments']['solution_file']).name
-                        #print(solution_name)
-                        solution_filepath = Path(folder_path, '..', value['task_arguments']['generation_task_id'], solution_name).resolve()
-                        #print(solution_filepath)
-                        #rel_path = os.path.relpath(solution_filepath, start = PurePath(self._dir_name))
+                        solution_name = PurePath(value['task_arguments']['solution_file']).name
+                        # print(solution_name)
+                        solution_filepath = Path(
+                            folder_path, '..', value['task_arguments']['generation_task_id'], solution_name
+                        ).resolve()
+                        # print(solution_filepath)
+                        # rel_path = os.path.relpath(solution_filepath, start = PurePath(self._dir_name))
                         info = dict(
-                            key = key,
-                            meta = value['task_arguments'],
-                            solution_relative_path = os.path.relpath(solution_filepath, start = PurePath(self._dir_name)),
-                            index_path = os.path.relpath(PurePath(folder_path, "DiagnosticsReport", "index.html"), start = PurePath(self._dir_name)),
-                            )
+                            key=key,
+                            meta=value['task_arguments'],
+                            solution_relative_path=os.path.relpath(solution_filepath, start=PurePath(self._dir_name)),
+                            index_path=os.path.relpath(
+                                PurePath(folder_path, "DiagnosticsReport", "index.html"), start=PurePath(self._dir_name)
+                            ),
+                        )
 
-                        #TODO: ugly workaround, FIXME
+                        # TODO: ugly workaround, FIXME
                         rupture_class = "Azimuth"
-                        azim_len = len("UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4NXN4Zjhp/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo1MDcuMDdaMkFp.zip")
+                        azim_len = len(
+                            "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4NXN4Zjhp/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo1MDcuMDdaMkFp.zip"
+                        )
                         if len(info['solution_relative_path']) > azim_len:
                             rupture_class = "Coulomb"
                         info['meta']['rupture_class'] = rupture_class
 
                         lines.append(info)
         return lines
-
 
     def get_template(self, info, mfd_dirs):
         """
@@ -230,24 +233,24 @@ class ReportMetaBuilder():
 
         """
         m = info['meta']
-        report_info  = f"{m['short_name']} {m['rupture_class']} energy({m['completion_energy']}) round({m['round_number']})"
+        report_info = (
+            f"{m['short_name']} {m['rupture_class']} energy({m['completion_energy']}) round({m['round_number']})"
+        )
 
         if m['rupture_set_file_id'] in mfd_dirs:
             extra_link = f'&nbsp;<a href="{self._date_path}-{self.set_number}/{m["rupture_set_file_id"]}/named_fault_mfds/mfd_index.html" >Named MFDS</a>'
         else:
             extra_link = ''
 
-        return  f'''<li>{report_info}&nbsp;
+        return f'''<li>{report_info}&nbsp;
     <a href="{self._date_path}-{self.set_number}/{info['index_path']}" >Diagnostics report</a>&nbsp;
     <a href="{self._date_path}-{self.set_number}/{info['solution_relative_path']}" >Download solution file</a>
     {extra_link}</li>'''
 
 
-
-
 if __name__ == "__main__":
 
-    #rupture_class = "Azimuth" #"Coulomb"
+    # rupture_class = "Azimuth" #"Coulomb"
 
     # report_builder = IndexBuilder(
     #     # path = '/home/chrisbc/DEV/GNS/opensha-new/DATA/2021-05-26-01',
@@ -265,27 +268,25 @@ if __name__ == "__main__":
     # for line in sorted(downloads.build()):
     #     print(line)
 
-
     mfd_dirs = [
-    "RmlsZTo1MjIuMDN2ZktR",
-    "RmlsZTo1MTAuMDlDVUsy",
-    "RmlsZTo0OTguMEtiUnJE",
-    "RmlsZTo0ODYuMDI4N2dr",
-    "RmlsZTo0NzQuMG1CdVhq",
-    "RmlsZTo0NjguMEczcFVT",
-    "RmlsZTo1MTkuMG9XR0dF",
-    "RmlsZTo1MDcuMDdaMkFp",
-    "RmlsZTo0OTUuMFVLcm5B",
-    "RmlsZTo0ODMuMFN3cTRN",
-    "RmlsZTo0NzEuMFpqckZx",
-    "RmlsZTo0NTkuMDlnaEda"]
+        "RmlsZTo1MjIuMDN2ZktR",
+        "RmlsZTo1MTAuMDlDVUsy",
+        "RmlsZTo0OTguMEtiUnJE",
+        "RmlsZTo0ODYuMDI4N2dr",
+        "RmlsZTo0NzQuMG1CdVhq",
+        "RmlsZTo0NjguMEczcFVT",
+        "RmlsZTo1MTkuMG9XR0dF",
+        "RmlsZTo1MDcuMDdaMkFp",
+        "RmlsZTo0OTUuMFVLcm5B",
+        "RmlsZTo0ODMuMFN3cTRN",
+        "RmlsZTo0NzEuMFpqckZx",
+        "RmlsZTo0NTkuMDlnaEda",
+    ]
 
-
-
-    #ReportMetaBuilder
+    # ReportMetaBuilder
     meta_builder = ReportMetaBuilder(
-        path = '/home/chrisbc/DEV/GNS/opensha-new/DATA/2021-06-01-01',
-        date_path = "2021-06-01")
+        path='/home/chrisbc/DEV/GNS/opensha-new/DATA/2021-06-01-01', date_path="2021-06-01"
+    )
 
     def sort_fn(info):
         key = info['meta']['short_name']
@@ -293,11 +294,9 @@ if __name__ == "__main__":
         key += info['meta']['completion_energy']
         return key
 
-
     for line in sorted(meta_builder.build(), key=sort_fn):
-        line['meta'].pop('solution_file') #to verbose
+        line['meta'].pop('solution_file')  # to verbose
         print(meta_builder.get_template(line, mfd_dirs))
-
 
     # for line in sorted(report_builder.build()):
     #     print(line)

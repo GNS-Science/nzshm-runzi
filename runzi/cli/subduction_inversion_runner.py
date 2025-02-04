@@ -46,37 +46,36 @@ def run_subduction_inversion(config):
 
     global WORK_PATH, API_KEY
     if CLUSTER_MODE == EnvMode['AWS']:
-        WORK_PATH='/WORKING'
+        WORK_PATH = '/WORKING'
 
-    headers={"x-api-key":API_KEY}
+    headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-    
+
     args = config.get_run_args()
     args_list = []
     for key, value in args.items():
         args_list.append(dict(k=key, v=value))
 
-    file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
+    file_generator = get_output_file_id(toshi_api, file_id)  # for file by file ID
     rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
-    
-    if USE_API:
-    #create new task in toshi_api
-        gt_args = CreateGeneralTaskArgs(
-            agent_name=pwd.getpwuid(os.getuid()).pw_name,
-            title=TASK_TITLE,
-            description=TASK_DESCRIPTION
-            )\
-            .set_argument_list(args_list)\
-            .set_subtask_type(SUBTASK_TYPE)\
-            .set_model_type(MODEL_TYPE)
 
-        GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)    
+    if USE_API:
+        # create new task in toshi_api
+        gt_args = (
+            CreateGeneralTaskArgs(
+                agent_name=pwd.getpwuid(os.getuid()).pw_name, title=TASK_TITLE, description=TASK_DESCRIPTION
+            )
+            .set_argument_list(args_list)
+            .set_subtask_type(SUBTASK_TYPE)
+            .set_model_type(MODEL_TYPE)
+        )
+
+        GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
 
     if CLUSTER_MODE == EnvMode['AWS']:
         batch_client = boto3.client(
-            service_name='batch',
-            region_name='us-east-1',
-            endpoint_url='https://batch.us-east-1.amazonaws.com')
+            service_name='batch', region_name='us-east-1', endpoint_url='https://batch.us-east-1.amazonaws.com'
+        )
 
     print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
 
@@ -85,6 +84,7 @@ def run_subduction_inversion(config):
         scripts.append(script_file)
 
     if CLUSTER_MODE == EnvMode['LOCAL']:
+
         def call_script(script_or_config):
             print("call_script with:", script_or_config)
             check_call(['bash', script_or_config])
@@ -98,7 +98,7 @@ def run_subduction_inversion(config):
 
     elif CLUSTER_MODE == EnvMode['AWS']:
         for script_or_config in scripts:
-            #print('AWS_TIME!: ', script_or_config)
+            # print('AWS_TIME!: ', script_or_config)
             res = batch_client.submit_job(**script_or_config)
             print(res)
 

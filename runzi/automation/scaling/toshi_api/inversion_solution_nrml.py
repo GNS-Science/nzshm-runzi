@@ -1,4 +1,3 @@
-
 import base64
 import copy
 import datetime as dt
@@ -14,20 +13,23 @@ from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 
 log = logging.getLogger(__name__)
 
+
 class InversionSolutionNrml(object):
 
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)
 
-    def upload_inversion_solution_nrml(self, task_id, source_solution_id, filepath,
-        predecessors=None,
-        meta=None,  metrics=None):
+    def upload_inversion_solution_nrml(
+        self, task_id, source_solution_id, filepath, predecessors=None, meta=None, metrics=None
+    ):
         filepath = PurePath(filepath)
-        file_id, post_url = self._create_inversion_solution_nrml(filepath, task_id, source_solution_id, predecessors, meta, metrics)
+        file_id, post_url = self._create_inversion_solution_nrml(
+            filepath, task_id, source_solution_id, predecessors, meta, metrics
+        )
         self.upload_content(post_url, filepath)
 
-        #link file to task in role
+        # link file to task in role
         self.api.task_file.create_task_file(task_id, file_id, 'WRITE')
         return file_id
 
@@ -37,14 +39,13 @@ class InversionSolutionNrml(object):
         files = {'file': filedata}
         log.debug(f'upload_content() _s3_url: {self.api._s3_url}')
 
-        response = requests.post(
-            url=self.api._s3_url,
-            data=post_url,
-            files=files)
+        response = requests.post(url=self.api._s3_url, data=post_url, files=files)
         log.debug(f'response {response}')
         response.raise_for_status()
 
-    def _create_inversion_solution_nrml(self, filepath, produced_by, source_solution, predecessors=None, meta=None, metrics=None):
+    def _create_inversion_solution_nrml(
+        self, filepath, produced_by, source_solution, predecessors=None, meta=None, metrics=None
+    ):
         """test helper"""
         query = '''
             mutation ($source_solution: ID!, $digest: String!, $file_name: String!, $file_size: BigInt!, $created: DateTime!, $predecessors: [PredecessorInput]) {
@@ -74,16 +75,22 @@ class InversionSolutionNrml(object):
         if meta:
             query = query.replace("##META##", kvl_to_graphql('meta', meta))
 
-        
         filedata = open(filepath, 'rb')
         digest = base64.b64encode(md5(filedata.read()).digest()).decode()
-        filedata.seek(0) #important!
+        filedata.seek(0)  # important!
         size = len(filedata.read())
         filedata.close()
 
         created = dt.datetime.now(tzutc()).isoformat()
-        variables = dict(digest=digest, file_name=filepath.parts[-1], file_size=size,
-          produced_by=produced_by, source_solution=source_solution, created=created, predecessors=predecessors)
+        variables = dict(
+            digest=digest,
+            file_name=filepath.parts[-1],
+            file_size=size,
+            produced_by=produced_by,
+            source_solution=source_solution,
+            created=created,
+            predecessors=predecessors,
+        )
 
         executed = self.api.run_query(query, variables)
         # print("executed", executed)

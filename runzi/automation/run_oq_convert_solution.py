@@ -46,8 +46,7 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-def run(scaled_solution_ids, 
-        TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL_SIZE):
+def run(scaled_solution_ids, TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL_SIZE):
 
     t0 = dt.datetime.utcnow()
 
@@ -65,7 +64,7 @@ def run(scaled_solution_ids,
 
     new_gt_id = None
 
-    headers={"x-api-key":API_KEY}
+    headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     # if a GT id has been provided, unpack to get individual solution ids
@@ -76,12 +75,12 @@ def run(scaled_solution_ids,
         else:
             source_solution_ids_list += [source_solution_id]
 
-    model_type = get_model_type(source_solution_ids_list,toshi_api)
+    model_type = get_model_type(source_solution_ids_list, toshi_api)
 
     args = dict(
-        rupture_sampling_distance_km = 0.5, # Unit of measure for the rupture sampling: km 
-        investigation_time_years = 1.0, # Unit of measure for the `investigation_time`: years 
-        input_ids = source_solution_ids_list
+        rupture_sampling_distance_km=0.5,  # Unit of measure for the rupture sampling: km
+        investigation_time_years=1.0,  # Unit of measure for the `investigation_time`: years
+        input_ids=source_solution_ids_list,
     )
 
     args_list = []
@@ -90,30 +89,29 @@ def run(scaled_solution_ids,
 
     task_type = SubtaskType.SOLUTION_TO_NRML
 
-
     if USE_API:
-        #create new task in toshi_api
-        gt_args = CreateGeneralTaskArgs(
-            agent_name=pwd.getpwuid(os.getuid()).pw_name,
-            title=TASK_TITLE,
-            description=TASK_DESCRIPTION
-            )\
-            .set_argument_list(args_list)\
-            .set_subtask_type(task_type)\
+        # create new task in toshi_api
+        gt_args = (
+            CreateGeneralTaskArgs(
+                agent_name=pwd.getpwuid(os.getuid()).pw_name, title=TASK_TITLE, description=TASK_DESCRIPTION
+            )
+            .set_argument_list(args_list)
+            .set_subtask_type(task_type)
             .set_model_type(model_type)
+        )
 
         new_gt_id = toshi_api.general_task.create_task(gt_args)
 
     print("GENERAL_TASK_ID:", new_gt_id)
 
-    tasks = build_tasks(new_gt_id, args, task_type, model_type,toshi_api)
+    tasks = build_tasks(new_gt_id, args, task_type, model_type, toshi_api)
 
     if USE_API:
         toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
 
-    print('worker count: ', WORKER_POOL_SIZE) 
+    print('worker count: ', WORKER_POOL_SIZE)
 
-    schedule_tasks(tasks,WORKER_POOL_SIZE)
+    schedule_tasks(tasks, WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
@@ -123,13 +121,10 @@ def run(scaled_solution_ids,
 
 if __name__ == "__main__":
 
-    
     TASK_DESCRIPTION = """Crustal NRMLs"""
     TASK_TITLE = " geodetic. Time Dependent. From R2VuZXJhbFRhc2s6NjUzOTc5MA=="
     input_ids = [
-       "R2VuZXJhbFRhc2s6NjUzOTc5MA==",
+        "R2VuZXJhbFRhc2s6NjUzOTc5MA==",
     ]
-        
-        
-    run(input_ids, TASK_TITLE, TASK_DESCRIPTION, WORKER_POOL_SIZE)
 
+    run(input_ids, TASK_TITLE, TASK_DESCRIPTION, WORKER_POOL_SIZE)

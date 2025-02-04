@@ -14,6 +14,7 @@ from . import Spy
 def build_task_mock(task_arguments, job_arguments, task_id, extra_env):
     pass
 
+
 # if nshm_model_version, check hazard config, gmcm, and 1 srm
 def test_build_hazard_tasks_model_version(config, monkeypatch):
 
@@ -37,6 +38,7 @@ def test_build_hazard_tasks_model_version(config, monkeypatch):
     assert gmcm == gmcm_expected
     assert srm == srm_expected
     assert hazard_config == hazard_config_expected
+
 
 # if overwrite gmcm, srm, or hazard config, check that they are changed
 def test_build_hazard_tasks_overwrite_model(config, monkeypatch):
@@ -68,4 +70,3 @@ def test_build_hazard_tasks_overwrite_model(config, monkeypatch):
     assert gmcm == gmcm_expected
     assert srm == srm_expected
     assert hazard_config == hazard_config_expected
-

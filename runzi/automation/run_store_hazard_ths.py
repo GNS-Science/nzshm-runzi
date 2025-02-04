@@ -45,7 +45,8 @@ LOCATIONS_ID = 'ALL'
 NUM_EXPECTED_BRANCHES = 49
 NUM_WORKERS = 20
 
-HazardSolution = namedtuple("HazardSolution","gt_id hazard_soln_id inv_id bg_id tag_str")
+HazardSolution = namedtuple("HazardSolution", "gt_id hazard_soln_id inv_id bg_id tag_str")
+
 
 class THSWorkerMP(multiprocessing.Process):
 
@@ -53,7 +54,7 @@ class THSWorkerMP(multiprocessing.Process):
         multiprocessing.Process.__init__(self)
         self.task_queue = task_queue
         self.result_queue = result_queue
-    
+
     def run(self):
         log.info("worker %s running." % self.name)
         proc_name = self.name
@@ -129,7 +130,7 @@ def dowload_and_save(haz_soln: HazardSolution):
                     haz_soln.bg_id,
                     haz_soln.tag_str,
                 )
-    
+
     return haz_soln
 
 
@@ -198,10 +199,11 @@ def get_hazard_info(toshi_api, gt_id):
             }
             }
             }'''
-    
+
     input_variables = dict(id=gt_id)
     executed = toshi_api.run_query(qry, input_variables)
     return executed['node']
+
 
 def get_haz_solns(gt_ids, toshi_api):
 
@@ -225,30 +227,32 @@ def get_haz_solns(gt_ids, toshi_api):
 
             hazard_soln_id = oq_hazard_task['hazard_solution']['id']
             args = parse_task_args(oq_hazard_task['arguments'])
-            ltp = json.loads(args['logic_tree_permutations'].replace("'",'"'))
+            ltp = json.loads(args['logic_tree_permutations'].replace("'", '"'))
             tag_str = ltp[0]['permute'][0]['members'][0]['tag']
             inv_id = ltp[0]['permute'][0]['members'][0]['inv_id']
             bg_id = ltp[0]['permute'][0]['members'][0]['bg_id']
 
-            haz_solns.append(HazardSolution(
-                gt_id = gt_id,
-                hazard_soln_id=hazard_soln_id,
-                inv_id=inv_id,
-                bg_id=bg_id,
-                tag_str=tag_str,
-            ))
+            haz_solns.append(
+                HazardSolution(
+                    gt_id=gt_id,
+                    hazard_soln_id=hazard_soln_id,
+                    inv_id=inv_id,
+                    bg_id=bg_id,
+                    tag_str=tag_str,
+                )
+            )
 
         if num_sucess_branches != NUM_EXPECTED_BRANCHES:
             msg = f'Missing {NUM_EXPECTED_BRANCHES - num_sucess_branches} branches from GeneralTask {gt_id}'
             raise Exception
-    
+
     return haz_solns
 
 
 if __name__ == "__main__":
 
     gt_ids = GT_IDS
-    headers={"x-api-key":API_KEY}
+    headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
     haz_solns = get_haz_solns(gt_ids, toshi_api)
     print('')

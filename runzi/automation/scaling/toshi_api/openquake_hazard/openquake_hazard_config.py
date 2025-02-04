@@ -1,4 +1,3 @@
-
 import base64
 import json
 import logging
@@ -11,6 +10,7 @@ from dateutil.tz import tzutc
 from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 
 log = logging.getLogger(__name__)
+
 
 class OpenquakeHazardConfig(object):
 

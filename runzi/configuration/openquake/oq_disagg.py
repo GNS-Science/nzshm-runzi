@@ -42,8 +42,24 @@ factory_task = runzi.execute.openquake.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
 dist_bin_edges = [
-    0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0,
-    100.0, 140.0, 180.0, 220.0, 260.0, 320.0, 380.0, 500.0
+    0,
+    5.0,
+    10.0,
+    15.0,
+    20.0,
+    30.0,
+    40.0,
+    50.0,
+    60.0,
+    80.0,
+    100.0,
+    140.0,
+    180.0,
+    220.0,
+    260.0,
+    320.0,
+    380.0,
+    500.0,
 ]
 # DEFAULT_DISAGG_CONFIG = copy.deepcopy(DEFAULT_HAZARD_CONFIG)
 # DEFAULT_DISAGG_CONFIG["general"]["calculation_mode"] = "disaggregation"
@@ -95,27 +111,37 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
         if COMPUTE_PLATFORM is ComputePlatform.EC2:
             return get_ecs_job_config(
                 job_name,
-                'N/A', config_data,
-                toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
+                'N/A',
+                config_data,
+                toshi_api_url=API_URL,
+                toshi_s3_url=S3_URL,
+                toshi_report_bucket=S3_REPORT_BUCKET,
                 task_module=runzi.execute.openquake.oq_hazard_task.__name__,
                 time_minutes=int(HAZARD_MAX_TIME),
                 memory=EC2_CONFIG["mem"],
                 vcpu=EC2_CONFIG["cpu"],
-                job_definition=EC2_CONFIG["job_def"],  # "BigLeverOnDemandEC2-JD", # "BiggerLever-runzi-openquake-JD", #"getting-started-job-definition-jun7",
+                job_definition=EC2_CONFIG[
+                    "job_def"
+                ],  # "BigLeverOnDemandEC2-JD", # "BiggerLever-runzi-openquake-JD", #"getting-started-job-definition-jun7",
                 job_queue=EC2_CONFIG["job_queue"],
                 extra_env=extra_env,
-                use_compression=True
+                use_compression=True,
             )
         elif COMPUTE_PLATFORM is ComputePlatform.Fargate:
             return get_ecs_job_config(
                 job_name,
-                'N/A', config_data,
-                toshi_api_url=API_URL, toshi_s3_url=S3_URL, toshi_report_bucket=S3_REPORT_BUCKET,
+                'N/A',
+                config_data,
+                toshi_api_url=API_URL,
+                toshi_s3_url=S3_URL,
+                toshi_report_bucket=S3_REPORT_BUCKET,
                 task_module=runzi.execute.openquake.oq_hazard_task.__name__,
-                time_minutes=int(HAZARD_MAX_TIME), memory=30720, vcpu=4,
+                time_minutes=int(HAZARD_MAX_TIME),
+                memory=30720,
+                vcpu=4,
                 job_definition="Fargate-runzi-openquake-JD",
                 extra_env=extra_env,
-                use_compression=True
+                use_compression=True,
             )
     else:
         # write a config
@@ -150,14 +176,16 @@ def new_general_task(gt_arguments, title, description, subtask_type, model_type)
     if USE_API:
 
         # create new task in toshi_api
-        gt_args = CreateGeneralTaskArgs(
-            agent_name=pwd.getpwuid(os.getuid()).pw_name,
-            title=title,
-            description=description,
-        )\
-            .set_argument_list(args_list)\
-            .set_subtask_type(subtask_type)\
+        gt_args = (
+            CreateGeneralTaskArgs(
+                agent_name=pwd.getpwuid(os.getuid()).pw_name,
+                title=title,
+                description=description,
+            )
+            .set_argument_list(args_list)
+            .set_subtask_type(subtask_type)
             .set_model_type(model_type)
+        )
 
         gt_id = toshi_api.general_task.create_task(gt_args)
 
@@ -209,10 +237,13 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
                 level=target_level,
             )
             task_arguments["oq"] = DEFAULT_DISAGG_CONFIG  # default openquake config
-            
+
             # overwrite with user specifiction
             update_oq_args(
-                task_arguments["oq"], args["config_scalar"], iter_keys, iter_values,
+                task_arguments["oq"],
+                args["config_scalar"],
+                iter_keys,
+                iter_values,
             )
 
             print('')
@@ -246,7 +277,7 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
                     task_id=task_count,
                     general_task_id=gt_id,
                     use_api=USE_API,
-                    sleep_multiplier=args["sleep_multiplier"]
+                    sleep_multiplier=args["sleep_multiplier"],
                 )
                 task_arguments['srm_logic_tree'] = slt.to_dict()
                 yield build_task(task_arguments, job_arguments, task_count, extra_env), gt_id

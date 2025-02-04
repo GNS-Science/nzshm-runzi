@@ -13,14 +13,15 @@ def prepare_inputs(file_id):
      - file_generator = get_output_file_ids(general_api, upstream_task_id)
     """
 
-    headers={"x-api-key":API_KEY}
+    headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-    #for a single rupture set, pass a valid FileID
-    file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
+    # for a single rupture set, pass a valid FileID
+    file_generator = get_output_file_id(toshi_api, file_id)  # for file by file ID
 
     rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
-    
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -30,5 +31,3 @@ if __name__ == "__main__":
     print(f"Attempt to download: ${args.file_id}")
 
     prepare_inputs(args.file_id)
-
-

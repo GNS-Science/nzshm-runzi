@@ -41,7 +41,9 @@ class GeneralTaskBuilder:
 
         """
         m = info["meta"]
-        report_info = f"{m['short_name']} {m['rupture_class']} energy({m['completion_energy']}) round({m['round_number']})"
+        report_info = (
+            f"{m['short_name']} {m['rupture_class']} energy({m['completion_energy']}) round({m['round_number']})"
+        )
 
         if m["rupture_set_file_id"] in mfd_dirs:
             extra_link = f'&nbsp;<a href="{self._date_path}-{self.set_number}/{m["rupture_set_file_id"]}/named_fault_mfds/mfd_index.html" >Named MFDS</a>'
@@ -59,9 +61,7 @@ def gt_template(node, general_task_id, tui):
     description = node.get("description")
 
     NZ_timezone = pytz.timezone("NZ")
-    created = dt.strptime(node.get("created"), "%Y-%m-%dT%H:%M:%S.%f%z").astimezone(
-        NZ_timezone
-    )
+    created = dt.strptime(node.get("created"), "%Y-%m-%dT%H:%M:%S.%f%z").astimezone(NZ_timezone)
 
     return f"""
     <h2>{title}</h2>
@@ -175,7 +175,7 @@ def build_manual_index(
     general_task_id,
     subtask_type,
     multiple_entries=False,
-    index_url="http://nzshm22-static-reports.s3-website-ap-southeast-2.amazonaws.com/opensha/index.html"
+    index_url="http://nzshm22-static-reports.s3-website-ap-southeast-2.amazonaws.com/opensha/index.html",
 ):
 
     API_URL = os.getenv("NZSHM22_TOSHI_API_URL", "http://127.0.0.1:5000/graphql")
@@ -185,9 +185,7 @@ def build_manual_index(
     TUI = "http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com/"
 
     headers = {"x-api-key": API_KEY}
-    general_api = ToshiApi(
-        API_URL, S3_URL, None, with_schema_validation=True, headers=headers
-    )
+    general_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     try:
         node = general_api.get_general_task_subtask_files(general_task_id)
@@ -203,13 +201,9 @@ def build_manual_index(
         for child_node in node["children"]["edges"]:
             rgt = child_node["node"]["child"]
             if subtask_type == "RUPTSET":
-                node_list.append(
-                    rgt_template(rgt, UPLOAD_FOLDER, TUI, info_keys)
-                )  # rupt sets
+                node_list.append(rgt_template(rgt, UPLOAD_FOLDER, TUI, info_keys))  # rupt sets
             elif subtask_type == "INVERSION":
-                node_list.append(
-                    inv_template(rgt, UPLOAD_FOLDER, TUI, info_keys)
-                )  # inversions
+                node_list.append(inv_template(rgt, UPLOAD_FOLDER, TUI, info_keys))  # inversions
         return "".join(node_list)
 
     new_entries = f"""

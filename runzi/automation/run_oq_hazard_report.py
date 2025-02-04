@@ -24,6 +24,7 @@ from runzi.configuration.oq_hazard_report import build_hazard_report_tasks
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
 
+
 def build_tasks(args, toshi_api):
     scripts = []
     for script_file in build_hazard_report_tasks(args, toshi_api):
@@ -32,7 +33,7 @@ def build_tasks(args, toshi_api):
     return scripts
 
 
-def run(WORKER_POOL_SIZE, hazard_ids=None,gt_ids=None, use_hdf5=False):
+def run(WORKER_POOL_SIZE, hazard_ids=None, gt_ids=None, use_hdf5=False):
 
     t0 = dt.datetime.utcnow()
 
@@ -48,21 +49,17 @@ def run(WORKER_POOL_SIZE, hazard_ids=None,gt_ids=None, use_hdf5=False):
 
     log = logging.getLogger(__name__)
 
-    headers={"x-api-key":API_KEY}
+    headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
-    args = dict(
-        hazard_ids = hazard_ids,
-        gt_ids = gt_ids,
-        use_hdf5 = use_hdf5
-    )
+    args = dict(hazard_ids=hazard_ids, gt_ids=gt_ids, use_hdf5=use_hdf5)
 
     tasks = build_tasks(args, toshi_api)
     print(tasks)
 
     print('worker count: ', WORKER_POOL_SIZE)
 
-    schedule_tasks(tasks,WORKER_POOL_SIZE)
+    schedule_tasks(tasks, WORKER_POOL_SIZE)
 
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
 
@@ -71,15 +68,15 @@ if __name__ == "__main__":
 
     hazard_ids = [
         # "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAxMDQx" #TEST
-        "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAyMDQ5" #PROD
+        "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTAyMDQ5"  # PROD
     ]
 
-    gt_ids = ['R2VuZXJhbFRhc2s6MTAyOTM0'] #PROD
+    gt_ids = ['R2VuZXJhbFRhc2s6MTAyOTM0']  # PROD
     # gt_ids = ['R2VuZXJhbFRhc2s6MTAxMDY2'] #TEST
 
-    plot_types = ['hcurve','uhs']
+    plot_types = ['hcurve', 'uhs']
 
     use_hdf5 = False
 
     # run(WORKER_POOL_SIZE,gt_ids=gt_ids)
-    run(WORKER_POOL_SIZE,gt_ids=gt_ids,use_hdf5=use_hdf5)
+    run(WORKER_POOL_SIZE, gt_ids=gt_ids, use_hdf5=use_hdf5)

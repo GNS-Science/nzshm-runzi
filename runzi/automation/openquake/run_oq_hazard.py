@@ -48,12 +48,8 @@ def validate_config_disagg(config: Dict[Any, Any]) -> None:
 
 
 def validate_config(config: Dict[Any, Any], mode: str) -> None:
-    if config["site_params"].get("locations") and config["site_params"].get(
-        "locations_file"
-    ):
-        raise ValueError(
-            "cannot specify both locations and locations_file in site_params table of config"
-        )
+    if config["site_params"].get("locations") and config["site_params"].get("locations_file"):
+        raise ValueError("cannot specify both locations and locations_file in site_params table of config")
 
     has_srm_lt = has_gmcm_lt = has_hazard_config = False
     if config["model"].get("srm_logic_tree"):
@@ -66,9 +62,7 @@ def validate_config(config: Dict[Any, Any], mode: str) -> None:
         validate_path(config, "model", "hazard_config")
         has_hazard_config = True
 
-    if not config["model"].get("nshm_model_version") and not (
-        has_srm_lt and has_gmcm_lt and has_hazard_config
-    ):
+    if not config["model"].get("nshm_model_version") and not (has_srm_lt and has_gmcm_lt and has_hazard_config):
         raise ValueError(
             """if nshm_model_version not specified, must provide all of
             gmcm_logic_tree, srm_logic_tree, and hazard_config file paths"""
@@ -97,9 +91,7 @@ def validate_config(config: Dict[Any, Any], mode: str) -> None:
             raise ValueError("cannot specify both uniform and site-specific vs30")
         validate_entry(config, "site_params", "vs30", [list, int], subtype=int)
     elif not file_has_vs30:
-        raise ValueError(
-            "locations file must have vs30 column if uniform vs30 not given"
-        )
+        raise ValueError("locations file must have vs30 column if uniform vs30 not given")
 
     if mode == "hazard":
         validate_config_hazard(config)
@@ -142,7 +134,7 @@ def run_oq_hazard(config: Dict[Any, Any]):
     toshi_api = None
     if config["site_params"].get("locations_file") and CLUSTER_MODE is EnvMode["AWS"]:
         filepath = Path(config["site_params"]["locations_file"])
-        headers={"x-api-key":API_KEY}
+        headers = {"x-api-key": API_KEY}
         toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         file_id, post_url = toshi_api.file.create_file(filepath)
         toshi_api.file.upload_content(post_url, filepath)
@@ -164,9 +156,7 @@ def run_oq_hazard(config: Dict[Any, Any]):
     if USE_API:
         if not toshi_api:
             headers = {"x-api-key": API_KEY}
-            toshi_api = ToshiApi(
-                API_URL, None, None, with_schema_validation=True, headers=headers
-            )
+            toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
         # create new task in toshi_api
         gt_args = (
             CreateGeneralTaskArgs(

@@ -11,9 +11,9 @@ import boto3
 from runzi.automation.scaling.local_config import CLUSTER_MODE, WORKER_POOL_SIZE, EnvMode
 
 
-def schedule_tasks(scripts,worker_pool_size=None):
+def schedule_tasks(scripts, worker_pool_size=None):
 
-    if not(worker_pool_size):
+    if not (worker_pool_size):
         worker_pool_size = WORKER_POOL_SIZE
 
     def call_script(script_name):
@@ -36,11 +36,10 @@ def schedule_tasks(scripts,worker_pool_size=None):
     elif CLUSTER_MODE == EnvMode['AWS']:
 
         batch_client = boto3.client(
-            service_name='batch',
-            region_name='us-east-1',
-            endpoint_url='https://batch.us-east-1.amazonaws.com')
-            # region_name='ap-southeast-2',
-            # endpoint_url='https://batch.ap-southeast-2.amazonaws.com')
+            service_name='batch', region_name='us-east-1', endpoint_url='https://batch.us-east-1.amazonaws.com'
+        )
+        # region_name='ap-southeast-2',
+        # endpoint_url='https://batch.ap-southeast-2.amazonaws.com')
 
         for script_or_config in scripts:
             print('AWS_CONFIG: ', script_or_config)

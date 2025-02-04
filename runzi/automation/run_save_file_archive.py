@@ -28,8 +28,10 @@ VALID_ROW_OUT = VALID_ROW + ['toshi_id']
 InputDataRow = collections.namedtuple('InputDataRow', VALID_ROW)
 OutputDataRow = collections.namedtuple('OutputDataRow', VALID_ROW_OUT)
 
+
 def is_valid(source_path, config_filename):
     return Path(source_path).exists() and Path(source_path, config_filename).exists()
+
 
 def create_archive(filename, working_path):
     """
@@ -40,6 +42,7 @@ def create_archive(filename, working_path):
         return archive(filename, Path(working_path, f"{Path(filename).name}.zip"))
     else:
         raise Exception("file does not exist.")
+
 
 def process_one_file(dry_run, filepath, tag=None):
     """Archive and upload one file."""
@@ -52,7 +55,7 @@ def process_one_file(dry_run, filepath, tag=None):
         log.info(f'archived {filepath} in {archive_path}.')
 
     if archive_path:
-        headers={"x-api-key":API_KEY}
+        headers = {"x-api-key": API_KEY}
         toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         filename = Path(filepath).name
         meta = dict(filename=filename)
@@ -78,15 +81,16 @@ def process_file_list(args):
             toshi_id = process_one_file(args.dry_run, dr.fullpath, tag=dr.parent)
             yield OutputDataRow(dr.fullpath, dr.grandparent, dr.parent, dr.filename, toshi_id)
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description="""zip a file and save this as a ToshiAPI File object""")
     parser.add_argument("target", help="the path for the file ")
-    parser.add_argument("-t", "--tag", help = "add tag to metadata")
-    parser.add_argument("-i", "--input_csv_file", action="store_true",
-        help = f"Get targets from CSV, must have header: {VALID_ROW}")
-    parser.add_argument("-D", "--dry-run", action="store_true", help = f"mock run")
-    parser.add_argument("-o", "--output_csv_file",
-        help = f"write out CSV, adding toshi_id to input csv")
+    parser.add_argument("-t", "--tag", help="add tag to metadata")
+    parser.add_argument(
+        "-i", "--input_csv_file", action="store_true", help=f"Get targets from CSV, must have header: {VALID_ROW}"
+    )
+    parser.add_argument("-D", "--dry-run", action="store_true", help=f"mock run")
+    parser.add_argument("-o", "--output_csv_file", help=f"write out CSV, adding toshi_id to input csv")
     args = parser.parse_args()
     return args
 
@@ -95,23 +99,23 @@ def main():
     args = parse_args()
 
     if not args.input_csv_file:
-        #just the one file
+        # just the one file
         process_one_file(args.dry_run, args.target, args.tag)
         return
 
-    #read from input
+    # read from input
     if args.input_csv_file:
         print(args)
-        processed =  process_file_list(args)
+        processed = process_file_list(args)
 
-    #write the output
+    # write the output
     if args.input_csv_file and args.output_csv_file:
         with open(args.output_csv_file, 'w', newline='') as csvfile:
             _writer = csv.writer(csvfile)
             _writer.writerow(VALID_ROW_OUT)
             for p in processed:
-                _writer.writerow( [p.fullpath, p.grandparent, p.parent, p.filename, p.toshi_id] )
+                _writer.writerow([p.fullpath, p.grandparent, p.parent, p.filename, p.toshi_id])
+
 
 if __name__ == "__main__":
     main()
-
