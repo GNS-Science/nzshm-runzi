@@ -1,8 +1,9 @@
-import unittest
-import pytest
-from io import StringIO
 # from fault_section import SheetFault, FaultSubSection, FaultSubSectionFactory
 import csv
+import unittest
+from io import StringIO
+
+import pytest
 
 # fixtures
 # noqa

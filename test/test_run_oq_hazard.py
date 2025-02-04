@@ -1,6 +1,7 @@
-from runzi.automation.openquake.run_oq_hazard import run_oq_hazard, build_tasks
 import runzi.automation.openquake.run_oq_hazard as run_oq_hazard_module
+from runzi.automation.openquake.run_oq_hazard import build_tasks, run_oq_hazard
 from runzi.automation.scaling.local_config import EnvMode
+
 from . import Spy
 
 FILE_ID = "ABCD"

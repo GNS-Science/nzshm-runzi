@@ -1,7 +1,9 @@
-import pytest
 import importlib.resources as resources
 
+import pytest
+
 from runzi.automation.openquake.run_oq_hazard import validate_config
+
 
 # default fixture should be a valid config
 def test_config_validation(config):

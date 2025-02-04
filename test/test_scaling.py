@@ -1,8 +1,9 @@
-import pytest
-import tempfile
 import csv
+import tempfile
 from pathlib import Path
 from zipfile import ZipFile
+
+import pytest
 
 
 def get_mags(properties_file_path):

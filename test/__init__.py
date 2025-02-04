@@ -2,6 +2,7 @@
 # trying to avoid using unittest, but maybe unittest.mock would be better here    
 from copy import deepcopy
 
+
 class Spy:
     def __init__(self, func):
         self.func = func

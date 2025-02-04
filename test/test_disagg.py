@@ -1,10 +1,10 @@
-import unittest
 import json
+import unittest
 from pathlib import Path
 
-
 # from runzi.configuration.openquake.oq_disagg import get_disagg_configs
-from runzi.CONFIG.OQ.SLT_v9p0p0 import logic_tree_permutations 
+from runzi.CONFIG.OQ.SLT_v9p0p0 import logic_tree_permutations
+
 
 class TestDisaggConfigs(unittest.TestCase):
 

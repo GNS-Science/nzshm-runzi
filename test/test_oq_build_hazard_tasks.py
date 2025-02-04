@@ -1,14 +1,15 @@
 from pathlib import Path
 
-from nzshm_model import get_model_version, NshmModel
+from nzshm_model import NshmModel, get_model_version
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeConfig
 
 import runzi.configuration.openquake.oq_hazard as coh
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
-from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 
 from . import Spy
+
 
 def build_task_mock(task_arguments, job_arguments, task_id, extra_env):
     pass
