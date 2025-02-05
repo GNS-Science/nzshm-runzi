@@ -1,8 +1,5 @@
 import datetime as dt
-import os
-import stat
 from multiprocessing.dummy import Pool
-from pathlib import PurePath
 from subprocess import check_call
 
 import boto3
@@ -15,19 +12,11 @@ from runzi.automation.scaling.local_config import (
     API_KEY,
     API_URL,
     CLUSTER_MODE,
-    FATJAR,
-    JAVA_THREADS,
-    JVM_HEAP_MAX,
-    JVM_HEAP_START,
-    OPENSHA_JRE,
-    OPENSHA_ROOT,
     S3_URL,
-    USE_API,
     WORK_PATH,
     WORKER_POOL_SIZE,
     EnvMode,
 )
-from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.configuration.inversion_diagnostics import generate_tasks_or_configs
 
@@ -92,7 +81,7 @@ def inversion_diagnostic_runner(general_task_id):
 def inversion_diagnostic_query(*args):
     general_task_id = inquirer.text('General Task ID: ')
     confirm = inquirer.confirm(f'Confirm you want to run inversion diagnostics for ID: {general_task_id}')
-    if confirm == True:
+    if confirm:
         inversion_diagnostic_runner(general_task_id)
 
 

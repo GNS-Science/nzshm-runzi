@@ -1,23 +1,17 @@
-# run_oq_disagg_post.py
-#!python3
 """
 This script compiles a json file for a given GT id / json cnfig.
 
 """
+
 import argparse
 import csv
-import datetime as dt
-import json
-import logging
 import os
 from collections import namedtuple
 from pathlib import Path
-from zipfile import ZipFile
 
 from nshm_toshi_client.toshi_client_base import ToshiClientBase
-from nshm_toshi_client.toshi_file import ToshiFile
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API, WORK_PATH, EnvMode
+from runzi.automation.scaling.local_config import API_KEY, API_URL
 
 DISAGG_LIST = os.environ['NZSHM22_DISAGG_LIST']
 

@@ -1,25 +1,25 @@
 import datetime as dt
-import itertools
 import logging
 import os
-import pwd
 import stat
 from multiprocessing.dummy import Pool
 from pathlib import PurePath
 from subprocess import check_call
 
 import boto3
-from dateutil.tz import tzutc
-from scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
+
+import runzi.automation.scaling.inversion_hazard_report_task
+from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.util.aws import get_ecs_job_config
+
+from .scaling.file_utils import download_files, get_output_file_ids
 
 # Set up your local config, from environment variables, with some sone defaults
-from scaling.local_config import (
+from .scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
     API_KEY,
     API_URL,
     CLUSTER_MODE,
     FATJAR,
-    JAVA_THREADS,
-    JVM_HEAP_MAX,
     JVM_HEAP_START,
     OPENSHA_JRE,
     OPENSHA_ROOT,
@@ -29,11 +29,7 @@ from scaling.local_config import (
     WORK_PATH,
     EnvMode,
 )
-from scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
-
-import runzi.automation.scaling.inversion_hazard_report_task
-from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.util.aws import get_ecs_job_config
+from .scaling.toshi_api import ToshiApi
 
 INITIAL_GATEWAY_PORT = 26533
 
@@ -139,9 +135,6 @@ if __name__ == "__main__":
     JAVA_THREADS = 4
     HAZARD_MAX_TIME = 15
 
-    # USE_API = False #True #to read the ruptset form the API
-    USE_API = True
-
     # #If using API give this task a descriptive setting...
     # TASK_TITLE = "Inversion diags"
     # TASK_DESCRIPTION = """
@@ -157,9 +150,7 @@ if __name__ == "__main__":
     headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-    # [0, 0.01, 0.02, 0.03, 0.05, 0.075, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
     args = dict(
-        # iml_periods = "0.0, 0.05, 0.075, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0".split(',').join(),
         iml_periods=[v.strip() for v in "0.0, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0".split(',')],
         bg_seismicitys=["INCLUDE", "EXCLUDE"],
         gmpes=["ASK_2014"],

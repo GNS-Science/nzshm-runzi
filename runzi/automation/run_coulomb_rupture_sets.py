@@ -8,16 +8,12 @@ from multiprocessing.dummy import Pool
 from pathlib import PurePath
 from subprocess import check_call
 
-from dateutil.tz import tzutc
-
 # Set up your local config, from environment variables, with some sone defaults
-from scaling.local_config import (
+from scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
     API_KEY,
     API_URL,
     CLUSTER_MODE,
     FATJAR,
-    JAVA_THREADS,
-    JVM_HEAP_MAX,
     JVM_HEAP_START,
     OPENSHA_JRE,
     OPENSHA_ROOT,
@@ -47,7 +43,8 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 # If using API give this task a descriptive setting...
 TASK_TITLE = "Build Coulomb CFM 1.0 sans with regional depth scaling"
 
-TASK_DESCRIPTION = """used to test effect of code change to Coulomb builder against older rupture sets that use CFM_1_0_DOM_SANSTVZ
+TASK_DESCRIPTION = """
+used to test effect of code change to Coulomb builder against older rupture sets that use CFM_1_0_DOM_SANSTVZ
 """
 
 
@@ -163,7 +160,7 @@ if __name__ == "__main__":
     # MAX_SECTIONS = 50
 
     args = dict(
-        ##Test parameters
+        # Test parameters
         models=["CFM_1_0_DOM_SANSTVZ"],  # , "CFM_0_9_ALL_D90","CFM_0_9_SANSTVZ_2010"]
         depth_scaling=[{'tvz': 0.667, 'sans': 0.8}],
         jump_limits=[

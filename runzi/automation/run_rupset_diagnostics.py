@@ -1,38 +1,30 @@
 import datetime as dt
-import itertools
 import logging
 import os
-import pwd
 import stat
 from multiprocessing.dummy import Pool
 from pathlib import PurePath
 from subprocess import check_call
 
-import scaling.ruptset_diags_report_task
-from dateutil.tz import tzutc
-from nshm_toshi_client.general_task import GeneralTask
-from nshm_toshi_client.toshi_file import ToshiFile
-from scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
+from .scaling import ruptset_diags_report_task
+from .scaling.file_utils import download_files, get_output_file_id
 
 # Set up your local config, from environment variables, with some sone defaults
-from scaling.local_config import (
+from .scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
     API_KEY,
     API_URL,
     CLUSTER_MODE,
     FATJAR,
-    JAVA_THREADS,
-    JVM_HEAP_MAX,
     JVM_HEAP_START,
     OPENSHA_JRE,
     OPENSHA_ROOT,
     REPORT_LEVEL,
-    S3_REPORT_BUCKET,
     S3_URL,
     USE_API,
     WORK_PATH,
 )
-from scaling.opensha_task_factory import OpenshaTaskFactory
-from scaling.toshi_api import ToshiApi
+from .scaling.opensha_task_factory import OpenshaTaskFactory
+from .scaling.toshi_api import ToshiApi
 
 logging.basicConfig(level=logging.INFO)
 
@@ -50,7 +42,6 @@ log = logging.getLogger(__name__)
 WORKER_POOL_SIZE = 1
 JVM_HEAP_MAX = 16
 JAVA_THREADS = 12
-USE_API = True  # to read the ruptset form the API
 
 
 # If using API give this task a descriptive setting...
@@ -66,7 +57,7 @@ def run_tasks(general_task_id, rupture_sets):
     task_factory = OpenshaTaskFactory(
         OPENSHA_ROOT,
         WORK_PATH,
-        scaling.ruptset_diags_report_task,
+        ruptset_diags_report_task,
         jre_path=OPENSHA_JRE,
         app_jar_path=FATJAR,
         task_config_path=WORK_PATH,
@@ -78,7 +69,7 @@ def run_tasks(general_task_id, rupture_sets):
 
         task_count += 1
 
-        short_name = f"Rupture set file_id: {rid}"
+        # short_name = f"Rupture set file_id: {rid}"
 
         # rupture_set_info['info'] has detaail of the Inversion task
         task_arguments = dict(

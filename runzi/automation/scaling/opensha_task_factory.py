@@ -73,19 +73,21 @@ class OpenshaTaskFactory:
         get the bash for the next task
         """
 
-        script = f"""
-export PATH={self._jre_path}:$PATH
-export JAVA_CLASSPATH={self._app_jar_path}
-export CLASSNAME=nz.cri.gns.NZSHM22.opensha.util.NZSHM22_PythonGateway
-export NZSHM22_APP_PORT={self._next_port}
-
-cd {self._root_path}
-java -Xms{self._jvm_heap_start_gb}G -Xmx{self._jvm_heap_max_gb}G -classpath ${{JAVA_CLASSPATH}} ${{CLASSNAME}} > {self._working_path}/java_app.{self._next_port}.log &
-{self._python} {self._python_script} {self._config_path}/config.{self._next_port}.json > {self._working_path}/python_script.{self._next_port}.log
-
-#Kill the Java gateway server
-kill -9 $!
-"""
+        # noqa: E501
+        script = (
+            f"export PATH={self._jre_path}:$PATH\n"
+            f"export JAVA_CLASSPATH={self._app_jar_path}\n"
+            "export CLASSNAME=nz.cri.gns.NZSHM22.opensha.util.NZSHM22_PythonGateway\n"
+            f"export NZSHM22_APP_PORT={self._next_port}\n"
+            f"cd {self._root_path}\n"
+            f"java -Xms{self._jvm_heap_start_gb}G -Xmx{self._jvm_heap_max_gb}G"
+            f" -classpath ${{JAVA_CLASSPATH}} ${{CLASSNAME}} > "
+            f"{self._working_path}/java_app.{self._next_port}.log &\n"
+            f"{self._python} {self._python_script} {self._config_path}/config.{self._next_port}.json > "
+            f"{self._working_path}/python_script.{self._next_port}.log\n"
+            # Kill the Java gateway server
+            "kill -9 $!"
+        )
         self._next_port += 1
         return script
 

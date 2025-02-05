@@ -6,17 +6,8 @@ This script produces tasks in either AWS, PBS or LOCAL to produce a hazard repor
 
 import datetime as dt
 import logging
-from operator import gt
 
-from runzi.automation.scaling.local_config import (
-    API_KEY,
-    API_URL,
-    CLUSTER_MODE,
-    JAVA_THREADS,
-    USE_API,
-    WORK_PATH,
-    EnvMode,
-)
+from runzi.automation.scaling.local_config import API_KEY, API_URL
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.configuration.oq_hazard_report import build_hazard_report_tasks
@@ -47,7 +38,7 @@ def run(WORKER_POOL_SIZE, hazard_ids=None, gt_ids=None, use_hdf5=False):
     logging.getLogger('botocore').setLevel(loglevel)
     logging.getLogger('git.cmd').setLevel(loglevel)
 
-    log = logging.getLogger(__name__)
+    # log = logging.getLogger(__name__)
 
     headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)

@@ -12,38 +12,13 @@ Pseudo-code:
 
 """
 
-import argparse
 import datetime as dt
 import fnmatch
-import json
 import os
-import platform
-import time
-import uuid
 from pathlib import Path
-from types import SimpleNamespace
-
-import git
-from dateutil.tz import tzutc
-from nshm_toshi_client.general_task import GeneralTask
-from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
-from nshm_toshi_client.task_relation import TaskRelation
 
 # Set up your local config, from environment variables, with some sone defaults
-from scaling.local_config import (
-    API_KEY,
-    API_URL,
-    CLUSTER_MODE,
-    FATJAR,
-    JAVA_THREADS,
-    JVM_HEAP_MAX,
-    JVM_HEAP_START,
-    OPENSHA_JRE,
-    OPENSHA_ROOT,
-    S3_URL,
-    USE_API,
-    WORK_PATH,
-)
+from scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from src.automation.scaling.toshi_api import ToshiApi
 
 

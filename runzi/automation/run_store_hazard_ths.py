@@ -174,7 +174,6 @@ def get_hazard_info(toshi_api, gt_id):
             ... on GeneralTask {
                 children {
                 edges {
-                    
                     node {
                     child {
                         __typename
@@ -189,7 +188,7 @@ def get_hazard_info(toshi_api, gt_id):
                             k v
                         }
                         hazard_solution {
-                            id                           
+                            id
                         }
                         }
                     }
@@ -216,7 +215,10 @@ def get_haz_solns(gt_ids, toshi_api):
             oq_hazard_task = task['node']['child']
             if (oq_hazard_task['state'] != 'DONE') and (oq_hazard_task['status'] != 'SUCCESS'):
                 tid = oq_hazard_task['id']
-                msg = f'OpenquakeHazardTask {tid} from GeneralTask {gt_id} does not have "DONE" state and "SUCCESS" status'
+                msg = (
+                    f'OpenquakeHazardTask {tid} from GeneralTask {gt_id} '
+                    'does not have "DONE" state and "SUCCESS" status'
+                )
                 raise Exception(msg)
             else:
                 num_sucess_branches += 1

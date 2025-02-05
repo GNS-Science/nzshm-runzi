@@ -1,19 +1,9 @@
-import datetime as dt
-import itertools
 import os
-import pwd
 import stat
-from multiprocessing.dummy import Pool
 from pathlib import PurePath
-from subprocess import check_call
-
-from dateutil.tz import tzutc
-
-from runzi.automation.scaling.file_utils import download_files, get_output_file_ids
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (
-    API_KEY,
     API_URL,
     BUILD_PLOTS,
     CLUSTER_MODE,
@@ -32,7 +22,6 @@ from runzi.automation.scaling.local_config import (
     EnvMode,
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.execute import inversion_diags_report_task
 from runzi.util.aws import get_ecs_job_config
 
@@ -40,7 +29,7 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 MAX_JOB_TIME_SECS = 60 * 30  # Change this soon
 
 if CLUSTER_MODE == EnvMode['AWS']:
-    WORK_PATH = '/WORKING'
+    WORK_PATH = '/WORKING'  # noqa: F811
 
 
 def generate_tasks_or_configs(general_task_id, solutions):
@@ -154,7 +143,8 @@ def generate_tasks_or_configs(general_task_id, solutions):
 #     REPORT_LEVEL = 'DEFAULT' # None, 'LIGHT', 'DEFAULT', 'FULL'
 
 #     pool = Pool(WORKER_POOL_SIZE)
-#     for inversion_task_id in ["R2VuZXJhbFRhc2s6NDY5NkdnUWpj"]: #"R2VuZXJhbFRhc2s6Mjc4OXphVmN2"]: #, "R2VuZXJhbFRhc2s6MjY4M1FGajVh"]:
+#     for inversion_task_id in ["R2VuZXJhbFRhc2s6NDY5NkdnUWpj"]:
+# #"R2VuZXJhbFRhc2s6Mjc4OXphVmN2"]: #, "R2VuZXJhbFRhc2s6MjY4M1FGajVh"]:
 #         #get input files from API
 #         file_generator = get_output_file_ids(file_api, inversion_task_id) #
 #         solutions = download_files(file_api, file_generator, str(WORK_PATH), overwrite=False, skip_existing=False)

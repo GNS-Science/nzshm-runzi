@@ -1,9 +1,7 @@
 import base64
-import copy
 import datetime as dt
 import json
 import logging
-from enum import Enum
 from hashlib import md5
 from pathlib import PurePath
 
@@ -48,7 +46,10 @@ class InversionSolutionNrml(object):
     ):
         """test helper"""
         query = '''
-            mutation ($source_solution: ID!, $digest: String!, $file_name: String!, $file_size: BigInt!, $created: DateTime!, $predecessors: [PredecessorInput]) {
+            mutation (
+                $source_solution: ID!, $digest: String!, $file_name: String!, $file_size: BigInt!, $created: DateTime!,
+                $predecessors: [PredecessorInput]
+            ) {
               create_inversion_solution_nrml(
                   input: {
                       source_solution: $source_solution
@@ -66,7 +67,7 @@ class InversionSolutionNrml(object):
               )
               {
                 ok
-                inversion_solution_nrml { id, file_name, file_size, md5_digest, post_url, 
+                inversion_solution_nrml { id, file_name, file_size, md5_digest, post_url,
                 source_solution { ... on Node { id } }}
               }
             }

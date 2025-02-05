@@ -1,17 +1,11 @@
-import datetime as dt
-import itertools
 import os
-import pwd
 import stat
 from itertools import chain
 from pathlib import PurePath
 
-import boto3
-from dateutil.tz import tzutc
-
 import runzi.execute.oq_opensha_convert_task
-from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
-from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, USE_API, WORK_PATH, EnvMode
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id
+from runzi.automation.scaling.local_config import API_URL, CLUSTER_MODE, USE_API, WORK_PATH, EnvMode
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
 from runzi.util.aws import get_ecs_job_config
@@ -88,7 +82,7 @@ def build_nrml_tasks(
                 toshi_s3_url=None,
                 toshi_report_bucket=None,
                 task_module=runzi.execute.oq_opensha_convert_task.__name__,
-                time_minutes=int(HAZARD_MAX_TIME),
+                time_minutes=int(HAZARD_MAX_TIME),  # noqa: F821
                 memory=30720,
                 vcpu=4,
             )  # TODO HAZARD_MAX_TIME not defined

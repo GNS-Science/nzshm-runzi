@@ -1,17 +1,14 @@
 import argparse
-import base64
 import datetime as dt
 import json
-import os
-import platform
 import time
 import urllib
 import uuid
-from pathlib import Path, PurePath
+from pathlib import PurePath
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
-from solvis import *
+from solvis import *  # noqa: F403
 
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -36,7 +33,10 @@ class BuilderTask:
 
         if self.use_api:
             headers = {"x-api-key": API_KEY}
-            # self._ruptgen_api = RuptureGenerationTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+            # self._ruptgen_api = RuptureGenerationTask(
+            #   API_URL, S3_URL,
+            #   None, with_schema_validation=True, headers=headers
+            # )
             self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
             self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
@@ -70,7 +70,7 @@ class BuilderTask:
         else:
             task_id = str(uuid.uuid4())
 
-        ##DO THE WORK
+        # DO THE WORK
         result = self.process(
             ja.get("solution_id"),
             ja.get("solution_info").get('filepath'),
@@ -109,28 +109,28 @@ class BuilderTask:
 
     def process(self, solution_id, solution_filepath, location, radius_m, rate_threshold):
 
-        polygon = circle_polygon(radius_m, location[1], location[2])
+        polygon = circle_polygon(radius_m, location[1], location[2])  # noqa: F405
 
-        sol = InversionSolution().from_archive(solution_filepath)
+        sol = InversionSolution().from_archive(solution_filepath)  # noqa: F405
         source_rupture_count = sol.rates[sol.rates['Annual Rate'] > 0].size
 
         ri = sol.get_ruptures_intersecting(polygon)
-        ri_sol = new_sol(sol, ri)
+        ri_sol = new_sol(sol, ri)  # noqa: F405
 
         if rate_threshold:
-            ri = rupt_ids_above_rate(ri_sol, rate_threshold)
-            ri_sol = new_sol(ri_sol, ri)
+            ri = rupt_ids_above_rate(ri_sol, rate_threshold)  # noqa: F405
+            ri_sol = new_sol(ri_sol, ri)  # noqa: F405
 
         subset_rupture_count = ri_sol.rates[ri_sol.rates['Annual Rate'] > 0].size
 
         # wlg_above_sol == new_sol(ri_sol, above)
-        sp0 = section_participation(ri_sol, ri)
+        sp0 = section_participation(ri_sol, ri)  # noqa: F405
 
         # write out a geojson
         radius = f"{int(radius_m/1000)}km"
         geofile = PurePath(WORK_PATH, f"{location[0]}_ruptures_radius({radius})_rate_filter({rate_threshold}).geojson")
         print(f"write new geojson file: {geofile}")
-        export_geojson(gpd.GeoDataFrame(sp0), geofile)
+        export_geojson(gpd.GeoDataFrame(sp0), geofile)  # noqa: F405
 
         # write the solution
 
@@ -139,7 +139,8 @@ class BuilderTask:
         )
         print(f"write new solution file: {new_archive}")
         print(
-            f"Filtered InversionSolution {location[0]} within {radius} has {subset_rupture_count} ruptures where rate > {rate_threshold}"
+            f"Filtered InversionSolution {location[0]} within {radius} has {subset_rupture_count} "
+            f"ruptures where rate > {rate_threshold}"
         )
         ri_sol.to_archive(str(new_archive), str(solution_filepath))
 
@@ -158,7 +159,7 @@ if __name__ == "__main__":
         config_file = args.config
         f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
-    except:
+    except FileNotFoundError:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 

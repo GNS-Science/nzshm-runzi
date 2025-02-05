@@ -8,7 +8,7 @@ from pathlib import PurePath
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
-from solvis import *
+from solvis import *  # noqa: F403
 
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -60,7 +60,7 @@ class BuilderTask:
         else:
             task_id = str(uuid.uuid4())
 
-        ##DO THE WORK
+        # DO THE WORK
         soln_filepaths = [li['filepath'] for li in job_arguments['source_solution_info']]
         result = self.averageRuptureRates(soln_filepaths, task_id)
 
@@ -112,7 +112,7 @@ class BuilderTask:
     def averageRuptureRates(self, in_solution_filepaths, task_id):
 
         for i, in_solution_filepath in enumerate(in_solution_filepaths):
-            soln = InversionSolution().from_archive(in_solution_filepath)
+            soln = InversionSolution().from_archive(in_solution_filepath)  # noqa:F405
             if i == 0:
                 rr = soln.ruptures
                 ra = soln.rates
@@ -125,7 +125,7 @@ class BuilderTask:
                 rates += soln.rates
         rates = rates / len(in_solution_filepaths)
 
-        scaled_soln = InversionSolution()
+        scaled_soln = InversionSolution()  # noqa: F405
         scaled_soln.set_props(rates, ruptures, indices, fault_sections)
 
         new_archive = PurePath(WORK_PATH, 'NZSHM22_AveragedInversionSolution-' + str(task_id) + '.zip')
@@ -147,7 +147,7 @@ if __name__ == "__main__":
         config_file = args.config
         f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
-    except:
+    except FileNotFoundError:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 

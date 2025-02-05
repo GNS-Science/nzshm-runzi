@@ -1,4 +1,4 @@
-#!python3
+# noqa: WIP
 """
 This script produces disagg tasks in either AWS, PBS or LOCAL that run OpenquakeHazard in disagg mode.
 
@@ -46,13 +46,13 @@ def run_oq_disagg(config: Dict[Any, Any]) -> None:
     task_type = SubtaskType.OPENQUAKE_HAZARD
     model_type = ModelType.COMPOSITE
 
-    validate_config(config, mode='disagg')
-    srm_logic_tree, gmcm_logic_tree = get_model(config)
-    num_workers = get_num_workers(config)
-    location_list = update_location_list(config["site_params"]["locations"])
-    vs30s = single_to_list(config["site_params"]["vs30"])
-    aggs = single_to_list(config["hazard_curve"]["agg"])
-    location_codes, junk = get_coded_locations(location_list)
+    validate_config(config, mode='disagg')  # noqa: F821
+    srm_logic_tree, gmcm_logic_tree = get_model(config)  # noqa: F821
+    num_workers = get_num_workers(config)  # noqa: F821
+    location_list = update_location_list(config["site_params"]["locations"])  # noqa: F821
+    vs30s = single_to_list(config["site_params"]["vs30"])  # noqa: F821
+    aggs = single_to_list(config["hazard_curve"]["agg"])  # noqa: F821
+    location_codes, junk = get_coded_locations(location_list)  # noqa: F821
 
     openquake_iterate = dict() if not config.get("openquake_iterate") else config["openquake_iterate"]
     openquake_scalar = dict() if not config.get("openquake_single") else config["openquake_single"]

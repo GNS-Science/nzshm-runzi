@@ -1,10 +1,8 @@
 import argparse
-import csv
 import datetime as dt
 import json
 import os
 import platform
-import pwd
 import time
 from pathlib import PurePath
 
@@ -36,7 +34,7 @@ class RuptureSetBuilderTask:
         app = gateway.entry_point
         self._builder = app.getSubductionRuptureSetBuilder()
 
-        repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
+        # repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
         self._output_folder = PurePath(
             job_args.get('working_path')
         )  # .joinpath('tmp').joinpath(dt.datetime.utcnow().isoformat().replace(':','-'))

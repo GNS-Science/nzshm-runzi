@@ -1,9 +1,7 @@
-import copy
 import itertools
 import os
 import pwd
 import stat
-from dataclasses import asdict
 from pathlib import PurePath
 
 import numpy as np
@@ -120,9 +118,7 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
                 time_minutes=int(HAZARD_MAX_TIME),
                 memory=EC2_CONFIG["mem"],
                 vcpu=EC2_CONFIG["cpu"],
-                job_definition=EC2_CONFIG[
-                    "job_def"
-                ],  # "BigLeverOnDemandEC2-JD", # "BiggerLever-runzi-openquake-JD", #"getting-started-job-definition-jun7",
+                job_definition=EC2_CONFIG["job_def"],  # "BigLeverOnDemandEC2-JD", # "BiggerLever-runzi-openquake-JD",
                 job_queue=EC2_CONFIG["job_queue"],
                 extra_env=extra_env,
                 use_compression=True,
@@ -236,7 +232,7 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, args):
                 inv_time=args["inv_time"],
                 level=target_level,
             )
-            task_arguments["oq"] = DEFAULT_DISAGG_CONFIG  # default openquake config
+            # task_arguments["oq"] = DEFAULT_DISAGG_CONFIG  # default openquake config
 
             # overwrite with user specifiction
             update_oq_args(

@@ -70,9 +70,13 @@ class AggregateInversionSolution(object):
         predecessors=None,
         metrics=None,
     ):
+        # noqa: E501
         qry = '''
-            mutation ($source_solutions: [ID]!, $created: DateTime!, $digest: String!, $file_name: String!, 
-                  $file_size: BigInt!, $produced_by: ID!, $common_rupture_set: ID!, $predecessors: [PredecessorInput], $aggregation_fn: AggregationFn!) {
+            mutation (
+                $source_solutions: [ID]!, $created: DateTime!, $digest: String!, $file_name: String!,
+                $file_size: BigInt!, $produced_by: ID!, $common_rupture_set: ID!, $predecessors: [PredecessorInput],
+                $aggregation_fn: AggregationFn!
+            ) {
               create_aggregate_inversion_solution(input: {
                   source_solutions: $source_solutions
                   aggregation_fn: $aggregation_fn

@@ -163,11 +163,11 @@ if __name__ == "__main__":
             description=TASK_DESCRIPTION,
         )
 
-    ##Test parameters
+    # Test parameters
     models = ["CFM_0_9_SANSTVZ_2010", "CFM_0_9_SANSTVZ_D90"]  # , "CFM_0_9_ALL_D90". "CFM_0_3_SANSTVZ"]
     strategies = [
         'UCERF3',
-    ]  #'POINTS'] #, 'UCERF3' == DOWNDIP]
+    ]  # 'POINTS'] #, 'UCERF3' == DOWNDIP]
     jump_limits = [
         5.0,
     ]  # 4.0, 4.5, 5.0, 5.1] #4.0, 4.5, 5.0, 5.1] # , 5.1, 5.2, 5.3]
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     thinning_factors = [0.0, 0.1]  # , 0.2, 0.3] #, 0.05, 0.1, 0.2]
     scaling_relations = [
         'TMG_CRU_2017',
-    ]  #'SHAW_2009_MOD'] WARNING this is not yet configurable, need a setter in ruptset builder
+    ]  # 'SHAW_2009_MOD'] WARNING this is not yet configurable, need a setter in ruptset builder
 
     # limit test size, nomally 1000 for NZ CFM
     MAX_SECTIONS = 200

@@ -7,14 +7,9 @@ only to be used until we have automated rupture reporting
 
 """
 
-import base64
-import collections
 import fnmatch
 import json
 import os
-
-# import os.path
-import shutil
 from pathlib import Path, PurePath
 
 from nshm_toshi_client.toshi_client_base import ToshiClientBase
@@ -70,13 +65,17 @@ class IndexBuilder:
         self._date_path = date_path
 
     def old_get_template(self, index_file, short_name, round_number, max_inv_time, thin_factor):
-        return f'''
-    <li><a href="{self._date_path}-{self.set_number}/{index_file}">
-            Solution ({short_name}) {self._rupture_class}, thin({thin_factor}), {max_inv_time} mins, Round {round_number}</a>
-    </li>'''
+        return (
+            f'''<li><a href="{self._date_path}-{self.set_number}/{index_file}">'''
+            f'''Solution ({short_name}) {self._rupture_class}, thin({thin_factor}), '''
+            f'''{max_inv_time} mins, Round {round_number}</a></li>'''
+        )
 
     def get_template(self, index_file):
-        return f'''<li><a href="{self._date_path}-{self.set_number}{index_file}">{str(index_file)[1:].replace('-', ' ').replace('/index.html', '')}</a></li>'''
+        return (
+            f'''<li><a href="{self._date_path}-{self.set_number}{index_file}">'''
+            f'''{str(index_file)[1:].replace('-', ' ').replace('/index.html', '')}</a></li>'''
+        )
 
     def build_line(self, root, filename):
 
@@ -91,8 +90,8 @@ class IndexBuilder:
         return self.get_template(index_file)
 
     def build(self):
-        file_meta = dict()
-        filekey = None
+        # file_meta = dict()
+        # filekey = None
 
         # headers={"x-api-key":API_KEY}
         # file_api = ToshiFile(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
@@ -110,7 +109,8 @@ class IndexBuilder:
                     # # print(filekey)
                     # if not filekey in file_meta.keys():
                     #     metadata =  file_api.get_file_meta_as_dict(filekey)
-                    #     metakey = f"{metadata['fault_model']}-{metadata['thinning_factor']}-{max_inv_time}-{round_number}"
+                    #     metakey = f"{metadata['fault_model']}-
+                    # {metadata['thinning_factor']}-{max_inv_time}-{round_number}"
 
                     #     #enrich the dict
                     #     metadata['filekey'] = filekey
@@ -175,8 +175,8 @@ class ReportMetaBuilder:
         self._date_path = date_path
 
     def build(self):
-        file_meta = dict()
-        filekey = None
+        # file_meta = dict()
+        # filekey = None
 
         lines = []
         for root, dirs, files in os.walk(self._dir_name):
@@ -190,9 +190,19 @@ class ReportMetaBuilder:
                         value = json.load(open(PurePath(folder_path, filename), 'r'))
                         # print(value['task_arguments'])
                         '''
-                        e.g {'rupture_set_file_id': 'RmlsZTo0ODMuMFN3cTRN', 'generation_task_id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4M0FoblN5',
-                        'solution_file': '/home/chrisbc/DEV/GNS/opensha-new/nshm-nz-opensha/src/python/automation/tmp/UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4M0FoblN5/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo0ODMuMFN3cTRN.zip',
-                        'short_name': 'CFM_0_9_SANSTVZ_D90-0.1', 'rupture_class': 'Azimuth', 'max_inversion_time': '1380', 'completion_energy': '0.05', 'round_number': '0'}
+                        e.g
+                        {
+                            'rupture_set_file_id': 'RmlsZTo0ODMuMFN3cTRN',
+                            'generation_task_id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4M0FoblN5',
+                            'solution_file':
+                                '/home/chrisbc/DEV/GNS/opensha-new/nshm-nz-opensha/src/python/automation/tmp/
+                                UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4M0FoblN5/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo0ODMuMFN3cTRN.zip',
+                            'short_name': 'CFM_0_9_SANSTVZ_D90-0.1',
+                            'rupture_class': 'Azimuth',
+                            'max_inversion_time': '1380',
+                            'completion_energy': '0.05',
+                            'round_number': '0'
+                        }
                         '''
 
                         solution_name = PurePath(value['task_arguments']['solution_file']).name
@@ -214,7 +224,8 @@ class ReportMetaBuilder:
                         # TODO: ugly workaround, FIXME
                         rupture_class = "Azimuth"
                         azim_len = len(
-                            "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4NXN4Zjhp/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo1MDcuMDdaMkFp.zip"
+                            "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4NXN4Zjhp/"
+                            "InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo1MDcuMDdaMkFp.zip"
                         )
                         if len(info['solution_relative_path']) > azim_len:
                             rupture_class = "Coulomb"
@@ -225,10 +236,19 @@ class ReportMetaBuilder:
 
     def get_template(self, info, mfd_dirs):
         """
-        {'key': 'RmlsZTo0NTkuMDlnaEda', 'meta': {'rupture_set_file_id': 'RmlsZTo0NTkuMDlnaEda',
-        'generation_task_id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4MUNqSFFa',
-        'short_name': 'CFM_0_9_SANSTVZ_D90-0.1', 'rupture_class': 'Azimuth', 'max_inversion_time': '1380', 'completion_energy': '0.2', 'round_number': '0'},
-        'solution_relative_path': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4MUNqSFFa/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo0NTkuMDlnaEda.zip',
+        {
+            'key': 'RmlsZTo0NTkuMDlnaEda',
+            'meta': {
+                'rupture_set_file_id': 'RmlsZTo0NTkuMDlnaEda',
+                'generation_task_id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4MUNqSFFa',
+                 'short_name': 'CFM_0_9_SANSTVZ_D90-0.1',
+                 'rupture_class': 'Azimuth',
+                 'max_inversion_time': '1380',
+                 'completion_energy': '0.2',
+                 'round_number': '0'
+            },
+        'solution_relative_path':
+            'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4MUNqSFFa/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo0NTkuMDlnaEda.zip',
         'index_path': 'RmlsZTo0NTkuMDlnaEda/DiagnosticsReport/index.html'}
 
         """
@@ -238,7 +258,10 @@ class ReportMetaBuilder:
         )
 
         if m['rupture_set_file_id'] in mfd_dirs:
-            extra_link = f'&nbsp;<a href="{self._date_path}-{self.set_number}/{m["rupture_set_file_id"]}/named_fault_mfds/mfd_index.html" >Named MFDS</a>'
+            extra_link = (
+                f'&nbsp;<a href="{self._date_path}-{self.set_number}/'
+                f'{m["rupture_set_file_id"]}/named_fault_mfds/mfd_index.html" >Named MFDS</a>'
+            )
         else:
             extra_link = ''
 

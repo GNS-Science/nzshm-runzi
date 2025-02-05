@@ -3,7 +3,7 @@
 import hashlib
 import json
 
-from jsonpath_ng import jsonpath, parse
+from jsonpath_ng import parse
 
 """
 merge the meta data from openquake hazard job with meta from ToshiAPI
@@ -171,7 +171,6 @@ query conversion_gt {
                         # file_url
                         source_solution { id }
                       }
-                      
                       ... on ScaledInversionSolution {
                         file_name
                         created
@@ -180,16 +179,15 @@ query conversion_gt {
                           id #link to TOSHI
                           meta {k v}
                           }
-                      }                      
-                      
+                      }
                       ... on InversionSolution {
                         id
                         file_name
                         meta {k v}
                         created
-                      } 
+                      }
                     }
-                  }   
+                  }
                 }
               }
             }

@@ -32,7 +32,7 @@ class BuilderTask:
         # Run the task....
         t0 = dt.datetime.utcnow()
 
-        ta, ja = task_arguments, job_arguments
+        ta = task_arguments
 
         hazard_report_folder = Path(self._output_folder, ta['hazard_id'], 'hazard_report')
         hazard_report_folder.mkdir(parents=True, exist_ok=True)
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         config_file = args.config
         f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
-    except:
+    except FileNotFoundError:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 

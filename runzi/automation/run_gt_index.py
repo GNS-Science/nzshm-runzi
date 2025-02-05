@@ -16,11 +16,11 @@ from pathlib import Path
 from typing import Generator, List, Tuple
 
 import boto3.session
-from nzshm_common.location.code_location import CodedLocation
+from nzshm_common.location import CodedLocation
 from nzshm_common.location.location import location_by_id
 from nzshm_common.util import compress_string, decompress_string
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.util.aws.s3_folder_upload import mimetype
 
@@ -238,7 +238,7 @@ def get_tasks(gt_id):
     for child in children:
         task['subtasks'].append(get_subtask_info(child['node']['child']))
     task['subtask_type'] = task['subtasks'][0]['subtask_type']
-    if haz_task_type := task['subtasks'][0]['task_type']:
+    if task['subtasks'][0]['task_type']:
         task['hazard_subtask_type'] = (
             'DISAGG'  # workaround because the disagg task is setting the incorrect subtask_type (temporary)
         )
@@ -398,7 +398,10 @@ def find_disaggs(index, search_str):
     hazard_model_id= NSHM_v1.0.4, location=-39.500~176.900, inv_time=50, agg=mean, poe=0.02, imt=PGA, vs30=200
     """
     search_str = "".join(search_str.split())
-    kv = lambda x: x.split("=")
+
+    def kv(x):
+        return x.split("=")
+
     search_terms = {kv(item)[0]: kv(item)[1] for item in search_str.split(",")}
     for gt_id, entry in index.items():
         match = True

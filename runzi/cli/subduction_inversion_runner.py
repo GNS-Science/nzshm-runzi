@@ -6,47 +6,31 @@ from subprocess import check_call
 
 import boto3
 
-from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 
 # Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import (
-    API_KEY,
-    API_URL,
-    CLUSTER_MODE,
-    FATJAR,
-    JAVA_THREADS,
-    JVM_HEAP_MAX,
-    JVM_HEAP_START,
-    OPENSHA_JRE,
-    OPENSHA_ROOT,
-    S3_URL,
-    USE_API,
-    WORK_PATH,
-    EnvMode,
-)
+from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, WORK_PATH, EnvMode
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.subduction_inversions import build_subduction_tasks
-from runzi.util.aws import get_secret
 
 
 def run_subduction_inversion(config):
     t0 = dt.datetime.utcnow()
 
     WORKER_POOL_SIZE = config._worker_pool_size
-    JVM_HEAP_MAX = config._jvm_heap_max
-    JAVA_THREADS = config._java_threads
     USE_API = config._use_api
     TASK_TITLE = config._task_title
     TASK_DESCRIPTION = config._task_description
     GENERAL_TASK_ID = config._general_task_id
-    MOCK_MODE = config._mock_mode
+    # MOCK_MODE = config._mock_mode
     file_id = config._file_id
     MODEL_TYPE = ModelType[config._model_type]
     SUBTASK_TYPE = SubtaskType[config._subtask_type]
 
-    global WORK_PATH, API_KEY
     if CLUSTER_MODE == EnvMode['AWS']:
-        WORK_PATH = '/WORKING'
+        work_path = '/WORKING'
+    else:
+        work_path = WORK_PATH
 
     headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
@@ -57,7 +41,7 @@ def run_subduction_inversion(config):
         args_list.append(dict(k=key, v=value))
 
     file_generator = get_output_file_id(toshi_api, file_id)  # for file by file ID
-    rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+    rupture_sets = download_files(toshi_api, file_generator, str(work_path), overwrite=False)
 
     if USE_API:
         # create new task in toshi_api

@@ -1,5 +1,3 @@
-from pickle import FALSE
-
 import runzi.automation.run_oq_convert_solution as convert_solution
 import runzi.automation.run_scale_solution as scale_solution
 from runzi.automation.scaling.file_utils import get_output_file_ids

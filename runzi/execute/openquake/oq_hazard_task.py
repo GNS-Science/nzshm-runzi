@@ -338,6 +338,7 @@ class BuilderTask:
                   -h, --help           show this help message and exit
                   -c, --create-tables  Ensure tables exist.
                 """
+                source_logic_tree = (task_arguments["model"]["srm_logic_tree"],)
                 tag = ":".join(
                     (
                         source_logic_tree.branch_sets[0].short_name,

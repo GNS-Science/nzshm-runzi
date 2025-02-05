@@ -1,20 +1,12 @@
-import datetime as dt
-import json
 import logging
 import os
-import pwd
 import stat
-from multiprocessing.dummy import Pool
 from pathlib import PurePath
-from subprocess import check_call
 
-import boto3
-
-from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
+import runzi.configuration.crustal_inversion_permutations as branch_generators
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (
-    API_KEY,
     API_URL,
     CLUSTER_MODE,
     FATJAR,
@@ -30,8 +22,6 @@ from runzi.automation.scaling.local_config import (
     EnvMode,
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
-from runzi.configuration.crustal_inversion_permutations import *
 from runzi.execute import inversion_solution_builder_task
 from runzi.util.aws import get_ecs_job_config
 
@@ -43,7 +33,7 @@ log = logging.getLogger(__name__)
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 
 if CLUSTER_MODE == EnvMode['AWS']:
-    WORK_PATH = '/WORKING'
+    WORK_PATH = '/WORKING'  # noqa: F811
 
 
 def build_crustal_tasks(general_task_id, rupture_sets, args, config):
@@ -79,17 +69,17 @@ def build_crustal_tasks(general_task_id, rupture_sets, args, config):
     #     permutations_generator = all_permutations_generator
 
     if config_version == "2.5":
-        permutations_generator = branch_permutations_generator_25
+        permutations_generator = branch_generators.branch_permutations_generator_25
     elif config_version == "3.0":
-        permutations_generator = branch_permutations_generator_30
+        permutations_generator = branch_generators.branch_permutations_generator_30
     elif config_version == "3.1":
-        permutations_generator = branch_permutations_generator_31
+        permutations_generator = branch_generators.branch_permutations_generator_31
     elif config_version == "3.2":
-        permutations_generator = branch_permutations_generator_32
+        permutations_generator = branch_generators.branch_permutations_generator_32
     elif config_version == "3.3":
-        permutations_generator = branch_permutations_generator_33
+        permutations_generator = branch_generators.branch_permutations_generator_33
     elif config_version == "3.4":
-        permutations_generator = branch_permutations_generator_34
+        permutations_generator = branch_generators.branch_permutations_generator_34
     else:
         raise ValueError(F"Config version {config_version} is not supported")
 

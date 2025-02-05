@@ -75,7 +75,7 @@ def process_file_list(args):
         reader = csv.reader(csvfile)
         header = next(reader)
         if not header == VALID_ROW:
-            log.error(f'file {arg.target} is not in the correct format.')
+            log.error(f'file {args.target} is not in the correct format.')
 
         for dr in map(lambda x: InputDataRow(*x), reader):
             toshi_id = process_one_file(args.dry_run, dr.fullpath, tag=dr.parent)
@@ -89,8 +89,8 @@ def parse_args():
     parser.add_argument(
         "-i", "--input_csv_file", action="store_true", help=f"Get targets from CSV, must have header: {VALID_ROW}"
     )
-    parser.add_argument("-D", "--dry-run", action="store_true", help=f"mock run")
-    parser.add_argument("-o", "--output_csv_file", help=f"write out CSV, adding toshi_id to input csv")
+    parser.add_argument("-D", "--dry-run", action="store_true", help="mock run")
+    parser.add_argument("-o", "--output_csv_file", help="write out CSV, adding toshi_id to input csv")
     args = parser.parse_args()
     return args
 

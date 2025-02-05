@@ -45,7 +45,10 @@ class ScaledInversionSolution(object):
         self, filepath, produced_by, source_solution_id, mfd_table=None, meta=None, predecessors=None, metrics=None
     ):
         qry = '''
-            mutation ($source_solution: ID!, $created: DateTime!, $digest: String!, $file_name: String!, $file_size: BigInt!, $produced_by: ID!, $predecessors: [PredecessorInput]) {
+            mutation (
+                $source_solution: ID!, $created: DateTime!, $digest: String!, $file_name: String!, $file_size: BigInt!,
+                $produced_by: ID!, $predecessors: [PredecessorInput]
+            ) {
               create_scaled_inversion_solution(input: {
                   source_solution: $source_solution
                   created: $created

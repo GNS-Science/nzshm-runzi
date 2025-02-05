@@ -2,7 +2,7 @@ import argparse
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
+from runzi.automation.scaling.toshi_api import ToshiApi
 
 
 def prepare_inputs(file_id):
@@ -17,9 +17,10 @@ def prepare_inputs(file_id):
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     # for a single rupture set, pass a valid FileID
-    file_generator = get_output_file_id(toshi_api, file_id)  # for file by file ID
+    # for file by file ID
+    file_generator = get_output_file_id(toshi_api, file_id)
 
-    rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+    rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)  # noqa: F841
 
 
 if __name__ == "__main__":

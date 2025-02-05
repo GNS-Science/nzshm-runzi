@@ -1,20 +1,16 @@
 import argparse
-import base64
 import datetime as dt
 import json
 import logging
-import os
-import platform
 import time
 import urllib
 import uuid
-from pathlib import Path, PurePath
+from pathlib import PurePath
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
-from runzi.automation.scaling.file_utils import get_file_meta
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import SubtaskType
@@ -83,8 +79,8 @@ class BuilderTask:
         else:
             task_id = str(uuid.uuid4())
 
-        ##DO THE WORK
-        ta, ja = task_arguments, job_arguments
+        # DO THE WORK
+        ta = task_arguments
 
         t0 = dt.datetime.utcnow()
         output_file = str(
@@ -160,7 +156,7 @@ if __name__ == "__main__":
         config_file = args.config
         f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
-    except:
+    except FileNotFoundError:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 

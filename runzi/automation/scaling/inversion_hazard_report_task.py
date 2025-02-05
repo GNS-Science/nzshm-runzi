@@ -5,9 +5,8 @@ import itertools
 import json
 import time
 import urllib
-from pathlib import Path, PurePath
+from pathlib import PurePath
 
-import git
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
 # Set up local config, from environment variables, with some some defaults
@@ -41,7 +40,7 @@ class BuilderTask:
 
         t0 = dt.datetime.utcnow()
         print(f"Starting Task at {dt.datetime.utcnow().isoformat()}")
-        ta, ja = task_arguments, job_arguments
+        ta = task_arguments
 
         subtask_arguments = ta['subtask_arguments']  # this is a dict of the parameters to run on each
 
@@ -58,7 +57,7 @@ class BuilderTask:
         argument_vals = [subtask_arguments[k] for k in argument_names]
 
         sites_table_data = []
-        grid_table_data = []
+        # grid_table_data = []
 
         for argument_set in itertools.product(*argument_vals):
             named_args = dict()
@@ -83,7 +82,10 @@ class BuilderTask:
         # if self.use_api and grid_table_data:
         #     result = self._toshi_api.table.create_table(
         #         grid_table_data,
-        #         column_headers = ["forecast_timespan", "bg_seismicity", "iml_period", "gmpe", "lat", "lon", "PofET 0.02", "PofET 0.1"],
+        #         column_headers = [
+        #               "forecast_timespan", "bg_seismicity",
+        #               "iml_period", "gmpe", "lat", "lon", "PofET 0.02", "PofET 0.1"
+        #           ],
         #         column_types = ["double", "string", "double", "string", "double", "double", "double", "double"],
         #         object_id=ta['file_id'],
         #         table_name="Inversion Solution Gridded Hazard",
@@ -151,7 +153,7 @@ class BuilderTask:
         gridCalc.setRegion(regions)
         gridCalc.setSpacing(float(grid_spacings))
         # gridCalc.createGeoJson(0, "/tmp/gridded-hazard.json");
-        if not iml_periods in self.grid_iml_periods:
+        if iml_periods not in self.grid_iml_periods:
             return
 
         table_rows = gridCalc.getTabularGridHazards()
@@ -161,7 +163,7 @@ class BuilderTask:
             iml_periods,
             gmpes,
         ]
-        header = table_rows[0]
+        # header = table_rows[0]
 
         for row in table_rows[1:]:
             newrow = args + [x for x in row][:4]
@@ -186,7 +188,7 @@ class BuilderTask:
         # plot_folder = Path(self._output_folder, ta['file_id'])
         # plot_folder.mkdir(exist_ok=True)
 
-        print(f'location reports')
+        print('location reports')
         for code in locations.keys():
             point = locations[code][1:3]
             # years = iml_periods
@@ -256,7 +258,7 @@ if __name__ == "__main__":
         config_file = args.config
         f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
-    except:
+    except FileNotFoundError:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 

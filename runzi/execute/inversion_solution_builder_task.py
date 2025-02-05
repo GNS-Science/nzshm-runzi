@@ -2,17 +2,14 @@ import argparse
 import datetime as dt
 import json
 import logging
-import os
 import platform
 import time
 import urllib.parse
 import uuid
 from pathlib import PurePath
-from types import SimpleNamespace
 
 import git
 from dateutil.tz import tzutc
-from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
@@ -52,7 +49,7 @@ class BuilderTask:
             self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
             self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-    def run(self, task_arguments, job_arguments):
+    def run(self, task_arguments, job_arguments):  # noqa: C901
 
         # Run the task....
         ta = task_arguments
@@ -362,7 +359,7 @@ if __name__ == "__main__":
         config_file = args.config
         f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
-    except:
+    except FileNotFoundError:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 

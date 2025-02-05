@@ -1,18 +1,11 @@
 import argparse
-import base64
 import datetime as dt
 import json
 import os
-import platform
 import time
 from pathlib import Path, PurePath
-from types import SimpleNamespace
 
 import git
-from dateutil.tz import tzutc
-from nshm_toshi_client.general_task import GeneralTask
-from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
-from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
 API_URL = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
@@ -39,7 +32,9 @@ class BuilderTask:
 
         if self.use_api:
             # headers={"x-api-key":API_KEY}
-            # self._ruptgen_api = RuptureGenerationTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+            # self._ruptgen_api = RuptureGenerationTask(
+            #     API_URL, S3_URL, None, with_schema_validation=True, headers=headers
+            # )
             # # self._general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
             # self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
             pass
@@ -51,11 +46,11 @@ class BuilderTask:
 
         t0 = dt.datetime.utcnow()
 
-        environment = {
-            "host": platform.node(),
-            "gitref_opensha": self._repoheads['opensha'],
-            "gitref_nshm-nz-opensha": self._repoheads['nshm-nz-opensha'],
-        }
+        # environment = {
+        #     "host": platform.node(),
+        #     "gitref_opensha": self._repoheads['opensha'],
+        #     "gitref_nshm-nz-opensha": self._repoheads['nshm-nz-opensha'],
+        # }
 
         if self.use_api:
             # create new task in toshi_api
@@ -69,12 +64,14 @@ class BuilderTask:
             # self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
 
             # # #link task to the input datafile
-            # input_file_id = task_arguments.get('rupture_set_file_id') or task_arguments.get('inversion_solution_file_id')
+            # input_file_id = task_arguments.get('rupture_set_file_id') or
+            #   task_arguments.get('inversion_solution_file_id')
             # if input_file_id:
             #     self._ruptgen_api.link_task_file(task_id, input_file_id, 'READ')
             pass
         else:
-            task_id = None
+            pass
+            # task_id = None
 
         # Run the task....
         ta, ja = task_arguments, job_arguments
@@ -106,7 +103,8 @@ class BuilderTask:
         # diags_folder.mkdir(parents=True, exist_ok=True)
 
         # # build the full report
-        # report_title = f"Solution-{ta['short_name']}-{ta['rupture_class']}-ce({ta['completion_energy']})-{ta['max_inversion_time']}mins-rnd({ta['round_number']})"
+        # report_title = f"Solution-{ta['short_name']}-{ta['rupture_class']}-ce({ta['completion_energy']})
+        # -{ta['max_inversion_time']}mins-rnd({ta['round_number']})"
 
         # self._report_builder\
         #     .setName(report_title)\
@@ -126,7 +124,7 @@ class BuilderTask:
         print("Report took %s secs" % (t1 - t0).total_seconds())
 
         # capture task metrics
-        duration = (dt.datetime.utcnow() - t0).total_seconds()
+        # duration = (dt.datetime.utcnow() - t0).total_seconds()
 
         if self.use_api:
             # record the completed task
@@ -149,7 +147,8 @@ class BuilderTask:
             pass
 
         else:
-            print(metrics)
+            # print(metrics)
+            pass
         print("; took %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
 
 

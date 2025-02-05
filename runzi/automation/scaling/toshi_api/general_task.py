@@ -1,14 +1,9 @@
-import base64
 import copy
 import datetime as dt
-import json
 from enum import Enum
-from hashlib import md5
-from pathlib import PurePath
 
-import requests
 from dateutil.tz import tzutc
-from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
+from nshm_toshi_client.toshi_client_base import ToshiClientBase
 
 
 class SubtaskType(Enum):
@@ -64,7 +59,7 @@ class CreateGeneralTaskArgs(object):
     def set_model_type(self, model_type: ModelType):
         try:
             assert model_type.name in [name for name, n in ModelType.__members__.items()]
-        except:
+        except AssertionError:
             print(f'model_type {model_type} not found in {ModelType}')
             raise
         self._arguments['model_type'] = model_type.name

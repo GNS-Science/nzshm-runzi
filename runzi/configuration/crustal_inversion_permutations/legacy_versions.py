@@ -1,5 +1,4 @@
 import itertools
-import json
 
 
 def all_permutations_generator(args, rupture_set_info):
@@ -166,11 +165,11 @@ def branch_permutations_generator(args, rupture_set_info):
         args['slip_rate_normalized_weights'],
         args['slip_rate_unnormalized_weights'],
         # args['mfd_mag_gt_5_sans'], args['mfd_mag_gt_5_tvz'],
-        [b_and_n['N_sans']],
-        [b_and_n['N_tvz']],
+        [b_and_n['N_sans']],  # noqa: F821
+        [b_and_n['N_tvz']],  # noqa: F821
         # args['mfd_b_values_sans'], args['mfd_b_values_tvz'],
-        [b_and_n['b_sans']],
-        [b_and_n['b_tvz']],
+        [b_and_n['b_sans']],  # noqa: F821
+        [b_and_n['b_tvz']],  # noqa: F821
         args['mfd_transition_mags'],
         args['seismogenic_min_mags'],
         args['selection_interval_secs'],
@@ -187,8 +186,8 @@ def branch_permutations_generator(args, rupture_set_info):
         args['paleo_probability_models'],
         args['paleo_parent_rate_smoothness_constraint_weights'],
         # args['scaling_c_val_dip_slips'], args['scaling_c_val_strike_slips'],
-        [scaling_c['dip']],
-        [scaling_c['strike']],
+        [scaling_c['dip']],  # noqa: F821
+        [scaling_c['strike']],  # noqa: F821
         args.get(
             'initial_solution_ids',
             [
@@ -236,8 +235,8 @@ def branch_permutations_generator(args, rupture_set_info):
             initial_solution_id=initial_solution_id,
             # Composite args (branch sets)
             # are required for ToshiUI filtering
-            b_and_n=str(b_and_n),
-            scaling_c=str(scaling_c),
+            b_and_n=str(b_and_n),  # noqa: F821
+            scaling_c=str(scaling_c),  # noqa: F821
         )
 
         yield task_arguments
@@ -760,7 +759,7 @@ def branch_permutations_generator_24(args, rupture_set_info):
                             paleo_rate_constraint_weight=paleo_rate_constraint_weight,
                             paleo_rate_constraint=paleo_rate_constraint,
                             paleo_probability_model=paleo_probability_model,
-                            paleo_parent_rate_smoothness_constraint_weight=paleo_parent_rate_smoothness_constraint_weight,
+                            paleo_parent_rate_smoothness_constraint_weight=paleo_parent_rate_smoothness_constraint_weight,  # noqa: E501
                             scaling_c_val_dip_slip=scaling_c_val_dip_slip,
                             scaling_c_val_strike_slip=scaling_c_val_strike_slip,
                             initial_solution_id=initial_solution_id,

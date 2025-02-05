@@ -11,17 +11,17 @@ from multiprocessing.dummy import Pool
 from pathlib import PurePath
 from subprocess import check_call
 
-from dateutil.tz import tzutc
+from runzi.automation.scaling import subduction_rupture_set_builder_task
+from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 
 # Set up your local config, from environment variables, with some sone defaults
-from scaling.local_config import (
+from .scaling.local_config import (  # JVM_HEAP_MAX,; JVM_HEAP_START,
     API_KEY,
     API_URL,
     CLUSTER_MODE,
     FATJAR,
     JAVA_THREADS,
-    JVM_HEAP_MAX,
-    JVM_HEAP_START,
     OPENSHA_JRE,
     OPENSHA_ROOT,
     S3_URL,
@@ -29,10 +29,6 @@ from scaling.local_config import (
     WORK_PATH,
     EnvMode,
 )
-
-from runzi.automation.scaling import subduction_rupture_set_builder_task
-from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 1
@@ -43,7 +39,7 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 MAX_JOB_TIME_SECS = 60 * 30  # Change this soon
 
 if CLUSTER_MODE == EnvMode['AWS']:
-    WORK_PATH = '/WORKING'
+    WORK_PATH = '/WORKING'  # noqa
 
 
 def build_tasks(general_task_id, args):
@@ -150,7 +146,7 @@ if __name__ == "__main__":
 
     TASK_DESCRIPTION = """
     """
-    ##Test parameters
+    # Test parameters
     args = dict(
         models=[
             "SBD_0_2_PUY_15",

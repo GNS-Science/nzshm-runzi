@@ -1,6 +1,3 @@
-from ast import Num
-from datetime import date
-
 import inquirer
 from prompt_toolkit import prompt
 from termcolor import cprint
@@ -173,11 +170,10 @@ def change_values(value_callback):
 
     global_config.__setitem__("_" + arg, val)
 
-    if go_again == True:
+    if go_again:
         print(f'You changed {arg} to: {val}')
         change_values(value_callback)
-
-    if go_again == False:
+    else:
         save_to_json()
 
 
@@ -203,7 +199,7 @@ def add_task_arg(*args):
     if data_type == 'List':
         value = value.split(',')
     confirm = inquirer.confirm("Are you sure you would like to add this argument?")
-    if confirm == True:
+    if confirm:
         global_config.__setitem__("_" + key, value)
         cprint(f'New task argument - {key}: {value}')
     else:
@@ -220,7 +216,7 @@ def delete_task_arg(*args):
     else:
         try:
             confirm = inquirer.confirm(f"Are you sure you would like to delete {deleted_arg}?")
-            if confirm == True:
+            if confirm:
                 global_config.__deleteitem__('_' + deleted_arg)
             else:
                 return

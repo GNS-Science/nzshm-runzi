@@ -1,18 +1,14 @@
 import argparse
-import base64
 import datetime as dt
 import json
-import os
-import platform
 import time
 import urllib
 from pathlib import Path, PurePath
 
 import git
-from dateutil.tz import tzutc
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
+from runzi.automation.scaling.local_config import S3_REPORT_BUCKET, WORK_PATH
 from runzi.util.aws.s3_folder_upload import upload_to_bucket
 from runzi.util.build_named_fault_mfd_index import build_named_fault_mfd_index
 
@@ -49,7 +45,7 @@ class BuilderTask:
 
     def build_opensha_report(self, task_arguments, job_arguments):
         t0 = dt.datetime.utcnow()
-        ta, ja = task_arguments, job_arguments
+        ta = task_arguments
         # build the MagRate Curve
         solution_report_folder = Path(self._output_folder, ta['file_id'], 'solution_report')
         solution_report_folder.mkdir(parents=True, exist_ok=True)
@@ -63,7 +59,7 @@ class BuilderTask:
 
     def build_mfd_plots(self, task_arguments, job_arguments):
         t0 = dt.datetime.utcnow()
-        ta, ja = task_arguments, job_arguments
+        ta = task_arguments
 
         # # build the Named Fault MFDS, only if we have a FM with named faults
         # if ("CFM_0_9" in ta["fault_model"]) | ("CFM_1_0" in ta["fault_model"]):
@@ -103,7 +99,7 @@ if __name__ == "__main__":
         config_file = args.config
         f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
-    except:
+    except FileNotFoundError:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 

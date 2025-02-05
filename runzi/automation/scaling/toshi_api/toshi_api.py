@@ -1,18 +1,13 @@
-import base64
 import copy
-import json
 from datetime import datetime as dt
-from hashlib import md5
-from pathlib import PurePath
 
-import requests
-from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
+from nshm_toshi_client.toshi_client_base import ToshiClientBase
 from nshm_toshi_client.toshi_file import ToshiFile
 from nshm_toshi_client.toshi_task_file import ToshiTaskFile
 
 from .aggregate_inversion_solution import AggregateInversionSolution
 from .automation_task import AutomationTask
-from .general_task import CreateGeneralTaskArgs, GeneralTask, ModelType, SubtaskType
+from .general_task import GeneralTask
 from .inversion_solution import InversionSolution
 from .inversion_solution_nrml import InversionSolutionNrml
 from .openquake_hazard import OpenquakeHazardConfig, OpenquakeHazardSolution, OpenquakeHazardTask
@@ -253,7 +248,11 @@ class Table(object):
         }
 
         qry = '''
-        mutation create_table ($rows: [[String]]!, $object_id: ID!, $table_name: String!, $headers: [String]!, $column_types: [RowItemType]!, $created: DateTime!, $table_type: TableType!, $dimensions: [KeyValueListPairInput]!) {
+        mutation create_table (
+          $rows: [[String]]!, $object_id: ID!, $table_name: String!, $headers: [String]!,
+          $column_types: [RowItemType]!, $created: DateTime!, $table_type: TableType!,
+          $dimensions: [KeyValueListPairInput]!
+        ) {
           create_table(input: {
             name: $table_name
             created: $created

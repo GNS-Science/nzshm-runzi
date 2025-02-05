@@ -38,7 +38,10 @@ class TimeDependentInversionSolution(object):
 
     def _create_inversion_solution(self, filepath, produced_by, source_solution_id, meta=None, predecessors=None):
         qry = '''
-            mutation ($source_solution: ID!, $created: DateTime!, $digest: String!, $file_name: String!, $file_size: BigInt!, $produced_by: ID!, $predecessors: [PredecessorInput]) {
+            mutation (
+                $source_solution: ID!, $created: DateTime!, $digest: String!, $file_name: String!, $file_size: BigInt!,
+                $produced_by: ID!, $predecessors: [PredecessorInput]
+            ) {
               create_time_dependent_inversion_solution(input: {
                   source_solution: $source_solution
                   created: $created

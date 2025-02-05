@@ -1,17 +1,13 @@
 import argparse
-import base64
 import datetime as dt
 import json
-import os
-import platform
 import time
 from pathlib import Path, PurePath
 
 import git
-from dateutil.tz import tzutc
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
+from runzi.automation.scaling.local_config import S3_REPORT_BUCKET
 from runzi.util.aws.s3_folder_upload import upload_to_bucket
 
 

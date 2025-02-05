@@ -1,7 +1,6 @@
 import base64
 import os
 import stat
-from hashlib import new
 from itertools import chain
 from pathlib import PurePath
 

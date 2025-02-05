@@ -6,15 +6,9 @@ only to be used until we have automated rupture reporting
 
 """
 
-import base64
-import collections
-import fnmatch
-import json
 import os
-import shutil
 import urllib.request
 from datetime import datetime as dt
-from pathlib import Path, PurePath
 
 import pytz
 
@@ -33,12 +27,20 @@ class GeneralTaskBuilder:
 
     def get_template(self, info, mfd_dirs):
         """
-        {'key': 'RmlsZTo0NTkuMDlnaEda', 'meta': {'rupture_set_file_id': 'RmlsZTo0NTkuMDlnaEda',
-        'generation_task_id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4MUNqSFFa',
-        'short_name': 'CFM_0_9_SANSTVZ_D90-0.1', 'rupture_class': 'Azimuth', 'max_inversion_time': '1380', 'completion_energy': '0.2', 'round_number': '0'},
-        'solution_relative_path': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4MUNqSFFa/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo0NTkuMDlnaEda.zip',
+        {'key': 'RmlsZTo0NTkuMDlnaEda',
+        'meta':
+            {
+                'rupture_set_file_id': 'RmlsZTo0NTkuMDlnaEda',
+                'generation_task_id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4MUNqSFFa',
+                 'short_name': 'CFM_0_9_SANSTVZ_D90-0.1',
+                 'rupture_class': 'Azimuth',
+                 'max_inversion_time': '1380',
+                 'completion_energy': '0.2',
+                 'round_number': '0'
+            },
+        'solution_relative_path':
+            'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4MUNqSFFa/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo0NTkuMDlnaEda.zip',
         'index_path': 'RmlsZTo0NTkuMDlnaEda/DiagnosticsReport/index.html'}
-
         """
         m = info["meta"]
         report_info = (
@@ -46,7 +48,10 @@ class GeneralTaskBuilder:
         )
 
         if m["rupture_set_file_id"] in mfd_dirs:
-            extra_link = f'&nbsp;<a href="{self._date_path}-{self.set_number}/{m["rupture_set_file_id"]}/named_fault_mfds/mfd_index.html" >Named MFDS</a>'
+            extra_link = (
+                f'&nbsp;<a href="{self._date_path}-{self.set_number}/{m["rupture_set_file_id"]}/'
+                f'named_fault_mfds/mfd_index.html" >Named MFDS</a>'
+            )
         else:
             extra_link = ""
 
@@ -87,7 +92,10 @@ def get_file_meta(file_node, tui, display_keys=[]):
 
 
 def rgt_template(rgt, upload_folder, tui, display_keys=None):
-    """'id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4ODNXcnFN', 'created': '2021-06-10T10:23:23.457361+00:00', 'state': 'DONE', 'result': 'SUCCESS',"""
+    """
+    'id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4ODNXcnFN', 'created': '2021-06-10T10:23:23.457361+00:00',
+    'state': 'DONE', 'result': 'SUCCESS',
+    """
     rid = rgt["id"]
     result = rgt["result"]
     fname = None
@@ -127,7 +135,7 @@ def inv_template(rgt, upload_folder, tui, display_keys=None):
     rid = rgt["id"]
     result = rgt["result"]
     fname = None
-    fault_model = ""
+    # fault_model = ""
     display_info = ""
     display_keys = display_keys or []
     if not rgt.get("files"):
@@ -145,7 +153,7 @@ def inv_template(rgt, upload_folder, tui, display_keys=None):
         if fn["role"] == "READ" and "zip" in fn["file"]["file_name"]:
             for kv_pair in fn["file"]["meta"]:
                 if kv_pair["k"] == "fault_model":
-                    fault_model = kv_pair["v"]
+                    # fault_model = kv_pair["v"]
                     break
 
     if fname:
@@ -215,7 +223,7 @@ def build_manual_index(
 <hr />
     """
 
-    if multiple_entries == False:
+    if not multiple_entries:
         index_request = urllib.request.Request(index_url)
         index_html = urllib.request.urlopen(index_request)
         parsed_index_html = index_html.read().decode("utf-8")

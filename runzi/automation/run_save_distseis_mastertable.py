@@ -15,7 +15,7 @@ import csv
 import logging
 from pathlib import Path
 
-from runzi.automation.run_save_file_archive import create_archive, is_valid, process_one_file
+from runzi.automation.run_save_file_archive import process_one_file
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -36,7 +36,7 @@ def process_masterfile(args):
         header = list(map(lambda x: x.replace('-', '_'), header))  # deal with hyphens
 
         if not header == VALID_ROW:
-            log.error(f'file {arg.masterfile} is not in the correct format.')
+            log.error(f'file {args.masterfile} is not in the correct format.')
 
         for dr in map(lambda x: InputDataRow(*x), reader):
             filepath = Path(distseis_parent, dr.xmlfile)
@@ -49,10 +49,10 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="""take masterfile frm nz-oq-disteis save each entry a ToshiAPI File object"""
     )
-    parser.add_argument("masterfile", help=f"the path for the input csv file, which must have header: {VALID_ROW}")
+    parser.add_argument("masterfile", help="the path for the input csv file, which must have header: {VALID_ROW}")
     parser.add_argument("-t", "--tag", help="add tag to metadata")
-    parser.add_argument("-D", "--dry-run", action="store_true", help=f"mock run")
-    parser.add_argument("-o", "--output_csv_file", help=f"write out CSV, adding toshi_id to input csv")
+    parser.add_argument("-D", "--dry-run", action="store_true", help="mock run")
+    parser.add_argument("-o", "--output_csv_file", help="write out CSV, adding toshi_id to input csv")
     args = parser.parse_args()
     return args
 
@@ -66,7 +66,7 @@ def main():
     if args.output_csv_file:
         with open(args.output_csv_file, 'w', newline='') as csvfile:
             _writer = csv.writer(csvfile)
-            _writer.writerow(VALID_ROW_OUT)  #  header row
+            _writer.writerow(VALID_ROW_OUT)  # header row
             for p in processed:
                 _writer.writerow(list(p._asdict().values()))
 

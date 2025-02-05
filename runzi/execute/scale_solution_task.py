@@ -1,19 +1,15 @@
 import argparse
-import base64
 import datetime as dt
 import json
-import os
-import platform
 import time
 import urllib
 import uuid
-from pathlib import Path, PurePath
+from pathlib import PurePath
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
-from solvis import *
+from solvis import *  # noqa: F403
 
-from runzi.automation.scaling.file_utils import get_file_meta
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import SubtaskType
@@ -64,7 +60,7 @@ class BuilderTask:
         else:
             task_id = str(uuid.uuid4())
 
-        ##DO THE WORK
+        # DO THE WORK
         result = self.scaleRuptureRates(
             job_arguments.get('source_solution_info').get('filepath'),
             task_id,
@@ -119,7 +115,7 @@ class BuilderTask:
 
     def scaleRuptureRates(self, in_solution_filepath, task_id, scale, polygon_scale=None, polygon_max_mag=None):
 
-        soln = InversionSolution().from_archive(in_solution_filepath)
+        soln = InversionSolution().from_archive(in_solution_filepath)  # noqa: F405
 
         rr = soln.ruptures
         ra = soln.rates
@@ -135,7 +131,7 @@ class BuilderTask:
             rates.loc[mag_ind, 'Annual Rate'] = rates[mag_ind]['Annual Rate'] * polygon_scale
 
         # all other props are derived from these
-        scaled_soln = InversionSolution()
+        scaled_soln = InversionSolution()  # noqa: F405
         scaled_soln.set_props(rates, ruptures, indices, soln.fault_sections.copy())
 
         new_archive = PurePath(WORK_PATH, 'NZSHM22_ScaledInversionSolution-' + str(task_id) + '.zip')
@@ -157,7 +153,7 @@ if __name__ == "__main__":
         config_file = args.config
         f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
-    except:
+    except FileNotFoundError:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 

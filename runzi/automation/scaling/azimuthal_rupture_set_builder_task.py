@@ -1,10 +1,8 @@
 import argparse
-import csv
 import datetime as dt
 import json
 import os
 import platform
-import pwd
 import time
 from pathlib import PurePath
 

@@ -1,10 +1,7 @@
 """Execute the openquake pin an external process."""
 
-#!python3
-
 import io
 import logging
-import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -12,11 +9,9 @@ from pathlib import Path
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 
 try:
-    import openquake
+    from openquake.commonlib.datastore import get_datadir
 except ImportError:
     print("openquake not installed, not importing")
-else:
-    from openquake.commonlib.datastore import get_datadir
 
 from runzi.automation.scaling.local_config import SPOOF_HAZARD, WORK_PATH
 from runzi.util import archive
@@ -48,7 +43,8 @@ def execute_openquake(configfile, task_no, toshi_task_id, hazard_task_type):
 
     try:
         #
-        #  oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
+        #  oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini
+        # -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
         #
         cmd = ['oq', 'engine', '--run', f'{configfile}', '-L', f'{logfile}']
         log.info(f'cmd 1: {cmd}')
@@ -62,13 +58,14 @@ def execute_openquake(configfile, task_no, toshi_task_id, hazard_task_type):
         filtered_txt3 = 'The site is far from all seismic sources'
         if (
             'error' in oq_out.lower()
-            and (not filtered_txt1 in oq_out)
-            and (not filtered_txt2 in oq_out)
-            and (not filtered_txt3 in oq_out)
+            and (filtered_txt1 not in oq_out)
+            and (filtered_txt2 not in oq_out)
+            and (filtered_txt3 not in oq_out)
         ):
             raise Exception("Unknown error encountered by openquake")
         if hazard_task_type is HazardTaskType.DISAGG:
-            # filtered = (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out) or (re.findall('No \[.*\] contributions for site', oq_out))
+            # filtered = (filtered_txt1 in /q_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out) or
+            # (re.findall('No \[.*\] contributions for site', oq_out))
             filtered = filtered_txt3 in oq_out
         else:
             filtered = (filtered_txt1 in oq_out) or (filtered_txt2 in oq_out) or (filtered_txt3 in oq_out)

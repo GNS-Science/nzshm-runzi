@@ -38,7 +38,7 @@ def filter_lat(line, lat_min, lat_max):
     # _lat_max = float(line[5])
     try:
         lat1 = float(line[3])
-    except:
+    except Exception:
         return
     if lat_min < lat1 < lat_max:
         if line[1] in '0':

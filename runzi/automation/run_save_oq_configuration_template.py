@@ -13,13 +13,10 @@ inputs:-
 
 """
 import argparse
-import datetime as dt
 import logging
 import os
 import zipfile
 from pathlib import Path, PurePath
-
-from dateutil.tz import tzutc
 
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, USE_API, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi

@@ -7,14 +7,9 @@ only to be used until we have automated rupture reporting
 
 """
 
-import base64
-import collections
 import fnmatch
 import json
 import os
-
-# import os.path
-import shutil
 from copy import copy
 from pathlib import Path, PurePath
 
@@ -38,8 +33,8 @@ class NamedFaultIndexBuilder:
         self._dir_name = path
 
     def build(self):
-        file_meta = dict()
-        filekey = None
+        # file_meta = dict()
+        # filekey = None
 
         lines = []
         for root, dirs, files in os.walk(self._dir_name):
@@ -53,9 +48,21 @@ class NamedFaultIndexBuilder:
                         value = json.load(open(PurePath(folder_path, filename), 'r'))
                         print(value['task_arguments'])
                         '''
-                        e.g {'rupture_set_file_id': 'RmlsZTo0ODMuMFN3cTRN', 'generation_task_id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4M0FoblN5',
-                        'solution_file': '/home/chrisbc/DEV/GNS/opensha-new/nshm-nz-opensha/src/python/automation/tmp/UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4M0FoblN5/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo0ODMuMFN3cTRN.zip',
-                        'short_name': 'CFM_0_9_SANSTVZ_D90-0.1', 'rupture_class': 'Azimuth', 'max_inversion_time': '1380', 'completion_energy': '0.05', 'round_number': '0'}
+                        e.g
+                        {
+                            'rupture_set_file_id': 'RmlsZTo0ODMuMFN3cTRN',
+                            'generation_task_id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4M0FoblN5',
+                            'solution_file': (
+                                                '/home/chrisbc/DEV/GNS/opensha-new/nshm-nz-opensha/src/'
+                                                'python/automation/tmp/UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4M0FoblN5/
+                                                'InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo0ODMuMFN3cTRN.zip'
+                                            ),
+                            'short_name': 'CFM_0_9_SANSTVZ_D90-0.1',
+                            'rupture_class': 'Azimuth',
+                            'max_inversion_time': '1380',
+                            'completion_energy': '0.05',
+                            'round_number': '0'
+                        }
                         '''
                         try:
                             solution_name = PurePath(value['task_arguments']['file_path']).name
@@ -80,7 +87,8 @@ class NamedFaultIndexBuilder:
                         # TODO: ugly workaround, FIXME in NEXT beavan
                         rupture_class = "Azimuth"
                         azim_len = len(
-                            "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4NXN4Zjhp/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo1MDcuMDdaMkFp.zip"
+                            "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4NXN4Zjhp/"
+                            "InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo1MDcuMDdaMkFp.zip"
                         )
                         if len(info['solution_relative_path']) > azim_len:
                             rupture_class = "Coulomb"
@@ -97,18 +105,19 @@ class NamedFaultIndexBuilder:
         return f'''<li id="{title}"><a href="{path}" ><h3>{title}</h3></a></li>'''
 
     def plot_div_template(self, title, path):
-        return f'''
-            <div id="{title}-inline_img" align="center"><a href="{path}" ><img src="{path}" alt="{title} "width="500" /></a><p><a href="#top">top</a></p></div>
-            '''
+        return (
+            f'<div id="{title}-inline_img" align="center"><a href="{path}" ><img src="{path}" alt="{title} '
+            '"width="500" /></a><p><a href="#top">top</a></p></div>'
+        )
 
     def build_image_index(self, image_folder):
-        file_meta = dict()
-        filekey = None
+        # file_meta = dict()
+        # filekey = None
         patterns = [
             "*.png",
         ]
 
-        lines = []
+        # lines = []
         for root, dirs, files in os.walk(image_folder):
             for pattern in patterns:
                 for filename in sorted(fnmatch.filter(files, pattern)):

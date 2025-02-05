@@ -8,23 +8,14 @@ from multiprocessing.dummy import Pool
 from pathlib import PurePath
 from subprocess import check_call
 
-import boto3
-from dateutil.tz import tzutc
-
-from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (
     API_KEY,
     API_URL,
     CLUSTER_MODE,
-    FATJAR,
-    JAVA_THREADS,
-    JVM_HEAP_MAX,
-    JVM_HEAP_START,
-    OPENSHA_JRE,
     OPENSHA_ROOT,
-    S3_REPORT_BUCKET,
     S3_URL,
     USE_API,
     WORK_PATH,
@@ -33,13 +24,12 @@ from runzi.automation.scaling.local_config import (
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
 from runzi.execute import inversion_sub_solution_task
-from runzi.util.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 # JAVA_THREADS = 4
 
 if CLUSTER_MODE == EnvMode['AWS']:
-    WORK_PATH = '/WORKING'
+    WORK_PATH = '/WORKING'  # noqa
 
 
 def build_subset_tasks(general_task_id, source_solutions, args):
@@ -110,7 +100,6 @@ if __name__ == "__main__":
 
     # If you wish to oversolution_ide something in the main config, do so here ..
     WORKER_POOL_SIZE = 1
-    USE_API = True
     # If using API give this task a descriptive setting...
     TASK_TITLE = "Inversion Subset test on 60m #2"
     TASK_DESCRIPTION = """

@@ -102,11 +102,13 @@ def get_file_meta(file_api, single_file_id):
 def get_download_info(file_api, file_infos):
     """
     [{'id': 'RmlsZToyOS4wRUVjV0E=',
-    'file_name': 'RupSet_Cl_FM(CFM_0_3_SANSTVZ)_noInP(T)_slRtP(0.05)_slInL(F)_cfFr(0.75)_cfRN(2)_cfRTh(0.5)_cfRP(0.01)_fvJm(T)_jmPTh(0.001)_cmRkTh(360)_mxJmD(15)_plCn(T)_adMnD(6)_adScFr(0)_bi(F)_stGrSp(2)_coFr(0.5).zip',
+    'file_name':
+        'RupSet_Cl_FM(CFM_0_3_SANSTVZ)_noInP(T)_slRtP(0.05)_slInL(F)_cfFr(0.75)_cfRN(2)_cfRTh(0.5)_cfRP(0.01)_
+            fvJm(T)_jmPTh(0.001)_cmRkTh(360)_mxJmD(15)_plCn(T)_adMnD(6)_adScFr(0)_bi(F)_stGrSp(2)_coFr(0.5).zip',
     'file_size': 2498443,
     'short_name': None}]
     """
-    file_info = {}
+    # file_info = {}
     for itm in file_infos:
         api_result = file_api.get_file_download_url(itm['id'])
         # print(api_result)

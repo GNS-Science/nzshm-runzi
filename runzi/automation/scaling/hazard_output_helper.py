@@ -1,5 +1,4 @@
 import os
-from distutils.util import execute
 from pathlib import Path, PurePath
 
 import requests
@@ -74,9 +73,9 @@ class HazardOutputHelper:
         """
 
         qry = '''
-        query oqhazsoln ($id:ID!) {  
+        query oqhazsoln ($id:ID!) {
             node (id: $id) {
-		    ... on OpenquakeHazardSolution {
+                ... on OpenquakeHazardSolution {
                     ###archive_type###_archive {
                     id
                     file_name
@@ -99,7 +98,7 @@ class HazardOutputHelper:
         qry = '''
         query oqhaztask ($id:ID!) {
             node (id: $id) {
-         	... on OpenquakeHazardTask {
+            ... on OpenquakeHazardTask {
                 hazard_solution {
                 id
                 }

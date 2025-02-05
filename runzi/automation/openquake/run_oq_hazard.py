@@ -3,18 +3,13 @@
 This script produces tasks in either AWS, PBS or LOCAL that run OpenquakeHazard
 
 """
-import csv
 import datetime as dt
 import json
 import logging
 import os
 import pwd
-from collections import namedtuple
 from pathlib import Path
 from typing import Any, Dict, List
-
-from nshm_toshi_client import ToshiFile
-from nzshm_common.location import CodedLocation
 
 from runzi.automation.config import validate_entry, validate_path
 from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, EnvMode

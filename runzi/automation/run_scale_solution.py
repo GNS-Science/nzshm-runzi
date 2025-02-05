@@ -8,31 +8,17 @@ import datetime as dt
 import logging
 import os
 import pwd
-from multiprocessing.dummy import Pool
-from subprocess import check_call
-
-from dateutil.tz import tzutc
 
 from runzi.automation.scaling.file_utils import get_output_file_ids
-from runzi.automation.scaling.local_config import (
-    API_KEY,
-    API_URL,
-    CLUSTER_MODE,
-    JAVA_THREADS,
-    USE_API,
-    WORK_PATH,
-    EnvMode,
-)
+from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
-from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.configuration.scale_inversion_solution import build_scale_tasks
 
 # If you wish to override something in the main config, do so here ..
 WORKER_POOL_SIZE = 27
 # WORKER_POOL_SIZE = None
-USE_API = True
 
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
@@ -64,7 +50,7 @@ def run(
     logging.getLogger('botocore').setLevel(loglevel)
     logging.getLogger('git.cmd').setLevel(loglevel)
 
-    log = logging.getLogger(__name__)
+    # log = logging.getLogger(__name__)
 
     GENERAL_TASK_ID = None
 

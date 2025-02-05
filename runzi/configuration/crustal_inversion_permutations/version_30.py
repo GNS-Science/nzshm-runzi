@@ -141,7 +141,7 @@ def branch_permutations_generator_30(args, rupture_set_info):
                             paleo_rate_constraint_weight=paleo_rate_constraint_weight,
                             paleo_rate_constraint=paleo_rate_constraint,
                             paleo_probability_model=paleo_probability_model,
-                            paleo_parent_rate_smoothness_constraint_weight=paleo_parent_rate_smoothness_constraint_weight,
+                            paleo_parent_rate_smoothness_constraint_weight=paleo_parent_rate_smoothness_constraint_weight,  # noqa: E501
                             scaling_c_val_dip_slip=scaling_c_val_dip_slip,
                             scaling_c_val_strike_slip=scaling_c_val_strike_slip,
                             initial_solution_id=initial_solution_id,
@@ -170,8 +170,10 @@ if __name__ == '__main__':
 
     # #these are used for BOTH, NORMALIZED and UNNORMALIZED
     # constraint_wts = [
-    #     #{"tag": "mfd weak", "mfd_eq": "1e4", "mfd_ineq": "1e4", "sr_norm": "1e3", "sr_unnorm": "1e5", "paleo_rate": "1e3", "paleo_smoothing": "1e4" },
-    #     {"tag": "mfd even", "mfd_eq": "1e4", "mfd_ineq": "1e4", "sr_norm": "1e2", "sr_unnorm": "1e4", "paleo_rate": "1e2", "paleo_smoothing": "1e4" }
+    #     #{"tag": "mfd weak", "mfd_eq": "1e4", "mfd_ineq": "1e4", "sr_norm": "1e3",
+    # "sr_unnorm": "1e5", "paleo_rate": "1e3", "paleo_smoothing": "1e4" },
+    #     {"tag": "mfd even", "mfd_eq": "1e4", "mfd_ineq": "1e4", "sr_norm": "1e2",
+    # "sr_unnorm": "1e4", "paleo_rate": "1e2", "paleo_smoothing": "1e4" }
     # ]
 
     constraint_wts = [
@@ -223,7 +225,7 @@ if __name__ == '__main__':
             "CLASSICAL_SA",
         ],  # "FAST_SA"
         # Scaling Relationships
-        scaling_relationships=['SIMPLE_CRUSTAL'],  #'SMPL_NZ_INT_LW', 'SMPL_NZ_INT_UP'],
+        scaling_relationships=['SIMPLE_CRUSTAL'],  # 'SMPL_NZ_INT_LW', 'SMPL_NZ_INT_UP'],
         scaling_recalc_mags=['True'],
         # Paleo
         paleo_rate_constraints=["GEOLOGIC_SLIP_1_0"],

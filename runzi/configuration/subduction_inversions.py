@@ -1,24 +1,13 @@
-import datetime as dt
 import itertools
 import os
-import pwd
 import stat
-from multiprocessing.dummy import Pool
 from pathlib import PurePath
-from subprocess import check_call
-
-import boto3
-from dateutil.tz import tzutc
-
-from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (
-    API_KEY,
     API_URL,
     CLUSTER_MODE,
     FATJAR,
-    JAVA_THREADS,
     JVM_HEAP_MAX,
     JVM_HEAP_START,
     OPENSHA_JRE,
@@ -30,7 +19,6 @@ from runzi.automation.scaling.local_config import (
     EnvMode,
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
 from runzi.execute import inversion_solution_builder_task
 from runzi.util.aws import get_ecs_job_config
 
@@ -38,7 +26,7 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 # JAVA_THREADS = 4
 
 if CLUSTER_MODE == EnvMode['AWS']:
-    WORK_PATH = '/WORKING'
+    WORK_PATH = '/WORKING'  # noqa: F811
 
 
 def build_subduction_tasks(general_task_id, rupture_sets, args):
@@ -397,8 +385,10 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
 #         threads_per_selectors = ['4'],
 #         averaging_threads = ['4'],
 #         averaging_interval_secs = ['30'],
-#         non_negativity_functions = ['TRY_ZERO_RATES_OFTEN'], # TRY_ZERO_RATES_OFTEN,  LIMIT_ZERO_RATES, PREVENT_ZERO_RATES
-#         perturbation_functions = ['EXPONENTIAL_SCALE'], #,'EXPONENTIAL_SCALE'], # UNIFORM_NO_TEMP_DEPENDENCE, EXPONENTIAL_SCALE;
+#         non_negativity_functions = ['TRY_ZERO_RATES_OFTEN'],
+# # TRY_ZERO_RATES_OFTEN,  LIMIT_ZERO_RATES, PREVENT_ZERO_RATES
+#         perturbation_functions = ['EXPONENTIAL_SCALE'],
+# #,'EXPONENTIAL_SCALE'], # UNIFORM_NO_TEMP_DEPENDENCE, EXPONENTIAL_SCALE;
 
 #         #Scaling Relationships
 #         scaling_relationships=['SMPL_NZ_INT_MN'], #'SMPL_NZ_INT_LW', 'SMPL_NZ_INT_UP'],

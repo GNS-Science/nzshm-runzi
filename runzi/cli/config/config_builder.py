@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from runzi.cli.cli_helpers import display, from_json_format, to_json_format, unique_id
+from runzi.cli.cli_helpers import to_json_format, unique_id
 from runzi.cli.crustal_inversion_runner import run_crustal_inversion
 from runzi.cli.subduction_inversion_runner import run_subduction_inversion
 
@@ -55,7 +55,7 @@ class Config:
     def to_json(self, overwrite):
         json_dict = to_json_format(self.__dict__)
         path = Path(__file__).resolve().parent / 'saved_configs' / self._subtask_type / self._model_type
-        if overwrite == True:
+        if overwrite:
             for root, dirs, files in os.walk(path):
                 for file in files:
                     if self._unique_id in file:
@@ -66,7 +66,7 @@ class Config:
                 else:
                     print('No file to overwrite - saving to new file')
                     self.save_as_new()
-        if overwrite == False:
+        else:
             self.save_as_new()
 
     def save_as_new(self):

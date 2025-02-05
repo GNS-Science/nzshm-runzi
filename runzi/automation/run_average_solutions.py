@@ -2,21 +2,16 @@ import datetime as dt
 import logging
 import os
 import pwd
-from operator import mod
-from pyexpat import model
-from statistics import mode
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, USE_API, WORK_PATH, EnvMode
+from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
-from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.configuration.average_inversion_solutions import build_average_tasks
 
 # If you wish to override something in the main config, do so here ..
 # WORKER_POOL_SIZE = 2
 WORKER_POOL_SIZE = None
-USE_API = True
 
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
@@ -40,8 +35,6 @@ def run(source_solution_groups, TASK_TITLE, TASK_DESCRIPTION, WORKER_POOL_SIZE):
     logging.getLogger('urllib3').setLevel(loglevel)
     logging.getLogger('botocore').setLevel(loglevel)
     logging.getLogger('git.cmd').setLevel(loglevel)
-
-    log = logging.getLogger(__name__)
 
     GENERAL_TASK_ID = None
 

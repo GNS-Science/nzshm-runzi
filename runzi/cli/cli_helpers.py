@@ -1,19 +1,12 @@
-import os
 import random
 import string
 import sys
-from logging import Manager
-
-from prompt_toolkit import PromptSession, prompt
-from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit.validation import ValidationError, Validator
-from pygments.formatters.terminal256 import TerminalTrueColorFormatter
-
-session = PromptSession()
-
 from pprint import pformat
 
 import inquirer
+from prompt_toolkit import PromptSession  # , prompt
+from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.validation import ValidationError, Validator
 from pyfiglet import Figlet
 from pygments import highlight
 from pygments.formatters import Terminal256Formatter
@@ -33,8 +26,9 @@ from runzi.automation.scaling.local_config import (
     USE_API,
     WORK_PATH,
     WORKER_POOL_SIZE,
-    EnvMode,
 )
+
+session = PromptSession()
 
 
 def landing_banner():
@@ -136,13 +130,13 @@ class MenuHandler:
 
         matched = None
         for option in self.options.keys():
-            cmd_part, remainder = cmd[: len(option)], cmd[len(option) :]
+            cmd_part, remainder = cmd[: len(option)], cmd[len(option) :]  # noqa: F841
             if cmd_part == option:
                 matched = True
 
                 # this might be a helper method, or another menuhandler
                 fn = self.options[cmd_part]
-                res = fn(cmd_part, remainder)
+                # res = fn(cmd_part, remainder)
                 # print(type(fn), dir(fn))
                 if not (hasattr(fn, '__self__') and isinstance(fn.__self__, MenuHandler)):
                     None
@@ -198,27 +192,27 @@ def build_inversion_index(*args):
 
 
 def display_env(*args):
-    cprint(f'NZSHM22_SCRIPT_WORK_PATH:', 'cyan', end=' ')
+    cprint('NZSHM22_SCRIPT_WORK_PATH:', 'cyan', end=' ')
     cprint(WORK_PATH, 'magenta')
-    cprint(f'USE_API:', 'cyan', end=' ')
+    cprint('USE_API:', 'cyan', end=' ')
     cprint(USE_API, 'magenta')
-    cprint(f'NZSHM22_TOSHI_API_URL:', 'cyan', end=' ')
+    cprint('NZSHM22_TOSHI_API_URL:', 'cyan', end=' ')
     cprint(API_URL, 'magenta')
-    cprint(f'NZSHM22_TOSHI_S3_URL:', 'cyan', end=' ')
+    cprint('NZSHM22_TOSHI_S3_URL:', 'cyan', end=' ')
     cprint(S3_URL, 'magenta')
-    cprint(f'NZSHM22_SCRIPT_CLUSTER_MODE:', 'cyan', end=' ')
+    cprint('NZSHM22_SCRIPT_CLUSTER_MODE:', 'cyan', end=' ')
     cprint(CLUSTER_MODE.name, 'magenta')
-    cprint(f'NZSHM22_S3_REPORT_BUCKET:', 'cyan', end=' ')
+    cprint('NZSHM22_S3_REPORT_BUCKET:', 'cyan', end=' ')
     cprint(S3_REPORT_BUCKET, 'magenta')
-    cprint(f'NZSHM22_S3_UPLOAD_WORKERS:', 'cyan', end=' ')
+    cprint('NZSHM22_S3_UPLOAD_WORKERS:', 'cyan', end=' ')
     cprint(S3_UPLOAD_WORKERS, 'magenta')
-    cprint(f'NZSHM22_SCRIPT_JAVA_THREADS:', 'cyan', end=' ')
+    cprint('NZSHM22_SCRIPT_JAVA_THREADS:', 'cyan', end=' ')
     cprint(JAVA_THREADS, 'magenta')
-    cprint(f'NZSHM22_SCRIPT_JVM_HEAP_START:', 'cyan', end=' ')
+    cprint('NZSHM22_SCRIPT_JVM_HEAP_START:', 'cyan', end=' ')
     cprint(JVM_HEAP_START, 'magenta')
-    cprint(f'NZSHM22_SCRIPT_JVM_HEAP_MAX:', 'cyan', end=' ')
+    cprint('NZSHM22_SCRIPT_JVM_HEAP_MAX:', 'cyan', end=' ')
     cprint(JVM_HEAP_MAX, 'magenta')
-    cprint(f'NZSHM22_SCRIPT_WORKER_POOL_SIZE:', 'cyan', end=' ')
+    cprint('NZSHM22_SCRIPT_WORKER_POOL_SIZE:', 'cyan', end=' ')
     cprint(WORKER_POOL_SIZE, 'magenta')
 
 
@@ -226,7 +220,7 @@ def build_inversion_index_query():
     general_tasks = inquirer.text('General Task ID - for multiple put a space between each')
     general_task_list = general_tasks.split(' ')
     confirm = inquirer.confirm(f'Confirm you want to update index.html for IDs: {general_task_list}')
-    if confirm == True:
+    if confirm:
         if len(general_task_list) == 1:
             build_manual_index(general_task_list[0], 'INVERSION')
         elif len(general_task_list) > 1:
