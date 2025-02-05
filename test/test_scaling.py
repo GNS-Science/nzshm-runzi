@@ -10,7 +10,7 @@ def get_mags(properties_file_path):
     magnitudes = []
     with open(properties_file_path, 'r') as properties_file:
         reader = csv.reader(properties_file)
-        header = next(reader)
+        _ = next(reader)
         for row in reader:
             magnitudes.append(float(row[1]))
 
@@ -21,7 +21,7 @@ def get_rates(rates_file_path):
     rates = []
     with open(rates_file_path, 'r') as rates_file:
         reader = csv.reader(rates_file)
-        header = next(reader)
+        _ = next(reader)
         for row in reader:
             rates.append(float(row[1]))
 
@@ -75,9 +75,9 @@ def test_scale_inversion():
         with ZipFile(inv_soln_archive_path) as inv_soln_archive:
             with ZipFile(scaled_soln_archive_path) as scaled_soln_archive:
 
-                properties_path = inv_soln_archive.extract(
-                    'ruptures/properties.csv', path=Path(tmpdir, 'inv_soln', 'properties.csv')
-                )
+                # properties_path = inv_soln_archive.extract(
+                #     'ruptures/properties.csv', path=Path(tmpdir, 'inv_soln', 'properties.csv')
+                # )
                 inv_rates_path = inv_soln_archive.extract(
                     'solution/rates.csv', path=Path(tmpdir, 'inv_soln', 'rates.csv')
                 )
@@ -85,7 +85,7 @@ def test_scale_inversion():
                     'solution/rates.csv', path=Path(tmpdir, 'scaled_soln', 'rates.csv')
                 )
 
-        magnitudes = get_mags(properties_path)
+        # magnitudes = get_mags(properties_path)
         rates_orig = get_rates(inv_rates_path)
         rates_scaled = get_rates(scaled_rates_path)
 

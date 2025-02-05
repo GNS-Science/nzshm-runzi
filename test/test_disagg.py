@@ -28,7 +28,7 @@ class TestDisaggConfigs(unittest.TestCase):
             config_expected = json.load(config_file)
 
         # print(self._logic_tree)
-        disagg_config = get_disagg_configs(self._gt_config, self._logic_tree)
+        disagg_config = get_disagg_configs(self._gt_config, self._logic_tree)  # noqa: F821
 
         assert len(config_expected[0]['deagg_specs']) == len(disagg_config[0]['deagg_specs'])
         for k, v in config_expected[0].items():
