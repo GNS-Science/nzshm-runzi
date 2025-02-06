@@ -13,7 +13,7 @@ s = 0.0
 
 for i in range(rank, N, size):
     x = h * (i + 0.5)
-    s += 4.0 / (1.0 + x**2)
+    s += 4.0 / (1.0 + x**2)  # type: ignore
 PI = numpy.array(s * h, dtype='d')
 comm.Reduce([PI, MPI.DOUBLE], None, op=MPI.SUM, root=0)
 

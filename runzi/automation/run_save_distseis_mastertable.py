@@ -23,8 +23,8 @@ logging.basicConfig(level=logging.INFO)
 VALID_ROW = ['regime', 'seismicity_model', 'bvalue', 'Nvalue', 'xmlfile']
 VALID_ROW_OUT = VALID_ROW + ['toshi_id']
 
-InputDataRow = collections.namedtuple('InputDataRow', VALID_ROW)
-OutputDataRow = collections.namedtuple('OutputDataRow', VALID_ROW_OUT)
+InputDataRow = collections.namedtuple('InputDataRow', VALID_ROW)  # type: ignore
+OutputDataRow = collections.namedtuple('OutputDataRow', VALID_ROW_OUT)  # type: ignore
 
 
 def process_masterfile(args):

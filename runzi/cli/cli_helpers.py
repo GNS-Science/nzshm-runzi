@@ -28,7 +28,7 @@ from runzi.automation.scaling.local_config import (
     WORKER_POOL_SIZE,
 )
 
-session = PromptSession()
+session: PromptSession[str] = PromptSession()
 
 
 def landing_banner():

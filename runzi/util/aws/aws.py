@@ -8,7 +8,7 @@ import io
 import json
 import urllib.parse
 import zipfile
-from typing import List
+from typing import List, Optional
 
 import boto3
 from botocore.exceptions import ClientError
@@ -94,7 +94,7 @@ def get_ecs_job_config(
     vcpu,
     job_definition="Fargate-runzi-opensha-JD",
     job_queue="BasicFargate_Q",
-    extra_env: List[BatchEnvironmentSetting] = None,
+    extra_env: Optional[List[BatchEnvironmentSetting]] = None,
     use_compression=False,
 ):
 

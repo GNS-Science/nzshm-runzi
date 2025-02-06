@@ -13,7 +13,7 @@ import tempfile
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generator, List, Tuple
+from typing import Generator, List, Tuple, Iterator
 
 import boto3.session
 from nzshm_common.location import CodedLocation
@@ -65,6 +65,7 @@ def requested_configs(
     iter_method: str = '',
 ) -> Generator[DeaggConfig, None, None]:
 
+    iterator: Iterator
     if not iter_method or iter_method.lower() == 'product':
         iterator = itertools.product(
             map(coded_location, locations),

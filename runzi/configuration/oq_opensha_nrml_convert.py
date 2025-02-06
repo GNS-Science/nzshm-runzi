@@ -82,7 +82,7 @@ def build_nrml_tasks(
                 toshi_s3_url=None,
                 toshi_report_bucket=None,
                 task_module=runzi.execute.oq_opensha_convert_task.__name__,
-                time_minutes=int(HAZARD_MAX_TIME),  # noqa: F821
+                time_minutes=int(HAZARD_MAX_TIME),  # type:ignore # noqa: F821 
                 memory=30720,
                 vcpu=4,
             )  # TODO HAZARD_MAX_TIME not defined

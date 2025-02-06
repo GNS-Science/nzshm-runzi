@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     if scale:
         scale_gt_id = scale_solution.run(
-            source_solution_ids, scales, model_type, task_title, TASK_DESCRIPTION, WORKER_POOL_SIZE
+            source_solution_ids, scales, task_title, TASK_DESCRIPTION, WORKER_POOL_SIZE
         )
 
         # get solution IDs from scaleGTID
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         scaled_solution_ids = source_solution_ids
 
     convert_gt_id = convert_solution.run(
-        scaled_solution_ids, model_type, task_title, TASK_DESCRIPTION, WORKER_POOL_SIZE
+        scaled_solution_ids, task_title, TASK_DESCRIPTION, WORKER_POOL_SIZE
     )
 
     if scale:

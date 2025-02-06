@@ -86,10 +86,10 @@ if __name__ == "__main__":
         gt_reader = csv.reader(gt_file)
         with open(DISAGG_LIST, 'a') as list_file:
             writer = csv.writer(list_file)
-            Disagg = namedtuple("Disagg", next(gt_reader), rename=True)
+            Disagg = namedtuple("Disagg", next(gt_reader), rename=True)  # type: ignore
             for row in gt_reader:
                 disagg = Disagg(*row)
-                gt_id = disagg.GT_ID
+                gt_id = disagg.GT_ID  # type: ignore
 
                 disagg_info = disagg_api.get_dissag_detail(gt_id)
                 success_count = check_result(disagg_info)
