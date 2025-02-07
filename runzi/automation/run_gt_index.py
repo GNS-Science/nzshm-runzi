@@ -13,7 +13,7 @@ import tempfile
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generator, List, Tuple, Iterator
+from typing import Generator, Iterator, List, Tuple
 
 import boto3.session
 from nzshm_common.location import CodedLocation

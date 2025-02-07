@@ -5,6 +5,7 @@ from typing import Any, Dict, Iterable, List, Optional, TypeAlias
 
 Config: TypeAlias = Dict[str, Dict[str, Any]]
 
+
 # to be replaced with e.g. pydantic
 def validate_entry(
     config: Config,

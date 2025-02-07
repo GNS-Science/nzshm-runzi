@@ -43,7 +43,7 @@ def test_build_hazard_tasks_model_version(config, monkeypatch):
 # if overwrite gmcm, srm, or hazard config, check that they are changed
 def test_build_hazard_tasks_overwrite_model(config, monkeypatch):
 
-    root_path = Path(config["path"]).parent
+    root_path = Path(config["file"]["path"]).parent
 
     config["model"]["gmcm_logic_tree"] = str(root_path / "gmcm_small.json")
     config["model"]["srm_logic_tree"] = str(root_path / "srm_small.json")

@@ -38,9 +38,7 @@ if __name__ == "__main__":
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     if scale:
-        scale_gt_id = scale_solution.run(
-            source_solution_ids, scales, task_title, TASK_DESCRIPTION, WORKER_POOL_SIZE
-        )
+        scale_gt_id = scale_solution.run(source_solution_ids, scales, task_title, TASK_DESCRIPTION, WORKER_POOL_SIZE)
 
         # get solution IDs from scaleGTID
         file_generator = get_output_file_ids(toshi_api, scale_gt_id)
@@ -51,9 +49,7 @@ if __name__ == "__main__":
     else:
         scaled_solution_ids = source_solution_ids
 
-    convert_gt_id = convert_solution.run(
-        scaled_solution_ids, task_title, TASK_DESCRIPTION, WORKER_POOL_SIZE
-    )
+    convert_gt_id = convert_solution.run(scaled_solution_ids, task_title, TASK_DESCRIPTION, WORKER_POOL_SIZE)
 
     if scale:
         print('scale solution GT ID:', scale_gt_id)

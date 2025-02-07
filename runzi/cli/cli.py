@@ -2,7 +2,6 @@ import runzi.cli.inv_setup as inv_setup
 from runzi.cli.cli_helpers import MenuHandler, build_inversion_index, display_env, landing_banner
 from runzi.cli.inversion_diagnostic_runner import inversion_diagnostic_query
 from runzi.cli.load_json import load_crustal, load_subduction
-
 from runzi.cli.openquake_hazard import openquake_hazard_query
 
 context = 'runziCLI'
