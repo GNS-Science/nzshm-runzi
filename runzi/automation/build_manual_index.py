@@ -7,20 +7,13 @@ only to be used until we have automated rupture reporting
 """
 
 import os
-
 import urllib.request
-import shutil
-import fnmatch
-from pathlib import PurePath, Path
 from datetime import datetime as dt
+
 import pytz
 
-import base64
-import json
-import collections
-
-from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.local_config import WORK_PATH
+from runzi.automation.scaling.toshi_api import ToshiApi
 
 
 class GeneralTaskBuilder:
@@ -34,18 +27,31 @@ class GeneralTaskBuilder:
 
     def get_template(self, info, mfd_dirs):
         """
-        {'key': 'RmlsZTo0NTkuMDlnaEda', 'meta': {'rupture_set_file_id': 'RmlsZTo0NTkuMDlnaEda',
-        'generation_task_id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4MUNqSFFa',
-        'short_name': 'CFM_0_9_SANSTVZ_D90-0.1', 'rupture_class': 'Azimuth', 'max_inversion_time': '1380', 'completion_energy': '0.2', 'round_number': '0'},
-        'solution_relative_path': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4MUNqSFFa/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo0NTkuMDlnaEda.zip',
+        {'key': 'RmlsZTo0NTkuMDlnaEda',
+        'meta':
+            {
+                'rupture_set_file_id': 'RmlsZTo0NTkuMDlnaEda',
+                'generation_task_id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4MUNqSFFa',
+                 'short_name': 'CFM_0_9_SANSTVZ_D90-0.1',
+                 'rupture_class': 'Azimuth',
+                 'max_inversion_time': '1380',
+                 'completion_energy': '0.2',
+                 'round_number': '0'
+            },
+        'solution_relative_path':
+            'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4MUNqSFFa/InversionSolution-RmlsZTo2-rnd0-t1380_RmlsZTo0NTkuMDlnaEda.zip',
         'index_path': 'RmlsZTo0NTkuMDlnaEda/DiagnosticsReport/index.html'}
-
         """
         m = info["meta"]
-        report_info = f"{m['short_name']} {m['rupture_class']} energy({m['completion_energy']}) round({m['round_number']})"
+        report_info = (
+            f"{m['short_name']} {m['rupture_class']} energy({m['completion_energy']}) round({m['round_number']})"
+        )
 
         if m["rupture_set_file_id"] in mfd_dirs:
-            extra_link = f'&nbsp;<a href="{self._date_path}-{self.set_number}/{m["rupture_set_file_id"]}/named_fault_mfds/mfd_index.html" >Named MFDS</a>'
+            extra_link = (
+                f'&nbsp;<a href="{self._date_path}-{self.set_number}/{m["rupture_set_file_id"]}/'
+                f'named_fault_mfds/mfd_index.html" >Named MFDS</a>'
+            )
         else:
             extra_link = ""
 
@@ -60,9 +66,7 @@ def gt_template(node, general_task_id, tui):
     description = node.get("description")
 
     NZ_timezone = pytz.timezone("NZ")
-    created = dt.strptime(node.get("created"), "%Y-%m-%dT%H:%M:%S.%f%z").astimezone(
-        NZ_timezone
-    )
+    created = dt.strptime(node.get("created"), "%Y-%m-%dT%H:%M:%S.%f%z").astimezone(NZ_timezone)
 
     return f"""
     <h2>{title}</h2>
@@ -88,7 +92,10 @@ def get_file_meta(file_node, tui, display_keys=[]):
 
 
 def rgt_template(rgt, upload_folder, tui, display_keys=None):
-    """'id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4ODNXcnFN', 'created': '2021-06-10T10:23:23.457361+00:00', 'state': 'DONE', 'result': 'SUCCESS',"""
+    """
+    'id': 'UnVwdHVyZUdlbmVyYXRpb25UYXNrOjE4ODNXcnFN', 'created': '2021-06-10T10:23:23.457361+00:00',
+    'state': 'DONE', 'result': 'SUCCESS',
+    """
     rid = rgt["id"]
     result = rgt["result"]
     fname = None
@@ -128,7 +135,7 @@ def inv_template(rgt, upload_folder, tui, display_keys=None):
     rid = rgt["id"]
     result = rgt["result"]
     fname = None
-    fault_model = ""
+    # fault_model = ""
     display_info = ""
     display_keys = display_keys or []
     if not rgt.get("files"):
@@ -146,7 +153,7 @@ def inv_template(rgt, upload_folder, tui, display_keys=None):
         if fn["role"] == "READ" and "zip" in fn["file"]["file_name"]:
             for kv_pair in fn["file"]["meta"]:
                 if kv_pair["k"] == "fault_model":
-                    fault_model = kv_pair["v"]
+                    # fault_model = kv_pair["v"]
                     break
 
     if fname:
@@ -176,7 +183,7 @@ def build_manual_index(
     general_task_id,
     subtask_type,
     multiple_entries=False,
-    index_url="http://nzshm22-static-reports.s3-website-ap-southeast-2.amazonaws.com/opensha/index.html"
+    index_url="http://nzshm22-static-reports.s3-website-ap-southeast-2.amazonaws.com/opensha/index.html",
 ):
 
     API_URL = os.getenv("NZSHM22_TOSHI_API_URL", "http://127.0.0.1:5000/graphql")
@@ -186,9 +193,7 @@ def build_manual_index(
     TUI = "http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com/"
 
     headers = {"x-api-key": API_KEY}
-    general_api = ToshiApi(
-        API_URL, S3_URL, None, with_schema_validation=True, headers=headers
-    )
+    general_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     try:
         node = general_api.get_general_task_subtask_files(general_task_id)
@@ -204,13 +209,9 @@ def build_manual_index(
         for child_node in node["children"]["edges"]:
             rgt = child_node["node"]["child"]
             if subtask_type == "RUPTSET":
-                node_list.append(
-                    rgt_template(rgt, UPLOAD_FOLDER, TUI, info_keys)
-                )  # rupt sets
+                node_list.append(rgt_template(rgt, UPLOAD_FOLDER, TUI, info_keys))  # rupt sets
             elif subtask_type == "INVERSION":
-                node_list.append(
-                    inv_template(rgt, UPLOAD_FOLDER, TUI, info_keys)
-                )  # inversions
+                node_list.append(inv_template(rgt, UPLOAD_FOLDER, TUI, info_keys))  # inversions
         return "".join(node_list)
 
     new_entries = f"""
@@ -222,7 +223,7 @@ def build_manual_index(
 <hr />
     """
 
-    if multiple_entries == False:
+    if not multiple_entries:
         index_request = urllib.request.Request(index_url)
         index_html = urllib.request.urlopen(index_request)
         parsed_index_html = index_html.read().decode("utf-8")

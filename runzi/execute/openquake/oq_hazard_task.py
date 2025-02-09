@@ -1,4 +1,5 @@
 """Openquake Hazard Task."""
+
 # !python3 openquake_hazard_task.py
 
 import argparse
@@ -14,7 +15,7 @@ import tempfile
 import time
 import zipfile
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 import requests
 from dateutil.tz import tzutc
@@ -24,23 +25,11 @@ from nzshm_common.geometry.geometry import backarc_polygon, within_polygon
 from nzshm_common.location.location import get_locations
 from nzshm_model import NshmModel
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
-from nzshm_model.psha_adapter.openquake import (
-    OpenquakeConfig,
-    OpenquakeModelPshaAdapter,
-)
+from nzshm_model.psha_adapter.openquake import OpenquakeConfig, OpenquakeModelPshaAdapter
 
-from runzi.automation.scaling.local_config import (
-    API_KEY,
-    API_URL,
-    S3_URL,
-    SPOOF_HAZARD,
-    WORK_PATH,
-)
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_HAZARD, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import (
-    HazardTaskType,
-)
-
+from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.execute.openquake.execute_openquake import execute_openquake
 from runzi.util.aws import decompress_config
 
@@ -92,16 +81,10 @@ class BuilderTask:
         self.use_api = job_args.get("use_api", False)
 
         headers = {"x-api-key": API_KEY}
-        self._toshi_api = ToshiApi(
-            API_URL, S3_URL, None, with_schema_validation=True, headers=headers
-        )
-        self._task_relation_api = TaskRelation(
-            API_URL, None, with_schema_validation=True, headers=headers
-        )
+        self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+        self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
-    def _setup_automation_task(
-        self, task_arguments, job_arguments, config_id, environment, task_type
-    ):
+    def _setup_automation_task(self, task_arguments, job_arguments, config_id, environment, task_type):
         print("=" * 50)
         print("task arguments ...")
         print(task_arguments)
@@ -118,9 +101,7 @@ class BuilderTask:
         )
 
         # link OpenquakeHazardTask to the parent GT
-        gt_conn = self._task_relation_api.create_task_relation(
-            job_arguments["general_task_id"], automation_task_id
-        )
+        gt_conn = self._task_relation_api.create_task_relation(job_arguments["general_task_id"], automation_task_id)
         print(
             f"created task_relationship: {gt_conn} "
             f"for at: {automation_task_id} "
@@ -151,14 +132,10 @@ class BuilderTask:
         self._toshi_api.file.upload_content(post_url, task_args_json)
         # save the two output archives
         if not oq_result.get("no_ruptures"):
-            csv_archive_id, post_url = self._toshi_api.file.create_file(
-                oq_result["csv_archive"]
-            )
+            csv_archive_id, post_url = self._toshi_api.file.create_file(oq_result["csv_archive"])
             self._toshi_api.file.upload_content(post_url, oq_result["csv_archive"])
 
-            hdf5_archive_id, post_url = self._toshi_api.file.create_file(
-                oq_result["hdf5_archive"]
-            )
+            hdf5_archive_id, post_url = self._toshi_api.file.create_file(oq_result["hdf5_archive"])
             self._toshi_api.file.upload_content(post_url, oq_result["hdf5_archive"])
 
         predecessors = []
@@ -196,11 +173,8 @@ class BuilderTask:
 
     def _sterilize_task_arguments_gmcmlt(self, ta):
         ta_clean = copy.deepcopy(ta)
-        ta_clean["gmcm_logic_tree"] = (
-            ta_clean["gmcm_logic_tree"].replace('"', "``").replace("\n", "-")
-        )
+        ta_clean["gmcm_logic_tree"] = ta_clean["gmcm_logic_tree"].replace('"', "``").replace("\n", "-")
         return ta_clean
-    
 
     # TODO: we need to consider the best way to pass args to toshiAPI and make the args such as logic
     # trees and hazard config readable and (possibly) searchable.
@@ -220,22 +194,19 @@ class BuilderTask:
 
         def clean_string(input_str):
             return input_str.replace('"', "``").replace("\n", "-")
-        
+
         ta_clean = copy.deepcopy(task_arguments)
         ta_clean["model"]["srm_logic_tree"] = clean_string(str(ta_clean["model"]["srm_logic_tree"]))
         ta_clean["model"]["gmcm_logic_tree"] = clean_string(str(ta_clean["model"]["gmcm_logic_tree"]))
         ta_clean["model"]["hazard_config"] = clean_string(str(ta_clean["model"]["hazard_config"]))
         return flatten_dict(ta_clean)
 
-
     def run(self, task_arguments, job_arguments):
         t0 = dt.datetime.now(dt.timezone.utc)
         task_arguments, job_arguments
         environment = {
             "host": platform.node(),
-            "openquake.version": "SPOOFED"
-            if SPOOF_HAZARD
-            else "TODO: get openquake version",
+            "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version",
         }
 
         try:
@@ -258,9 +229,7 @@ class BuilderTask:
             # config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEyOTI0NA=="  # PROD
             config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEwMTU3MA=="  # TEST
             ta_clean = self._clean_task_args(task_arguments)
-            automation_task_id = self._setup_automation_task(
-                ta_clean, job_arguments, config_id, environment, task_type
-            )
+            automation_task_id = self._setup_automation_task(ta_clean, job_arguments, config_id, environment, task_type)
 
         #################################
         # SETUP openquake CONFIG FOLDER
@@ -299,14 +268,10 @@ class BuilderTask:
                         with_schema_validation=True,
                         headers=headers,
                     )
-                    file_api.download_file(
-                        file_id, target_dir=temp_dir, target_name="sites.csv"
-                    )
+                    file_api.download_file(file_id, target_dir=temp_dir, target_name="sites.csv")
                     locations_file = Path(temp_dir) / "sites.csv"
                 else:
-                    locations_file = Path(
-                        task_arguments["site_params"]["locations_file"]
-                    )
+                    locations_file = Path(task_arguments["site_params"]["locations_file"])
                 locations = get_locations([locations_file])
                 with locations_file.open() as lf:
                     reader = csv.reader(lf)
@@ -325,9 +290,7 @@ class BuilderTask:
 
         # write
         cache_folder = config_folder / "downloads"
-        job_file = model.psha_adapter(OpenquakeModelPshaAdapter).write_config(
-            cache_folder, config_folder
-        )
+        job_file = model.psha_adapter(OpenquakeModelPshaAdapter).write_config(cache_folder, config_folder)
 
         ##############
         # EXECUTE
@@ -375,18 +338,14 @@ class BuilderTask:
                   -h, --help           show this help message and exit
                   -c, --create-tables  Ensure tables exist.
                 """
+                source_logic_tree = (task_arguments["model"]["srm_logic_tree"],)
                 tag = ":".join(
                     (
                         source_logic_tree.branch_sets[0].short_name,
                         source_logic_tree.branch_sets[0].branches[0].tag,
                     )
                 )
-                source_ids = ", ".join(
-                    [
-                        b.nrml_id
-                        for b in source_logic_tree.fault_systems[0].branches[0].sources
-                    ]
-                )
+                source_ids = ", ".join([b.nrml_id for b in source_logic_tree.fault_systems[0].branches[0].sources])
                 cmd = [
                     "store_hazard_v3",
                     str(oq_result["oq_calc_id"]),

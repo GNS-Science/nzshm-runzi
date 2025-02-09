@@ -14,24 +14,33 @@ The job is responsible for
  The job is either a bash script (for local machine) or
  a PBS script for the cluster environment
 """
-import os
 import json
-# import scaling.rupture_set_builder_task
+import os
 
 from .local_config import EnvMode
 
+# import scaling.rupture_set_builder_task
 
-class OpenshaTaskFactory():
 
-    def __init__(self, root_path, working_path,  python_script_module, jre_path=None, app_jar_path=None, task_config_path=None,
+class OpenshaTaskFactory:
+
+    def __init__(
+        self,
+        root_path,
+        working_path,
+        python_script_module,
+        jre_path=None,
+        app_jar_path=None,
+        task_config_path=None,
         initial_gateway_port=25333,
         python='python3',
-        jvm_heap_start=3, jvm_heap_max=10):
+        jvm_heap_start=3,
+        jvm_heap_max=10,
+    ):
         """
         initial_gateway_port: what port to start incrementing from
         """
         self._next_port = initial_gateway_port
-
 
         self._jre_path = jre_path or "/opt/sw/java/java-11-openjdk-amd64/bin/java"
         self._app_jar_path = app_jar_path or "~/NSHM/opensha/nshm-nz-opensha/build/libs/nshm-nz-opensha-all.jar"
@@ -39,7 +48,7 @@ class OpenshaTaskFactory():
         # self._script_path = os.path.dirname(scaling.rupture_set_builder_task.__file__) #path to the actual task script
         self._python_script = os.path.abspath(python_script_module.__file__)
 
-        self._root_path = root_path #path containing the git repos
+        self._root_path = root_path  # path containing the git repos
         self._working_path = working_path
 
         self._jvm_heap_start_gb = str(jvm_heap_start)
@@ -48,11 +57,10 @@ class OpenshaTaskFactory():
         # self._python_script = python_script or 'rupture_set_builder_task.py'
 
     def write_task_config(self, task_arguments, job_arguments):
-        data =dict(task_arguments=task_arguments, job_arguments=job_arguments)
+        data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
         fname = f"{self._config_path}/config.{self._next_port}.json"
         with open(fname, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
-
 
     def get_task_script(self):
         return self._get_bash_script()
@@ -65,27 +73,30 @@ class OpenshaTaskFactory():
         get the bash for the next task
         """
 
-        script = f"""
-export PATH={self._jre_path}:$PATH
-export JAVA_CLASSPATH={self._app_jar_path}
-export CLASSNAME=nz.cri.gns.NZSHM22.opensha.util.NZSHM22_PythonGateway
-export NZSHM22_APP_PORT={self._next_port}
-
-cd {self._root_path}
-java -Xms{self._jvm_heap_start_gb}G -Xmx{self._jvm_heap_max_gb}G -classpath ${{JAVA_CLASSPATH}} ${{CLASSNAME}} > {self._working_path}/java_app.{self._next_port}.log &
-{self._python} {self._python_script} {self._config_path}/config.{self._next_port}.json > {self._working_path}/python_script.{self._next_port}.log
-
-#Kill the Java gateway server
-kill -9 $!
-"""
-        self._next_port +=1
+        # noqa: E501
+        script = (
+            f"export PATH={self._jre_path}:$PATH\n"
+            f"export JAVA_CLASSPATH={self._app_jar_path}\n"
+            "export CLASSNAME=nz.cri.gns.NZSHM22.opensha.util.NZSHM22_PythonGateway\n"
+            f"export NZSHM22_APP_PORT={self._next_port}\n"
+            f"cd {self._root_path}\n"
+            f"java -Xms{self._jvm_heap_start_gb}G -Xmx{self._jvm_heap_max_gb}G"
+            f" -classpath ${{JAVA_CLASSPATH}} ${{CLASSNAME}} > "
+            f"{self._working_path}/java_app.{self._next_port}.log &\n"
+            f"{self._python} {self._python_script} {self._config_path}/config.{self._next_port}.json > "
+            f"{self._working_path}/python_script.{self._next_port}.log\n"
+            # Kill the Java gateway server
+            "kill -9 $!"
+        )
+        self._next_port += 1
         return script
 
 
 class OpenshaAWSTaskFactory(OpenshaTaskFactory):
 
-    def __init__(self, root_path, working_path,  python_script_module, **kwargs):
-        super().__init__(root_path, working_path,  python_script_module, **kwargs)
+    def __init__(self, root_path, working_path, python_script_module, **kwargs):
+        super().__init__(root_path, working_path, python_script_module, **kwargs)
+
 
 #     def get_task_script(self):
 
@@ -108,26 +119,24 @@ class OpenshaAWSTaskFactory(OpenshaTaskFactory):
 
 class OpenshaPBSTaskFactory(OpenshaTaskFactory):
 
-    def __init__(self, root_path, working_path,  python_script_module, **kwargs):
+    def __init__(self, root_path, working_path, python_script_module, **kwargs):
 
-        super().__init__(root_path, working_path,  python_script_module, **kwargs)
+        super().__init__(root_path, working_path, python_script_module, **kwargs)
 
-        self._pbs_ppn = kwargs.get('pbs_ppn', 16) #define hows many processors the PBS job should 'see'
-        self._pbs_nodes = 1 #always ust one PBS node (and which one we don't know)
-        self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1) #defines maximum time the jobs is allocated by PBS
-
+        self._pbs_ppn = kwargs.get('pbs_ppn', 16)  # define hows many processors the PBS job should 'see'
+        self._pbs_nodes = 1  # always ust one PBS node (and which one we don't know)
+        self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1)  # defines maximum time the jobs is allocated by PBS
 
     def write_task_config(self, task_arguments, job_arguments):
-        data =dict(task_arguments=task_arguments, job_arguments=job_arguments)
+        data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
         fname = f"{self._config_path}/config.{self._next_port}.json"
         if task_arguments.get('max_inversion_time'):
-            self._pbs_wall_hours = int(float(task_arguments.get('max_inversion_time'))/60) + 1
+            self._pbs_wall_hours = int(float(task_arguments.get('max_inversion_time')) / 60) + 1
         if job_arguments.get('java_threads'):
             self._pbs_ppn = int(job_arguments.get('java_threads'))
 
         with open(fname, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
-
 
     def get_task_script(self):
         return f"""
@@ -148,6 +157,7 @@ export NO_PROXY=${{no_proxy}}
 
 #END_OF_PBS
 """
+
 
 def get_factory(environment_mode):
     if environment_mode == EnvMode['LOCAL']:

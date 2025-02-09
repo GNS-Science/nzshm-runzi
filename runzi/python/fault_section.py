@@ -1,9 +1,10 @@
 import csv
-from shapely.geometry import Point
+
 import numpy as np
+from shapely.geometry import Point
 
 
-class FaultSubSectionFactory():
+class FaultSubSectionFactory:
 
     def __init__(self):
         self.current_idx = 0
@@ -15,9 +16,8 @@ class FaultSubSectionFactory():
 
 
 # TODO Docstrings
-class FaultSubSection():
-    """
-    """
+class FaultSubSection:
+    """ """
 
     @staticmethod
     def from_csv_row(factory, row, parent=None):
@@ -31,7 +31,8 @@ class FaultSubSection():
         fs._idx = (int(row['along_strike_index']), int(row['down_dip_index']))
         fs._top_trace = [
             Point(float(row['lat1(deg)']), float(row['lon1(deg)'])),
-            Point(float(row['lat2(deg)']), float(row['lon2(deg)']))]
+            Point(float(row['lat2(deg)']), float(row['lon2(deg)'])),
+        ]
         fs._dip = float(row['dip (deg)'])
         fs._top_depth = float(row['top_depth (km)'])
         fs._bottom_depth = float(row['bottom_depth (km)'])
@@ -76,7 +77,7 @@ class FaultSubSection():
         return self._bottom_depth
 
 
-class SheetFault():
+class SheetFault:
     def __init__(self, name):
         self._name = name
         self._sub_sections = {}
@@ -130,7 +131,7 @@ class SheetFault():
         for col in range(0, self._column_max + 1):
             for row in range(0, self._row_max + 1):
                 # get ruptures by range
-                rupt = self._grid[col:col+int(scale*aspect), row:row+scale]
+                rupt = self._grid[col : col + int(scale * aspect), row : row + scale]
                 # remove empty values
                 rupt = rupt[np.logical_not(np.isnan(rupt))]
                 # convert to integerrs and get a flat list

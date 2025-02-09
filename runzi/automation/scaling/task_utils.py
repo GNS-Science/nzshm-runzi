@@ -1,5 +1,6 @@
 from runzi.automation.scaling.toshi_api.general_task import ModelType
 
+
 def _get_model_type(id, toshi_api):
     # get the type
     qry = '''
@@ -19,7 +20,7 @@ def _get_model_type(id, toshi_api):
             }
         }
     }'''
-    qry = qry.replace('TYPENAME',typename)
+    qry = qry.replace('TYPENAME', typename)
     input_variables = dict(id=id)
     auto_id = toshi_api.run_query(qry, input_variables)['node']['produced_by']['id']
 
@@ -36,13 +37,13 @@ def _get_model_type(id, toshi_api):
 
     return ModelType[model_type_str]
 
-    
+
 def get_model_type(ids: list, toshi_api):
 
-    model_type = _get_model_type(ids[0],toshi_api)
+    model_type = _get_model_type(ids[0], toshi_api)
     # check that all models types are the same
     for id in ids:
-        mt = _get_model_type(id,toshi_api)
+        mt = _get_model_type(id, toshi_api)
         assert mt is model_type, 'not all model types in source id list are the same'
-    
+
     return model_type

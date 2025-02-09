@@ -1,17 +1,19 @@
 from pathlib import Path
 
-from nzshm_model import get_model_version, NshmModel
+from nzshm_model import NshmModel, get_model_version
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeConfig
 
 import runzi.configuration.openquake.oq_hazard as coh
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
-from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 
 from . import Spy
 
+
 def build_task_mock(task_arguments, job_arguments, task_id, extra_env):
     pass
+
 
 # if nshm_model_version, check hazard config, gmcm, and 1 srm
 def test_build_hazard_tasks_model_version(config, monkeypatch):
@@ -37,10 +39,11 @@ def test_build_hazard_tasks_model_version(config, monkeypatch):
     assert srm == srm_expected
     assert hazard_config == hazard_config_expected
 
+
 # if overwrite gmcm, srm, or hazard config, check that they are changed
 def test_build_hazard_tasks_overwrite_model(config, monkeypatch):
 
-    root_path = Path(config["path"]).parent
+    root_path = Path(config["file"]["path"]).parent
 
     config["model"]["gmcm_logic_tree"] = str(root_path / "gmcm_small.json")
     config["model"]["srm_logic_tree"] = str(root_path / "srm_small.json")
@@ -67,4 +70,3 @@ def test_build_hazard_tasks_overwrite_model(config, monkeypatch):
     assert gmcm == gmcm_expected
     assert srm == srm_expected
     assert hazard_config == hazard_config_expected
-

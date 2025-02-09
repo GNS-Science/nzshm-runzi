@@ -6,6 +6,7 @@ from typing import Any, Dict, Iterable, List, Optional, TypeAlias
 Config: TypeAlias = Dict[str, Dict[str, Any]]
 
 
+# to be replaced with e.g. pydantic
 def validate_entry(
     config: Config,
     table: str,
@@ -47,6 +48,8 @@ def validate_entry(
         raise ValueError(msg)
 
     if isinstance(entry, list):
+        if not subtype:
+            raise Exception("if type is list, subtype must be provided")
         if len(entry) < 1:
             msg = f"{name} must be list with length > 0"
             raise ValueError(msg)
@@ -75,7 +78,7 @@ def validate_path(config: Config, table: str, name: str):
     validate_entry(config, table, name, [str])
     path = Path(config[table][name])
     if not path.is_absolute():
-        path = Path(config["path"]).parent / path
+        path = Path(config["file"]["path"]).parent / path
     if not path.exists():
         msg = f"logic tree file {config[table][name]} does not exist"
         raise ValueError(msg)

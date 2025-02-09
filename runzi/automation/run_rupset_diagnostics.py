@@ -1,30 +1,31 @@
+import datetime as dt
+import logging
 import os
-import pwd
-import itertools
 import stat
+from multiprocessing.dummy import Pool
 from pathlib import PurePath
 from subprocess import check_call
-from multiprocessing.dummy import Pool
 
-import datetime as dt
-from dateutil.tz import tzutc
-
-from nshm_toshi_client.general_task import GeneralTask
-from nshm_toshi_client.toshi_file import ToshiFile
-from scaling.toshi_api import ToshiApi
-
-from scaling.opensha_task_factory import OpenshaTaskFactory
-from scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
-
-import scaling.ruptset_diags_report_task
-
+from .scaling import ruptset_diags_report_task
+from .scaling.file_utils import download_files, get_output_file_id
 
 # Set up your local config, from environment variables, with some sone defaults
-from scaling.local_config import (OPENSHA_ROOT, WORK_PATH, OPENSHA_JRE, FATJAR,
-    JVM_HEAP_MAX, JVM_HEAP_START, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, S3_URL, S3_REPORT_BUCKET, CLUSTER_MODE, REPORT_LEVEL)
+from .scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    FATJAR,
+    JVM_HEAP_START,
+    OPENSHA_JRE,
+    OPENSHA_ROOT,
+    REPORT_LEVEL,
+    S3_URL,
+    USE_API,
+    WORK_PATH,
+)
+from .scaling.opensha_task_factory import OpenshaTaskFactory
+from .scaling.toshi_api import ToshiApi
 
-import logging
 logging.basicConfig(level=logging.INFO)
 
 loglevel = logging.INFO
@@ -41,47 +42,54 @@ log = logging.getLogger(__name__)
 WORKER_POOL_SIZE = 1
 JVM_HEAP_MAX = 16
 JAVA_THREADS = 12
-USE_API = True #to read the ruptset form the API
 
 
-#If using API give this task a descriptive setting...
+# If using API give this task a descriptive setting...
 TASK_TITLE = "Baseline Inversion - Coulomb"
 TASK_DESCRIPTION = """
 - Coulomb rupture sets
 - Fixed duration comparisons
 """
 
+
 def run_tasks(general_task_id, rupture_sets):
     task_count = 0
-    task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, scaling.ruptset_diags_report_task,
-        jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
-        task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
+    task_factory = OpenshaTaskFactory(
+        OPENSHA_ROOT,
+        WORK_PATH,
+        ruptset_diags_report_task,
+        jre_path=OPENSHA_JRE,
+        app_jar_path=FATJAR,
+        task_config_path=WORK_PATH,
+        jvm_heap_max=JVM_HEAP_MAX,
+        jvm_heap_start=JVM_HEAP_START,
+    )
 
-    for (rid, rupture_set_info) in rupture_sets.items():
+    for rid, rupture_set_info in rupture_sets.items():
 
-        task_count +=1
+        task_count += 1
 
-        short_name = f"Rupture set file_id: {rid}"
+        # short_name = f"Rupture set file_id: {rid}"
 
-        #rupture_set_info['info'] has detaail of the Inversion task
+        # rupture_set_info['info'] has detaail of the Inversion task
         task_arguments = dict(
-            rupture_set_file_id = str(rupture_set_info['id']),
-            rupture_set_file_path = rupture_set_info['filepath'],
-            )
+            rupture_set_file_id=str(rupture_set_info['id']),
+            rupture_set_file_path=rupture_set_info['filepath'],
+        )
 
         job_arguments = dict(
-            task_id = task_count,
+            task_id=task_count,
             # round = round,
-            java_threads = JAVA_THREADS,
-            java_gateway_port = task_factory.get_next_port(),
-            working_path = str(WORK_PATH),
-            root_folder = OPENSHA_ROOT,
-            general_task_id = general_task_id,
-            use_api = USE_API,
-            build_report_level = REPORT_LEVEL
-            )
+            java_threads=JAVA_THREADS,
+            java_gateway_port=task_factory.get_next_port(),
+            working_path=str(WORK_PATH),
+            root_folder=OPENSHA_ROOT,
+            general_task_id=general_task_id,
+            use_api=USE_API,
+            build_report_level=REPORT_LEVEL,
+        )
 
-        #write a config
+        # write a config
         task_factory.write_task_config(task_arguments, job_arguments)
 
         script = task_factory.get_task_script()
@@ -90,11 +98,12 @@ def run_tasks(general_task_id, rupture_sets):
         with open(script_file_path, 'w') as f:
             f.write(script)
 
-        #make file executable
+        # make file executable
         st = os.stat(script_file_path)
         os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
         yield str(script_file_path)
+
 
 if __name__ == "__main__":
 
@@ -103,12 +112,12 @@ if __name__ == "__main__":
     GENERAL_TASK_ID = None
 
     if USE_API:
-        headers={"x-api-key":API_KEY}
+        headers = {"x-api-key": API_KEY}
 
-        #general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+        # general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-        #get input files from API
+        # get input files from API
         # upstream_task_id = "R2VuZXJhbFRhc2s6MTAwMDU4"
 
         """
@@ -117,9 +126,9 @@ if __name__ == "__main__":
          - file_generator = get_output_file_id(file_api, file_id)
          - file_generator = get_output_file_ids(general_api, upstream_task_id)
         """
-        #for a single rupture set, pass a valid FileID
+        # for a single rupture set, pass a valid FileID
         file_id = "RmlsZToxMjkwOTg0"
-        file_generator = get_output_file_id(toshi_api, file_id) #for file by file ID
+        file_generator = get_output_file_id(toshi_api, file_id)  # for file by file ID
         # file_generator = get_output_file_ids(toshi_api, upstream_task_id)
 
         rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)

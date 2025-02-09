@@ -1,22 +1,22 @@
-import json
-from typing import List
-import sys
-import logging
-import time
 import datetime as dt
-from pathlib import Path
-import tempfile
+import json
+import logging
 import multiprocessing
-from zipfile import ZipFile
+import sys
+import tempfile
+import time
 from collections import namedtuple
+from pathlib import Path
+from typing import List
+from zipfile import ZipFile
 
 from openquake.commonlib import datastore
 from toshi_hazard_store.oq_import import export_meta_v3, export_rlzs_v3
 
-from runzi.automation.scaling.hazard_output_helper import HazardOutputHelper
-from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.local_config import (API_KEY, API_URL, WORK_PATH)
 from runzi.automation.run_gt_index import parse_task_args
+from runzi.automation.scaling.hazard_output_helper import HazardOutputHelper
+from runzi.automation.scaling.local_config import API_KEY, API_URL, WORK_PATH
+from runzi.automation.scaling.toshi_api import ToshiApi
 
 log = logging.getLogger()
 logging.basicConfig(level=logging.INFO)
@@ -45,7 +45,8 @@ LOCATIONS_ID = 'ALL'
 NUM_EXPECTED_BRANCHES = 49
 NUM_WORKERS = 20
 
-HazardSolution = namedtuple("HazardSolution","gt_id hazard_soln_id inv_id bg_id tag_str")
+HazardSolution = namedtuple("HazardSolution", "gt_id hazard_soln_id inv_id bg_id tag_str")
+
 
 class THSWorkerMP(multiprocessing.Process):
 
@@ -53,7 +54,7 @@ class THSWorkerMP(multiprocessing.Process):
         multiprocessing.Process.__init__(self)
         self.task_queue = task_queue
         self.result_queue = result_queue
-    
+
     def run(self):
         log.info("worker %s running." % self.name)
         proc_name = self.name
@@ -129,7 +130,7 @@ def dowload_and_save(haz_soln: HazardSolution):
                     haz_soln.bg_id,
                     haz_soln.tag_str,
                 )
-    
+
     return haz_soln
 
 
@@ -173,7 +174,6 @@ def get_hazard_info(toshi_api, gt_id):
             ... on GeneralTask {
                 children {
                 edges {
-                    
                     node {
                     child {
                         __typename
@@ -188,7 +188,7 @@ def get_hazard_info(toshi_api, gt_id):
                             k v
                         }
                         hazard_solution {
-                            id                           
+                            id
                         }
                         }
                     }
@@ -198,10 +198,11 @@ def get_hazard_info(toshi_api, gt_id):
             }
             }
             }'''
-    
+
     input_variables = dict(id=gt_id)
     executed = toshi_api.run_query(qry, input_variables)
     return executed['node']
+
 
 def get_haz_solns(gt_ids, toshi_api):
 
@@ -214,7 +215,10 @@ def get_haz_solns(gt_ids, toshi_api):
             oq_hazard_task = task['node']['child']
             if (oq_hazard_task['state'] != 'DONE') and (oq_hazard_task['status'] != 'SUCCESS'):
                 tid = oq_hazard_task['id']
-                msg = f'OpenquakeHazardTask {tid} from GeneralTask {gt_id} does not have "DONE" state and "SUCCESS" status'
+                msg = (
+                    f'OpenquakeHazardTask {tid} from GeneralTask {gt_id} '
+                    'does not have "DONE" state and "SUCCESS" status'
+                )
                 raise Exception(msg)
             else:
                 num_sucess_branches += 1
@@ -225,30 +229,32 @@ def get_haz_solns(gt_ids, toshi_api):
 
             hazard_soln_id = oq_hazard_task['hazard_solution']['id']
             args = parse_task_args(oq_hazard_task['arguments'])
-            ltp = json.loads(args['logic_tree_permutations'].replace("'",'"'))
+            ltp = json.loads(args['logic_tree_permutations'].replace("'", '"'))
             tag_str = ltp[0]['permute'][0]['members'][0]['tag']
             inv_id = ltp[0]['permute'][0]['members'][0]['inv_id']
             bg_id = ltp[0]['permute'][0]['members'][0]['bg_id']
 
-            haz_solns.append(HazardSolution(
-                gt_id = gt_id,
-                hazard_soln_id=hazard_soln_id,
-                inv_id=inv_id,
-                bg_id=bg_id,
-                tag_str=tag_str,
-            ))
+            haz_solns.append(
+                HazardSolution(
+                    gt_id=gt_id,
+                    hazard_soln_id=hazard_soln_id,
+                    inv_id=inv_id,
+                    bg_id=bg_id,
+                    tag_str=tag_str,
+                )
+            )
 
         if num_sucess_branches != NUM_EXPECTED_BRANCHES:
             msg = f'Missing {NUM_EXPECTED_BRANCHES - num_sucess_branches} branches from GeneralTask {gt_id}'
             raise Exception
-    
+
     return haz_solns
 
 
 if __name__ == "__main__":
 
     gt_ids = GT_IDS
-    headers={"x-api-key":API_KEY}
+    headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
     haz_solns = get_haz_solns(gt_ids, toshi_api)
     print('')

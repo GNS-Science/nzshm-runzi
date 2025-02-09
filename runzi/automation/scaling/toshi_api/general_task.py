@@ -1,27 +1,22 @@
-
+import copy
 import datetime as dt
-from dateutil.tz import tzutc
-from hashlib import md5
-from pathlib import PurePath
 from enum import Enum
 
-import base64
-import copy
-import json
-import requests
+from dateutil.tz import tzutc
+from nshm_toshi_client.toshi_client_base import ToshiClientBase
 
-from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 
 class SubtaskType(Enum):
     RUPTURE_SET = 10
     INVERSION = 20
-    HAZARD = 30 #Todo maybe DEPRECATED ?
+    HAZARD = 30  # Todo maybe DEPRECATED ?
     REPORT = 40
     SCALE_SOLUTION = 50
     SOLUTION_TO_NRML = 60
     OPENQUAKE_HAZARD = 70
     AGGREGATE_SOLUTION = 80
     TIME_DEPENDENT_SOLUTION = 90
+
 
 class ModelType(Enum):
     CRUSTAL = 10
@@ -33,15 +28,15 @@ class CreateGeneralTaskArgs(object):
 
     def __init__(self, title, description, agent_name, created=None):
         self._arguments = dict(
-          created = dt.datetime.now(tzutc()).isoformat(),
-          agent_name = agent_name,
-          title = title,
-          description = description,
-          argument_lists = [],
-          subtask_type = 'Undefined',
-          subtask_count = 0,
-          model_type = 'Undefined',
-          meta = []
+            created=dt.datetime.now(tzutc()).isoformat(),
+            agent_name=agent_name,
+            title=title,
+            description=description,
+            argument_lists=[],
+            subtask_type='Undefined',
+            subtask_count=0,
+            model_type='Undefined',
+            meta=[],
         )
 
     def set_argument_list(self, arg_list):
@@ -57,14 +52,14 @@ class CreateGeneralTaskArgs(object):
         return self
 
     def set_subtask_type(self, subtask_type: SubtaskType):
-        assert subtask_type.name in [name for name, n  in SubtaskType.__members__.items()]
+        assert subtask_type.name in [name for name, n in SubtaskType.__members__.items()]
         self._arguments['subtask_type'] = subtask_type.name
         return self
 
     def set_model_type(self, model_type: ModelType):
         try:
-            assert model_type.name in [name for name, n  in ModelType.__members__.items()]
-        except:
+            assert model_type.name in [name for name, n in ModelType.__members__.items()]
+        except AssertionError:
             print(f'model_type {model_type} not found in {ModelType}')
             raise
         self._arguments['model_type'] = model_type.name
@@ -72,6 +67,7 @@ class CreateGeneralTaskArgs(object):
 
     def as_dict(self):
         return copy.copy(self._arguments)
+
 
 class GeneralTask(object):
 
@@ -87,8 +83,8 @@ class GeneralTask(object):
         for subtask in gt['children']['edges']:
             sbt = self.get_rgt_files(subtask['node']['child']['id'])
             subtask['node']['child']['files'] = copy.deepcopy(sbt['files'])
-            #TESTING
-            #break
+            # TESTING
+            # break
         return gt
 
     def get_general_task_subtasks(self, id):
@@ -128,8 +124,6 @@ class GeneralTask(object):
         input_variables = dict(id=id)
         executed = self.api.run_query(qry, input_variables)
         return executed['node']
-
-
 
     def create_task(self, create_args):
         '''
@@ -171,10 +165,9 @@ class GeneralTask(object):
         '''
         print(qry)
 
-        #input_variables = dict(created=created, agent_name=agent_name, title=title, description=description)
+        # input_variables = dict(created=created, agent_name=agent_name, title=title, description=description)
         executed = self.api.run_query(qry, create_args.as_dict())
         return executed['create_general_task']['general_task']['id']
-
 
     # def get_example_complete_variables(self):
     #       return {"task_id": "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjA=",

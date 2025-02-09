@@ -1,16 +1,17 @@
-#!python3
+# noqa: WIP
 """
 This script produces disagg tasks in either AWS, PBS or LOCAL that run OpenquakeHazard in disagg mode.
 
 """
 import logging
 from collections import namedtuple
-from typing import Dict, Any
+from typing import Any, Dict
+
+from runzi.automation.scaling.schedule_tasks import schedule_tasks
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 
 # from .run_oq_hazard import update_location_list, validate_config, get_model, get_num_workers, single_to_list
 from runzi.configuration.openquake.oq_disagg import build_disagg_tasks
-from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
-from runzi.automation.scaling.schedule_tasks import schedule_tasks
 
 loglevel = logging.INFO
 logging.basicConfig(level=logging.INFO)
@@ -45,13 +46,13 @@ def run_oq_disagg(config: Dict[Any, Any]) -> None:
     task_type = SubtaskType.OPENQUAKE_HAZARD
     model_type = ModelType.COMPOSITE
 
-    validate_config(config, mode='disagg')
-    srm_logic_tree, gmcm_logic_tree = get_model(config)
-    num_workers = get_num_workers(config)
-    location_list = update_location_list(config["site_params"]["locations"])
-    vs30s = single_to_list(config["site_params"]["vs30"])
-    aggs = single_to_list(config["hazard_curve"]["agg"])
-    location_codes, junk = get_coded_locations(location_list)
+    validate_config(config, mode='disagg')  # noqa: F821
+    srm_logic_tree, gmcm_logic_tree = get_model(config)  # noqa: F821
+    num_workers = get_num_workers(config)  # noqa: F821
+    location_list = update_location_list(config["site_params"]["locations"])  # noqa: F821
+    vs30s = single_to_list(config["site_params"]["vs30"])  # noqa: F821
+    aggs = single_to_list(config["hazard_curve"]["agg"])  # noqa: F821
+    location_codes, junk = get_coded_locations(location_list)  # noqa: F821
 
     openquake_iterate = dict() if not config.get("openquake_iterate") else config["openquake_iterate"]
     openquake_scalar = dict() if not config.get("openquake_single") else config["openquake_single"]
@@ -68,7 +69,7 @@ def run_oq_disagg(config: Dict[Any, Any]) -> None:
         location_codes=location_codes,
         config_iterate=openquake_iterate,
         config_scalar=openquake_scalar,
-        sleep_multiplier=config["calculation"].get("sleep_multiplier")
+        sleep_multiplier=config["calculation"].get("sleep_multiplier"),
     )
 
     # we don't create a new GT (if using the API) here because there is a GT created for each disaggregation

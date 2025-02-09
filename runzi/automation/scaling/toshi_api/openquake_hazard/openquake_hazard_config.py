@@ -1,17 +1,11 @@
-
-from datetime import datetime as dt
-from dateutil.tz import tzutc
-from hashlib import md5
-from pathlib import PurePath
-
-import base64
-import json
-import requests
-
-from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
-
 import logging
+from datetime import datetime as dt
+
+from dateutil.tz import tzutc
+from nshm_toshi_client.toshi_client_base import ToshiClientBase
+
 log = logging.getLogger(__name__)
+
 
 class OpenquakeHazardConfig(object):
 

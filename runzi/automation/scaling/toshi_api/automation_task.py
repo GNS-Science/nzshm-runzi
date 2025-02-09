@@ -1,19 +1,12 @@
-import datetime as dt
-from dateutil.tz import tzutc
-from hashlib import md5
+import logging
 from pathlib import PurePath
-
-import base64
-# import copy
-import json
-import requests
 
 from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 
-import logging
 log = logging.getLogger(__name__)
 # log.setLevel(logging.DEBUG)
 # logging.basicConfig(level=logging.DEBUG)
+
 
 class AutomationTask(object):
 
@@ -67,18 +60,14 @@ class AutomationTask(object):
     def upload_task_file(self, task_id, filepath, task_role, meta=None):
         filepath = PurePath(filepath)
         file_id = self.upload_file(filepath, meta)
-        #link file to task in role
+        # link file to task in role
         return self.link_task_file(task_id, file_id, task_role)
 
     def get_example_create_variables(self):
         return {"created": "2019-10-01T12:00Z", "task_type": "INVERSION", "model_type": "CRUSTAL"}
 
     def get_example_complete_variables(self):
-          return {"task_id": "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjA=",
-          "duration": 600,
-          "result": "SUCCESS",
-          "state": "DONE"
-           }
+        return {"task_id": "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjA=", "duration": 600, "result": "SUCCESS", "state": "DONE"}
 
     def validate_variables(self, reference, values):
         valid_keys = reference.keys()

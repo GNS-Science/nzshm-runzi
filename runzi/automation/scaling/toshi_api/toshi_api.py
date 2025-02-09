@@ -1,35 +1,30 @@
-from datetime import datetime as dt
-from hashlib import md5
-from pathlib import PurePath
-
-import base64
 import copy
-import json
-import requests
+from datetime import datetime as dt
 
-from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
+from nshm_toshi_client.toshi_client_base import ToshiClientBase
 from nshm_toshi_client.toshi_file import ToshiFile
 from nshm_toshi_client.toshi_task_file import ToshiTaskFile
 
+from .aggregate_inversion_solution import AggregateInversionSolution
+from .automation_task import AutomationTask
+from .general_task import GeneralTask
 from .inversion_solution import InversionSolution
+from .inversion_solution_nrml import InversionSolutionNrml
+from .openquake_hazard import OpenquakeHazardConfig, OpenquakeHazardSolution, OpenquakeHazardTask
 from .scaled_inversion_solution import ScaledInversionSolution
 from .time_dependent_inversion_solution import TimeDependentInversionSolution
-from .general_task import GeneralTask, CreateGeneralTaskArgs, SubtaskType, ModelType
-from .automation_task import AutomationTask
-from .inversion_solution_nrml import InversionSolutionNrml
-from .aggregate_inversion_solution import AggregateInversionSolution
-from .openquake_hazard import OpenquakeHazardConfig, OpenquakeHazardTask, OpenquakeHazardSolution
+
 
 class ToshiApi(ToshiClientBase):
 
-    def __init__(self, url, s3_url, auth_token, with_schema_validation=True, headers=None ):
+    def __init__(self, url, s3_url, auth_token, with_schema_validation=True, headers=None):
         super(ToshiApi, self).__init__(url, auth_token, with_schema_validation, headers)
         self._s3_url = s3_url
 
         self.file = ToshiFile(url, s3_url, auth_token, with_schema_validation, headers)
         self.task_file = ToshiTaskFile(url, auth_token, with_schema_validation, headers)
 
-        #set up the handlers ...
+        # set up the handlers ...
         self.scaled_inversion_solution = ScaledInversionSolution(self)
         self.time_dependent_inversion_solution = TimeDependentInversionSolution(self)
         self.inversion_solution = InversionSolution(self)
@@ -50,8 +45,8 @@ class ToshiApi(ToshiClientBase):
         for subtask in gt['children']['edges']:
             sbt = self.get_rgt_files(subtask['node']['child']['id'])
             subtask['node']['child']['files'] = copy.deepcopy(sbt['files'])
-            #TESTING
-            #break
+            # TESTING
+            # break
         return gt
 
     def get_general_task_subtasks(self, id):
@@ -92,7 +87,6 @@ class ToshiApi(ToshiClientBase):
         input_variables = dict(id=id)
         executed = self.run_query(qry, input_variables)
         return executed['node']
-
 
     def get_rgt_files(self, id):
 
@@ -143,7 +137,6 @@ class ToshiApi(ToshiClientBase):
         executed = self.run_query(qry, input_variables)
         return executed['node']
 
-
     def get_rgt_task(self, id):
         qry = '''
             query one_rupt ($id:ID!)  {
@@ -183,7 +176,6 @@ class ToshiApi(ToshiClientBase):
         executed = self.run_query(qry, input_variables)
         return executed['node']
 
-
     def get_file_download_url(self, id):
         qry = '''
         query download_file ($id:ID!) {
@@ -205,9 +197,9 @@ class ToshiApi(ToshiClientBase):
         executed = self.run_query(qry, input_variables)
         return executed['node']
 
-    def get_predecessors(self,id):
-            
-      pred_qry = '''
+    def get_predecessors(self, id):
+
+        pred_qry = '''
         query pred ($id:ID!) {
           node (id: $id) {
             ... on PredecessorsInterface {
@@ -217,20 +209,21 @@ class ToshiApi(ToshiClientBase):
             }
           }
         }'''
-      print(pred_qry)
+        print(pred_qry)
 
-      input_variables = dict(id=id)
-      executed = self.run_query(pred_qry, input_variables)
-      return executed['node']['predecessors'] if executed['node']['predecessors'] else []
+        input_variables = dict(id=id)
+        executed = self.run_query(pred_qry, input_variables)
+        return executed['node']['predecessors'] if executed['node']['predecessors'] else []
 
 
-    
 class Table(object):
 
     def __init__(self, api):
         self.api = api
 
-    def create_table(self, rows, column_headers, column_types, object_id, table_name, table_type, dimensions, created=None):
+    def create_table(
+        self, rows, column_headers, column_types, object_id, table_name, table_type, dimensions, created=None
+    ):
 
         created = created or dt.utcnow().isoformat() + 'Z'
         dimensions = dimensions or []
@@ -241,21 +234,25 @@ class Table(object):
             assert t in "string,double,integer,boolean".split(',')
         for row in rows:
             assert len(row) == rowlen
-            #when do we check the coercions??
+            # when do we check the coercions??
 
         input_variables = {
-          "headers": column_headers,
-          "object_id": object_id,
-          "rows": rows,
-          "column_types": column_types,
-          "table_name": table_name,
-          "created": created,
-          "table_type": table_type,
-          "dimensions": dimensions
+            "headers": column_headers,
+            "object_id": object_id,
+            "rows": rows,
+            "column_types": column_types,
+            "table_name": table_name,
+            "created": created,
+            "table_type": table_type,
+            "dimensions": dimensions,
         }
 
         qry = '''
-        mutation create_table ($rows: [[String]]!, $object_id: ID!, $table_name: String!, $headers: [String]!, $column_types: [RowItemType]!, $created: DateTime!, $table_type: TableType!, $dimensions: [KeyValueListPairInput]!) {
+        mutation create_table (
+          $rows: [[String]]!, $object_id: ID!, $table_name: String!, $headers: [String]!,
+          $column_types: [RowItemType]!, $created: DateTime!, $table_type: TableType!,
+          $dimensions: [KeyValueListPairInput]!
+        ) {
           create_table(input: {
             name: $table_name
             created: $created
@@ -273,7 +270,7 @@ class Table(object):
           }
         }'''
 
-        #print(qry)
+        # print(qry)
         executed = self.api.run_query(qry, input_variables)
         return executed['create_table']['table']
 
@@ -297,9 +294,9 @@ class Table(object):
         }'''
 
         input_variables = {
-          "table_id": table_id,
+            "table_id": table_id,
         }
 
-        #print(qry)
+        # print(qry)
         executed = self.api.run_query(qry, input_variables)
         return executed['node']

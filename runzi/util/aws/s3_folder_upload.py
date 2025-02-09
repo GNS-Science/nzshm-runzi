@@ -1,19 +1,20 @@
-from botocore.errorfactory import ClientError
+import datetime as dt
+import logging
+import mimetypes
+import os
+import shutil
+from logging import error, info
+from multiprocessing.pool import ThreadPool
+
 import boto3
 import boto3.session
-import os
-from multiprocessing.pool import ThreadPool
-import datetime as dt
-import shutil
-import mimetypes 
-import logging
-from logging import info, error
+from botocore.errorfactory import ClientError
 
-from runzi.automation.scaling.local_config import WORK_PATH, S3_UPLOAD_WORKERS
-
+from runzi.automation.scaling.local_config import S3_UPLOAD_WORKERS, WORK_PATH
 
 logging.basicConfig(level="INFO")
 S3_REPORT_BUCKET_ROOT = 'opensha/DATA'
+
 
 def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT, force_upload=False):
     info(f"Beginning bucket upload... to {bucket}/{root_path}/{id}")
@@ -39,16 +40,14 @@ def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT, force_upload=F
             info("Path found on S3! Skipping %s to %s" % (s3_path, bucket))
         else:
             try:
-                client.upload_file(local_path, bucket, s3_path,
-                    ExtraArgs={
-                        'ACL':'public-read',
-                        'ContentType': mimetype(local_path)
-                        })
+                client.upload_file(
+                    local_path, bucket, s3_path, ExtraArgs={'ACL': 'public-read', 'ContentType': mimetype(local_path)}
+                )
                 info("Uploading %s..." % s3_path)
             except Exception as e:
                 error(f"exception raised uploading {local_path} => {bucket}/{s3_path}")
                 error(e)
-    
+
     def path_exists(path, bucket_name):
         """Check to see if an object exists on S3"""
         try:
@@ -56,15 +55,14 @@ def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT, force_upload=F
             if response:
                 if response['KeyCount'] == 0:
                     return False
-                else:    
+                else:
                     for obj in response['Contents']:
                         if path == obj['Key']:
                             return True
         except ClientError as e:
-                error(f"exception raised on {bucket_name}/{path}")
-                raise e
+            error(f"exception raised on {bucket_name}/{path}")
+            raise e
 
-        
     pool = ThreadPool(processes=S3_UPLOAD_WORKERS)
     pool.map(upload, file_list)
 
@@ -73,12 +71,14 @@ def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT, force_upload=F
     info("Done! uploaded %s in %s secs" % (len(file_list), (dt.datetime.utcnow() - t0).total_seconds()))
     cleanup(local_directory)
 
+
 def cleanup(directory):
     try:
         shutil.rmtree(directory)
         info('Cleaned up %s' % directory)
     except Exception as e:
         error(e)
+
 
 def mimetype(local_path):
     mimetypes.add_type('text/markdown', '.md')

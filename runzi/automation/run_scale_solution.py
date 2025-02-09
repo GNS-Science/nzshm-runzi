@@ -3,29 +3,23 @@
 This script produces tasks in either AWS, PBS or LOCAL that scale the rates of an opensha InversionSolution
 
 """
-import logging
-import pwd
-import os
 import base64
 import datetime as dt
-from dateutil.tz import tzutc
-from subprocess import check_call
-from multiprocessing.dummy import Pool
+import logging
+import os
+import pwd
 
-from runzi.automation.scaling.toshi_api import ToshiApi, CreateGeneralTaskArgs, SubtaskType
-from runzi.automation.scaling.toshi_api.general_task import ModelType
-from runzi.configuration.scale_inversion_solution import build_scale_tasks
+from runzi.automation.scaling.file_utils import get_output_file_ids
+from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
-from runzi.automation.scaling.file_utils import get_output_file_ids
-
-from runzi.automation.scaling.local_config import (WORK_PATH, USE_API, JAVA_THREADS,
-    API_KEY, API_URL, CLUSTER_MODE, EnvMode )
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
+from runzi.configuration.scale_inversion_solution import build_scale_tasks
 
 # If you wish to override something in the main config, do so here ..
-WORKER_POOL_SIZE = 27 
+WORKER_POOL_SIZE = 27
 # WORKER_POOL_SIZE = None
-USE_API = True
+
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     scripts = []
@@ -35,13 +29,15 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-
-    
-
-
-def run(source_solution_ids, scales,
-        TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL_SIZE,
-        polygon_scale=None, polygon_max_mag=None):
+def run(
+    source_solution_ids,
+    scales,
+    TASK_TITLE: str,
+    TASK_DESCRIPTION: str,
+    WORKER_POOL_SIZE,
+    polygon_scale=None,
+    polygon_max_mag=None,
+):
     t0 = dt.datetime.utcnow()
 
     logging.basicConfig(level=logging.INFO)
@@ -54,11 +50,11 @@ def run(source_solution_ids, scales,
     logging.getLogger('botocore').setLevel(loglevel)
     logging.getLogger('git.cmd').setLevel(loglevel)
 
-    log = logging.getLogger(__name__)
+    # log = logging.getLogger(__name__)
 
     GENERAL_TASK_ID = None
 
-    headers={"x-api-key":API_KEY}
+    headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
 
     # if a GT id has been provided, unpack to get individual solution ids
@@ -69,33 +65,32 @@ def run(source_solution_ids, scales,
         else:
             source_solution_ids_list += [source_solution_id]
 
-    model_type = get_model_type(source_solution_ids_list,toshi_api)
+    model_type = get_model_type(source_solution_ids_list, toshi_api)
 
     subtask_type = SubtaskType.SCALE_SOLUTION
 
     args = dict(
-        scales = scales,
+        scales=scales,
         polygon_scale=polygon_scale,
         polygon_max_mag=polygon_max_mag,
-        source_solution_ids = source_solution_ids_list
+        source_solution_ids=source_solution_ids_list,
     )
 
     args_list = []
     for key, value in args.items():
         args_list.append(dict(k=key, v=value))
     print(args_list)
-    
-    
+
     if USE_API:
-        #create new task in toshi_api
-        gt_args = CreateGeneralTaskArgs(
-            agent_name=pwd.getpwuid(os.getuid()).pw_name,
-            title=TASK_TITLE,
-            description=TASK_DESCRIPTION
-            )\
-            .set_argument_list(args_list)\
-            .set_subtask_type(subtask_type)\
-            .set_model_type(model_type) 
+        # create new task in toshi_api
+        gt_args = (
+            CreateGeneralTaskArgs(
+                agent_name=pwd.getpwuid(os.getuid()).pw_name, title=TASK_TITLE, description=TASK_DESCRIPTION
+            )
+            .set_argument_list(args_list)
+            .set_subtask_type(subtask_type)
+            .set_model_type(model_type)
+        )
 
         GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
 
@@ -107,19 +102,19 @@ def run(source_solution_ids, scales,
 
     print('worker count: ', WORKER_POOL_SIZE)
 
-    schedule_tasks(tasks,WORKER_POOL_SIZE)
+    schedule_tasks(tasks, WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
 
     return GENERAL_TASK_ID
 
+
 if __name__ == "__main__":
 
     # #If using API give this task a descriptive setting...
     TASK_DESCRIPTION = """scale all max jump distance inversions for polygons"""
-    
-    
+
     # TASK_TITLE = "Hikurangi Noise Averages"
     # source_solution_ids = [
     #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzE4",
@@ -132,7 +127,7 @@ if __name__ == "__main__":
     #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzM4",
     #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzQz",
     #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzQ2"
-    # ]   
+    # ]
     # scales = [0.75, 1.0, 1.28]
 
     # TASK_TITLE = "Scaling Puysegur Inversions"
@@ -148,11 +143,16 @@ if __name__ == "__main__":
     scales = [0.66, 1.0, 1.41]
     polygon_scale = 0.8
     polygon_max_mag = 8
-        
+
     # run(source_solution_ids, scales,
     #     TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
 
-    run(source_solution_ids, scales, 
-        TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE,
-          polygon_scale=polygon_scale, polygon_max_mag=polygon_max_mag)
-
+    run(
+        source_solution_ids,
+        scales,
+        TASK_TITLE,
+        TASK_DESCRIPTION,
+        WORKER_POOL_SIZE,
+        polygon_scale=polygon_scale,
+        polygon_max_mag=polygon_max_mag,
+    )

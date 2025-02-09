@@ -1,5 +1,7 @@
-import pytest
 import importlib.resources as resources
+
+import pytest
+
 from scripts.cli import load_config
 
 
