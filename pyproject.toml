@@ -17,7 +17,6 @@ runzi = 'scripts.cli:rnz'
 python = ">=3.10,<3.12"
 gitpython = "3.1.11"
 py4j = "0.10.9.1"
-pytz = "^2022.7"
 nshm-toshi-client = ">=1.0.0"
 prompt-toolkit = "3.0.20"
 termcolor = "1.1.0"
@@ -37,6 +36,8 @@ toshi-hazard-store = {git = "https://github.com/GNS-Science/toshi-hazard-store.g
 nzshm-model = {git = "https://github.com/GNS-Science/nzshm-model.git", rev = "pre-release"}
 inquirer = "^3.4.0"
 pygments = "^2.19.1"
+pytz = "^2025.1"
+solvis = {git = "https://github.com/GNS-Science/solvis.git", rev = "pre-release"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.3.4"
