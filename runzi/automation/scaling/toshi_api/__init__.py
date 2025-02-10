@@ -1,2 +1,2 @@
 from .general_task import CreateGeneralTaskArgs, ModelType, SubtaskType
-from .toshi_api import *  # noqa: F403
+from .toshi_api import ToshiApi
