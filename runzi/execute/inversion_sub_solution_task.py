@@ -8,7 +8,7 @@ from pathlib import PurePath
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
-from solvis import circle_polygon, InversionSolution
+from solvis import InversionSolution, circle_polygon
 from solvis.filter import FilterRuptureIds
 
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
@@ -120,15 +120,15 @@ class BuilderTask:
         if rate_threshold:
             rupture_ids = rupture_ids.for_rupture_rate(min_rate=rate_threshold)
         soln_filtered = InversionSolution.filter_solution(soln, rupture_ids)
-            
+
         # wlg_above_sol == new_sol(ri_sol, above)
-        sp0 = section_participation(ri_sol, ri)  # noqa: F405
+        sp0 = section_participation(ri_sol, ri)  # noqa: F821
 
         # write out a geojson
         radius = f"{int(radius_m/1000)}km"
         geofile = PurePath(WORK_PATH, f"{location[0]}_ruptures_radius({radius})_rate_filter({rate_threshold}).geojson")
         print(f"write new geojson file: {geofile}")
-        export_geojson(gpd.GeoDataFrame(sp0), geofile)  # noqa: F405
+        export_geojson(gpd.GeoDataFrame(sp0), geofile)  # noqa: F821
 
         # write the solution
 
