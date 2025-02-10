@@ -99,6 +99,7 @@ ignore_missing_imports = true
 exclude = [
     'runzi/CONFIG',
     'runzi/automation/arkiv',
+    'runzi/automation/openquake/run_oq_disagg.py',
 ]
 
 [build-system]

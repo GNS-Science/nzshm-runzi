@@ -35,7 +35,7 @@ def unpack_keys(d: Dict[str, Any]) -> list[str]:
     for k1, v in d.items():
         for k2 in v.keys():
             keys.append((k1, k2))
-    return keys
+    return keys  # type: ignore
 
 
 def unpack_values(d: Dict[str, Any]) -> Generator[Any, None, None]:
