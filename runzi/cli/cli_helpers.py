@@ -130,7 +130,7 @@ class MenuHandler:
 
         matched = None
         for option in self.options.keys():
-            cmd_part, remainder = cmd[: len(option)], cmd[len(option) :]  # noqa: F841
+            cmd_part, _ = cmd[: len(option)], cmd[len(option) :]
             if cmd_part == option:
                 matched = True
 

@@ -28,8 +28,7 @@ from runzi.execute import inversion_sub_solution_task
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 # JAVA_THREADS = 4
 
-if CLUSTER_MODE == EnvMode['AWS']:
-    WORK_PATH = '/WORKING'  # noqa
+work_path = '/WORKING' if CLUSTER_MODE == EnvMode['AWS'] else WORK_PATH
 
 
 def build_subset_tasks(general_task_id, source_solutions, args):
@@ -37,7 +36,7 @@ def build_subset_tasks(general_task_id, source_solutions, args):
 
     factory_class = get_factory(CLUSTER_MODE)
 
-    task_factory = factory_class(OPENSHA_ROOT, WORK_PATH, inversion_sub_solution_task, task_config_path=WORK_PATH)
+    task_factory = factory_class(OPENSHA_ROOT, work_path, inversion_sub_solution_task, task_config_path=work_path)
 
     for solution_id, solution_info in source_solutions.items():
 
@@ -60,7 +59,7 @@ def build_subset_tasks(general_task_id, source_solutions, args):
                 task_id=task_count,
                 solution_id=solution_id,
                 solution_info=solution_info,
-                working_path=str(WORK_PATH),
+                working_path=str(work_path),
                 root_folder=OPENSHA_ROOT,
                 general_task_id=general_task_id,
                 use_api=USE_API,
@@ -83,7 +82,7 @@ def build_subset_tasks(general_task_id, source_solutions, args):
 
                 script = task_factory.get_task_script()
 
-                script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
+                script_file_path = PurePath(work_path, f"task_{task_count}.sh")
                 with open(script_file_path, 'w') as f:
                     f.write(script)
 
@@ -137,7 +136,7 @@ if __name__ == "__main__":
         """
         file_generators.append(get_output_file_id(toshi_api, file_id))  # for file by file ID
 
-    source_solutions = download_files(toshi_api, chain(*file_generators), str(WORK_PATH), overwrite=False)
+    source_solutions = download_files(toshi_api, chain(*file_generators), str(work_path), overwrite=False)
 
     args = dict(
         rate_thresholds=[1e-15, 1e-9, 0],

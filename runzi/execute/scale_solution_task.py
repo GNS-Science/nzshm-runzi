@@ -115,7 +115,7 @@ class BuilderTask:
 
     def scaleRuptureRates(self, in_solution_filepath, task_id, scale, polygon_scale=None, polygon_max_mag=None):
 
-        soln = InversionSolution().from_archive(in_solution_filepath)  # noqa: F405
+        soln = InversionSolution().from_archive(in_solution_filepath)
 
         rr = soln.ruptures
         ra = soln.rates
@@ -131,7 +131,7 @@ class BuilderTask:
             rates.loc[mag_ind, 'Annual Rate'] = rates[mag_ind]['Annual Rate'] * polygon_scale
 
         # all other props are derived from these
-        scaled_soln = InversionSolution()  # noqa: F405
+        scaled_soln = InversionSolution()
         scaled_soln.set_props(rates, ruptures, indices, soln.fault_sections.copy())
 
         new_archive = PurePath(WORK_PATH, 'NZSHM22_ScaledInversionSolution-' + str(task_id) + '.zip')

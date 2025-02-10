@@ -20,7 +20,7 @@ def prepare_inputs(file_id):
     # for file by file ID
     file_generator = get_output_file_id(toshi_api, file_id)
 
-    rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)  # noqa: F841
+    _ = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
 
 if __name__ == "__main__":

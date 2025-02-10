@@ -73,7 +73,6 @@ class OpenshaTaskFactory:
         get the bash for the next task
         """
 
-        # noqa: E501
         script = (
             f"export PATH={self._jre_path}:$PATH\n"
             f"export JAVA_CLASSPATH={self._app_jar_path}\n"

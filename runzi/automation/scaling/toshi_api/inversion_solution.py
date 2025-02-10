@@ -40,7 +40,6 @@ class InversionSolution(object):
     def _create_inversion_solution(
         self, filepath, produced_by, mfd_table=None, meta=None, predecessors=None, metrics=None
     ):
-        # noqa: E501
         qry = '''
             mutation (
                 $created: DateTime!, $digest: String!, $file_name: String!, $file_size: BigInt!, $produced_by: ID!,
