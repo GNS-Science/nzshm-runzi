@@ -70,7 +70,6 @@ class AggregateInversionSolution(object):
         predecessors=None,
         metrics=None,
     ):
-        # noqa: E501
         qry = '''
             mutation (
                 $source_solutions: [ID]!, $created: DateTime!, $digest: String!, $file_name: String!,

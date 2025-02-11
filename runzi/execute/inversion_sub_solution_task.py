@@ -8,7 +8,8 @@ from pathlib import PurePath
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
-from solvis import *  # noqa: F403
+from solvis import InversionSolution, circle_polygon
+from solvis.filter import FilterRuptureIds
 
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -41,6 +42,7 @@ class BuilderTask:
             self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
     def run(self, task_arguments, job_arguments):
+        raise NotImplementedError("inversion sub solution uses removed solvis functions and does not work.")
         # Run the task....
         t0 = dt.datetime.utcnow()
         ta, ja = task_arguments, job_arguments
@@ -109,28 +111,24 @@ class BuilderTask:
 
     def process(self, solution_id, solution_filepath, location, radius_m, rate_threshold):
 
-        polygon = circle_polygon(radius_m, location[1], location[2])  # noqa: F405
+        polygon = circle_polygon(radius_m, location[1], location[2])
 
-        sol = InversionSolution().from_archive(solution_filepath)  # noqa: F405
-        source_rupture_count = sol.rates[sol.rates['Annual Rate'] > 0].size
-
-        ri = sol.get_ruptures_intersecting(polygon)
-        ri_sol = new_sol(sol, ri)  # noqa: F405
+        soln = InversionSolution().from_archive(solution_filepath)
+        rupture_ids = FilterRuptureIds(soln).for_polygon(polygon)
+        source_rupture_count = len(soln.model.ruptures_with_rupture_rates)
 
         if rate_threshold:
-            ri = rupt_ids_above_rate(ri_sol, rate_threshold)  # noqa: F405
-            ri_sol = new_sol(ri_sol, ri)  # noqa: F405
-
-        subset_rupture_count = ri_sol.rates[ri_sol.rates['Annual Rate'] > 0].size
+            rupture_ids = rupture_ids.for_rupture_rate(min_rate=rate_threshold)
+        soln_filtered = InversionSolution.filter_solution(soln, rupture_ids)
 
         # wlg_above_sol == new_sol(ri_sol, above)
-        sp0 = section_participation(ri_sol, ri)  # noqa: F405
+        sp0 = section_participation(ri_sol, ri)  # noqa: F821
 
         # write out a geojson
         radius = f"{int(radius_m/1000)}km"
         geofile = PurePath(WORK_PATH, f"{location[0]}_ruptures_radius({radius})_rate_filter({rate_threshold}).geojson")
         print(f"write new geojson file: {geofile}")
-        export_geojson(gpd.GeoDataFrame(sp0), geofile)  # noqa: F405
+        export_geojson(gpd.GeoDataFrame(sp0), geofile)  # noqa: F821
 
         # write the solution
 
@@ -139,12 +137,12 @@ class BuilderTask:
         )
         print(f"write new solution file: {new_archive}")
         print(
-            f"Filtered InversionSolution {location[0]} within {radius} has {subset_rupture_count} "
+            f"Filtered InversionSolution {location[0]} within {radius} has {len(rupture_ids)} "
             f"ruptures where rate > {rate_threshold}"
         )
-        ri_sol.to_archive(str(new_archive), str(solution_filepath))
+        soln_filtered.to_archive(str(new_archive), str(solution_filepath))
 
-        metrics = dict(subset_rupture_count=subset_rupture_count, source_rupture_count=source_rupture_count)
+        metrics = dict(subset_rupture_count=len(rupture_ids), source_rupture_count=source_rupture_count)
         return dict(geofile=geofile, solution=new_archive, metrics=metrics)
 
 

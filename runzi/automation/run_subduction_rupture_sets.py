@@ -38,34 +38,32 @@ JVM_HEAP_START = 2
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 MAX_JOB_TIME_SECS = 60 * 30  # Change this soon
 
-if CLUSTER_MODE == EnvMode['AWS']:
-    WORK_PATH = '/WORKING'  # noqa
-
 
 def build_tasks(general_task_id, args):
     """
     build the shell scripts 1 per task, based on all the inputs
 
     """
+    work_path = '/WORKING' if CLUSTER_MODE == EnvMode['AWS'] else WORK_PATH
     task_count = 0
     factory_class = get_factory(CLUSTER_MODE)
 
     task_factory = factory_class(
         OPENSHA_ROOT,
-        WORK_PATH,
+        work_path,
         subduction_rupture_set_builder_task,
         initial_gateway_port=INITIAL_GATEWAY_PORT,
         jre_path=OPENSHA_JRE,
         app_jar_path=FATJAR,
-        task_config_path=WORK_PATH,
+        task_config_path=work_path,
         jvm_heap_max=JVM_HEAP_MAX,
         jvm_heap_start=JVM_HEAP_START,
     )
 
-    # task_factory = OpenshaTaskFactory(OPENSHA_ROOT, WORK_PATH, scaling.subduction_rupture_set_builder_task,
+    # task_factory = OpenshaTaskFactory(OPENSHA_ROOT, work_path, scaling.subduction_rupture_set_builder_task,
     #     initial_gateway_port=25733,
     #     jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
-    #     task_config_path=WORK_PATH, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
+    #     task_config_path=work_path, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
     for (
         model,
         min_aspect_ratio,
@@ -109,7 +107,7 @@ def build_tasks(general_task_id, args):
             PROC_COUNT=JAVA_THREADS,
             JVM_HEAP_MAX=JVM_HEAP_MAX,
             java_gateway_port=task_factory.get_next_port(),
-            working_path=str(WORK_PATH),
+            working_path=str(work_path),
             root_folder=OPENSHA_ROOT,
             general_task_id=general_task_id,
             use_api=USE_API,
@@ -119,7 +117,7 @@ def build_tasks(general_task_id, args):
         task_factory.write_task_config(task_arguments, job_arguments)
         script = task_factory.get_task_script()
 
-        script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
+        script_file_path = PurePath(work_path, f"task_{task_count}.sh")
         with open(script_file_path, 'w') as f:
             f.write(script)
         # make file executable

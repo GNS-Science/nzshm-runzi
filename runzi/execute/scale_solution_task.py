@@ -8,7 +8,7 @@ from pathlib import PurePath
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
-from solvis import *  # noqa: F403
+from solvis import InversionSolution
 
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -115,7 +115,7 @@ class BuilderTask:
 
     def scaleRuptureRates(self, in_solution_filepath, task_id, scale, polygon_scale=None, polygon_max_mag=None):
 
-        soln = InversionSolution().from_archive(in_solution_filepath)  # noqa: F405
+        soln = InversionSolution().from_archive(in_solution_filepath)
 
         rr = soln.ruptures
         ra = soln.rates
@@ -131,7 +131,7 @@ class BuilderTask:
             rates.loc[mag_ind, 'Annual Rate'] = rates[mag_ind]['Annual Rate'] * polygon_scale
 
         # all other props are derived from these
-        scaled_soln = InversionSolution()  # noqa: F405
+        scaled_soln = InversionSolution()
         scaled_soln.set_props(rates, ruptures, indices, soln.fault_sections.copy())
 
         new_archive = PurePath(WORK_PATH, 'NZSHM22_ScaledInversionSolution-' + str(task_id) + '.zip')

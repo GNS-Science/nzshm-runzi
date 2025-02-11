@@ -8,7 +8,7 @@ from pathlib import PurePath
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
-from solvis import *  # noqa: F403
+from solvis import InversionSolution
 
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -110,9 +110,10 @@ class BuilderTask:
         print("Report took %s secs" % (t1 - t0).total_seconds())
 
     def averageRuptureRates(self, in_solution_filepaths, task_id):
+        raise NotImplementedError("uses old solvis API")
 
         for i, in_solution_filepath in enumerate(in_solution_filepaths):
-            soln = InversionSolution().from_archive(in_solution_filepath)  # noqa:F405
+            soln = InversionSolution().from_archive(in_solution_filepath)
             if i == 0:
                 rr = soln.ruptures
                 ra = soln.rates
