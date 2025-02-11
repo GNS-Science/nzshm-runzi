@@ -1,7 +1,7 @@
 import os
 import stat
 from pathlib import PurePath
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
 from nzshm_model import get_model_version
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
@@ -34,7 +34,12 @@ factory_task = runzi.execute.openquake.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
 
-def build_task(task_arguments, job_arguments, task_id, extra_env):
+def build_task(
+    task_arguments: Dict[str, Any],
+    job_arguments: Dict[str, Any],
+    task_id: int,
+    extra_env: Optional[List[BatchEnvironmentSetting]],
+):
     if CLUSTER_MODE == EnvMode["AWS"]:
         job_name = f"Runzi-automation-oq-hazard-{task_id}"
         config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
@@ -64,7 +69,7 @@ def build_task(task_arguments, job_arguments, task_id, extra_env):
                 toshi_api_url=API_URL,
                 toshi_s3_url=S3_URL,
                 toshi_report_bucket=S3_REPORT_BUCKET,
-                task_module=runzi.execute.oq_hazard_task.__name__,
+                task_module=runzi.execute.openquake.oq_hazard_task.__name__,
                 time_minutes=int(HAZARD_MAX_TIME),
                 memory=30720,
                 vcpu=4,

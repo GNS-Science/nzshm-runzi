@@ -100,7 +100,7 @@ def load_gmcm_str(gmcm_logic_tree_path):
         return gltf.read()
 
 
-def get_num_workers(config: Dict[Any, Any]) -> int:
+def get_num_workers(config: Dict[str, Any]) -> int:
     if not config["calculation"].get("num_workers"):
         return 1
     return config["calculation"]["num_workers"]
@@ -110,7 +110,7 @@ def single_to_list(param: Any) -> List[Any]:
     return param if isinstance(param, list) else [param]
 
 
-def build_tasks(new_gt_id, args, task_type, model_type):
+def build_tasks(new_gt_id: str, args: Dict[str, Any], task_type: SubtaskType, model_type: ModelType):
     scripts = []
     for script_file in build_hazard_tasks(new_gt_id, task_type, model_type, args):
         print("scheduling: ", script_file)

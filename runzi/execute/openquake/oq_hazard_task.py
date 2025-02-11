@@ -84,7 +84,7 @@ class BuilderTask:
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
-    def _setup_automation_task(self, task_arguments, job_arguments, config_id, environment, task_type):
+    def _setup_automation_task(self, task_arguments, job_arguments, config_id, environment, task_type) -> str:
         print("=" * 50)
         print("task arguments ...")
         print(task_arguments)
@@ -201,7 +201,7 @@ class BuilderTask:
         ta_clean["model"]["hazard_config"] = clean_string(str(ta_clean["model"]["hazard_config"]))
         return flatten_dict(ta_clean)
 
-    def run(self, task_arguments, job_arguments):
+    def run(self, task_arguments: Dict[str, Any], job_arguments: Dict[str, Any]):
         t0 = dt.datetime.now(dt.timezone.utc)
         task_arguments, job_arguments
         environment = {
@@ -338,7 +338,7 @@ class BuilderTask:
                   -h, --help           show this help message and exit
                   -c, --create-tables  Ensure tables exist.
                 """
-                source_logic_tree = (task_arguments["model"]["srm_logic_tree"],)
+                source_logic_tree = task_arguments["model"]["srm_logic_tree"]
                 tag = ":".join(
                     (
                         source_logic_tree.branch_sets[0].short_name,
