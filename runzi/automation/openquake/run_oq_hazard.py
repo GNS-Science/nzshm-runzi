@@ -119,7 +119,7 @@ def build_tasks(new_gt_id, args, task_type, model_type):
     return scripts
 
 
-def run_oq_hazard(config: Dict[Any, Any]):
+def run_oq_hazard(config: Dict[str, Any]):
     t0 = dt.datetime.now(dt.timezone.utc)
 
     validate_config(config, mode="hazard")

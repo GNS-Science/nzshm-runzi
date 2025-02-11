@@ -14,17 +14,17 @@ def load_config(config_filename: Union[Path, str]):
     return config
 
 @click.group()
-def rnz():
+def rnz_hazard():
     pass
 
-@rnz.command(name="oq-hazard", help="launch OpenQuake hazard calculation jobs")
+@rnz_hazard.command(name="oq-hazard", help="launch OpenQuake hazard calculation jobs")
 @click.argument("config-filename", type=click.Path(exists=True))
 def run_oq_hazard_cli(config_filename: str):
     config = load_config(config_filename)
     run_oq_hazard(config)
 
 
-@rnz.command(name="oq-disagg", help="launch OpenQuake disagg calculation jobs")
+@rnz_hazard.command(name="oq-disagg", help="launch OpenQuake disagg calculation jobs")
 @click.argument("config-filename", type=click.Path(exists=True))
 def run_oq_disagg_cli(config_filename: str):
     config = load_config(config_filename)
@@ -42,4 +42,4 @@ def run_oq_disagg_cli(config_filename: str):
 
 
 if __name__ == "__main__":
-    rnz()  # pragma: no cover
+    rnz_hazard()  # pragma: no cover

@@ -11,7 +11,7 @@ packages = [
 ]
 
 [tool.poetry.scripts]
-runzi = 'scripts.cli:rnz'
+runzi-hazard = 'runzi.automation.cli:rnz_hazard'
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
