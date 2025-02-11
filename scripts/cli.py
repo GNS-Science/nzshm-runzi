@@ -19,14 +19,14 @@ def rnz():
 
 @rnz.command(name="oq-hazard", help="launch OpenQuake hazard calculation jobs")
 @click.argument("config-filename", type=click.Path(exists=True))
-def run_oq_hazard_cli(config_filename):
+def run_oq_hazard_cli(config_filename: str):
     config = load_config(config_filename)
     run_oq_hazard(config)
 
 
 @rnz.command(name="oq-disagg", help="launch OpenQuake disagg calculation jobs")
 @click.argument("config-filename", type=click.Path(exists=True))
-def run_oq_hazard_cli(config_filename):
+def run_oq_disagg_cli(config_filename: str):
     config = load_config(config_filename)
     run_oq_disagg(config)
 
