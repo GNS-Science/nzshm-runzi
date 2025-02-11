@@ -2,7 +2,7 @@ import importlib.resources as resources
 
 import pytest
 
-from scripts.cli import load_config
+from runzi.automation.cli.cli import load_config
 
 
 @pytest.fixture(scope='function')
