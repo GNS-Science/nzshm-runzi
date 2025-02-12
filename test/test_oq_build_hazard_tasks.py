@@ -23,11 +23,11 @@ def test_build_hazard_tasks_model_version(config_dict, monkeypatch):
     for script_file in build_hazard_tasks("ABC", SubtaskType.OPENQUAKE_HAZARD, ModelType.COMPOSITE, config_dict):
         pass
     task_args = spy.calls[0]["args"][0]
-    gmcm = GMCMLogicTree.from_dict(task_args["model"]["gmcm_logic_tree"])
-    srm = SourceLogicTree.from_dict(task_args["model"]["srm_logic_tree"])
-    hazard_config = OpenquakeConfig.from_dict(task_args["model"]["hazard_config"])
+    gmcm = GMCMLogicTree.from_dict(task_args["hazard_model"]["gmcm_logic_tree"])
+    srm = SourceLogicTree.from_dict(task_args["hazard_model"]["srm_logic_tree"])
+    hazard_config = OpenquakeConfig.from_dict(task_args["hazard_model"]["hazard_config"])
 
-    model_expected = get_model_version(config_dict["model"]["nshm_model_version"])
+    model_expected = get_model_version(config_dict["hazard_model"]["nshm_model_version"])
     gmcm_expected = model_expected.gmm_logic_tree
     for branch_expected in model_expected.source_logic_tree:
         break
@@ -43,20 +43,20 @@ def test_build_hazard_tasks_model_version(config_dict, monkeypatch):
 # if overwrite gmcm, srm, or hazard config, check that they are changed
 def test_build_hazard_tasks_overwrite_model(config_dict, monkeypatch):
 
-    root_path = Path(config_dict["file"]["path"]).parent
+    root_path = Path(config_dict["filepath"]).parent
 
-    config_dict["model"]["gmcm_logic_tree"] = str(root_path / "gmcm_small.json")
-    config_dict["model"]["srm_logic_tree"] = str(root_path / "srm_small.json")
-    config_dict["model"]["hazard_config"] = str(root_path / "hazard_config.json")
+    config_dict["hazard_model"]["gmcm_logic_tree"] = str(root_path / "gmcm_small.json")
+    config_dict["hazard_model"]["srm_logic_tree"] = str(root_path / "srm_small.json")
+    config_dict["hazard_model"]["hazard_config"] = str(root_path / "hazard_config.json")
 
     spy = Spy(build_task_mock)
     monkeypatch.setattr(coh, "build_task", spy)
     for script_file in build_hazard_tasks("ABC", SubtaskType.OPENQUAKE_HAZARD, ModelType.COMPOSITE, config_dict):
         pass
     task_args = spy.calls[0]["args"][0]
-    gmcm = GMCMLogicTree.from_dict(task_args["model"]["gmcm_logic_tree"])
-    srm = SourceLogicTree.from_dict(task_args["model"]["srm_logic_tree"])
-    hazard_config = OpenquakeConfig.from_dict(task_args["model"]["hazard_config"])
+    gmcm = GMCMLogicTree.from_dict(task_args["hazard_model"]["gmcm_logic_tree"])
+    srm = SourceLogicTree.from_dict(task_args["hazard_model"]["srm_logic_tree"])
+    hazard_config = OpenquakeConfig.from_dict(task_args["hazard_model"]["hazard_config"])
 
     srm_overwrite = SourceLogicTree.from_json(root_path / "srm_small.json")
     gmcm_expected = GMCMLogicTree.from_json(root_path / "gmcm_small.json")

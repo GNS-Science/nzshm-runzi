@@ -11,7 +11,7 @@ import pwd
 from pathlib import Path
 from typing import Any, Dict, List
 
-from runzi.automation.config import validate_entry, validate_path
+from .config import HazardConfig
 from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, EnvMode
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
@@ -30,68 +30,13 @@ logging.getLogger("gql.transport").setLevel(logging.WARN)
 log = logging.getLogger(__name__)
 
 
-def validate_config_hazard(config: Dict[Any, Any]) -> None:
-    validate_entry(config, "hazard_curve", "imtls", [list], subtype=float)
-
-
 def validate_config_disagg(config: Dict[Any, Any]) -> None:
-    validate_entry(config, "hazard_curve", "hazard_model_id", [str])
-    validate_entry(config, "disagg", "inv_time", [int])
-    validate_entry(config, "disagg", "poes", [list], subtype=float)
-    validate_entry(config, "output", "gt_filename", [str])
-    validate_entry(config, "hazard_curve", "agg", [list, str], subtype=str)
-
-
-def validate_config(config: Dict[Any, Any], mode: str) -> None:
-    if config["site_params"].get("locations") and config["site_params"].get("locations_file"):
-        raise ValueError("cannot specify both locations and locations_file in site_params table of config")
-
-    has_srm_lt = has_gmcm_lt = has_hazard_config = False
-    if config["model"].get("srm_logic_tree"):
-        validate_path(config, "model", "srm_logic_tree")
-        has_srm_lt = True
-    if config["model"].get("gmcm_logic_tree"):
-        validate_path(config, "model", "gmcm_logic_tree")
-        has_gmcm_lt = True
-    if config["model"].get("hazard_config"):
-        validate_path(config, "model", "hazard_config")
-        has_hazard_config = True
-
-    if not config["model"].get("nshm_model_version") and not (has_srm_lt and has_gmcm_lt and has_hazard_config):
-        raise ValueError(
-            """if nshm_model_version not specified, must provide all of
-            gmcm_logic_tree, srm_logic_tree, and hazard_config file paths"""
-        )
-
-    file_has_vs30 = False
-    if config["site_params"].get("locations"):
-        validate_entry(config, "site_params", "locations", [list], subtype=str)
-    else:
-        validate_path(config, "site_params", "locations_file")
-        with Path(config["site_params"]["locations_file"]).open() as lf:
-            header = lf.readline()
-            if "vs30" in header:
-                file_has_vs30 = True
-
-    validate_entry(config, "hazard_curve", "imts", [list], subtype=str)
-    validate_entry(config, "general", "title", [str])
-    validate_entry(config, "general", "description", [str])
-    validate_entry(config, "calculation", "num_workers", [int], optional=True)
-    validate_entry(config, "calculation", "sleep_multiplier", [float], optional=True)
-
-    # config must either have a vs30 to apply to all sites (uniform site parameter) or
-    # the locations file must have site-specific vs30s
-    if config["site_params"].get("vs30"):
-        if file_has_vs30:
-            raise ValueError("cannot specify both uniform and site-specific vs30")
-        validate_entry(config, "site_params", "vs30", [list, int], subtype=int)
-    elif not file_has_vs30:
-        raise ValueError("locations file must have vs30 column if uniform vs30 not given")
-
-    if mode == "hazard":
-        validate_config_hazard(config)
-    elif mode == "disagg":
-        validate_config_disagg(config)
+    pass
+    # validate_entry(config, "hazard_curve", "hazard_model_id", [str])
+    # validate_entry(config, "disagg", "inv_time", [int])
+    # validate_entry(config, "disagg", "poes", [list], subtype=float)
+    # validate_entry(config, "output", "gt_filename", [str])
+    # validate_entry(config, "hazard_curve", "agg", [list, str], subtype=str)
 
 
 def load_gmcm_str(gmcm_logic_tree_path):
@@ -122,24 +67,27 @@ def build_tasks(new_gt_id: str, args: Dict[str, Any], task_type: SubtaskType, mo
 def run_oq_hazard(config: Dict[str, Any]):
     t0 = dt.datetime.now(dt.timezone.utc)
 
-    validate_config(config, mode="hazard")
-    args = config
+    hazard_job_config = HazardConfig.model_validate(config)
+
+    # some objects in the config (Path type) are not json serializable so we dump to json and load
+    # back to json to clean it up so it can be passed to the toshi API
+    args_dict = json.loads(hazard_job_config.model_dump_json())
 
     # if using a locations file and cloud compute, save the file using ToshiAPI for later retrieval by each task
     toshi_api = None
-    if config["site_params"].get("locations_file") and CLUSTER_MODE is EnvMode["AWS"]:
-        filepath = Path(config["site_params"]["locations_file"])
+    if hazard_job_config.site_params.locations_file and CLUSTER_MODE is EnvMode["AWS"]:
+        filepath = hazard_job_config.site_params.locations_file
         headers = {"x-api-key": API_KEY}
         toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         file_id, post_url = toshi_api.file.create_file(filepath)
         toshi_api.file.upload_content(post_url, filepath)
-        args["site_params"]["locations_file_id"] = file_id
+        args_dict["site_params"]["locations_file_id"] = file_id
         print("site file ID", file_id)
 
     num_workers = get_num_workers(config)
 
     args_list = []
-    for key, value in args.items():
+    for key, value in args_dict.items():
         val = value
         if not isinstance(val, str):
             val = json.dumps(val)
@@ -168,7 +116,7 @@ def run_oq_hazard(config: Dict[str, Any]):
         new_gt_id = None
 
     print("GENERAL_TASK_ID:", new_gt_id)
-    tasks = build_tasks(new_gt_id, args, task_type, model_type)
+    tasks = build_tasks(new_gt_id, args_dict, task_type, model_type)
 
     print("worker count: ", num_workers)
     print(f"tasks to schedule: {len(tasks)}")

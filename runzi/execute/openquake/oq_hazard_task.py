@@ -196,9 +196,9 @@ class BuilderTask:
             return input_str.replace('"', "``").replace("\n", "-")
 
         ta_clean = copy.deepcopy(task_arguments)
-        ta_clean["model"]["srm_logic_tree"] = clean_string(str(ta_clean["model"]["srm_logic_tree"]))
-        ta_clean["model"]["gmcm_logic_tree"] = clean_string(str(ta_clean["model"]["gmcm_logic_tree"]))
-        ta_clean["model"]["hazard_config"] = clean_string(str(ta_clean["model"]["hazard_config"]))
+        ta_clean["hazard_model"]["srm_logic_tree"] = clean_string(str(ta_clean["hazard_model"]["srm_logic_tree"]))
+        ta_clean["hazard_model"]["gmcm_logic_tree"] = clean_string(str(ta_clean["hazard_model"]["gmcm_logic_tree"]))
+        ta_clean["hazard_model"]["hazard_config"] = clean_string(str(ta_clean["hazard_model"]["hazard_config"]))
         return flatten_dict(ta_clean)
 
     def run(self, task_arguments: Dict[str, Any], job_arguments: Dict[str, Any]):
@@ -216,9 +216,9 @@ class BuilderTask:
         print(task_type)
 
         # convert the dict representations of complex objects (from nzshm_model lib) in the args to the correct type
-        task_arguments["model"]["srm_logic_tree"] = SourceLogicTree.from_dict(task_arguments["model"]["srm_logic_tree"])
-        task_arguments["model"]["gmcm_logic_tree"] = GMCMLogicTree.from_dict(task_arguments["model"]["gmcm_logic_tree"])
-        task_arguments["model"]["hazard_config"] = OpenquakeConfig.from_dict(task_arguments["model"]["hazard_config"])
+        task_arguments["hazard_model"]["srm_logic_tree"] = SourceLogicTree.from_dict(task_arguments["hazard_model"]["srm_logic_tree"])
+        task_arguments["hazard_model"]["gmcm_logic_tree"] = GMCMLogicTree.from_dict(task_arguments["hazard_model"]["gmcm_logic_tree"])
+        task_arguments["hazard_model"]["hazard_config"] = OpenquakeConfig.from_dict(task_arguments["hazard_model"]["hazard_config"])
 
         ################
         # API SETUP
@@ -241,9 +241,9 @@ class BuilderTask:
         model = NshmModel(
             version="",
             title=task_arguments["title"],
-            source_logic_tree=task_arguments["model"]["srm_logic_tree"],
-            gmcm_logic_tree=task_arguments["model"]["gmcm_logic_tree"],
-            hazard_config=task_arguments["model"]["hazard_config"],
+            source_logic_tree=task_arguments["hazard_model"]["srm_logic_tree"],
+            gmcm_logic_tree=task_arguments["hazard_model"]["gmcm_logic_tree"],
+            hazard_config=task_arguments["hazard_model"]["hazard_config"],
         )
 
         # set IMTs, IMTLs
@@ -338,7 +338,7 @@ class BuilderTask:
                   -h, --help           show this help message and exit
                   -c, --create-tables  Ensure tables exist.
                 """
-                source_logic_tree = task_arguments["model"]["srm_logic_tree"]
+                source_logic_tree = task_arguments["hazard_model"]["srm_logic_tree"]
                 tag = ":".join(
                     (
                         source_logic_tree.branch_sets[0].short_name,

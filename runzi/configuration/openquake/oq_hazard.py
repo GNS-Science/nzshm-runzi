@@ -108,21 +108,21 @@ def build_hazard_tasks(
 
     task_count = 0
 
-    if model_version := task_args["model"].get("nshm_model_version"):
+    if model_version := task_args["hazard_model"].get("nshm_model_version"):
         model = get_model_version(model_version)
         source_logic_tree = model.source_logic_tree
         gmcm_logic_tree = model.gmm_logic_tree
         hazard_config = model.hazard_config
 
-    if gmcm_lt_fp := task_args["model"].get("gmcm_logic_tree"):
+    if gmcm_lt_fp := task_args["hazard_model"].get("gmcm_logic_tree"):
         gmcm_logic_tree = GMCMLogicTree.from_json(gmcm_lt_fp)
-    if srm_lt_fp := task_args["model"].get("srm_logic_tree"):
+    if srm_lt_fp := task_args["hazard_model"].get("srm_logic_tree"):
         source_logic_tree = SourceLogicTree.from_json(srm_lt_fp)
-    if hc_lt_fp := task_args["model"].get("hazard_config"):
+    if hc_lt_fp := task_args["hazard_model"].get("hazard_config"):
         hazard_config = OpenquakeConfig.from_json(hc_lt_fp)
 
-    task_args["model"]["gmcm_logic_tree"] = gmcm_logic_tree.to_dict()
-    task_args["model"]["hazard_config"] = hazard_config.to_dict()
+    task_args["hazard_model"]["gmcm_logic_tree"] = gmcm_logic_tree.to_dict()
+    task_args["hazard_model"]["hazard_config"] = hazard_config.to_dict()
 
     task_args.update(
         dict(
@@ -144,5 +144,5 @@ def build_hazard_tasks(
             use_api=USE_API,
             sleep_multiplier=task_args["calculation"].get("sleep_multiplier", 2),
         )
-        task_args["model"]["srm_logic_tree"] = slt.to_dict()
+        task_args["hazard_model"]["srm_logic_tree"] = slt.to_dict()
         yield build_task(task_args, job_arguments, task_count, extra_env)
