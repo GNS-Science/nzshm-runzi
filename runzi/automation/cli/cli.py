@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union
+from typing import Union, Dict, Any
 
 import click
 import toml
@@ -8,9 +8,9 @@ from runzi.automation.openquake.run_oq_disagg import run_oq_disagg
 from runzi.automation.openquake.run_oq_hazard import run_oq_hazard
 
 
-def load_config(config_filename: Union[Path, str]):
+def load_config(config_filename: Union[Path, str]) -> Dict[str, Any]:
     config = toml.load(config_filename)
-    config["file"] = {"path": str(Path(config_filename).absolute())}
+    config["filepath"] = Path(config_filename).absolute()
     return config
 
 

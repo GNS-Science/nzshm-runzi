@@ -2,7 +2,7 @@
 title = "OpenQuake Hazard Calcs"
 description = "hazard demo"
 
-[model]
+[hazard_model]
 nshm_model_version = "NSHM_v1.0.4"
 
 # these entries will overwrite anything in the nshm_model_version.

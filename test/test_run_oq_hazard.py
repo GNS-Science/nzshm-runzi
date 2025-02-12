@@ -30,10 +30,10 @@ def build_tasks_mock(new_gt_id, args, task_type, model_type):
 
 
 # if AWS mode, check that a file ID is added to the task arguments
-def test_create_file(config, monkeypatch):
+def test_create_file(config_dict, monkeypatch):
 
-    config["site_params"]["locations_file"] = "sites.csv"
-    del config["site_params"]["locations"]
+    config_dict["site_params"]["locations_file"] = "sites.csv"
+    del config_dict["site_params"]["locations"]
 
     spy = Spy(build_tasks_mock)
     monkeypatch.setattr(run_oq_hazard_module, "CLUSTER_MODE", EnvMode.AWS)
@@ -41,5 +41,5 @@ def test_create_file(config, monkeypatch):
     monkeypatch.setattr(run_oq_hazard_module, "build_tasks", spy)
     monkeypatch.setattr(run_oq_hazard_module, "schedule_tasks", mock_schedule_tasks)
 
-    run_oq_hazard(config)
+    run_oq_hazard(config_dict)
     assert spy.calls[0]["args"][1]["site_params"]["locations_file_id"] == FILE_ID

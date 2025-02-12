@@ -17,7 +17,7 @@ The configuration file is in toml format. The following tables and variables are
 - `title`: a string title for the model
 - `description`: a string description of the model
 
-### `[model]`
+### `[hazard_model]`
 A model can be specified by a model version available from the `nzshm-model` package, logic tree and config files, or a combination of both. 
 
 - `nshm_model_version`: a string specifying a model version available from the `nzshm-model` package (e.g. `"NSHM_v1.0.4"`)
