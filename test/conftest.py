@@ -1,5 +1,5 @@
 import importlib.resources as resources
-from typing import Dict, Any
+from typing import Any, Dict
 
 import pytest
 

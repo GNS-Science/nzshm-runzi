@@ -216,9 +216,15 @@ class BuilderTask:
         print(task_type)
 
         # convert the dict representations of complex objects (from nzshm_model lib) in the args to the correct type
-        task_arguments["hazard_model"]["srm_logic_tree"] = SourceLogicTree.from_dict(task_arguments["hazard_model"]["srm_logic_tree"])
-        task_arguments["hazard_model"]["gmcm_logic_tree"] = GMCMLogicTree.from_dict(task_arguments["hazard_model"]["gmcm_logic_tree"])
-        task_arguments["hazard_model"]["hazard_config"] = OpenquakeConfig.from_dict(task_arguments["hazard_model"]["hazard_config"])
+        task_arguments["hazard_model"]["srm_logic_tree"] = SourceLogicTree.from_dict(
+            task_arguments["hazard_model"]["srm_logic_tree"]
+        )
+        task_arguments["hazard_model"]["gmcm_logic_tree"] = GMCMLogicTree.from_dict(
+            task_arguments["hazard_model"]["gmcm_logic_tree"]
+        )
+        task_arguments["hazard_model"]["hazard_config"] = OpenquakeConfig.from_dict(
+            task_arguments["hazard_model"]["hazard_config"]
+        )
 
         ################
         # API SETUP

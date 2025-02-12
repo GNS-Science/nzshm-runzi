@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union, Dict, Any
+from typing import Any, Dict, Union
 
 import click
 import toml

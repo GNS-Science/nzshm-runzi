@@ -1,18 +1,15 @@
-import importlib.resources as resources
-
-import pytest
 from pathlib import Path
+from typing import Any, Optional, Union
 
-from typing_extensions import Self
-from typing import Optional, Union, Any
 from nzshm_model import all_model_versions
-
-from pydantic import BaseModel, FilePath, model_validator, PositiveInt, ValidationError, field_validator, ValidationInfo
+from pydantic import BaseModel, FilePath, PositiveInt, ValidationInfo, field_validator, model_validator
+from typing_extensions import Self
 
 
 class GeneralConfig(BaseModel):
     title: str
     description: str = ''
+
 
 class HazardModelConfig(BaseModel):
     nshm_model_version: Optional[str] = None
@@ -22,16 +19,13 @@ class HazardModelConfig(BaseModel):
 
     @model_validator(mode='after')
     def check_logic_trees(self) -> Self:
-        if (
-            not self.nshm_model_version and
-            not (self.srm_logic_tree and self.gmcm_logic_tree and self.hazard_config)
-        ):
+        if not self.nshm_model_version and not (self.srm_logic_tree and self.gmcm_logic_tree and self.hazard_config):
             raise ValueError(
                 """if nshm_model_version not specified, must provide all of
                 gmcm_logic_tree, srm_logic_tree, and hazard_config file paths"""
             )
         return self
-    
+
     @field_validator('nshm_model_version', mode='after')
     @classmethod
     def is_model_version(cls, value: str) -> str:
@@ -43,16 +37,18 @@ class HazardModelConfig(BaseModel):
 class CalculationConfig(BaseModel):
     num_workers: PositiveInt = 1
 
+
 class HazardCurveConfig(BaseModel):
     imts: list[str]
     imtls: list[float]
+
 
 class SiteConfig(BaseModel):
     vs30: Optional[PositiveInt] = None
     locations: Optional[list[str]] = None
     locations_file: Optional[FilePath] = None
 
-    @staticmethod    
+    @staticmethod
     def has_vs30(filepath: Path):
         with filepath.open() as lf:
             header = lf.readline()
@@ -73,6 +69,7 @@ class SiteConfig(BaseModel):
 
         return self
 
+
 class HazardConfig(BaseModel):
     filepath: FilePath
     general: GeneralConfig
@@ -85,10 +82,10 @@ class HazardConfig(BaseModel):
     def resolve_path(path: Union[Path, str], reference_filepath: Union[Path, str]) -> str:
         path = Path(path)
         if not path.is_absolute():
-            return str(Path(reference_filepath.parent) / path)
+            return str(Path(reference_filepath).parent / path)
         return str(path)
 
-    # resolve absolute paths (relative to input file) for optional logic tree and config fields 
+    # resolve absolute paths (relative to input file) for optional logic tree and config fields
     @field_validator('hazard_model', mode='before')
     @classmethod
     def absolute_model_paths(cls, data: Any, info: ValidationInfo) -> Any:

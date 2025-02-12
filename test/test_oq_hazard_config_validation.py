@@ -1,11 +1,15 @@
-from runzi.automation.openquake.config import HazardConfig
+import importlib.resources as resources
+
 import pytest
 from pydantic import ValidationError
-import importlib.resources as resources
+
+from runzi.automation.openquake.config import HazardConfig
+
 
 # default fixture should be a valid config
 def test_config_validation(config_dict):
     HazardConfig.model_validate(config_dict)
+
 
 def test_config_valid_model_version(config_dict):
     config_dict["hazard_model"]["nshm_model_version"] = "NOT A VERSION"
