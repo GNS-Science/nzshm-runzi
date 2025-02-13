@@ -3,7 +3,7 @@ import importlib.resources as resources
 import pytest
 from pydantic import ValidationError
 
-from runzi.automation.openquake.config import HazardConfig, DisaggConfig
+from runzi.automation.openquake.config import DisaggConfig, HazardConfig
 
 
 # default fixture should be a valid config
@@ -83,23 +83,29 @@ def test_config_validation_1(config_dict):
     config_dict["site_params"]["locations_file"] = "sites_vs30.csv"
     HazardConfig.model_validate(config_dict)
 
+
 table_param_value = [
     ("hazard_curve", "imts", "PGA"),
     ("hazard_curve", "imtls", 0.1),
     ("site_params", "vs30s", 100),
     ("site_params", "locations", "WLG"),
 ]
-@pytest.mark.parametrize("table,param,value",table_param_value)
+
+
+@pytest.mark.parametrize("table,param,value", table_param_value)
 def test_coerse_to_list(config_dict, table, param, value):
     config_dict[table][param] = value
     HazardConfig.model_validate(config_dict)
+
 
 table_param_value_disagg = [
     ("hazard_curve", "aggs", "mean"),
     ("hazard_curve", "imts", "SA(1.0)"),
     ("disagg", "poes", 0.3),
 ]
-@pytest.mark.parametrize("table,param,value",table_param_value_disagg)
+
+
+@pytest.mark.parametrize("table,param,value", table_param_value_disagg)
 def test_coerse_to_list_disagg(disagg_config_dict, table, param, value):
     disagg_config_dict[table][param] = value
     DisaggConfig.model_validate(disagg_config_dict)
@@ -114,5 +120,3 @@ def test_disagg_incorrect_agg(disagg_config_dict):
     disagg_config_dict["hazard_curve"]["aggs"] = ["PGA", "XYZ"]
     with pytest.raises(ValidationError):
         DisaggConfig.model_validate(disagg_config_dict)
-
-

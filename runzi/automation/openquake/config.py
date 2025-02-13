@@ -1,18 +1,27 @@
 from pathlib import Path
 from typing import Any, Optional, Union
-from typing_extensions import Annotated
 
 from nzshm_model import all_model_versions
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    BeforeValidator,
+    FilePath,
+    PositiveInt,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 from toshi_hazard_store.model import AggregationEnum
-from pydantic import BaseModel, FilePath, PositiveInt, ValidationInfo, field_validator, model_validator, AfterValidator, BeforeValidator
-from typing_extensions import Self
+from typing_extensions import Annotated, Self
 
 
 def is_model_version(value: str) -> str:
     if value not in all_model_versions():
         raise ValueError("must specify valid nshm_model_version ({})".format(all_model_versions()))
     return value
-    
+
+
 def resolve_path(path: Union[Path, str], reference_filepath: Union[Path, str]) -> str:
     path = Path(path)
     if not path.is_absolute():
@@ -31,8 +40,6 @@ class GeneralConfig(BaseModel):
     description: str = ''
 
 
-
-
 class HazardModelConfig(BaseModel):
     nshm_model_version: Annotated[Optional[str], AfterValidator(is_model_version)] = None
     srm_logic_tree: Optional[FilePath] = None
@@ -47,7 +54,6 @@ class HazardModelConfig(BaseModel):
                 gmcm_logic_tree, srm_logic_tree, and hazard_config file paths"""
             )
         return self
-
 
 
 class CalculationConfig(BaseModel):
@@ -72,7 +78,6 @@ class HazardSiteConfig(BaseModel):
                 return True
         return False
 
-
     @model_validator(mode='after')
     def check_locations(self) -> Self:
         if self.locations_file and self.locations:
@@ -94,7 +99,6 @@ class HazardConfig(BaseModel):
     calculation: CalculationConfig
     hazard_curve: HazardCurveConfig
     site_params: HazardSiteConfig
-
 
     # resolve absolute paths (relative to input file) for optional logic tree and config fields
     @field_validator('hazard_model', mode='before')
@@ -122,13 +126,14 @@ class DisaggCurveConfig(BaseModel):
     imts: Annotated[list[str], BeforeValidator(coerce_to_list)]
 
 
-
 class DisaggProbConfig(BaseModel):
     inv_time: int
     poes: Annotated[list[float], BeforeValidator(coerce_to_list)]
 
+
 class DisaggOutput(BaseModel):
     gt_filename: str
+
 
 class DisaggConfig(BaseModel):
     filepath: FilePath
@@ -139,4 +144,3 @@ class DisaggConfig(BaseModel):
     disagg: DisaggProbConfig
     calculation: CalculationConfig
     output: DisaggOutput
-
