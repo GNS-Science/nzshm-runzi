@@ -58,6 +58,7 @@ class HazardModelConfig(BaseModel):
 
 class CalculationConfig(BaseModel):
     num_workers: PositiveInt = 1
+    sleep_multiplier: Optional[PositiveInt] = None
 
 
 class HazardCurveConfig(BaseModel):
