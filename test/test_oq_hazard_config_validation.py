@@ -3,7 +3,7 @@ import importlib.resources as resources
 import pytest
 from pydantic import ValidationError
 
-from runzi.automation.openquake.config import HazardConfig
+from runzi.automation.openquake.config import HazardConfig, DisaggConfig
 
 
 # default fixture should be a valid config
@@ -71,7 +71,7 @@ def test_config_validation_location_listandfile(config_dict):
 
 # if a uniform vs30 is not provided, the locations file must provide it
 def test_config_validation_vs30_missing(config_dict):
-    del config_dict["site_params"]["vs30"]
+    del config_dict["site_params"]["vs30s"]
     with pytest.raises(ValidationError):
         HazardConfig.model_validate(config_dict)
 
@@ -79,6 +79,40 @@ def test_config_validation_vs30_missing(config_dict):
 # the vs30s are site specific and in the locations file
 def test_config_validation_1(config_dict):
     del config_dict["site_params"]["locations"]
-    del config_dict["site_params"]["vs30"]
+    del config_dict["site_params"]["vs30s"]
     config_dict["site_params"]["locations_file"] = "sites_vs30.csv"
     HazardConfig.model_validate(config_dict)
+
+table_param_value = [
+    ("hazard_curve", "imts", "PGA"),
+    ("hazard_curve", "imtls", 0.1),
+    ("site_params", "vs30s", 100),
+    ("site_params", "locations", "WLG"),
+]
+@pytest.mark.parametrize("table,param,value",table_param_value)
+def test_coerse_to_list(config_dict, table, param, value):
+    config_dict[table][param] = value
+    HazardConfig.model_validate(config_dict)
+
+table_param_value_disagg = [
+    ("hazard_curve", "aggs", "mean"),
+    ("hazard_curve", "imts", "SA(1.0)"),
+    ("disagg", "poes", 0.3),
+]
+@pytest.mark.parametrize("table,param,value",table_param_value_disagg)
+def test_coerse_to_list_disagg(disagg_config_dict, table, param, value):
+    disagg_config_dict[table][param] = value
+    DisaggConfig.model_validate(disagg_config_dict)
+
+
+def test_disagg_config_validation(disagg_config_dict):
+    DisaggConfig.model_validate(disagg_config_dict)
+
+
+# the aggs must be present in AggregationEnum
+def test_disagg_incorrect_agg(disagg_config_dict):
+    disagg_config_dict["hazard_curve"]["aggs"] = ["PGA", "XYZ"]
+    with pytest.raises(ValidationError):
+        DisaggConfig.model_validate(disagg_config_dict)
+
+

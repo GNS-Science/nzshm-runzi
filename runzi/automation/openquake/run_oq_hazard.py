@@ -70,8 +70,8 @@ def run_oq_hazard(config: Dict[str, Any]):
 
     hazard_job_config = HazardConfig.model_validate(config)
 
-    # some objects in the config (Path type) are not json serializable so we dump to json and load
-    # back to json to clean it up so it can be passed to the toshi API
+    # some objects in the config (Path type) are not json serializable so we dump to json using the pydantic method
+    # which handles these types and load back to json to clean it up so it can be passed to the toshi API
     args_dict = json.loads(hazard_job_config.model_dump_json())
 
     # if using a locations file and cloud compute, save the file using ToshiAPI for later retrieval by each task

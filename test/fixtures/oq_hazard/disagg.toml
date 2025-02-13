@@ -15,11 +15,11 @@ nshm_model_version = "NSHM_v1.0.4"
 [hazard_curve]
 # this is the model in toshi-hazard-store that will be used to find the target shaking level for the desired PoE
 hazard_model_id = "NSHM_v1.0.4"
-aggs = "mean"
+aggs = ["mean"]
 imts = ["PGA", "SA(1.5)"]
 
 [site_params]
-vs30s = 750
+vs30s = [750]
 locations = ["WLG", "AKL"]
 
 [disagg]

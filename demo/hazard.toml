@@ -27,7 +27,7 @@ imtls = [
 [site_params]
 
 # do not use if locations file has site-specific vs30 values
-vs30 = 400
+vs30s = [400]
 
 # can provide locations or locations_file, not both
 # locations = ['WLG','AKL','DUD','CHC']

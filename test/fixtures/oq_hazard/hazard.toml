@@ -19,5 +19,5 @@ imtls = [
     ]
 
 [site_params]
-vs30 = 400
+vs30s = [400]
 locations = ['WLG','AKL','DUD','CHC']

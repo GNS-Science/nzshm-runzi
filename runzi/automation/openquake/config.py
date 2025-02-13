@@ -1,9 +1,29 @@
 from pathlib import Path
 from typing import Any, Optional, Union
+from typing_extensions import Annotated
 
 from nzshm_model import all_model_versions
-from pydantic import BaseModel, FilePath, PositiveInt, ValidationInfo, field_validator, model_validator
+from toshi_hazard_store.model import AggregationEnum
+from pydantic import BaseModel, FilePath, PositiveInt, ValidationInfo, field_validator, model_validator, AfterValidator, BeforeValidator
 from typing_extensions import Self
+
+
+def is_model_version(value: str) -> str:
+    if value not in all_model_versions():
+        raise ValueError("must specify valid nshm_model_version ({})".format(all_model_versions()))
+    return value
+    
+def resolve_path(path: Union[Path, str], reference_filepath: Union[Path, str]) -> str:
+    path = Path(path)
+    if not path.is_absolute():
+        return str(Path(reference_filepath).parent / path)
+    return str(path)
+
+
+def coerce_to_list(value: Any) -> list[Any]:
+    if not isinstance(value, list):
+        return [value]
+    return value
 
 
 class GeneralConfig(BaseModel):
@@ -11,8 +31,10 @@ class GeneralConfig(BaseModel):
     description: str = ''
 
 
+
+
 class HazardModelConfig(BaseModel):
-    nshm_model_version: Optional[str] = None
+    nshm_model_version: Annotated[Optional[str], AfterValidator(is_model_version)] = None
     srm_logic_tree: Optional[FilePath] = None
     gmcm_logic_tree: Optional[FilePath] = None
     hazard_config: Optional[FilePath] = None
@@ -26,12 +48,6 @@ class HazardModelConfig(BaseModel):
             )
         return self
 
-    @field_validator('nshm_model_version', mode='after')
-    @classmethod
-    def is_model_version(cls, value: str) -> str:
-        if value not in all_model_versions():
-            raise ValueError("must specify valid nshm_model_version ({})".format(all_model_versions()))
-        return value
 
 
 class CalculationConfig(BaseModel):
@@ -39,13 +55,13 @@ class CalculationConfig(BaseModel):
 
 
 class HazardCurveConfig(BaseModel):
-    imts: list[str]
-    imtls: list[float]
+    imts: Annotated[list[str], BeforeValidator(coerce_to_list)]
+    imtls: Annotated[list[float], BeforeValidator(coerce_to_list)]
 
 
-class SiteConfig(BaseModel):
-    vs30: Optional[PositiveInt] = None
-    locations: Optional[list[str]] = None
+class HazardSiteConfig(BaseModel):
+    vs30s: Annotated[Optional[list[PositiveInt]], BeforeValidator(coerce_to_list)] = None
+    locations: Annotated[Optional[list[str]], BeforeValidator(coerce_to_list)] = None
     locations_file: Optional[FilePath] = None
 
     @staticmethod
@@ -56,15 +72,16 @@ class SiteConfig(BaseModel):
                 return True
         return False
 
+
     @model_validator(mode='after')
     def check_locations(self) -> Self:
         if self.locations_file and self.locations:
             raise ValueError("cannot specify both locations and locations_file")
 
         file_has_vs30 = self.locations_file and self.has_vs30(self.locations_file)
-        if file_has_vs30 and self.vs30:
+        if file_has_vs30 and self.vs30s:
             raise ValueError("cannot specify both uniform and site-specific vs30")
-        elif not file_has_vs30 and not self.vs30:
+        elif not file_has_vs30 and not self.vs30s:
             raise ValueError("locations file must have vs30 column if uniform vs30 not given")
 
         return self
@@ -76,14 +93,8 @@ class HazardConfig(BaseModel):
     hazard_model: HazardModelConfig
     calculation: CalculationConfig
     hazard_curve: HazardCurveConfig
-    site_params: SiteConfig
+    site_params: HazardSiteConfig
 
-    @staticmethod
-    def resolve_path(path: Union[Path, str], reference_filepath: Union[Path, str]) -> str:
-        path = Path(path)
-        if not path.is_absolute():
-            return str(Path(reference_filepath).parent / path)
-        return str(path)
 
     # resolve absolute paths (relative to input file) for optional logic tree and config fields
     @field_validator('hazard_model', mode='before')
@@ -92,7 +103,7 @@ class HazardConfig(BaseModel):
         if isinstance(data, dict):
             for key in ["srm_logic_tree", "gmcm_logic_tree", "hazard_config"]:
                 if data.get(key):
-                    data[key] = cls.resolve_path(data[key], info.data["filepath"])
+                    data[key] = resolve_path(data[key], info.data["filepath"])
         return data
 
     # resolve absolute paths (relative to input file) for optional site file
@@ -101,5 +112,31 @@ class HazardConfig(BaseModel):
     def absolute_site_path(cls, data: Any, info: ValidationInfo) -> Any:
         if isinstance(data, dict):
             if data.get("locations_file"):
-                data["locations_file"] = cls.resolve_path(data["locations_file"], info.data["filepath"])
+                data["locations_file"] = resolve_path(data["locations_file"], info.data["filepath"])
         return data
+
+
+class DisaggCurveConfig(BaseModel):
+    hazard_model_id: Annotated[str, AfterValidator(is_model_version)]
+    aggs: Annotated[list[AggregationEnum], BeforeValidator(coerce_to_list)]
+    imts: Annotated[list[str], BeforeValidator(coerce_to_list)]
+
+
+
+class DisaggProbConfig(BaseModel):
+    inv_time: int
+    poes: Annotated[list[float], BeforeValidator(coerce_to_list)]
+
+class DisaggOutput(BaseModel):
+    gt_filename: str
+
+class DisaggConfig(BaseModel):
+    filepath: FilePath
+    general: GeneralConfig
+    hazard_model: HazardModelConfig
+    hazard_curve: DisaggCurveConfig
+    site_params: HazardSiteConfig
+    disagg: DisaggProbConfig
+    calculation: CalculationConfig
+    output: DisaggOutput
+
