@@ -128,8 +128,6 @@ def build_hazard_tasks(
 
     ta.update(
         dict(
-            title=ta["general"]["title"],
-            description=ta["general"]["description"],
             task_type=HazardTaskType.HAZARD.name,
             model_type=model_type.name,
         )

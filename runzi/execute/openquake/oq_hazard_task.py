@@ -246,7 +246,7 @@ class BuilderTask:
 
         model = NshmModel(
             version="",
-            title=task_arguments["title"],
+            title=task_arguments["general"]["title"],
             source_logic_tree=task_arguments["hazard_model"]["srm_logic_tree"],
             gmcm_logic_tree=task_arguments["hazard_model"]["gmcm_logic_tree"],
             hazard_config=task_arguments["hazard_model"]["hazard_config"],

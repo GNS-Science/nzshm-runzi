@@ -68,16 +68,16 @@ def build_tasks(new_gt_id: str, args: Dict[str, Any], task_type: SubtaskType, mo
 def run_oq_hazard(config: Dict[str, Any]):
     t0 = dt.datetime.now(dt.timezone.utc)
 
-    hazard_job_config = HazardConfig.model_validate(config)
+    job_config = HazardConfig.model_validate(config)
 
     # some objects in the config (Path type) are not json serializable so we dump to json using the pydantic method
     # which handles these types and load back to json to clean it up so it can be passed to the toshi API
-    args_dict = json.loads(hazard_job_config.model_dump_json())
+    args_dict = json.loads(job_config.model_dump_json())
 
     # if using a locations file and cloud compute, save the file using ToshiAPI for later retrieval by each task
     toshi_api = None
-    if hazard_job_config.site_params.locations_file and CLUSTER_MODE is EnvMode["AWS"]:
-        filepath = hazard_job_config.site_params.locations_file
+    if job_config.site_params.locations_file and CLUSTER_MODE is EnvMode["AWS"]:
+        filepath = job_config.site_params.locations_file
         headers = {"x-api-key": API_KEY}
         toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         file_id, post_url = toshi_api.file.create_file(filepath)
@@ -85,7 +85,7 @@ def run_oq_hazard(config: Dict[str, Any]):
         args_dict["site_params"]["locations_file_id"] = file_id
         print("site file ID", file_id)
 
-    num_workers = get_num_workers(config)
+    num_workers = job_config.calculation.num_workers
 
     args_list = []
     for key, value in args_dict.items():
