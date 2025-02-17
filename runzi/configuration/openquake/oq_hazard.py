@@ -135,9 +135,9 @@ def build_hazard_tasks(
         )
     )
 
-    if not task_args["site_params"].get("vs30"):
-        task_args["site_params"]["vs30"] = [0]
-    for vs30 in task_args["site_params"]["vs30"]:
+    if not task_args["site_params"].get("vs30s"):
+        task_args["site_params"]["vs30s"] = [0]
+    for vs30 in task_args["site_params"]["vs30s"]:
         ta["site_params"]["vs30"] = vs30 or None
         for branch in source_logic_tree:
             branch.weight = 1.0
