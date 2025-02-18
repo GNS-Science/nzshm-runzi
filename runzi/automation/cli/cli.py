@@ -2,14 +2,15 @@ from pathlib import Path
 from typing import Any, Dict, Union
 
 import click
-import toml
+import tomllib
 
 from runzi.automation.openquake.run_oq_disagg import run_oq_disagg
 from runzi.automation.openquake.run_oq_hazard import run_oq_hazard
 
 
 def load_config(config_filename: Union[Path, str]) -> Dict[str, Any]:
-    config = toml.load(config_filename)
+    with Path(config_filename).open('rb') as config_file:
+        config = tomllib.load(config_file)
     config["filepath"] = Path(config_filename).absolute()
     return config
 
