@@ -25,6 +25,7 @@ locations = ["WLG", "AKL"]
 [disagg]
 inv_time = 50
 poes = [0.02, 0.05, 0.10, 0.18, 0.39, 0.63, 0.86]
+disagg_outputs = "TRT"
 
 [calculation]
 num_workers = 1

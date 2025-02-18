@@ -1,4 +1,5 @@
 import importlib.resources as resources
+from test.helpers import does_not_raise
 
 import pytest
 from pydantic import ValidationError
@@ -113,6 +114,53 @@ def test_coerse_to_list_disagg(disagg_config_dict, table, param, value):
 
 def test_disagg_config_validation(disagg_config_dict):
     DisaggConfig.model_validate(disagg_config_dict)
+
+
+nvb = [
+    ("mag_bin_width", 0.1, {"mag": [5.1, 5.2]}),
+    ("distance_bin_width", 10.0, {"dist": [100, 200]}),
+    ("coordinate_bin_width", 10.0, {"lon": [100, 200]}),
+    ("coordinate_bin_width", 10.0, {"lat": [100, 200]}),
+    ("num_epsilon_bins", 4, {"eps": [0.1, 0.2]}),
+]
+
+
+@pytest.mark.parametrize("name,value,bin_edges", nvb)
+def test_disagg_bins(disagg_config_dict, name, value, bin_edges):
+    disagg_config_dict["disagg"][name] = value
+    disagg_config_dict["disagg"]["disagg_bin_edges"] = bin_edges
+    with pytest.raises(ValidationError):
+        DisaggConfig.model_validate(disagg_config_dict)
+
+
+"TRT Mag Dist Mag_Dist TRT_Mag_Dist_Eps"
+
+
+@pytest.mark.parametrize(
+    "disagg_outputs,name,value,expectation",
+    [
+        (["Mag"], "disagg_bin_edges", {"mag": [5.1, 5.2]}, does_not_raise()),
+        (["Mag"], "mag_bin_width", 0.1, does_not_raise()),
+        (["Mag"], "dist_bin_width", 10.0, pytest.raises(ValidationError)),
+        (["Dist"], "disagg_bin_edges", {"dist": [5.1, 5.2]}, does_not_raise()),
+        (["Dist"], "distance_bin_width", 0.2, does_not_raise()),
+        (["Dist"], "mag_bin_width", 10.0, pytest.raises(ValidationError)),
+        (["Eps"], "disagg_bin_edges", {"eps": [5.1, 5.2]}, does_not_raise()),
+        (["Eps"], "num_epsilon_bins", 2, does_not_raise()),
+        (["Eps"], "dist_bin_width", 10.0, pytest.raises(ValidationError)),
+        (["Lon"], "disagg_bin_edges", {"lon": [5.1, 5.2]}, does_not_raise()),
+        (["Lon"], "coordinate_bin_width", 0.3, does_not_raise()),
+        (["Lon"], "dist_bin_width", 10.0, pytest.raises(ValidationError)),
+        (["Lat"], "disagg_bin_edges", {"lat": [5.1, 5.2]}, does_not_raise()),
+        (["Lat"], "coordinate_bin_width", 0.4, does_not_raise()),
+        (["Lat"], "dist_bin_width", 10.0, pytest.raises(ValidationError)),
+    ],
+)
+def test_disagg_types(disagg_config_dict, disagg_outputs, name, value, expectation):
+    disagg_config_dict["disagg"][name] = value
+    disagg_config_dict["disagg"]["disagg_outputs"] = disagg_outputs
+    with expectation:
+        DisaggConfig.model_validate(disagg_config_dict)
 
 
 # the aggs must be present in AggregationEnum

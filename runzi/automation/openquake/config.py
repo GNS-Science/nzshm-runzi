@@ -1,11 +1,12 @@
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from nzshm_model import all_model_versions
 from pydantic import (
     AfterValidator,
     BaseModel,
     BeforeValidator,
+    Field,
     FilePath,
     PositiveInt,
     ValidationInfo,
@@ -130,6 +131,62 @@ class DisaggCurveConfig(BaseModel):
 class DisaggProbConfig(BaseModel):
     inv_time: int
     poes: Annotated[list[float], BeforeValidator(coerce_to_list)]
+    disagg_outputs: Annotated[list[str], BeforeValidator(coerce_to_list)]
+    mag_bin_width: Optional[float] = None
+    distance_bin_width: Optional[float] = None
+    coordinate_bin_width: Optional[float] = None
+    num_epsilon_bins: Optional[int] = None
+    disagg_bin_edges: Dict[str, list[float]] = Field(default_factory=dict)
+
+    @model_validator(mode='after')
+    def validate_bins(self) -> Self:
+        for key in self.disagg_bin_edges.keys():
+            match key:
+                case "mag":
+                    if self.mag_bin_width:
+                        raise ValueError("cannot specify mag_bin_width and mag bin edges")
+                case "dist":
+                    if self.distance_bin_width:
+                        raise ValueError("cannot specify distance_bin_width and dist bin edges")
+                case "lon":
+                    if self.coordinate_bin_width:
+                        raise ValueError("cannot specify coordinate_bin_width and lon bin edges")
+                case "lat":
+                    if self.coordinate_bin_width:
+                        raise ValueError("cannot specify coordinate_bin_width and lat bin edges")
+                case "eps":
+                    if self.num_epsilon_bins:
+                        raise ValueError("cannot specify num_epsilon_bins and eps bin edges")
+                case undef:
+                    raise ValueError("invalid bin edge category {}".format(undef))
+
+        return self
+
+    @model_validator(mode='after')
+    def valdiate_types(self) -> Self:
+        for output_type in set("_".join(self.disagg_outputs).split("_")):
+            match output_type:
+                case "Mag":
+                    if not ("mag" in self.disagg_bin_edges or self.mag_bin_width):
+                        raise ValueError("magnitude disaggregation requires mag_bin_width or bin edges")
+                case "Dist":
+                    if not ("dist" in self.disagg_bin_edges or self.distance_bin_width):
+                        raise ValueError("distance disaggregation requires distance_bin_width or bin edges")
+                case "Lon":
+                    if not ("lon" in self.disagg_bin_edges or self.coordinate_bin_width):
+                        raise ValueError("longitude disaggregation requries coordiate_bin_width or lon bin edges")
+                case "Lat":
+                    if not ("lat" in self.disagg_bin_edges or self.coordinate_bin_width):
+                        raise ValueError("latitude disaggregation requries coordiate_bin_width or lat bin edges")
+                case "TRT":
+                    pass
+                case "Eps":
+                    if not ("eps" in self.disagg_bin_edges or self.num_epsilon_bins):
+                        raise ValueError("epsilon disaggregation requries num_epsilon_bins or bin edges")
+                case undef:
+                    raise ValueError("unrecognized disaggregation type {}".format(undef))
+
+        return self
 
 
 class DisaggOutput(BaseModel):
