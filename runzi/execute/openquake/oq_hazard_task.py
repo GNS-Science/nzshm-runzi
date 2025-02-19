@@ -252,11 +252,6 @@ class BuilderTask:
             hazard_config=task_arguments["hazard_model"]["hazard_config"],
         )
 
-        # set IMTs, IMTLs
-        imts = task_arguments["hazard_curve"]["imts"]
-        imtls = task_arguments["hazard_curve"]["imtls"]
-        model.hazard_config.set_iml(imts, imtls)
-
         # set sites and site parameters
         if vs30 := task_arguments["site_params"].get("vs30"):
             model.hazard_config.set_uniform_site_params(vs30)
@@ -294,8 +289,43 @@ class BuilderTask:
         else:
             model.hazard_config.set_sites(locations, vs30=vs30s, backarc=backarc_flags)
 
+        # set IMTs, IMTLs
+        if HazardTaskType[task_arguments["task_type"]] is HazardTaskType.HAZARD:
+            imts = task_arguments["hazard_curve"]["imts"]
+            imtls = task_arguments["hazard_curve"]["imtls"]
+            model.hazard_config.set_iml(imts, imtls)
+            model.hazard_config.set_description(task_arguments["general"]["description"])
+        elif HazardTaskType[task_arguments["task_type"]] is HazardTaskType.DISAGG:
+            description = (
+                f"Disaggregation for site: {task_arguments['site_params']['locations'][0]}, "
+                f"vs30: {task_arguments['site_params']['vs30']}, "
+                f"IMT: {task_arguments['hazard_curve']['imt']}, "
+                f"agg: {task_arguments['hazard_curve']['agg']}, "
+                f"{task_arguments['disagg']['poe']} in {task_arguments['disagg']['inv_time']} years"
+            )
+            model.hazard_config.set_description(description)
+            model.hazard_config.set_iml_disagg(
+                imt=task_arguments["hazard_curve"]["imt"], level=task_arguments["disagg"]["target_level"]
+            )
+            model.hazard_config.set_parameter("general", "calculation_mode", "disaggregation")
+            model.hazard_config.set_parameter(
+                "disaggregation", "disagg_outputs", " ".join(task_arguments["disagg"]["disagg_outputs"])
+            )
+            if mag_bin_width := task_arguments["disagg"]["mag_bin_width"]:
+                model.hazard_config.set_parameter("disaggregation", "mag_bin_width", str(mag_bin_width))
+            if distance_bin_width := task_arguments["disagg"]["distance_bin_width"]:
+                model.hazard_config.set_parameter("disaggregation", "mag_bin_width", str(distance_bin_width))
+            if coordinate_bin_width := task_arguments["disagg"]["coordinate_bin_width"]:
+                model.hazard_config.set_parameter("disaggregation", "coordinate_bin_width", str(coordinate_bin_width))
+            if num_epsilon_bins := task_arguments["disagg"]["num_epsilon_bins"]:
+                model.hazard_config.set_parameter("disaggregation", "num_epsilon_bins", str(num_epsilon_bins))
+            if disagg_bin_edges := task_arguments["disagg"]["disagg_bin_edges"]:
+                model.hazard_config.set_parameter("disaggregation", "disagg_bin_edges", str(disagg_bin_edges))
+
         # write
         cache_folder = config_folder / "downloads"
+        print(json.dumps(model.hazard_config.to_dict(), indent=4))
+        assert 0
         job_file = model.psha_adapter(OpenquakeModelPshaAdapter).write_config(cache_folder, config_folder)
 
         ##############
