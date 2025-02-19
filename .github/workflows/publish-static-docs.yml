@@ -59,7 +59,7 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
-          poetry install --with doc --extras scripts
+          poetry install --with doc
       - name: Build documentation
         run: |
           poetry run mkdocs build
