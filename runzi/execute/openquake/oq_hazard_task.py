@@ -176,6 +176,97 @@ class BuilderTask:
         ta_clean["gmcm_logic_tree"] = ta_clean["gmcm_logic_tree"].replace('"', "``").replace("\n", "-")
         return ta_clean
 
+    def set_site_parameters(self, task_arguments: Dict[str, Any]):
+        """Set site locations and vs30s for the NshmModel
+
+        Args:
+            task_arguments: a dict of task arguments
+        """
+        if vs30 := task_arguments["site_params"].get("vs30"):
+            self.model.hazard_config.set_uniform_site_params(vs30)
+
+        if task_arguments["site_params"].get("locations"):
+            locations = get_locations(task_arguments["site_params"]["locations"])
+        else:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                if file_id := task_arguments["site_params"].get("locations_file_id"):
+                    headers = {"x-api-key": API_KEY}
+                    file_api = ToshiFile(
+                        API_URL,
+                        None,
+                        None,
+                        with_schema_validation=True,
+                        headers=headers,
+                    )
+                    file_api.download_file(file_id, target_dir=temp_dir, target_name="sites.csv")
+                    locations_file = Path(temp_dir) / "sites.csv"
+                else:
+                    locations_file = Path(task_arguments["site_params"]["locations_file"])
+                locations = get_locations([locations_file])
+                with locations_file.open() as lf:
+                    reader = csv.reader(lf)
+                    header = next(reader)
+                    if "vs30" in header:
+                        ind = header.index("vs30")
+                        vs30s = []
+                        for row in reader:
+                            vs30s.append(int(row[ind]))
+
+        backarc_flags = map(int, within_polygon(locations, backarc_polygon()))
+        if any(self.model.hazard_config.get_uniform_site_params()):
+            self.model.hazard_config.set_sites(locations, backarc=backarc_flags)
+        else:
+            self.model.hazard_config.set_sites(locations, vs30=vs30s, backarc=backarc_flags)
+
+    def set_hazard_curve_parameters(self, task_arguments: Dict[str, Any]):
+        """Set hazard curve for hazard curve calculation
+
+        Args:
+            task_arguments: a dict of task arguments
+        """
+        imts = task_arguments["hazard_curve"]["imts"]
+        imtls = task_arguments["hazard_curve"]["imtls"]
+        self.model.hazard_config.set_iml(imts, imtls)
+
+    def set_disagg_matrix_parameters(self, task_arguments: Dict[str, Any]):
+        """Set disagg matrix coordinates and point on hazard curve to disaggregate
+
+        Args:
+            task_arguments: a dict of task arguments
+        """
+        self.model.hazard_config.set_iml_disagg(
+            imt=task_arguments["hazard_curve"]["imt"], level=task_arguments["disagg"]["target_level"]
+        )
+        self.model.hazard_config.set_parameter("general", "calculation_mode", "disaggregation")
+        self.model.hazard_config.set_parameter(
+            "disaggregation", "disagg_outputs", " ".join(task_arguments["disagg"]["disagg_outputs"])
+        )
+        if mag_bin_width := task_arguments["disagg"]["mag_bin_width"]:
+            self.model.hazard_config.set_parameter("disaggregation", "mag_bin_width", str(mag_bin_width))
+        if distance_bin_width := task_arguments["disagg"]["distance_bin_width"]:
+            self.model.hazard_config.set_parameter("disaggregation", "mag_bin_width", str(distance_bin_width))
+        if coordinate_bin_width := task_arguments["disagg"]["coordinate_bin_width"]:
+            self.model.hazard_config.set_parameter("disaggregation", "coordinate_bin_width", str(coordinate_bin_width))
+        if num_epsilon_bins := task_arguments["disagg"]["num_epsilon_bins"]:
+            self.model.hazard_config.set_parameter("disaggregation", "num_epsilon_bins", str(num_epsilon_bins))
+        if disagg_bin_edges := task_arguments["disagg"]["disagg_bin_edges"]:
+            self.model.hazard_config.set_parameter("disaggregation", "disagg_bin_edges", str(disagg_bin_edges))
+
+    @staticmethod
+    def get_disagg_description(task_arguments: Dict[str, Any]):
+        """get the description string for a disaggregation
+
+        Args:
+            task_arguments: a dict of task arguments
+        """
+        return (
+            f"Disaggregation for site: {task_arguments['site_params']['locations'][0]}, "
+            f"vs30: {task_arguments['site_params']['vs30']}, "
+            f"IMT: {task_arguments['hazard_curve']['imt']}, "
+            f"agg: {task_arguments['hazard_curve']['agg']}, "
+            f"{task_arguments['disagg']['poe']} in {task_arguments['disagg']['inv_time']} years"
+        )
+
     # TODO: we need to consider the best way to pass args to toshiAPI and make the args such as logic
     # trees and hazard config readable and (possibly) searchable.
     @staticmethod
@@ -244,7 +335,7 @@ class BuilderTask:
         task_no = job_arguments["task_id"]
         config_folder = work_folder / f"config_{task_no}"
 
-        model = NshmModel(
+        self.model = NshmModel(
             version="",
             title=task_arguments["general"]["title"],
             source_logic_tree=task_arguments["hazard_model"]["srm_logic_tree"],
@@ -253,80 +344,20 @@ class BuilderTask:
         )
 
         # set sites and site parameters
-        if vs30 := task_arguments["site_params"].get("vs30"):
-            model.hazard_config.set_uniform_site_params(vs30)
+        self.set_site_parameters(task_arguments)
 
-        if task_arguments["site_params"].get("locations"):
-            locations = get_locations(task_arguments["site_params"]["locations"])
-        else:
-            with tempfile.TemporaryDirectory() as temp_dir:
-                if file_id := task_arguments["site_params"].get("locations_file_id"):
-                    headers = {"x-api-key": API_KEY}
-                    file_api = ToshiFile(
-                        API_URL,
-                        None,
-                        None,
-                        with_schema_validation=True,
-                        headers=headers,
-                    )
-                    file_api.download_file(file_id, target_dir=temp_dir, target_name="sites.csv")
-                    locations_file = Path(temp_dir) / "sites.csv"
-                else:
-                    locations_file = Path(task_arguments["site_params"]["locations_file"])
-                locations = get_locations([locations_file])
-                with locations_file.open() as lf:
-                    reader = csv.reader(lf)
-                    header = next(reader)
-                    if "vs30" in header:
-                        ind = header.index("vs30")
-                        vs30s = []
-                        for row in reader:
-                            vs30s.append(int(row[ind]))
-
-        backarc_flags = map(int, within_polygon(locations, backarc_polygon()))
-        if any(model.hazard_config.get_uniform_site_params()):
-            model.hazard_config.set_sites(locations, backarc=backarc_flags)
-        else:
-            model.hazard_config.set_sites(locations, vs30=vs30s, backarc=backarc_flags)
-
-        # set IMTs, IMTLs
+        # set description, hazard curve, and disaggregation matrix parameters
         if HazardTaskType[task_arguments["task_type"]] is HazardTaskType.HAZARD:
-            imts = task_arguments["hazard_curve"]["imts"]
-            imtls = task_arguments["hazard_curve"]["imtls"]
-            model.hazard_config.set_iml(imts, imtls)
-            model.hazard_config.set_description(task_arguments["general"]["description"])
+            self.set_hazard_curve_parameters(task_arguments)
+            description = task_arguments["general"]["description"]
         elif HazardTaskType[task_arguments["task_type"]] is HazardTaskType.DISAGG:
-            description = (
-                f"Disaggregation for site: {task_arguments['site_params']['locations'][0]}, "
-                f"vs30: {task_arguments['site_params']['vs30']}, "
-                f"IMT: {task_arguments['hazard_curve']['imt']}, "
-                f"agg: {task_arguments['hazard_curve']['agg']}, "
-                f"{task_arguments['disagg']['poe']} in {task_arguments['disagg']['inv_time']} years"
-            )
-            model.hazard_config.set_description(description)
-            model.hazard_config.set_iml_disagg(
-                imt=task_arguments["hazard_curve"]["imt"], level=task_arguments["disagg"]["target_level"]
-            )
-            model.hazard_config.set_parameter("general", "calculation_mode", "disaggregation")
-            model.hazard_config.set_parameter(
-                "disaggregation", "disagg_outputs", " ".join(task_arguments["disagg"]["disagg_outputs"])
-            )
-            if mag_bin_width := task_arguments["disagg"]["mag_bin_width"]:
-                model.hazard_config.set_parameter("disaggregation", "mag_bin_width", str(mag_bin_width))
-            if distance_bin_width := task_arguments["disagg"]["distance_bin_width"]:
-                model.hazard_config.set_parameter("disaggregation", "mag_bin_width", str(distance_bin_width))
-            if coordinate_bin_width := task_arguments["disagg"]["coordinate_bin_width"]:
-                model.hazard_config.set_parameter("disaggregation", "coordinate_bin_width", str(coordinate_bin_width))
-            if num_epsilon_bins := task_arguments["disagg"]["num_epsilon_bins"]:
-                model.hazard_config.set_parameter("disaggregation", "num_epsilon_bins", str(num_epsilon_bins))
-            if disagg_bin_edges := task_arguments["disagg"]["disagg_bin_edges"]:
-                model.hazard_config.set_parameter("disaggregation", "disagg_bin_edges", str(disagg_bin_edges))
+            self.set_disagg_matrix_parameters(task_arguments)
+            description = self.get_disagg_description(task_arguments)
 
-        # write
+        self.model.hazard_config.set_description(description)
+
         cache_folder = config_folder / "downloads"
-        print(json.dumps(model.hazard_config.to_dict(), indent=4))
-        assert 0
-        job_file = model.psha_adapter(OpenquakeModelPshaAdapter).write_config(cache_folder, config_folder)
+        job_file = self.model.psha_adapter(OpenquakeModelPshaAdapter).write_config(cache_folder, config_folder)
 
         ##############
         # EXECUTE

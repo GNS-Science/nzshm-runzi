@@ -32,57 +32,22 @@ from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType,
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.util.aws import BatchEnvironmentSetting, get_ecs_job_config
 
-from .util import EC2_CONFIGS, ComputePlatform, unpack_keys, unpack_values, update_oq_args
+from .util import EC2_CONFIGS, ComputePlatform
 
 if TYPE_CHECKING:
     from toshi_hazard_store.model import AggregationEnum
 
     from runzi.automation.openquake.config import DisaggConfig
 
-# from .oq_hazard import DEFAULT_HAZARD_CONFIG
-
 
 HAZARD_MAX_TIME = 20  # minutes
 
-# BIGGER_LEVER = True
 COMPUTE_PLATFORM = ComputePlatform.EC2
 EC2_CONFIG = EC2_CONFIGS["BL_CONF_2"]  # BL_CONF_32_120
 
 factory_class = get_factory(CLUSTER_MODE)
 factory_task = runzi.execute.openquake.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
-
-dist_bin_edges = [
-    0,
-    5.0,
-    10.0,
-    15.0,
-    20.0,
-    30.0,
-    40.0,
-    50.0,
-    60.0,
-    80.0,
-    100.0,
-    140.0,
-    180.0,
-    220.0,
-    260.0,
-    320.0,
-    380.0,
-    500.0,
-]
-# DEFAULT_DISAGG_CONFIG = copy.deepcopy(DEFAULT_HAZARD_CONFIG)
-# DEFAULT_DISAGG_CONFIG["general"]["calculation_mode"] = "disaggregation"
-# DEFAULT_DISAGG_CONFIG["disagg"] = dict(
-#     max_sites_disagg=1,
-#     mag_bin_width=0.1999,
-#     distance_bin_width=10,
-#     coordinate_bin_width=5,
-#     num_epsilon_bins=16,
-#     disagg_outputs="TRT Mag Dist Mag_Dist TRT_Mag_Dist_Eps",
-#     disagg_bin_edges={'dist': dist_bin_edges},
-# )
 
 GT_COUNTER = 0
 
@@ -233,9 +198,6 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, disagg_
         BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_NUM_WORKERS", value="1"),
     ]
 
-    # iterate = args["config_iterate"]
-    # iter_keys = unpack_keys(iterate)
-
     # some objects in the config (Path type) are not json serializable so we dump to json using the pydantic method
     # which handles these types and load back to json to clean it up so it can be passed to the toshi API
     if model_version := disagg_config.hazard_model.nshm_model_version:
@@ -268,8 +230,6 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, disagg_
             disagg_config.disagg.inv_time,
         )
 
-        # so much of the dict will not be used (vs30s, aggs, imts, locations) is it stupid to copy or should I just start a fresh dict?
-        # not all of these args may be needed by the task
         ta = copy.copy(task_arguments)
         ta["hazard_model"]["gmcm_logic_tree"] = gmcm_logic_tree.to_dict()
         ta["hazard_model"]["hazard_config"] = hazard_config.to_dict()
@@ -282,23 +242,6 @@ def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, disagg_
 
         ta['task_type'] = HazardTaskType.DISAGG.name
         ta['model_type'] = model_type.name
-
-        # ta = dict(
-        #     hazard_model_id=args["hazard_model_id"],
-        #     title=args["general"]["title"],
-        #     description=args["general"]["description"],
-        #     task_type=HazardTaskType.DISAGG.name,
-        #     gmcm_logic_tree=args["gmcm_logic_tree"].to_dict(),
-        #     model_type=model_type.name,
-        #     location_list=[location],
-        #     vs30=vs30,
-        #     imt=imt,
-        #     agg=agg,
-        #     poe=poe,
-        #     inv_time=args["inv_time"],
-        #     level=target_level,
-        # )
-        # task_arguments["oq"] = DEFAULT_DISAGG_CONFIG  # default openquake config
 
         print('')
         print('task arguments MERGED')
