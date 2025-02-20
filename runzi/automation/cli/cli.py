@@ -1,4 +1,4 @@
-import tomllib
+import tomlkit
 from pathlib import Path
 from typing import Any, Dict, Union
 
@@ -9,8 +9,9 @@ from runzi.automation.openquake.run_oq_hazard import run_oq_hazard
 
 
 def load_config(config_filename: Union[Path, str]) -> Dict[str, Any]:
-    with Path(config_filename).open('rb') as config_file:
-        config = tomllib.load(config_file)
+    with Path(config_filename).open('r') as config_file:
+        data = config_file.read()
+    config = tomlkit.parse(data).unwrap()
     config["filepath"] = Path(config_filename).absolute()
     return config
 

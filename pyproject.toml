@@ -37,6 +37,7 @@ pygments = "^2.19.1"
 pytz = "^2025.1"
 solvis = {git = "https://github.com/GNS-Science/solvis.git", rev = "pre-release"}
 pydantic = "^2.10.6"
+tomlkit = "^0.13.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.3.4"
