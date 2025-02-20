@@ -1,8 +1,8 @@
-import tomlkit
 from pathlib import Path
 from typing import Any, Dict, Union
 
 import click
+import tomlkit
 
 from runzi.automation.openquake.run_oq_disagg import run_oq_disagg
 from runzi.automation.openquake.run_oq_hazard import run_oq_hazard
