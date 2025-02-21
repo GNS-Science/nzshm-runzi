@@ -244,7 +244,7 @@ class BuilderTask:
         if mag_bin_width := task_arguments["disagg"]["mag_bin_width"]:
             self.model.hazard_config.set_parameter("disaggregation", "mag_bin_width", str(mag_bin_width))
         if distance_bin_width := task_arguments["disagg"]["distance_bin_width"]:
-            self.model.hazard_config.set_parameter("disaggregation", "mag_bin_width", str(distance_bin_width))
+            self.model.hazard_config.set_parameter("disaggregation", "distance_bin_width", str(distance_bin_width))
         if coordinate_bin_width := task_arguments["disagg"]["coordinate_bin_width"]:
             self.model.hazard_config.set_parameter("disaggregation", "coordinate_bin_width", str(coordinate_bin_width))
         if num_epsilon_bins := task_arguments["disagg"]["num_epsilon_bins"]:
