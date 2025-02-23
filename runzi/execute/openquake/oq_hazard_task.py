@@ -242,15 +242,15 @@ class BuilderTask:
             "disaggregation", "disagg_outputs", " ".join(task_arguments["disagg"]["disagg_outputs"])
         )
         if mag_bin_width := task_arguments["disagg"]["mag_bin_width"]:
-            self.model.hazard_config.set_parameter("disaggregation", "mag_bin_width", str(mag_bin_width))
+            self.model.hazard_config.set_parameter("disaggregation", "mag_bin_width", mag_bin_width)
         if distance_bin_width := task_arguments["disagg"]["distance_bin_width"]:
-            self.model.hazard_config.set_parameter("disaggregation", "distance_bin_width", str(distance_bin_width))
+            self.model.hazard_config.set_parameter("disaggregation", "distance_bin_width", distance_bin_width)
         if coordinate_bin_width := task_arguments["disagg"]["coordinate_bin_width"]:
-            self.model.hazard_config.set_parameter("disaggregation", "coordinate_bin_width", str(coordinate_bin_width))
+            self.model.hazard_config.set_parameter("disaggregation", "coordinate_bin_width", coordinate_bin_width)
         if num_epsilon_bins := task_arguments["disagg"]["num_epsilon_bins"]:
-            self.model.hazard_config.set_parameter("disaggregation", "num_epsilon_bins", str(num_epsilon_bins))
+            self.model.hazard_config.set_parameter("disaggregation", "num_epsilon_bins", num_epsilon_bins)
         if disagg_bin_edges := task_arguments["disagg"]["disagg_bin_edges"]:
-            self.model.hazard_config.set_parameter("disaggregation", "disagg_bin_edges", str(disagg_bin_edges))
+            self.model.hazard_config.set_parameter("disaggregation", "disagg_bin_edges", disagg_bin_edges)
 
     @staticmethod
     def get_disagg_description(task_arguments: Dict[str, Any]):
