@@ -94,7 +94,7 @@ table_param_value = [
 
 
 @pytest.mark.parametrize("table,param,value", table_param_value)
-def test_coerse_to_list(config_dict, table, param, value):
+def test_coerce_to_list(config_dict, table, param, value):
     config_dict[table][param] = value
     HazardConfig.model_validate(config_dict)
 
@@ -107,7 +107,7 @@ table_param_value_disagg = [
 
 
 @pytest.mark.parametrize("table,param,value", table_param_value_disagg)
-def test_coerse_to_list_disagg(disagg_config_dict, table, param, value):
+def test_coerce_to_list_disagg(disagg_config_dict, table, param, value):
     disagg_config_dict[table][param] = value
     DisaggConfig.model_validate(disagg_config_dict)
 
