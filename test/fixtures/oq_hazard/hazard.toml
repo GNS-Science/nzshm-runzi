@@ -2,7 +2,7 @@
 title = "OpenQuake Hazard Calcs"
 description = "test fixture"
 
-[model]
+[hazard_model]
 nshm_model_version = "NSHM_v1.0.4"
 
 [calculation]
@@ -19,5 +19,5 @@ imtls = [
     ]
 
 [site_params]
-vs30 = 400
+vs30s = [400]
 locations = ['WLG','AKL','DUD','CHC']

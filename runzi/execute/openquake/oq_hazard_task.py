@@ -84,7 +84,7 @@ class BuilderTask:
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
-    def _setup_automation_task(self, task_arguments, job_arguments, config_id, environment, task_type):
+    def _setup_automation_task(self, task_arguments, job_arguments, config_id, environment, task_type) -> str:
         print("=" * 50)
         print("task arguments ...")
         print(task_arguments)
@@ -176,84 +176,14 @@ class BuilderTask:
         ta_clean["gmcm_logic_tree"] = ta_clean["gmcm_logic_tree"].replace('"', "``").replace("\n", "-")
         return ta_clean
 
-    # TODO: we need to consider the best way to pass args to toshiAPI and make the args such as logic
-    # trees and hazard config readable and (possibly) searchable.
-    @staticmethod
-    def _clean_task_args(task_arguments: Dict[str, Any]) -> Dict[str, str]:
-        """This is a somewhat clunky way to clean the arguments so they can be passed to the toshAPI"""
+    def set_site_parameters(self, task_arguments: Dict[str, Any]):
+        """Set site locations and vs30s for the NshmModel
 
-        def flatten_dict(data, parent_key='', separator="-"):
-            flat_dict = {}
-            for k, v in data.items():
-                key = parent_key + separator + k if parent_key else k
-                if isinstance(v, dict):
-                    flat_dict.update(flatten_dict(v, key))
-                else:
-                    flat_dict[key] = v
-            return flat_dict
-
-        def clean_string(input_str):
-            return input_str.replace('"', "``").replace("\n", "-")
-
-        ta_clean = copy.deepcopy(task_arguments)
-        ta_clean["model"]["srm_logic_tree"] = clean_string(str(ta_clean["model"]["srm_logic_tree"]))
-        ta_clean["model"]["gmcm_logic_tree"] = clean_string(str(ta_clean["model"]["gmcm_logic_tree"]))
-        ta_clean["model"]["hazard_config"] = clean_string(str(ta_clean["model"]["hazard_config"]))
-        return flatten_dict(ta_clean)
-
-    def run(self, task_arguments, job_arguments):
-        t0 = dt.datetime.now(dt.timezone.utc)
-        task_arguments, job_arguments
-        environment = {
-            "host": platform.node(),
-            "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version",
-        }
-
-        try:
-            task_type = HazardTaskType[task_arguments["task_type"]]
-        except KeyError:
-            raise ValueError("Invalid configuration.")
-        print(task_type)
-
-        # convert the dict representations of complex objects (from nzshm_model lib) in the args to the correct type
-        task_arguments["model"]["srm_logic_tree"] = SourceLogicTree.from_dict(task_arguments["model"]["srm_logic_tree"])
-        task_arguments["model"]["gmcm_logic_tree"] = GMCMLogicTree.from_dict(task_arguments["model"]["gmcm_logic_tree"])
-        task_arguments["model"]["hazard_config"] = OpenquakeConfig.from_dict(task_arguments["model"]["hazard_config"])
-
-        ################
-        # API SETUP
-        ################
-        automation_task_id = None
-        if self.use_api:
-            # old config id until we've removed need for config_id when creating task
-            # config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEyOTI0NA=="  # PROD
-            config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEwMTU3MA=="  # TEST
-            ta_clean = self._clean_task_args(task_arguments)
-            automation_task_id = self._setup_automation_task(ta_clean, job_arguments, config_id, environment, task_type)
-
-        #################################
-        # SETUP openquake CONFIG FOLDER
-        #################################
-        work_folder = Path(WORK_PATH)
-        task_no = job_arguments["task_id"]
-        config_folder = work_folder / f"config_{task_no}"
-
-        model = NshmModel(
-            version="",
-            title=task_arguments["title"],
-            source_logic_tree=task_arguments["model"]["srm_logic_tree"],
-            gmcm_logic_tree=task_arguments["model"]["gmcm_logic_tree"],
-            hazard_config=task_arguments["model"]["hazard_config"],
-        )
-
-        # set IMTs, IMTLs
-        imts = task_arguments["hazard_curve"]["imts"]
-        imtls = task_arguments["hazard_curve"]["imtls"]
-        model.hazard_config.set_iml(imts, imtls)
-
-        # set sites and site parameters
+        Args:
+            task_arguments: a dict of task arguments
+        """
         if vs30 := task_arguments["site_params"].get("vs30"):
-            model.hazard_config.set_uniform_site_params(vs30)
+            self.model.hazard_config.set_uniform_site_params(vs30)
 
         if task_arguments["site_params"].get("locations"):
             locations = get_locations(task_arguments["site_params"]["locations"])
@@ -283,14 +213,151 @@ class BuilderTask:
                             vs30s.append(int(row[ind]))
 
         backarc_flags = map(int, within_polygon(locations, backarc_polygon()))
-        if any(model.hazard_config.get_uniform_site_params()):
-            model.hazard_config.set_sites(locations, backarc=backarc_flags)
+        if any(self.model.hazard_config.get_uniform_site_params()):
+            self.model.hazard_config.set_sites(locations, backarc=backarc_flags)
         else:
-            model.hazard_config.set_sites(locations, vs30=vs30s, backarc=backarc_flags)
+            self.model.hazard_config.set_sites(locations, vs30=vs30s, backarc=backarc_flags)
 
-        # write
+    def set_hazard_curve_parameters(self, task_arguments: Dict[str, Any]):
+        """Set hazard curve for hazard curve calculation
+
+        Args:
+            task_arguments: a dict of task arguments
+        """
+        imts = task_arguments["hazard_curve"]["imts"]
+        imtls = task_arguments["hazard_curve"]["imtls"]
+        self.model.hazard_config.set_iml(imts, imtls)
+
+    def set_disagg_matrix_parameters(self, task_arguments: Dict[str, Any]):
+        """Set disagg matrix coordinates and point on hazard curve to disaggregate
+
+        Args:
+            task_arguments: a dict of task arguments
+        """
+        self.model.hazard_config.set_iml_disagg(
+            imt=task_arguments["hazard_curve"]["imt"], level=task_arguments["disagg"]["target_level"]
+        )
+        self.model.hazard_config.set_parameter("general", "calculation_mode", "disaggregation")
+        self.model.hazard_config.set_parameter(
+            "disaggregation", "disagg_outputs", " ".join(task_arguments["disagg"]["disagg_outputs"])
+        )
+        if mag_bin_width := task_arguments["disagg"]["mag_bin_width"]:
+            self.model.hazard_config.set_parameter("disaggregation", "mag_bin_width", mag_bin_width)
+        if distance_bin_width := task_arguments["disagg"]["distance_bin_width"]:
+            self.model.hazard_config.set_parameter("disaggregation", "distance_bin_width", distance_bin_width)
+        if coordinate_bin_width := task_arguments["disagg"]["coordinate_bin_width"]:
+            self.model.hazard_config.set_parameter("disaggregation", "coordinate_bin_width", coordinate_bin_width)
+        if num_epsilon_bins := task_arguments["disagg"]["num_epsilon_bins"]:
+            self.model.hazard_config.set_parameter("disaggregation", "num_epsilon_bins", num_epsilon_bins)
+        if disagg_bin_edges := task_arguments["disagg"]["disagg_bin_edges"]:
+            self.model.hazard_config.set_parameter("disaggregation", "disagg_bin_edges", disagg_bin_edges)
+
+    @staticmethod
+    def get_disagg_description(task_arguments: Dict[str, Any]):
+        """get the description string for a disaggregation
+
+        Args:
+            task_arguments: a dict of task arguments
+        """
+        return (
+            f"Disaggregation for site: {task_arguments['site_params']['locations'][0]}, "
+            f"vs30: {task_arguments['site_params']['vs30']}, "
+            f"IMT: {task_arguments['hazard_curve']['imt']}, "
+            f"agg: {task_arguments['hazard_curve']['agg']}, "
+            f"{task_arguments['disagg']['poe']} in {task_arguments['disagg']['inv_time']} years"
+        )
+
+    # TODO: we need to consider the best way to pass args to toshiAPI and make the args such as logic
+    # trees and hazard config readable and (possibly) searchable.
+    @staticmethod
+    def _clean_task_args(task_arguments: Dict[str, Any]) -> Dict[str, str]:
+        """This is a somewhat clunky way to clean the arguments so they can be passed to the toshAPI"""
+
+        def flatten_dict(data, parent_key='', separator="-"):
+            flat_dict = {}
+            for k, v in data.items():
+                key = parent_key + separator + k if parent_key else k
+                if isinstance(v, dict):
+                    flat_dict.update(flatten_dict(v, key))
+                else:
+                    flat_dict[key] = v
+            return flat_dict
+
+        def clean_string(input_str):
+            return input_str.replace('"', "``").replace("\n", "-")
+
+        ta_clean = copy.deepcopy(task_arguments)
+        ta_clean["hazard_model"]["srm_logic_tree"] = clean_string(str(ta_clean["hazard_model"]["srm_logic_tree"]))
+        ta_clean["hazard_model"]["gmcm_logic_tree"] = clean_string(str(ta_clean["hazard_model"]["gmcm_logic_tree"]))
+        ta_clean["hazard_model"]["hazard_config"] = clean_string(str(ta_clean["hazard_model"]["hazard_config"]))
+        return flatten_dict(ta_clean)
+
+    def run(self, task_arguments: Dict[str, Any], job_arguments: Dict[str, Any]):
+        t0 = dt.datetime.now(dt.timezone.utc)
+        task_arguments, job_arguments
+        environment = {
+            "host": platform.node(),
+            "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version",
+        }
+
+        try:
+            task_type = HazardTaskType[task_arguments["task_type"]]
+        except KeyError:
+            raise ValueError("Invalid configuration.")
+        print(task_type)
+
+        # convert the dict representations of complex objects (from nzshm_model lib) in the args to the correct type
+        task_arguments["hazard_model"]["srm_logic_tree"] = SourceLogicTree.from_dict(
+            task_arguments["hazard_model"]["srm_logic_tree"]
+        )
+        task_arguments["hazard_model"]["gmcm_logic_tree"] = GMCMLogicTree.from_dict(
+            task_arguments["hazard_model"]["gmcm_logic_tree"]
+        )
+        task_arguments["hazard_model"]["hazard_config"] = OpenquakeConfig.from_dict(
+            task_arguments["hazard_model"]["hazard_config"]
+        )
+
+        ################
+        # API SETUP
+        ################
+        automation_task_id = None
+        if self.use_api:
+            # old config id until we've removed need for config_id when creating task
+            # config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEyOTI0NA=="  # PROD
+            config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEwMTU3MA=="  # TEST
+            ta_clean = self._clean_task_args(task_arguments)
+            automation_task_id = self._setup_automation_task(ta_clean, job_arguments, config_id, environment, task_type)
+
+        #################################
+        # SETUP openquake CONFIG FOLDER
+        #################################
+        work_folder = Path(WORK_PATH)
+        task_no = job_arguments["task_id"]
+        config_folder = work_folder / f"config_{task_no}"
+
+        self.model = NshmModel(
+            version="",
+            title=task_arguments["general"]["title"],
+            source_logic_tree=task_arguments["hazard_model"]["srm_logic_tree"],
+            gmcm_logic_tree=task_arguments["hazard_model"]["gmcm_logic_tree"],
+            hazard_config=task_arguments["hazard_model"]["hazard_config"],
+        )
+
+        # set sites and site parameters
+        self.set_site_parameters(task_arguments)
+
+        # set description, hazard curve, and disaggregation matrix parameters
+        if HazardTaskType[task_arguments["task_type"]] is HazardTaskType.HAZARD:
+            self.set_hazard_curve_parameters(task_arguments)
+            description = task_arguments["general"]["description"]
+        elif HazardTaskType[task_arguments["task_type"]] is HazardTaskType.DISAGG:
+            self.set_disagg_matrix_parameters(task_arguments)
+            description = self.get_disagg_description(task_arguments)
+
+        self.model.hazard_config.set_description(description)
+
         cache_folder = config_folder / "downloads"
-        job_file = model.psha_adapter(OpenquakeModelPshaAdapter).write_config(cache_folder, config_folder)
+        job_file = self.model.psha_adapter(OpenquakeModelPshaAdapter).write_config(cache_folder, config_folder)
 
         ##############
         # EXECUTE
@@ -338,7 +405,7 @@ class BuilderTask:
                   -h, --help           show this help message and exit
                   -c, --create-tables  Ensure tables exist.
                 """
-                source_logic_tree = (task_arguments["model"]["srm_logic_tree"],)
+                source_logic_tree = task_arguments["hazard_model"]["srm_logic_tree"]
                 tag = ":".join(
                     (
                         source_logic_tree.branch_sets[0].short_name,

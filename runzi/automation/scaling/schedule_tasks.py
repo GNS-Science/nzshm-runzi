@@ -3,15 +3,17 @@
 common function to schedule tasks as needed for given environment
 """
 
+from collections.abc import Sequence
 from multiprocessing.dummy import Pool
 from subprocess import check_call
+from typing import Any, Optional
 
 import boto3
 
 from runzi.automation.scaling.local_config import CLUSTER_MODE, WORKER_POOL_SIZE, EnvMode
 
 
-def schedule_tasks(scripts, worker_pool_size=None):
+def schedule_tasks(scripts: Sequence[Any], worker_pool_size: Optional[int] = None):
 
     if not (worker_pool_size):
         worker_pool_size = WORKER_POOL_SIZE

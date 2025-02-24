@@ -2,8 +2,6 @@ import runzi.automation.openquake.run_oq_hazard as run_oq_hazard_module
 from runzi.automation.openquake.run_oq_hazard import run_oq_hazard
 from runzi.automation.scaling.local_config import EnvMode
 
-from . import Spy
-
 FILE_ID = "ABCD"
 
 
@@ -21,25 +19,16 @@ class MockToshiApi:
         self.file = MockToshiFile()
 
 
-def mock_schedule_tasks(scripts, worker_pool_size=None):
-    pass
-
-
-def build_tasks_mock(new_gt_id, args, task_type, model_type):
-    return (1, 2, 3)
-
-
 # if AWS mode, check that a file ID is added to the task arguments
-def test_create_file(config, monkeypatch):
+def test_create_file(mocker, config_dict):
 
-    config["site_params"]["locations_file"] = "sites.csv"
-    del config["site_params"]["locations"]
+    config_dict["site_params"]["locations_file"] = "sites.csv"
+    del config_dict["site_params"]["locations"]
 
-    spy = Spy(build_tasks_mock)
-    monkeypatch.setattr(run_oq_hazard_module, "CLUSTER_MODE", EnvMode.AWS)
-    monkeypatch.setattr(run_oq_hazard_module, "ToshiApi", MockToshiApi)
-    monkeypatch.setattr(run_oq_hazard_module, "build_tasks", spy)
-    monkeypatch.setattr(run_oq_hazard_module, "schedule_tasks", mock_schedule_tasks)
+    mocked_build_tasks = mocker.patch.object(run_oq_hazard_module, "build_tasks")
+    mocker.patch.object(run_oq_hazard_module, "CLUSTER_MODE", EnvMode.AWS)
+    mocker.patch.object(run_oq_hazard_module, "ToshiApi", MockToshiApi)
+    mocker.patch.object(run_oq_hazard_module, "schedule_tasks")
 
-    run_oq_hazard(config)
-    assert spy.calls[0]["args"][1]["site_params"]["locations_file_id"] == FILE_ID
+    run_oq_hazard(config_dict)
+    assert mocked_build_tasks.call_args.args[1]["site_params"]["locations_file_id"] == FILE_ID

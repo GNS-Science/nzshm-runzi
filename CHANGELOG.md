@@ -7,6 +7,6 @@
 - Development toolchain and workflows
 
 ## Changed
-- Hazard job configuration and parsing of sites handled by `nzhsm-model`
+- Hazard and disaggregation job configuration and parsing of sites handled by `nzhsm-model`
 
 
