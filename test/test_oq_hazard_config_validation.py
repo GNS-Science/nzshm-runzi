@@ -77,6 +77,12 @@ def test_config_validation_vs30_missing(config_dict):
         HazardConfig.model_validate(config_dict)
 
 
+def test_config_vs30(config_dict):
+    config_dict["site_params"]["locations_file"] = "sites_vs30.csv"
+    with pytest.raises(ValidationError):
+        HazardConfig.model_validate(config_dict)
+
+
 # the vs30s are site specific and in the locations file
 def test_config_validation_1(config_dict):
     del config_dict["site_params"]["locations"]
@@ -154,6 +160,8 @@ def test_disagg_bins(disagg_config_dict, name, value, bin_edges):
         (["Lat"], "disagg_bin_edges", {"lat": [5.1, 5.2]}, does_not_raise()),
         (["Lat"], "coordinate_bin_width", 0.4, does_not_raise()),
         (["Lat"], "dist_bin_width", 10.0, pytest.raises(ValidationError)),
+        (["Lat"], "nonexistent_bin_width", 10.0, pytest.raises(ValidationError)),
+        (["Error"], "dist_bin_width", 10.0, pytest.raises(ValidationError)),
     ],
 )
 def test_disagg_types(disagg_config_dict, disagg_outputs, name, value, expectation):
