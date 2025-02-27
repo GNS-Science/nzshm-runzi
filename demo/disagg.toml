@@ -20,8 +20,9 @@ aggs = "mean"
 imts = "PGA"
 
 [site_params]
-vs30s = 750
-locations = ["WLG", "AKL"]
+vs30s = 400
+# locations = ["WLG", "AKL"]
+locations = ["WLG"]
 
 [disagg]
 inv_time = 50
@@ -37,4 +38,4 @@ disagg_outputs = ["TRT", "Mag", "Dist", "Mag_Dist", "TRT_Mag_Dist_Eps"]
 num_workers = 1
 
 [output]
-gt_filename = "gtids_NZplus1_allIMT_allpoe_750.txt"
+gt_filename = "disagg_test.txt"

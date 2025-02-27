@@ -1,13 +1,13 @@
 ## Build new container with no tag, forcing git pull etc
 ```
-docker build . --no-cache
+docker build -f docker/runzi-openquake/Dockerfile_local-WORKING . --no-cache
 ```
 
 ## Tag new docker image
 ```
 
 export IMAGE_ID=5f9b487631b5
-export RUNZI_GITREF=HEAD
+export RUNZI_GITREF=WORKING
 export OQ_TAG=3.20.1
 export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_openquake-${OQ_TAG} 
 docker tag ${IMAGE_ID} runzi-openquake:${CONTAINER_TAG}
