@@ -8,8 +8,7 @@ import json
 import logging
 import os
 import pwd
-from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, EnvMode
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
@@ -29,31 +28,6 @@ logging.getLogger("git.cmd").setLevel(loglevel)
 logging.getLogger("gql.transport").setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
-
-
-def validate_config_disagg(config: Dict[Any, Any]) -> None:
-    pass
-    # validate_entry(config, "hazard_curve", "hazard_model_id", [str])
-    # validate_entry(config, "disagg", "inv_time", [int])
-    # validate_entry(config, "disagg", "poes", [list], subtype=float)
-    # validate_entry(config, "output", "gt_filename", [str])
-    # validate_entry(config, "hazard_curve", "agg", [list, str], subtype=str)
-
-
-def load_gmcm_str(gmcm_logic_tree_path):
-    """temporoary until we can serialize a gmcm logic tree object"""
-    with Path(gmcm_logic_tree_path).open() as gltf:
-        return gltf.read()
-
-
-def get_num_workers(config: Dict[str, Any]) -> int:
-    if not config["calculation"].get("num_workers"):
-        return 1
-    return config["calculation"]["num_workers"]
-
-
-def single_to_list(param: Any) -> List[Any]:
-    return param if isinstance(param, list) else [param]
 
 
 def build_tasks(new_gt_id: str, args: Dict[str, Any], task_type: SubtaskType, model_type: ModelType):

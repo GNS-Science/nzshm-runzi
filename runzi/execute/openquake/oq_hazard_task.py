@@ -8,16 +8,13 @@ import csv
 import datetime as dt
 import json
 import logging
-import os
 import platform
 import subprocess
 import tempfile
 import time
-import zipfile
 from pathlib import Path
 from typing import Any, Dict
 
-import requests
 from dateutil.tz import tzutc
 from nshm_toshi_client import ToshiFile
 from nshm_toshi_client.task_relation import TaskRelation
@@ -45,35 +42,6 @@ logging.getLogger("git.cmd").setLevel(LOG_INFO)
 logging.getLogger("gql.transport").setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
-
-
-def write_sources(xml_str, filepath):
-    with open(filepath, "w") as mf:
-        mf.write(xml_str)
-
-
-def get_config_filename(config_template_info):
-    for itm in config_template_info["meta"]:
-        if itm["k"] == "config_filename":
-            return itm["v"]
-
-
-def explode_config_template(config_info, working_path: str, task_no: int):
-    config_folder = Path(working_path, f"config_{task_no}")
-
-    r1 = requests.get(config_info["file_url"])
-    file_path = Path(working_path, config_info["file_name"])
-
-    with open(file_path, "wb") as f:
-        f.write(r1.content)
-        log.info(f"downloaded input file: {file_path}")
-        f.close()
-
-    assert os.path.getsize(file_path) == config_info["file_size"]
-
-    with zipfile.ZipFile(file_path, "r") as zip_ref:
-        zip_ref.extractall(config_folder)
-        return config_folder
 
 
 class BuilderTask:
@@ -170,11 +138,6 @@ class BuilderTask:
         )
 
         return solution_id
-
-    def _sterilize_task_arguments_gmcmlt(self, ta):
-        ta_clean = copy.deepcopy(ta)
-        ta_clean["gmcm_logic_tree"] = ta_clean["gmcm_logic_tree"].replace('"', "``").replace("\n", "-")
-        return ta_clean
 
     def set_site_parameters(self, task_arguments: Dict[str, Any]):
         """Set site locations and vs30s for the NshmModel
