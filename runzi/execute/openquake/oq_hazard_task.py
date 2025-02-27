@@ -375,13 +375,18 @@ class BuilderTask:
                         source_logic_tree.branch_sets[0].branches[0].tag,
                     )
                 )
+                locations = (
+                    task_arguments["site_params"].get("locations") or
+                    task_arguments["site_params"].get("locations_file_id") or
+                    task_arguments["site_params"]["locations_file"]
+                )
                 source_ids = ", ".join([b.nrml_id for b in source_logic_tree.fault_systems[0].branches[0].sources])
                 cmd = [
                     "store_hazard_v3",
                     str(oq_result["oq_calc_id"]),
                     solution_id,
                     job_arguments["general_task_id"],
-                    str(task_arguments["location_list"]),
+                    str(locations),
                     f'"{tag}"',
                     f'"{source_ids}"',
                     "--verbose",

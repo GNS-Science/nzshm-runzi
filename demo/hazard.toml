@@ -8,7 +8,7 @@ nshm_model_version = "NSHM_v1.0.4"
 # these entries will overwrite anything in the nshm_model_version.
 # all 3 are required if a nshm_model_version is not specified
 # gmcm_logic_tree = "gmcm_small.json"
-srm_logic_tree = "srm_small.json"
+# srm_logic_tree = "srm_small.json"
 # hazard_config = "hazard_config.json"
 
 [calculation]
@@ -30,9 +30,9 @@ imtls = [
 vs30s = [400]
 
 # can provide locations or locations_file, not both
-# locations = ['WLG','AKL','DUD','CHC']
+locations = ['WLG','AKL','DUD','CHC']
 
-locations_file = 'sites.csv'
+# locations_file = 'sites.csv'
 
 # locations_file can have site-specific vs30. In this case, do not provide vs30 variable
 # locations_file = 'demo/sites_vs30.csv'
