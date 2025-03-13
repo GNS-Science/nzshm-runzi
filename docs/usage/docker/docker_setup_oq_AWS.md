@@ -2,11 +2,13 @@
 This will build an "official" image that is tagged with a git-ref and OQ version
 
 ## build the base docker image
-follow docs/usage/base_docker_setup_oq.md
+[follow base build](./docker_setup_oq_base.md)
 
 ## retag the base docker image for AWS Elastic Container Service
+```
 export IMAGE_ID=5f9b487631b5
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
+```
 
 ## get credential, push image into AWS ECR
 
@@ -16,10 +18,10 @@ docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake
 ```
 
 ## Update Job Definition
-Update AWS Job Definition with ${CONTAINER_TAG}
+Update AWS Job Definition with `${CONTAINER_TAG}`
 
 ## run
-if running in docker:
+To run locally:
 ```
 export NZSHM22_SCRIPT_CLUSTER_MODE=LOCAL
 docker run -it --rm --env-file environ \

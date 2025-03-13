@@ -1,12 +1,12 @@
 # Build a Docker image to run runzi as-is in the working tree
-**NB: the built image is NOT for deployment, only local testing as it is not reproducible**
-These instructions will allow you to build an image for testing in which the runzi code can be altered after build and during running of the container.
+**NB: the built image is NOT for deployment, only local testing, as it is not reproducible**
+These instructions will allow you to build an image for testing in which the runzi code can be altered after build including while the container is running.
 
 ## build the base docker image
 follow docs/usage/base_docker_setup_oq.md
 
 ## Build new image on top of the base image
-The "WORKING_BURNER" tag indicates that runzi code is from the working directory and the image is not to be used for official calculations as the code is not traceable. The build command must be run from the root directory of the `nzshm-runzi` repo.
+The `WORKING_BURNER` tag indicates that runzi code is from the working directory and the image is not to be used for official calculations as the code is not traceable. The build command must be run from the root directory of the `nzshm-runzi` repo.
 ```
 export WORKING_CONTAINER_TAG=runzi-WORKING-BURNER_nz_openquake-${OQ_VERSION} 
 docker build -f docker/runzi-openquake/Dockerfile_WORKING-BURNER --no-cache \
@@ -15,7 +15,7 @@ docker build -f docker/runzi-openquake/Dockerfile_WORKING-BURNER --no-cache \
 ```
 
 ## run
-Notice that when we run we mount the `nzshm-runzi` directory with the runzi code so that we can modify without re-building the container.
+Notice that when we run, we mount the `nzshm-runzi` directory that we can modify the code without re-building the container.
 ```
 export RUNZI_DIR=/home/chrisdc/NSHM/DEV/APP/nzshm-runzi
 export NZSHM22_SCRIPT_CLUSTER_MODE=LOCAL
@@ -35,10 +35,4 @@ docker run -it --rm --env-file docker/runzi-openquake/environ \
 -e NZSHM22_HAZARD_STORE_STAGE \
 -e NZSHM22_HAZARD_STORE_REGION=ap-southeast-2 \
 runzi-openquake:${WORKING_CONTAINER_TAG}
-```
-
-## add runzi in running container
-```
-cd nzshm-runzi/                                                             
-pip install --user -e .      
 ```
