@@ -1,34 +1,21 @@
-## Build new container with no tag, forcing git pull etc
-```
-docker build . --no-cache
-```
+# Build a docker image for use in AWS EC2
+This will build an "official" image that is tagged with a git-ref and OQ version
 
-## Tag new docker image
-```
+## build the base docker image
+follow docs/usage/base_docker_setup_oq.md
 
-export IMAGE_ID=4fb7cc480fc4
-export RUNZI_GITREF=ffc9af8
-export OQ_TAG=3-19-0_patch_v2
-export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_openquake-${OQ_TAG} 
+## retag the base docker image for AWS Elastic Container Service
+export IMAGE_ID=5f9b487631b5
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
-```
 
 ## get credential, push image into AWS ECR
 
 ```
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 461564345538.dkr.ecr.us-east-1.amazonaws.com
 docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
-
 ```
 
-### for AWS cli v2
-```
-docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
-
-#aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 461564345538.dkr.ecr.ap-southeast-2.amazonaws.com
-#docker push 461564345538.dkr.ecr.ap-southeast-2.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
-```
-
+## Update Job Definition
 Update AWS Job Definition with ${CONTAINER_TAG}
 
 ## run
@@ -51,4 +38,3 @@ docker run -it --rm --env-file environ \
 -e NZSHM22_HAZARD_STORE_REGION=ap-southeast-2 \
 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
 ```
-
