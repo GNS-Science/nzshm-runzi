@@ -36,8 +36,8 @@ pygments = "^2.19.1"
 pytz = "^2025.1"
 pydantic = "^2.10.6"
 tomlkit = "^0.13.2"
-nzshm-model = {git = "https://github.com/GNS-Science/nzshm-model.git", rev = "pre-release"}
-solvis = {git = "https://github.com/GNS-Science/solvis.git", rev = "pre-release"}
+nzshm-model = "^0.13.5"
+solvis = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.3.4"

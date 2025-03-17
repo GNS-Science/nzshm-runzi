@@ -1,0 +1,17 @@
+# Dockerfile
+# Extend base image
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
+
+USER root
+
+# remove the official runzi installation and replace with code in working directory
+RUN pip3 uninstall runzi
+ADD . /app/nzshm-runzi
+WORKDIR /app/nzshm-runzi
+RUN pip install -e .
+
+USER openquake
+
+# disable use of the toshi API by default
+ENV NZSHM22_TOSHI_API_ENABLED=0
