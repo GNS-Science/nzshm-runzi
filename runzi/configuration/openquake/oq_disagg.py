@@ -1,9 +1,9 @@
 import copy
 import csv
+import getpass
 import itertools
 import json
 import os
-import pwd
 import stat
 from collections import namedtuple
 from pathlib import PurePath
@@ -152,7 +152,7 @@ def new_general_task(gt_arguments, title, description, subtask_type, model_type)
         # create new task in toshi_api
         gt_args = (
             CreateGeneralTaskArgs(
-                agent_name=pwd.getpwuid(os.getuid()).pw_name,
+                agent_name=getpass.getuser(),
                 title=title,
                 description=description,
             )

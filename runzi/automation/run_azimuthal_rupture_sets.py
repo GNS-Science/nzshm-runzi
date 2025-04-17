@@ -1,7 +1,7 @@
 import datetime as dt
+import getpass
 import itertools
 import os
-import pwd
 import stat
 from multiprocessing.dummy import Pool
 from pathlib import PurePath
@@ -158,7 +158,7 @@ if __name__ == "__main__":
         # create new task in toshi_api
         GENERAL_TASK_ID = general_api.create_task(
             created=dt.datetime.now(tzutc()).isoformat(),
-            agent_name=pwd.getpwuid(os.getuid()).pw_name,
+            agent_name=getpass.getuser(),
             title=TASK_TITLE,
             description=TASK_DESCRIPTION,
         )

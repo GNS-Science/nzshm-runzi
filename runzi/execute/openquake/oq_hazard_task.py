@@ -376,9 +376,9 @@ class BuilderTask:
                     )
                 )
                 locations = (
-                    task_arguments["site_params"].get("locations") or
-                    task_arguments["site_params"].get("locations_file_id") or
-                    task_arguments["site_params"]["locations_file"]
+                    task_arguments["site_params"].get("locations")
+                    or task_arguments["site_params"].get("locations_file_id")
+                    or task_arguments["site_params"]["locations_file"]
                 )
                 source_ids = ", ".join([b.nrml_id for b in source_logic_tree.fault_systems[0].branches[0].sources])
                 cmd = [

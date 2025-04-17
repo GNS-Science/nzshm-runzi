@@ -1,8 +1,8 @@
 import datetime as dt
+import getpass
 import itertools
 import logging
 import os
-import pwd
 import stat
 from multiprocessing.dummy import Pool
 from pathlib import PurePath
@@ -189,9 +189,7 @@ if __name__ == "__main__":
         toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
         gt_args = (
-            CreateGeneralTaskArgs(
-                agent_name=pwd.getpwuid(os.getuid()).pw_name, title=TASK_TITLE, description=TASK_DESCRIPTION
-            )
+            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=TASK_TITLE, description=TASK_DESCRIPTION)
             .set_argument_list(args_list)
             .set_subtask_type('RUPTURE_SET')
             .set_model_type('CRUSTAL')

@@ -1,6 +1,5 @@
 import datetime as dt
-import os
-import pwd
+import getpass
 from multiprocessing.dummy import Pool
 from subprocess import check_call
 
@@ -46,9 +45,7 @@ def run_subduction_inversion(config):
     if USE_API:
         # create new task in toshi_api
         gt_args = (
-            CreateGeneralTaskArgs(
-                agent_name=pwd.getpwuid(os.getuid()).pw_name, title=TASK_TITLE, description=TASK_DESCRIPTION
-            )
+            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=TASK_TITLE, description=TASK_DESCRIPTION)
             .set_argument_list(args_list)
             .set_subtask_type(SUBTASK_TYPE)
             .set_model_type(MODEL_TYPE)

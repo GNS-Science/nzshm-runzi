@@ -411,7 +411,7 @@ def build_subduction_tasks(general_task_id, rupture_sets, args):
 #     if USE_API:
 #         #create new task in toshi_api
 #         gt_args = CreateGeneralTaskArgs(
-#             agent_name=pwd.getpwuid(os.getuid()).pw_name,
+#             agent_name=getpass.getuser(),
 #             title=TASK_TITLE,
 #             description=TASK_DESCRIPTION
 #             )\
