@@ -7,7 +7,6 @@ import datetime as dt
 import json
 import logging
 import os
-import pwd
 from typing import Any, Dict
 
 from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, EnvMode
@@ -78,7 +77,7 @@ def run_oq_hazard(config: Dict[str, Any]):
         # create new task in toshi_api
         gt_args = (
             CreateGeneralTaskArgs(
-                agent_name=pwd.getpwuid(os.getuid()).pw_name,
+                agent_name=os.getlogin(),
                 title=config["general"]["title"],
                 description=config["general"]["description"],
             )

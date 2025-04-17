@@ -11,7 +11,6 @@ import base64
 import datetime as dt
 import logging
 import os
-import pwd
 
 from runzi.automation.scaling.file_utils import get_output_file_ids
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
@@ -77,9 +76,7 @@ def run(scaled_solution_ids, TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL
     if USE_API:
         # create new task in toshi_api
         gt_args = (
-            CreateGeneralTaskArgs(
-                agent_name=pwd.getpwuid(os.getuid()).pw_name, title=TASK_TITLE, description=TASK_DESCRIPTION
-            )
+            CreateGeneralTaskArgs(agent_name=os.getlogin(), title=TASK_TITLE, description=TASK_DESCRIPTION)
             .set_argument_list(args_list)
             .set_subtask_type(task_type)
             .set_model_type(model_type)

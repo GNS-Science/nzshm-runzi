@@ -1,7 +1,6 @@
 import datetime as dt
 import itertools
 import os
-import pwd
 import stat
 from itertools import chain
 from multiprocessing.dummy import Pool
@@ -154,9 +153,7 @@ if __name__ == "__main__":
     if USE_API:
         # create new task in toshi_api
         gt_args = (
-            CreateGeneralTaskArgs(
-                agent_name=pwd.getpwuid(os.getuid()).pw_name, title=TASK_TITLE, description=TASK_DESCRIPTION
-            )
+            CreateGeneralTaskArgs(agent_name=os.getlogin(), title=TASK_TITLE, description=TASK_DESCRIPTION)
             .set_argument_list(args_list)
             .set_subtask_type('INVERSION')
             .set_model_type('CRUSTAL')
