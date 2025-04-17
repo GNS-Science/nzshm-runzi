@@ -1,5 +1,6 @@
 import copy
 import csv
+import getpass
 import itertools
 import json
 import os
@@ -151,7 +152,7 @@ def new_general_task(gt_arguments, title, description, subtask_type, model_type)
         # create new task in toshi_api
         gt_args = (
             CreateGeneralTaskArgs(
-                agent_name=os.getlogin(),
+                agent_name=getpass.getuser(),
                 title=title,
                 description=description,
             )

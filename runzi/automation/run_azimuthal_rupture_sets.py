@@ -1,4 +1,5 @@
 import datetime as dt
+import getpass
 import itertools
 import os
 import stat
@@ -157,7 +158,7 @@ if __name__ == "__main__":
         # create new task in toshi_api
         GENERAL_TASK_ID = general_api.create_task(
             created=dt.datetime.now(tzutc()).isoformat(),
-            agent_name=os.getlogin(),
+            agent_name=getpass.getuser(),
             title=TASK_TITLE,
             description=TASK_DESCRIPTION,
         )
