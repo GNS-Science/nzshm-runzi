@@ -2,7 +2,7 @@ name: Dev workflow
 
 on:
   schedule:
-    - cron:  '25 * * * *' # '5 3 * * 0' # At 03:05 on Sunday
+    - cron: '35 * * * *' # '5 3 * * 0' # At 03:05 on Sunday
   pull_request:
     branches: [main, pre-release]
 
