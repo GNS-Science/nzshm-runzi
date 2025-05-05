@@ -75,7 +75,7 @@ def subduction_setup(*args):
 
 
 def show_values(*args):
-    global global_config
+    global global_config  # noqa: F824 # ignore "name is never assigned in scope" in flake8
     try:
         global_config
     except NameError:
@@ -85,7 +85,7 @@ def show_values(*args):
 
 
 def change_general_values(*args):
-    global global_config
+    global global_config  # noqa: F824 # ignore "name is never assigned in scope" in flake8
     try:
         global_config
     except NameError:
@@ -95,7 +95,7 @@ def change_general_values(*args):
 
 
 def change_job_values(*args):
-    global global_config
+    global global_config  # noqa: F824 # ignore "name is never assigned in scope" in flake8
     try:
         global_config
     except NameError:
@@ -105,7 +105,7 @@ def change_job_values(*args):
 
 
 def change_task_values(*args):
-    global global_config
+    global global_config  # noqa: F824 # ignore "name is never assigned in scope" in flake8
     try:
         global_config
     except NameError:

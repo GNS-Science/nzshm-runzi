@@ -1,6 +1,8 @@
 name: Dev workflow
 
 on:
+  schedule:
+    - cron:  '5 2 * * 0' # At 02:05 on Sunday
   pull_request:
     branches: [main, pre-release]
 
@@ -14,4 +16,5 @@ jobs:
       operating-systems:  "['ubuntu-latest', 'macos-latest', 'windows-latest']"
       python-versions: "['3.10', '3.11']"
       poetry-version: '1.8.4'
+      delete-poetry-lock: ${{ github.event_name == 'schedule' }} # the scheduled build tests against newer dependencies
     secrets: inherit
