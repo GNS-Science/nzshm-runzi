@@ -1,6 +1,8 @@
 name: Dev workflow
 
 on:
+  schedule:
+    - cron:  '5 2 * * 0' # At 02:05 on Sunday
   pull_request:
     branches: [main, pre-release]
 
@@ -9,9 +11,10 @@ on:
 
 jobs:
   call-test-workflow:
-    uses: GNS-Science/nshm-github-actions/.github/workflows/python-run-tests.yml@main
+    uses: GNS-Science/nshm-github-actions/.github/workflows/python-run-tests.yml@8871dd23805d8493b8cad373f8501948a3874704
     with:
       operating-systems:  "['ubuntu-latest', 'macos-latest', 'windows-latest']"
       python-versions: "['3.10', '3.11']"
       poetry-version: '1.8.4'
+      delete-poetry-lock: true # ${{ github.event_name == 'schedule' }} # the scheduled build tests against newer dependencies
     secrets: inherit
