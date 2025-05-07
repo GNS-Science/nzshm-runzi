@@ -1,6 +1,8 @@
 [general]
 title = "OpenQuake Hazard Calcs"
 description = "hazard demo"
+compatible_calc_id = "NZSHM22"
+ths_rlz_database = "/home/chrisdc/NSHM/toshi_hazard_store"
 
 [hazard_model]
 nshm_model_version = "NSHM_v1.0.4"
@@ -8,8 +10,8 @@ nshm_model_version = "NSHM_v1.0.4"
 # these entries will overwrite anything in the nshm_model_version.
 # all 3 are required if a nshm_model_version is not specified
 # gmcm_logic_tree = "gmcm_small.json"
-# srm_logic_tree = "srm_small.json"
-# hazard_config = "hazard_config.json"
+srm_logic_tree = "srm_small.json"
+hazard_config = "hazard_config.json"
 
 [calculation]
 num_workers = 1
@@ -27,12 +29,12 @@ imtls = [
 [site_params]
 
 # do not use if locations file has site-specific vs30 values
-vs30s = [400]
+# vs30s = [400]
 
 # can provide locations or locations_file, not both
-locations = ['WLG','AKL','DUD','CHC']
+# locations = ['WLG','AKL','DUD','CHC']
 
-# locations_file = 'sites.csv'
+locations_file = 'sites_vs30.csv'
 
 # locations_file can have site-specific vs30. In this case, do not provide vs30 variable
 # locations_file = 'demo/sites_vs30.csv'
