@@ -24,7 +24,7 @@ from nzshm_model import NshmModel
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeConfig, OpenquakeModelPshaAdapter
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_HAZARD, WORK_PATH, ECR_DIGEST
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_HAZARD, WORK_PATH, ECR_DIGEST, THS_RLZ_DB
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.execute.openquake.execute_openquake import execute_openquake
@@ -388,7 +388,7 @@ class BuilderTask:
                     solution_id,
                     task_arguments["general"]["compatible_calc_id"],
                     ECR_DIGEST,
-                    task_arguments["general"]["ths_rlz_database"],
+                    THS_RLZ_DB,
                 ]
                 # THS does not yet support storing disaggregation realizations
                 if HazardTaskType[task_arguments["task_type"]] is HazardTaskType.DISAGG:

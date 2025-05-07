@@ -10,6 +10,7 @@ This will split the SRM logic tree into component branches and spawn an OpenQuak
 ## Environment Variables
 - `SPOOF_HAZARD`: if set to true will not spawn an OpenQuake job. All OpenQuake input files will be generated, but OpenQuake will not be run.
 - `NZSHM22_RUNZI_ECR_DIGEST`: the digest (sha256 hash) of the docker image used to run hazard. This is used to uniquely identify the code used to calculate hazard curves for reproducibility and bug tracking.
+- `NZSHM22_THS_RLZ_DB`: folder or S3 bucket where the toshi-hazard-store realizations will be stored. For local storage, must be a valid path; for cloud storage, must be a valid S3 URI.
 
 ## Configuration File
 The configuration file is in toml format. The following tables and variables are used to specify the hazard job. [A sample configuration file can be found here](example_hazard_config_file.md). All list entries can optionally be given as a single value without brackets.

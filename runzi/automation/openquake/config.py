@@ -50,7 +50,6 @@ class GeneralConfig(BaseModel):
     title: str
     description: str = ''
     compatible_calc_id: Annotated[str, AfterValidator(is_compat_calc_id)]
-    ths_rlz_database: str
 
 
 

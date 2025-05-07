@@ -2,7 +2,6 @@
 title = "OpenQuake Hazard Calcs"
 description = "hazard demo"
 compatible_calc_id = "NZSHM22"
-ths_rlz_database = "/home/chrisdc/NSHM/toshi_hazard_store"
 
 [hazard_model]
 nshm_model_version = "NSHM_v1.0.4"
