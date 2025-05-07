@@ -915,14 +915,14 @@ files = [
 
 [[package]]
 name = "django"
-version = "4.2.20"
+version = "4.2.21"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "Django-4.2.20-py3-none-any.whl", hash = "sha256:213381b6e4405f5c8703fffc29cd719efdf189dec60c67c04f76272b3dc845b9"},
-    {file = "Django-4.2.20.tar.gz", hash = "sha256:92bac5b4432a64532abb73b2ac27203f485e40225d2640a7fbef2b62b876e789"},
+    {file = "django-4.2.21-py3-none-any.whl", hash = "sha256:1d658c7bf5d31c7d0cac1cab58bc1f822df89255080fec81909256c30e6180b3"},
+    {file = "django-4.2.21.tar.gz", hash = "sha256:b54ac28d6aa964fc7c2f7335138a54d78980232011e0cd2231d04eed393dcb0d"},
 ]
 
 [package.dependencies]
@@ -3707,14 +3707,14 @@ xmod = "*"
 
 [[package]]
 name = "s3path"
-version = "0.6.1"
+version = "0.6.2"
 description = ""
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "s3path-0.6.1-py3-none-any.whl", hash = "sha256:c61ecf939677a551495395c25f7fa0a452517dc04b9beba016f2015e5ad18aeb"},
-    {file = "s3path-0.6.1.tar.gz", hash = "sha256:0116416f30bf016c08c396c1a77659281d39bb05f742987782b74f71594c79c9"},
+    {file = "s3path-0.6.2-py3-none-any.whl", hash = "sha256:ac207b7676fc2686ff8be2070426a0e8998b74953a674f695be3416427228507"},
+    {file = "s3path-0.6.2.tar.gz", hash = "sha256:535f9e24c3cd462d5a0909feea30a11a0956e6ce27061690efebec7804cac5ae"},
 ]
 
 [package.dependencies]
@@ -4094,8 +4094,10 @@ openquake = ["fiona (>=1.9.5,<2.0.0)", "networkx (>=3.2.1,<4.0.0)", "numba (<0.6
 scripts = ["nshm-toshi-client (>=1.0.1,<2.0.0)"]
 
 [package.source]
-type = "directory"
-url = "../../LIB/toshi-hazard-store"
+type = "git"
+url = "https://github.com/GNS-Science/toshi-hazard-store.git"
+reference = "pre-release-v1.0"
+resolved_reference = "a6291ea59d584986d384a4bec4be081a6932c2d0"
 
 [[package]]
 name = "tox"
@@ -4619,4 +4621,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.12"
-content-hash = "04e84b557e20056e095ed699f1597cd5e10d4b854891207598b0a9e2fb54452e"
+content-hash = "63c1baa5b67025848a7aea614e39cee66f637fb35b0dff834d91ddab82785e9c"
