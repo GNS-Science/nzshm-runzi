@@ -24,7 +24,7 @@ def boolean_env(environ_name):
 USE_API = boolean_env('NZSHM22_TOSHI_API_ENABLED')
 API_URL = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
 S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL', "http://localhost:4569")
-ECR_DIGEST = os.getenv('ECR_DIGEST')
+ECR_DIGEST = os.getenv('NZSHM22_RUNZI_ECR_DIGEST')
 
 # Get API key from AWS secrets manager
 if USE_API and 'TEST' in API_URL.upper():
