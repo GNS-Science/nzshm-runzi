@@ -24,7 +24,7 @@ from nzshm_model import NshmModel
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeConfig, OpenquakeModelPshaAdapter
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_HAZARD, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_HAZARD, WORK_PATH, ECR_DIGEST
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.execute.openquake.execute_openquake import execute_openquake
@@ -382,15 +382,13 @@ class BuilderTask:
                 )
                 source_ids = ", ".join([b.nrml_id for b in source_logic_tree.fault_systems[0].branches[0].sources])
                 cmd = [
-                    "store_hazard_v3",
-                    str(oq_result["oq_calc_id"]),
+                    "ths_r4_import",
+                    str(oq_result["hdf5_filepath"]),
+                    task_arguments["hazard_model"]["hazard_config"],
                     solution_id,
-                    job_arguments["general_task_id"],
-                    str(locations),
-                    f'"{tag}"',
-                    f'"{source_ids}"',
-                    "--verbose",
-                    "--create-tables",
+                    task_arguments["general"]["compatible_calc_id"],
+                    ECR_DIGEST,
+                    task_arguments["general"]["ths_rlz_database"],
                 ]
                 # THS does not yet support storing disaggregation realizations
                 if HazardTaskType[task_arguments["task_type"]] is HazardTaskType.DISAGG:
