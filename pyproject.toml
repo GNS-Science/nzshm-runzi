@@ -30,14 +30,14 @@ python-dateutil = "^2.8.2"
 # openquake = ["openquake-engine", "fiona"]
 # converter =["openquake-converters-ucerf"]
 nzshm-common = {extras = ["geometry"], version = "^0.8.4"}
-toshi-hazard-store = {git = "https://github.com/GNS-Science/toshi-hazard-store.git", rev = "update-nzshm-model"}
 inquirer = "^3.4.0"
 pygments = "^2.19.1"
 pytz = "^2025.1"
 pydantic = "^2.10.6"
 tomlkit = "^0.13.2"
-nzshm-model = "^0.13.5"
 solvis = "^1.0.0"
+nzshm-model = "^0.13.6"
+toshi-hazard-store = {path = "/home/chrisdc/NSHM/DEV/LIB/toshi-hazard-store", extras = ["openquake"]}
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.3.4"
