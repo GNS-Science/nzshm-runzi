@@ -16,9 +16,9 @@ docker build -f docker/runzi-openquake/Dockerfile_WORKING-BURNER --no-cache \
 
 get the container hash digest 
 ```
-$ docker image ls --digests
+$ docker inspect --format='{{index .RepoDigests 0}}' runzi-openquake:$WORKING_CONTAINER_TAG
 ```
-export ECR_DIGEST=sha256:e8b44b806570dcdc4a725cafc2fbaf6dae99dbfbe69345d86b3069d3fe4a2bc6
+export NZSHM22_RUNZI_ECR_DIGEST=sha256:e8b44b806570dcdc4a725cafc2fbaf6dae99dbfbe69345d86b3069d3fe4a2bc6
 
 ## run
 Notice that when we run, we mount the `nzshm-runzi` directory that we can modify the code without re-building the container.
