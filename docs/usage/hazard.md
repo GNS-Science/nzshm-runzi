@@ -42,3 +42,11 @@ A valid model requires all three of a ground motion characterization model, seis
 Provide one of the following for the sites at which to calculate hazard
 - `locations`: a list of strings specifying locations by location list, id, or lat~lon string. See the `nzshm-common` documentation for details.
 - `locations_file`: a csv file with lat lon and optionally site-specific vs30 values. If vs30 is provided, the uniform `vs30` cannot be provided.
+
+
+# Post Processing
+
+Once all hazard jobs are completed, you can compact the realization dataset using the toshi-hazard-store defrag script. This allows for faster dataset lookup. Standard partition keys are `vs30` and `nloc_0`
+```
+$ ths_r4_defrag -v -p vs30,nloc_0 SOURCE_PATH DESTINATION_PATH
+```
