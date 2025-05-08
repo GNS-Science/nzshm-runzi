@@ -4095,6 +4095,7 @@ develop = false
 [package.dependencies]
 fiona = {version = "^1.9.5", optional = true}
 networkx = {version = "^3.2.1", optional = true}
+nshm-toshi-client = {version = "^1.0.1", optional = true}
 numba = {version = "<0.61.0", optional = true}
 numpy = ">=1.24,<2"
 nzshm-common = "^0.8.4"
@@ -4640,4 +4641,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.12"
-content-hash = "63c1baa5b67025848a7aea614e39cee66f637fb35b0dff834d91ddab82785e9c"
+content-hash = "6571dbf39d657ad8165b05ef81e79b6dd33a926a2bc8e1a4cace00b2c6de8f49"
