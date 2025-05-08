@@ -97,6 +97,8 @@ class HazardSiteConfig(BaseModel):
     def check_locations(self) -> Self:
         if self.locations_file and self.locations:
             raise ValueError("cannot specify both locations and locations_file")
+        if not (self.locations_file or self.locations):
+            raise ValueError("must specify one of locations or locations_file")
 
         file_has_vs30 = self.locations_file and self.has_vs30(self.locations_file)
         if file_has_vs30 and self.vs30s:

@@ -18,6 +18,7 @@ def test_config_valid_model_version(config_dict):
         HazardConfig.model_validate(config_dict)
 
 
+
 # can specify logic trees using relative path from config file
 def test_config_validation_lt_relpath(config_dict):
     config_dict["hazard_model"]["gmcm_logic_tree"] = "gmcm_small.json"
@@ -66,6 +67,12 @@ def test_config_validation_location_file(config_dict):
 # but not both a file and a list
 def test_config_validation_location_listandfile(config_dict):
     config_dict["site_params"]["locations_file"] = "sites.csv"
+    with pytest.raises(ValidationError):
+        HazardConfig.model_validate(config_dict)
+
+# must specify one of locations and locations_file
+def test_config_validation_location_or_listandfile(config_dict):
+    del config_dict["site_params"]["locations"]
     with pytest.raises(ValidationError):
         HazardConfig.model_validate(config_dict)
 
