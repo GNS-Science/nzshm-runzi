@@ -14,7 +14,7 @@ from pydantic import (
     model_validator,
 )
 from toshi_hazard_store.model import AggregationEnum
-from toshi_hazard_store.scripts.ths_r4_import import chc_manager
+from toshi_hazard_store.scripts.ths_import import chc_manager
 from typing_extensions import Annotated, Self
 
 
