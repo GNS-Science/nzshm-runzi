@@ -23,7 +23,6 @@ from nzshm_common.location.location import get_locations
 from nzshm_model import NshmModel
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeConfig, OpenquakeModelPshaAdapter
-from toshi_hazard_store.scripts.ths_import import store_hazard
 
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_HAZARD, WORK_PATH, ECR_DIGEST, THS_RLZ_DB
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -385,31 +384,21 @@ class BuilderTask:
                 # write config to json
                 config_filepath = config_folder / "hazard_config.json"
                 hazard_config.to_json(config_filepath)
-                # cmd = [
-                #     "ths_import",
-                #     "store-hazard",
-                #     str(oq_result["hdf5_filepath"]),
-                #     config_filepath,    
-                #     task_arguments["general"]["compatible_calc_id"],
-                #     solution_id,
-                #     ECR_DIGEST,
-                #     THS_RLZ_DB,
-                # ]
-                # # THS does not yet support storing disaggregation realizations
-                # if HazardTaskType[task_arguments["task_type"]] is HazardTaskType.DISAGG:
-                #     cmd.append("--meta-data-only")
-                # log.info(f"store_hazard: {cmd}")
-                # subprocess.check_call(cmd)
-
-                log.info("storing hazard")
-                store_hazard(
+                cmd = [
+                    "ths_import",
+                    "store-hazard",
                     str(oq_result["hdf5_filepath"]),
                     config_filepath,    
                     task_arguments["general"]["compatible_calc_id"],
                     solution_id,
                     ECR_DIGEST,
                     THS_RLZ_DB,
-                )
+                ]
+                # # THS does not yet support storing disaggregation realizations
+                # if HazardTaskType[task_arguments["task_type"]] is HazardTaskType.DISAGG:
+                #     cmd.append("--meta-data-only")
+                log.info(f"store_hazard: {cmd}")
+                subprocess.check_call(cmd)
 
         t1 = dt.datetime.now(dt.timezone.utc)
         log.info("Task took %s secs" % (t1 - t0).total_seconds())
