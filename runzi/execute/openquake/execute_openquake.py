@@ -124,6 +124,7 @@ def execute_openquake(
             oq_result['hdf5_archive'] = archive(
                 Path(OQDATA, hdf5_file), Path(WORK_PATH, f'openquake_hdf5_archive-{toshi_task_id}.zip')
             )
+            oq_result['hdf5_filepath'] = Path(OQDATA, hdf5_file)
 
     except Exception as err:
         log.error(f"err: {err}")

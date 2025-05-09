@@ -1,6 +1,7 @@
 [general]
 title = "OpenQuake Disaggregation Calcs"
 description = "Disaggregation demo"
+compatible_calc_id = "NZSHM22"
 
 [hazard_model]
 nshm_model_version = "NSHM_v1.0.4"

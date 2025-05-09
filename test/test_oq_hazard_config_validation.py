@@ -70,6 +70,13 @@ def test_config_validation_location_listandfile(config_dict):
         HazardConfig.model_validate(config_dict)
 
 
+# must specify one of locations and locations_file
+def test_config_validation_location_or_listandfile(config_dict):
+    del config_dict["site_params"]["locations"]
+    with pytest.raises(ValidationError):
+        HazardConfig.model_validate(config_dict)
+
+
 # if a uniform vs30 is not provided, the locations file must provide it
 def test_config_validation_vs30_missing(config_dict):
     del config_dict["site_params"]["vs30s"]

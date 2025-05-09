@@ -14,8 +14,19 @@ docker build -f docker/runzi-openquake/Dockerfile_WORKING-BURNER --no-cache \
     -t runzi-openquake:$WORKING_CONTAINER_TAG .
 ```
 
+get the container hash digest 
+```
+$ docker inspect --format='{{index .RepoDigests 0}}' runzi-openquake:$WORKING_CONTAINER_TAG
+```
+export NZSHM22_RUNZI_ECR_DIGEST="sha256:1234"
+
 ## run
-Notice that when we run, we mount the `nzshm-runzi` directory that we can modify the code without re-building the container.
+Set the path to your toshi-hazard-store DB (local folder or S3 URI) and set your AWS profile.
+```
+$ export AWS_PROFILE="chrisdc"
+```
+
+Notice that when we run, we mount the `nzshm-runzi` directory that we can modify the code without re-building the container. The directories we mount as volumes in the docker container must have write access for all users in order for the process in the running container to be able to write to them.
 ```
 export RUNZI_DIR=/home/chrisdc/NSHM/DEV/APP/nzshm-runzi
 export NZSHM22_SCRIPT_CLUSTER_MODE=LOCAL
@@ -24,15 +35,13 @@ docker run -it --rm --env-file docker/runzi-openquake/environ \
 -v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
 -v $RUNZI_DIR:/app/nzshm-runzi \
 -v $NZSHM22_SCRIPT_WORK_PATH/DOCKER:/WORKING \
--e AWS_PROFILE=toshi_batch_devops \
+-e AWS_PROFILE=${AWS_PROFILE} \
 -e NZSHM22_TOSHI_S3_URL \
 -e NZSHM22_TOSHI_API_URL \
 -e NZSHM22_TOSHI_API_KEY \
 -e NZSHM22_SCRIPT_CLUSTER_MODE \
 -e NZSHM22_S3_REPORT_BUCKET \
--e NZSHM22_REPORT_LEVEL=FULL \
--e NZSHM22_TOSHI_API_KEY \
--e NZSHM22_HAZARD_STORE_STAGE \
--e NZSHM22_HAZARD_STORE_REGION=ap-southeast-2 \
+-e NZSHM22_RUNZI_ECR_DIGEST \
+-e NZSHM22_THS_RLZ_DB=/WORKING/THS \
 runzi-openquake:${WORKING_CONTAINER_TAG}
 ```
