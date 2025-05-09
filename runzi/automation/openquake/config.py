@@ -23,13 +23,14 @@ def is_model_version(value: str) -> str:
         raise ValueError("must specify valid nshm_model_version ({})".format(all_model_versions()))
     return value
 
+
 def is_compat_calc_id(compat_calc_id: str) -> str:
     try:
         if not chc_manager.load(compat_calc_id):
             raise ValueError("Compatible Hazard Calculation with unique ID {value} does not exist.")
     except FileNotFoundError:
         raise ValueError("Compatible Hazard Calculation with unique ID {value} does not exist.")
-    
+
     return compat_calc_id
 
 
@@ -50,8 +51,6 @@ class GeneralConfig(BaseModel):
     title: str
     description: str = ''
     compatible_calc_id: Annotated[str, AfterValidator(is_compat_calc_id)]
-
-
 
 
 class HazardModelConfig(BaseModel):

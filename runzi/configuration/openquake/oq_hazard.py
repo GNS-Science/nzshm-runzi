@@ -101,11 +101,6 @@ def build_hazard_tasks(
     model_type: ModelType,
     task_args: Dict[str, Any],
 ):
-    extra_env = [
-        BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_STAGE", value="PROD"),
-        BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_REGION", value="ap-southeast-2"),
-        BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_NUM_WORKERS", value="1"),
-    ]
 
     task_count = 0
 
@@ -149,4 +144,4 @@ def build_hazard_tasks(
                 sleep_multiplier=ta["calculation"].get("sleep_multiplier", 2),
             )
             ta["hazard_model"]["srm_logic_tree"] = slt.to_dict()
-            yield build_task(ta, job_arguments, task_count, extra_env)
+            yield build_task(ta, job_arguments, task_count)
