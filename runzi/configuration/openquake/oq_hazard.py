@@ -39,7 +39,7 @@ def build_task(
     task_arguments: Dict[str, Any],
     job_arguments: Dict[str, Any],
     task_id: int,
-    extra_env: Optional[List[BatchEnvironmentSetting]],
+    extra_env: Optional[List[BatchEnvironmentSetting]] = None,
 ):
     if CLUSTER_MODE == EnvMode["AWS"]:
         job_name = f"Runzi-automation-oq-hazard-{task_id}"
