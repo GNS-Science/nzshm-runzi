@@ -23,11 +23,10 @@ export NZSHM22_RUNZI_ECR_DIGEST="sha256:1234"
 ## run
 Set the path to your toshi-hazard-store DB (local folder or S3 URI) and set your AWS profile.
 ```
-<!-- $ export NZSHM22_THS_RLZ_DB="/tmp/WORKING/PROD/THS" -->
 $ export AWS_PROFILE="chrisdc"
 ```
 
-Notice that when we run, we mount the `nzshm-runzi` directory that we can modify the code without re-building the container.
+Notice that when we run, we mount the `nzshm-runzi` directory that we can modify the code without re-building the container. The directories we mount as volumes in the docker container must have write access for all users in order for the process in the running container to be able to write to them.
 ```
 export RUNZI_DIR=/home/chrisdc/NSHM/DEV/APP/nzshm-runzi
 export NZSHM22_SCRIPT_CLUSTER_MODE=LOCAL
