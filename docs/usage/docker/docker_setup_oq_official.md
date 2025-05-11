@@ -1,4 +1,4 @@
-# Build a docker image for use in AWS EC2
+# Build a docker image for production use
 This will build an "official" image that is tagged with a git-ref and OQ version
 
 ## build the base docker image
