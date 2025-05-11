@@ -12,8 +12,10 @@ import runzi.execute.openquake.oq_hazard_task
 from runzi.automation.scaling.local_config import (
     API_URL,
     CLUSTER_MODE,
+    ECR_DIGEST,
     S3_REPORT_BUCKET,
     S3_URL,
+    THS_RLZ_DB,
     USE_API,
     WORK_PATH,
     EnvMode,
@@ -104,6 +106,11 @@ def build_hazard_tasks(
 
     task_count = 0
 
+    extra_env = [
+        BatchEnvironmentSetting(name="NZSHM22_RUNZI_ECR_DIGEST", value=ECR_DIGEST),
+        BatchEnvironmentSetting(name="NZSHM22_THS_RLZ_DB", value=THS_RLZ_DB),
+    ]
+
     ta = copy.copy(task_args)
     if model_version := ta["hazard_model"].get("nshm_model_version"):
         model = get_model_version(model_version)
@@ -144,4 +151,4 @@ def build_hazard_tasks(
                 sleep_multiplier=ta["calculation"].get("sleep_multiplier", 2),
             )
             ta["hazard_model"]["srm_logic_tree"] = slt.to_dict()
-            yield build_task(ta, job_arguments, task_count)
+            yield build_task(ta, job_arguments, task_count, extra_env)
