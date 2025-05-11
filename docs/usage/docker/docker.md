@@ -9,4 +9,4 @@ The docker build process for runzi with openquake is done in two stages. In the 
 [Official build instructions](./docker_setup_oq_official.md)
 
 ## Editable Build
-[Local build instructions](./docker_setup_oq_editable.md)
+[Editable build instructions](./docker_setup_oq_editable.md)
