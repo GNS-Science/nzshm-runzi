@@ -14,11 +14,7 @@ docker build -f docker/runzi-openquake/Dockerfile_WORKING-BURNER --no-cache \
     -t runzi-openquake:$WORKING_CONTAINER_TAG .
 ```
 
-get the container hash digest 
-```
-$ docker inspect --format='{{index .RepoDigests 0}}' runzi-openquake:$WORKING_CONTAINER_TAG
-```
-export NZSHM22_RUNZI_ECR_DIGEST="sha256:1234"
+export NZSHM22_RUNZI_ECR_DIGEST="sha256:WORKING_BURNER"
 
 ## run
 Set the path to your toshi-hazard-store DB (local folder or S3 URI) and set your AWS profile.
@@ -26,7 +22,7 @@ Set the path to your toshi-hazard-store DB (local folder or S3 URI) and set your
 $ export AWS_PROFILE="chrisdc"
 ```
 
-Notice that when we run, we mount the `nzshm-runzi` directory that we can modify the code without re-building the container. The directories we mount as volumes in the docker container must have write access for all users in order for the process in the running container to be able to write to them.
+Notice that when we run, we mount the `nzshm-runzi` directory that we can modify the code without re-building the container. The directories we mount as volumes in the docker container must have write access for all users in order for the process in the running container to be able to write to them. The THS datastore files will be written to `$NZSHM22_SCRIPT_WORK_PATH/DOCKER/THS` on the host.
 ```
 export RUNZI_DIR=/home/chrisdc/NSHM/DEV/APP/nzshm-runzi
 export NZSHM22_SCRIPT_CLUSTER_MODE=LOCAL
