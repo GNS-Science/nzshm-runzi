@@ -9,7 +9,6 @@ import datetime as dt
 import json
 import logging
 import platform
-import subprocess
 import tempfile
 import time
 from pathlib import Path
@@ -23,7 +22,6 @@ from nzshm_common.location.location import get_locations
 from nzshm_model import NshmModel
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeConfig, OpenquakeModelPshaAdapter
-from toshi_hazard_store.scripts.ths_import import store_hazard
 
 from runzi.automation.scaling.local_config import (
     API_KEY,
@@ -51,6 +49,11 @@ logging.getLogger("git.cmd").setLevel(LOG_INFO)
 logging.getLogger("gql.transport").setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
+
+try:
+    from toshi_hazard_store.scripts.ths_import import store_hazard
+except ModuleNotFoundError:
+    log.info("not importing from toshi_hazard_store.scripts.ths_import due to missing dependencies")
 
 
 class BuilderTask:
@@ -368,7 +371,6 @@ class BuilderTask:
                     ECR_DIGEST,
                     THS_RLZ_DB,
                 )
-
 
         t1 = dt.datetime.now(dt.timezone.utc)
         log.info("Task took %s secs" % (t1 - t0).total_seconds())
