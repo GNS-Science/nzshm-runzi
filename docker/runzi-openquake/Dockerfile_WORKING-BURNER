@@ -7,7 +7,7 @@ USER root
 
 # remove the official runzi installation and replace with code in working directory
 RUN pip3 uninstall runzi
-ADD . /app/nzshm-runzi
+ADD runzi/ /app/nzshm-runzi/runzi
 WORKDIR /app/nzshm-runzi
 RUN pip install -e .
 
