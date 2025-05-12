@@ -45,9 +45,10 @@ RUN chown openquake /WORKING
 # we'll use ADD for now as the repo is not public
 # AND for now we're mapping in the code like so `docker run  -it --rm -v $(pwd)/../../../ucerf:/app/ucerf`
 # AND then running pip install -e . in the ucerf folder to test
-ADD ucerf3-updates /app/ucerf
+# https://stackoverflow.com/questions/31528384/conditional-copy-add-in-dockerfile
+ADD ucerf3-update[s] /app/ucerf
 WORKDIR /app/ucerf
-RUN pip install -e .
+RUN if [[ -f pyproject.toml || -f setup.py ]]; then pip install -e .; fi
 
 USER openquake
 

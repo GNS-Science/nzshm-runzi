@@ -3,7 +3,7 @@
 These instructions will allow you to build an image for testing in which the runzi code can be altered after build including while the container is running.
 
 ## build the base docker image
-follow docs/usage/base_docker_setup_oq.md
+[follow base build](./docker_setup_oq_base.md)
 
 ## Build new image on top of the base image
 The `WORKING_BURNER` tag indicates that runzi code is from the working directory and the image is not to be used for official calculations as the code is not traceable. The build command must be run from the root directory of the `nzshm-runzi` repo.
