@@ -6,12 +6,14 @@ and is imported  by the various run_xxx.py scripts
 import enum
 import os
 from pathlib import PurePath
+
 from dotenv import load_dotenv
 
 from runzi.util.aws import get_secret
 
 # fill environment variables from .env file if not yet set
 load_dotenv()
+
 
 class EnvMode(enum.IntEnum):
     LOCAL = 0

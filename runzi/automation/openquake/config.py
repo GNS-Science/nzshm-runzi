@@ -13,14 +13,9 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-
-# from toshi_hazard_store.scripts.ths_import import chc_manager
-from toshi_hazard_store.config import STORAGE_FOLDER
 from toshi_hazard_store.model import AggregationEnum
-from toshi_hazard_store.model.hazard_models_manager import CompatibleHazardCalculationManager
+from toshi_hazard_store.scripts.ths_import import chc_manager
 from typing_extensions import Annotated, Self
-
-chc_manager = CompatibleHazardCalculationManager(Path(STORAGE_FOLDER))
 
 
 def is_model_version(value: str) -> str:
