@@ -12,8 +12,10 @@ import runzi.execute.openquake.oq_hazard_task
 from runzi.automation.scaling.local_config import (
     API_URL,
     CLUSTER_MODE,
+    ECR_DIGEST,
     S3_REPORT_BUCKET,
     S3_URL,
+    THS_RLZ_DB,
     USE_API,
     WORK_PATH,
     EnvMode,
@@ -39,7 +41,7 @@ def build_task(
     task_arguments: Dict[str, Any],
     job_arguments: Dict[str, Any],
     task_id: int,
-    extra_env: Optional[List[BatchEnvironmentSetting]],
+    extra_env: Optional[List[BatchEnvironmentSetting]] = None,
 ):
     if CLUSTER_MODE == EnvMode["AWS"]:
         job_name = f"Runzi-automation-oq-hazard-{task_id}"
@@ -101,13 +103,13 @@ def build_hazard_tasks(
     model_type: ModelType,
     task_args: Dict[str, Any],
 ):
-    extra_env = [
-        BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_STAGE", value="PROD"),
-        BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_REGION", value="ap-southeast-2"),
-        BatchEnvironmentSetting(name="NZSHM22_HAZARD_STORE_NUM_WORKERS", value="1"),
-    ]
 
     task_count = 0
+
+    extra_env = [
+        BatchEnvironmentSetting(name="NZSHM22_RUNZI_ECR_DIGEST", value=ECR_DIGEST),
+        BatchEnvironmentSetting(name="NZSHM22_THS_RLZ_DB", value=THS_RLZ_DB),
+    ]
 
     ta = copy.copy(task_args)
     if model_version := ta["hazard_model"].get("nshm_model_version"):

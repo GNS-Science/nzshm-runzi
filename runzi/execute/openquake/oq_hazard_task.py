@@ -9,7 +9,6 @@ import datetime as dt
 import json
 import logging
 import platform
-import subprocess
 import tempfile
 import time
 from pathlib import Path
@@ -24,7 +23,15 @@ from nzshm_model import NshmModel
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeConfig, OpenquakeModelPshaAdapter
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_HAZARD, WORK_PATH
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    ECR_DIGEST,
+    S3_URL,
+    SPOOF_HAZARD,
+    THS_RLZ_DB,
+    WORK_PATH,
+)
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.execute.openquake.execute_openquake import execute_openquake
@@ -42,6 +49,11 @@ logging.getLogger("git.cmd").setLevel(LOG_INFO)
 logging.getLogger("gql.transport").setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
+
+try:
+    from toshi_hazard_store.scripts.ths_import import store_hazard
+except ModuleNotFoundError:
+    log.info("not importing from toshi_hazard_store.scripts.ths_import due to missing dependencies")
 
 
 class BuilderTask:
@@ -270,15 +282,9 @@ class BuilderTask:
         print(task_type)
 
         # convert the dict representations of complex objects (from nzshm_model lib) in the args to the correct type
-        task_arguments["hazard_model"]["srm_logic_tree"] = SourceLogicTree.from_dict(
-            task_arguments["hazard_model"]["srm_logic_tree"]
-        )
-        task_arguments["hazard_model"]["gmcm_logic_tree"] = GMCMLogicTree.from_dict(
-            task_arguments["hazard_model"]["gmcm_logic_tree"]
-        )
-        task_arguments["hazard_model"]["hazard_config"] = OpenquakeConfig.from_dict(
-            task_arguments["hazard_model"]["hazard_config"]
-        )
+        source_logic_tree = SourceLogicTree.from_dict(task_arguments["hazard_model"]["srm_logic_tree"])
+        gmcm_logic_tree = GMCMLogicTree.from_dict(task_arguments["hazard_model"]["gmcm_logic_tree"])
+        hazard_config = OpenquakeConfig.from_dict(task_arguments["hazard_model"]["hazard_config"])
 
         ################
         # API SETUP
@@ -301,9 +307,9 @@ class BuilderTask:
         self.model = NshmModel(
             version="",
             title=task_arguments["general"]["title"],
-            source_logic_tree=task_arguments["hazard_model"]["srm_logic_tree"],
-            gmcm_logic_tree=task_arguments["hazard_model"]["gmcm_logic_tree"],
-            hazard_config=task_arguments["hazard_model"]["hazard_config"],
+            source_logic_tree=source_logic_tree,
+            gmcm_logic_tree=gmcm_logic_tree,
+            hazard_config=hazard_config,
         )
 
         # set sites and site parameters
@@ -350,53 +356,21 @@ class BuilderTask:
             #############################
             # run the store_hazard job
             if not SPOOF_HAZARD and (not oq_result.get("no_ruptures")):
-                # [{'tag': 'GRANULAR', 'weight': 1.0, 'permute': [{'group': 'ALL', 'members': [ltb._asdict()] }]}]
-                # TODO GRANULAR ONLY@!@
-                # ltb = {"tag": "hiktlck, b0.979, C3.9, s0.78", "weight": 0.0666666666666667,
-                #        "inv_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODA3NQ==", "bg_id":"RmlsZToxMDY1MjU="},
 
-                """
-                positional arguments:
-                  calc_id              an openquake calc id OR filepath to the hdf5 file.
-                  toshi_hazard_id      hazard_solution id.
-                  toshi_gt_id          general_task id.
-                  locations_id         identifier for the locations used (common-py ENUM ??)
-                  source_tags          e.g. "hiktlck, b0.979, C3.9, s0.78"
-                  source_ids           e.g. "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwODA3NQ==,RmlsZToxMDY1MjU="
+                # write config to json
+                config_filepath = config_folder / "hazard_config.json"
+                hazard_config.to_json(config_filepath)
 
-                optional arguments:
-                  -h, --help           show this help message and exit
-                  -c, --create-tables  Ensure tables exist.
-                """
-                source_logic_tree = task_arguments["hazard_model"]["srm_logic_tree"]
-                tag = ":".join(
-                    (
-                        source_logic_tree.branch_sets[0].short_name,
-                        source_logic_tree.branch_sets[0].branches[0].tag,
-                    )
-                )
-                locations = (
-                    task_arguments["site_params"].get("locations")
-                    or task_arguments["site_params"].get("locations_file_id")
-                    or task_arguments["site_params"]["locations_file"]
-                )
-                source_ids = ", ".join([b.nrml_id for b in source_logic_tree.fault_systems[0].branches[0].sources])
-                cmd = [
-                    "store_hazard_v3",
-                    str(oq_result["oq_calc_id"]),
+                # # THS does not yet support storing disaggregation realizations
+                log.info("store hazard")
+                store_hazard(
+                    str(oq_result["hdf5_filepath"]),
+                    config_filepath,
+                    task_arguments["general"]["compatible_calc_id"],
                     solution_id,
-                    job_arguments["general_task_id"],
-                    str(locations),
-                    f'"{tag}"',
-                    f'"{source_ids}"',
-                    "--verbose",
-                    "--create-tables",
-                ]
-                # THS does not yet support storing disaggregation realizations
-                if HazardTaskType[task_arguments["task_type"]] is HazardTaskType.DISAGG:
-                    cmd.append("--meta-data-only")
-                log.info(f"store_hazard: {cmd}")
-                subprocess.check_call(cmd)
+                    ECR_DIGEST,
+                    THS_RLZ_DB,
+                )
 
         t1 = dt.datetime.now(dt.timezone.utc)
         log.info("Task took %s secs" % (t1 - t0).total_seconds())

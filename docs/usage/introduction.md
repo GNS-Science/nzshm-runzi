@@ -1,7 +1,7 @@
 # Environment Variables
 This section describes the environment variables that apply to all types of jobs launched by `runzi`. Job specific env vars are described in the relevant section.
 
-## Boolian
+## Boolean
 `"1"`, `"Y"`, `"YES"`, `"TRUE"` evaluate as true. They are not case sensitive.
 
 ## Env Vars

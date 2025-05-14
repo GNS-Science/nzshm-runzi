@@ -10,9 +10,9 @@ nav:
   - Home: index.md
   - Usage:
     - Introduction: usage/introduction.md
+    - Docker: usage/docker/docker.md
     - Hazard: usage/hazard.md
-    - Inversion, Docker, and AWS: usage/AWS_docker_containers_setup.md
-    - Hazard, Docker, and AWS: usage/AWS_docker_setup_oq.md
+    - Inversion, Docker, and AWS: usage/docker/AWS_docker_containers_setup.md
   - Installation: installation.md
   - Development and Contributing:
     - contributing.md

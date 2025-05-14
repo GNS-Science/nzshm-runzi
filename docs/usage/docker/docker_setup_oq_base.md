@@ -4,7 +4,7 @@ The image is build using the GH repo for runzi, so we will tag with the latest c
 cd docker/runzi-openquake
 git fetch
 export OQ_VERSION="3.20.1"
-export RUNZI_BRANCH="fix/ths-script-bugs"
+export RUNZI_BRANCH="feature/172-new-ths"
 export RUNZI_GITREF=$(git rev-parse --short origin/${RUNZI_BRANCH})
 export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_openquake-${OQ_VERSION} 
 docker build --no-cache -t runzi-openquake:${CONTAINER_TAG} \

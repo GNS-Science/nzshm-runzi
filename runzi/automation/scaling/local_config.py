@@ -7,7 +7,12 @@ import enum
 import os
 from pathlib import PurePath
 
+from dotenv import load_dotenv
+
 from runzi.util.aws import get_secret
+
+# fill environment variables from .env file if not yet set
+load_dotenv()
 
 
 class EnvMode(enum.IntEnum):
@@ -20,10 +25,12 @@ def boolean_env(environ_name):
     return bool(os.getenv(environ_name, '').upper() in ["1", "Y", "YES", "TRUE"])
 
 
-# API Setting are needed to sore job details for later reference
+# API Setting are needed to store job details for later reference
 USE_API = boolean_env('NZSHM22_TOSHI_API_ENABLED')
 API_URL = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
 S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL', "http://localhost:4569")
+ECR_DIGEST = os.getenv('NZSHM22_RUNZI_ECR_DIGEST')
+THS_RLZ_DB = os.getenv('NZSHM22_THS_RLZ_DB')
 
 # Get API key from AWS secrets manager
 if USE_API and 'TEST' in API_URL.upper():
