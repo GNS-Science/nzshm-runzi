@@ -35,7 +35,7 @@ def is_compat_calc_id(compat_calc_id: str) -> str:
 
 
 def resolve_path(path: Union[Path, str], reference_filepath: Union[Path, str]) -> str:
-    path = Path(path)
+    path = Path(path).expanduser()
     if not path.is_absolute():
         return str(Path(reference_filepath).parent / path)
     return str(path)

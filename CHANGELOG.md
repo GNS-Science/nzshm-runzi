@@ -5,6 +5,7 @@
 ## Added
 - Initial documentation
 - Development toolchain and workflows
+- Expand user paths for files specified in hazard config file
 
 ## Changed
 - Hazard and disaggregation job configuration and parsing of sites handled by `nzhsm-model`
