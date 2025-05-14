@@ -8,6 +8,6 @@
 
 ## Changed
 - Hazard and disaggregation job configuration and parsing of sites handled by `nzhsm-model`
-- Hazard realizations written to arrow/parquet dataset with `toshi-hazard-post`
+- Hazard realizations written to arrow/parquet dataset with `toshi-hazard-store`
 
 
