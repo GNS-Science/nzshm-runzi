@@ -37,8 +37,8 @@ pydantic = "^2.10.6"
 tomlkit = "^0.13.2"
 solvis = "^1.0.0"
 nzshm-model = "^0.13.6"
-toshi-hazard-store = {git = "https://github.com/GNS-Science/toshi-hazard-store.git", rev = "pre-release-v1.0"}
 python-dotenv = "^1.1.0"
+toshi-hazard-store = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.3.4"
