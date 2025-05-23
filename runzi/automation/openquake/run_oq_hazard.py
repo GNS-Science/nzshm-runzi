@@ -67,10 +67,10 @@ def run_oq_hazard(config: Dict[str, Any]):
             (job_config.hazard_model.srm_logic_tree, "hazard_model", "srm_logic_tree_id"),
         ]
         for file_path, group, property in file_paths:
-            file_id, post_url = toshi_api.file.create_file(file_path)
-            toshi_api.file.upload_content(post_url, file_path)
-            args_dict[group][property] = file_id
-            print(property, file_id)
+            if file_path:
+                file_id, post_url = toshi_api.file.create_file(file_path)
+                toshi_api.file.upload_content(post_url, file_path)
+                args_dict[group][property] = file_id
 
         # create new task in toshi_api
         args_list = []
