@@ -32,6 +32,9 @@ def test_create_file(mocker, config_dict):
     config_dict["site_params"]["locations_file"] = "sites.csv"
     del config_dict["site_params"]["locations"]
 
+    config_dict["hazard_model"]["gmcm_logic_tree"] = "gmcm_small.json"
+    config_dict["hazard_model"]["srm_logic_tree"] = "srm_small.json"
+
     mocked_build_tasks = mocker.patch.object(run_oq_hazard_module, "build_tasks")
     mocker.patch.object(run_oq_hazard_module, "USE_API", True)
     mocker.patch.object(run_oq_hazard_module, "CLUSTER_MODE", EnvMode.AWS)
