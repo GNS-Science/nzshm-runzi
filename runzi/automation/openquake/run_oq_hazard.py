@@ -39,6 +39,10 @@ def build_tasks(new_gt_id: str, args: Dict[str, Any], task_type: SubtaskType, mo
 
 
 def run_oq_hazard(config: Dict[str, Any]):
+
+    # cluster mode cannot be AWS if API is disabled
+    assert USE_API or CLUSTER_MODE is not EnvMode.AWS, "Toshi API must be enabled when cluster mode is AWS"
+
     t0 = dt.datetime.now(dt.timezone.utc)
 
     job_config = HazardConfig.model_validate(config)
@@ -47,34 +51,35 @@ def run_oq_hazard(config: Dict[str, Any]):
     # which handles these types and load back to json to clean it up so it can be passed to the toshi API
     args_dict = json.loads(job_config.model_dump_json())
 
-    # if using a locations file and cloud compute, save the file using ToshiAPI for later retrieval by each task
-    toshi_api = None
-    if job_config.site_params.locations_file and CLUSTER_MODE is EnvMode["AWS"]:
-        filepath = job_config.site_params.locations_file
-        headers = {"x-api-key": API_KEY}
-        toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-        file_id, post_url = toshi_api.file.create_file(filepath)
-        toshi_api.file.upload_content(post_url, filepath)
-        args_dict["site_params"]["locations_file_id"] = file_id
-        print("site file ID", file_id)
-
     num_workers = job_config.calculation.num_workers
-
-    args_list = []
-    for key, value in args_dict.items():
-        val = value
-        if not isinstance(val, str):
-            val = json.dumps(val)
-        args_list.append(dict(k=key, v=val))
 
     task_type = SubtaskType.OPENQUAKE_HAZARD
     model_type = ModelType.COMPOSITE
 
     if USE_API:
-        if not toshi_api:
-            headers = {"x-api-key": API_KEY}
-            toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
+        headers = {"x-api-key": API_KEY}
+        toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+
+        # upload files
+        file_paths = [
+            (job_config.site_params.locations_file, "site_params", "locations_file_id"),
+            (job_config.hazard_model.gmcm_logic_tree, "hazard_model", "gmcm_logic_tree_id"),
+            (job_config.hazard_model.srm_logic_tree, "hazard_model", "srm_logic_tree_id"),
+        ]
+        for file_path, group, property in file_paths:
+            file_id, post_url = toshi_api.file.create_file(file_path)
+            toshi_api.file.upload_content(post_url, file_path)
+            args_dict[group][property] = file_id
+            print(property, file_id)
+
         # create new task in toshi_api
+        args_list = []
+        for key, value in args_dict.items():
+            val = value
+            if not isinstance(val, str):
+                val = json.dumps(val)
+            args_list.append(dict(k=key, v=val))
+
         gt_args = (
             CreateGeneralTaskArgs(
                 agent_name=getpass.getuser(),
