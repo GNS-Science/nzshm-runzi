@@ -66,6 +66,7 @@ def run_oq_hazard(config: Dict[str, Any]):
             (job_config.site_params.locations_file, "site_params", "locations_file_id"),
             (job_config.hazard_model.gmcm_logic_tree, "hazard_model", "gmcm_logic_tree_id"),
             (job_config.hazard_model.srm_logic_tree, "hazard_model", "srm_logic_tree_id"),
+            (job_config.hazard_model.hazard_config, "hazard_model", "hazard_config_id"),
         ]
         for file_path, group, property in file_paths:
             if file_path:

@@ -34,6 +34,7 @@ def test_create_file(mocker, config_dict):
 
     config_dict["hazard_model"]["gmcm_logic_tree"] = "gmcm_small.json"
     config_dict["hazard_model"]["srm_logic_tree"] = "srm_small.json"
+    config_dict["hazard_model"]["hazard_config"] = "hazard_config.json"
 
     mocked_build_tasks = mocker.patch.object(run_oq_hazard_module, "build_tasks")
     mocker.patch.object(run_oq_hazard_module, "USE_API", True)
@@ -45,6 +46,7 @@ def test_create_file(mocker, config_dict):
     assert mocked_build_tasks.call_args.args[1]["site_params"]["locations_file_id"] == FILE_ID
     assert mocked_build_tasks.call_args.args[1]["hazard_model"]["gmcm_logic_tree_id"] == FILE_ID
     assert mocked_build_tasks.call_args.args[1]["hazard_model"]["srm_logic_tree_id"] == FILE_ID
+    assert mocked_build_tasks.call_args.args[1]["hazard_model"]["hazard_config_id"] == FILE_ID
 
 def test_create_some_files(mocker, config_dict):
 
