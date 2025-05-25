@@ -75,7 +75,7 @@ def test_consistent_setup(mocker, config_dict):
     mocker.patch.object(run_oq_hazard_module, "ToshiApi", MockToshiApi)
     mocker.patch.object(run_oq_hazard_module, "schedule_tasks")
 
-    with pytest.raises(AssertionError) as excinfo:
+    with pytest.raises(Exception) as excinfo:
         run_oq_hazard(config_dict)
     assert "Toshi API must be enabled when cluster mode is AWS" in str(excinfo.value)
 

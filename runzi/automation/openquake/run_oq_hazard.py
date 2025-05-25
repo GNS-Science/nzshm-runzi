@@ -41,7 +41,8 @@ def build_tasks(new_gt_id: str, args: Dict[str, Any], task_type: SubtaskType, mo
 def run_oq_hazard(config: Dict[str, Any]):
 
     # cluster mode cannot be AWS if API is disabled
-    assert USE_API or CLUSTER_MODE is not EnvMode.AWS, "Toshi API must be enabled when cluster mode is AWS"
+    if CLUSTER_MODE is EnvMode.AWS and not USE_API:
+        raise Exception("Toshi API must be enabled when cluster mode is AWS")
 
     t0 = dt.datetime.now(dt.timezone.utc)
 
