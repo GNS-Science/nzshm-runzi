@@ -18,7 +18,7 @@ class OpenquakeHazardTask(object):
         assert isinstance(api, ToshiClientBase)
 
     def get_example_create_variables(self):
-        return {"created": "2019-10-01T12:00Z", "model_type": "CRUSTAL", "config_id": "ABCD"}
+        return {"created": "2019-10-01T12:00Z", "model_type": "CRUSTAL"}
 
     def get_example_complete_variables(self):
         return {"task_id": "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjA=", "duration": 600, "result": "SUCCESS", "state": "DONE"}
@@ -41,13 +41,12 @@ class OpenquakeHazardTask(object):
 
     def create_task(self, input_variables, arguments=None, environment=None, task_type=HazardTaskType.HAZARD):
         qry = '''
-            mutation create_openquake_hazard_task ($created:DateTime!, $model_type:ModelType!, $config_id: ID!) {
+            mutation create_openquake_hazard_task ($created:DateTime!, $model_type:ModelType!) {
               create_openquake_hazard_task (
                 input: {
                   model_type: $model_type
                   ###TASK_TYPE###
                   created: $created
-                  config: $config_id
                   state: STARTED
                   result: UNDEFINED
 

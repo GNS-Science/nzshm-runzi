@@ -64,7 +64,7 @@ class BuilderTask:
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
-    def _setup_automation_task(self, task_arguments, job_arguments, config_id, environment, task_type) -> str:
+    def _setup_automation_task(self, task_arguments, job_arguments, environment, task_type) -> str:
         print("=" * 50)
         print("task arguments ...")
         print(task_arguments)
@@ -73,7 +73,6 @@ class BuilderTask:
             dict(
                 created=dt.datetime.now(tzutc()).isoformat(),
                 model_type=task_arguments["model_type"].upper(),
-                config_id=config_id,
             ),
             arguments=task_arguments,
             environment=environment,
@@ -95,8 +94,6 @@ class BuilderTask:
         automation_task_id,
         task_arguments,
         oq_result,
-        config_id,
-        modconf_id,
         duration,
     ):
         """Record results in API."""
@@ -126,12 +123,10 @@ class BuilderTask:
             metrics = {"no_result": "TRUE"}
         else:
             solution_id = self._toshi_api.openquake_hazard_solution.create_solution(
-                config_id,
                 csv_archive_id,
                 hdf5_archive_id,
                 produced_by=automation_task_id,
                 predecessors=predecessors,
-                modconf_id=modconf_id,
                 task_args_id=task_args_id,
                 meta=task_arguments,
             )
@@ -291,11 +286,8 @@ class BuilderTask:
         ################
         automation_task_id = None
         if self.use_api:
-            # old config id until we've removed need for config_id when creating task
-            # config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEyOTI0NA=="  # PROD
-            config_id = "T3BlbnF1YWtlSGF6YXJkQ29uZmlnOjEwMTU3MA=="  # TEST
             ta_clean = self._clean_task_args(task_arguments)
-            automation_task_id = self._setup_automation_task(ta_clean, job_arguments, config_id, environment, task_type)
+            automation_task_id = self._setup_automation_task(ta_clean, job_arguments, environment, task_type)
 
         #################################
         # SETUP openquake CONFIG FOLDER
@@ -346,8 +338,6 @@ class BuilderTask:
                 automation_task_id,
                 ta_clean,
                 oq_result,
-                config_id,
-                modconf_id=config_id,  # TODO use modified config id
                 duration=(dt.datetime.now(dt.timezone.utc) - t0).total_seconds(),
             )
 

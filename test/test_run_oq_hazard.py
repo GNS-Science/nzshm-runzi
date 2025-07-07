@@ -1,4 +1,5 @@
 import pytest
+
 import runzi.automation.openquake.run_oq_hazard as run_oq_hazard_module
 from runzi.automation.openquake.run_oq_hazard import run_oq_hazard
 from runzi.automation.scaling.local_config import EnvMode
@@ -48,6 +49,7 @@ def test_create_file(mocker, config_dict):
     assert mocked_build_tasks.call_args.args[1]["hazard_model"]["srm_logic_tree_id"] == FILE_ID
     assert mocked_build_tasks.call_args.args[1]["hazard_model"]["hazard_config_id"] == FILE_ID
 
+
 def test_create_some_files(mocker, config_dict):
 
     config_dict["site_params"]["locations_file"] = "sites.csv"
@@ -64,7 +66,7 @@ def test_create_some_files(mocker, config_dict):
     run_oq_hazard(config_dict)
     assert mocked_build_tasks.call_args.args[1]["site_params"]["locations_file_id"] == FILE_ID
     assert mocked_build_tasks.call_args.args[1]["hazard_model"]["gmcm_logic_tree_id"] == FILE_ID
-    
+
 
 def test_consistent_setup(mocker, config_dict):
 
@@ -80,4 +82,3 @@ def test_consistent_setup(mocker, config_dict):
     with pytest.raises(Exception) as excinfo:
         run_oq_hazard(config_dict)
     assert "Toshi API must be enabled when cluster mode is AWS" in str(excinfo.value)
-
