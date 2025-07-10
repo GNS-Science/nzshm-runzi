@@ -26,6 +26,7 @@ class OpenquakeHazardTask(object):
     def get_optional_complete_variables(self):
         return {
             "hazard_solution_id": "ZZZZZ",
+            "executor": None
         }
 
     def validate_variables(self, reference, optional, values):
@@ -82,6 +83,7 @@ class OpenquakeHazardTask(object):
               $duration: Float!
               $state:EventState!
               $result:EventResult!
+              $executor:String
               ##HAZARD_ID1##
             ){
               update_openquake_hazard_task(input:{
@@ -89,6 +91,7 @@ class OpenquakeHazardTask(object):
                 duration:$duration
                 result:$result
                 state:$state
+                executor:@executor
                 ##HAZARD_ID2##
 
                 ##METRICS##

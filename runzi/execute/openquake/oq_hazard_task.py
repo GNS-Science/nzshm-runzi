@@ -140,9 +140,12 @@ class BuilderTask:
                 duration=duration,
                 result="SUCCESS",
                 state="DONE",
+                executor="ECRD:" + ECR_DIGEST,
             ),
             metrics=metrics,
         )
+
+        raise Exception("hello!")
 
         return solution_id
 
