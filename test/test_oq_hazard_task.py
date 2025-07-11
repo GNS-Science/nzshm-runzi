@@ -1,4 +1,3 @@
-import pytest
 from nzshm_model.logic_tree import SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeConfig
 
@@ -29,7 +28,7 @@ class MockToshiApi:
         self.openquake_hazard_task = MockOpenQuakeHazardTask()
 
 
-def test_run_executor(mocker):
+def test_run_executor(mocker, tmpdir):
     """
     Assert that the executor proeprty is set to the ECR digest after a hazard task run.
     We're pretty much mocking out everything that a task run calls to only verify
@@ -38,6 +37,7 @@ def test_run_executor(mocker):
     ecr_digest = "the-digest"
     mocker.patch.object(oq_hazard_task_module, "ECR_DIGEST", ecr_digest)
     mocker.patch.object(oq_hazard_task_module, "SPOOF_HAZARD", True)
+    mocker.patch.object(oq_hazard_task_module, "WORK_PATH", tmpdir.mkdir("oq_hazard_task"))
     mocker.patch.object(oq_hazard_task_module, "ToshiApi", MockToshiApi)
     mocker.patch.object(oq_hazard_task_module, "TaskRelation")
     mocker.patch.object(oq_hazard_task_module, "SourceLogicTree")
