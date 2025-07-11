@@ -145,8 +145,6 @@ class BuilderTask:
             metrics=metrics,
         )
 
-        raise Exception("hello!")
-
         return solution_id
 
     def set_site_parameters(self, task_arguments: Dict[str, Any]):
