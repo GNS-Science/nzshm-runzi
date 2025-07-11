@@ -91,7 +91,7 @@ class OpenquakeHazardTask(object):
                 duration:$duration
                 result:$result
                 state:$state
-                executor:@executor
+                executor:$executor
                 ##HAZARD_ID2##
 
                 ##METRICS##
