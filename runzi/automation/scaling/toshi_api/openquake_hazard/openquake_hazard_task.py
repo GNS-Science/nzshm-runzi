@@ -24,10 +24,7 @@ class OpenquakeHazardTask(object):
         return {"task_id": "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjA=", "duration": 600, "result": "SUCCESS", "state": "DONE"}
 
     def get_optional_complete_variables(self):
-        return {
-            "hazard_solution_id": "ZZZZZ",
-            "executor": None
-        }
+        return {"hazard_solution_id": "ZZZZZ", "executor": None}
 
     def validate_variables(self, reference, optional, values):
         valid_keys = reference.keys()

@@ -1,10 +1,9 @@
 import pytest
-
-import runzi.execute.openquake.oq_hazard_task as oq_hazard_task_module
-from runzi.execute.openquake.oq_hazard_task import BuilderTask
 from nzshm_model.logic_tree import SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeConfig
 
+import runzi.execute.openquake.oq_hazard_task as oq_hazard_task_module
+from runzi.execute.openquake.oq_hazard_task import BuilderTask
 
 FILE_ID = "ABCD"
 

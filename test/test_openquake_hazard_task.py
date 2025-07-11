@@ -1,9 +1,7 @@
 import pytest
-
-from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import (
-    OpenquakeHazardTask,
-)
 from nshm_toshi_client.toshi_client_base import ToshiClientBase
+
+from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import OpenquakeHazardTask
 
 
 class MockeResponse:
