@@ -30,7 +30,7 @@ class MockToshiApi:
 
 def test_run_executor(mocker, tmpdir):
     """
-    Assert that the executor proeprty is set to the ECR digest after a hazard task run.
+    Assert that the executor property is set to the ECR digest after a hazard task run.
     We're pretty much mocking out everything that a task run calls to only verify
     the executor at the very end.
     """

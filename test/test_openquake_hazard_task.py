@@ -3,11 +3,6 @@ from nshm_toshi_client.toshi_client_base import ToshiClientBase
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import OpenquakeHazardTask
 
 
-class MockeResponse:
-    def get(self, part):
-        return None
-
-
 class MockClient:
     def execute(self, query, variables):
         self.query = query
