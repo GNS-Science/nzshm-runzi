@@ -69,10 +69,19 @@ class BuilderTask:
         print("task arguments ...")
         print(task_arguments)
         print("=" * 50)
+        srm_logic_tree = task_arguments["hazard_model-srm_logic_tree"]
+        gmcm_logic_tree = task_arguments["hazard_model-gmcm_logic_tree"]
+        openquake_config = task_arguments["hazard_model-hazard_config"]
+        del task_arguments["hazard_model-srm_logic_tree"]
+        del task_arguments["hazard_model-gmcm_logic_tree"]
+        del task_arguments["hazard_model-hazard_config"]
         automation_task_id = self._toshi_api.openquake_hazard_task.create_task(
             dict(
                 created=dt.datetime.now(tzutc()).isoformat(),
                 model_type=task_arguments["model_type"].upper(),
+                srm_logic_tree=srm_logic_tree,
+                gmcm_logic_tree=gmcm_logic_tree,
+                openquake_config=openquake_config,
             ),
             arguments=task_arguments,
             environment=environment,
@@ -258,9 +267,9 @@ class BuilderTask:
             return input_str.replace('"', "``").replace("\n", "-")
 
         ta_clean = copy.deepcopy(task_arguments)
-        ta_clean["hazard_model"]["srm_logic_tree"] = clean_string(str(ta_clean["hazard_model"]["srm_logic_tree"]))
-        ta_clean["hazard_model"]["gmcm_logic_tree"] = clean_string(str(ta_clean["hazard_model"]["gmcm_logic_tree"]))
-        ta_clean["hazard_model"]["hazard_config"] = clean_string(str(ta_clean["hazard_model"]["hazard_config"]))
+        ta_clean["hazard_model"]["srm_logic_tree"] = json.dumps(ta_clean["hazard_model"]["srm_logic_tree"])
+        ta_clean["hazard_model"]["gmcm_logic_tree"] = json.dumps(ta_clean["hazard_model"]["gmcm_logic_tree"])
+        ta_clean["hazard_model"]["hazard_config"] = json.dumps(ta_clean["hazard_model"]["hazard_config"])
         return flatten_dict(ta_clean)
 
     def run(self, task_arguments: Dict[str, Any], job_arguments: Dict[str, Any]):
