@@ -69,9 +69,9 @@ class BuilderTask:
         print("task arguments ...")
         print(task_arguments)
         print("=" * 50)
-        srm_logic_tree=task_arguments["hazard_model-srm_logic_tree"]
-        gmcm_logic_tree=task_arguments["hazard_model-gmcm_logic_tree"]
-        openquake_config=task_arguments["hazard_model-hazard_config"]
+        srm_logic_tree = task_arguments["hazard_model-srm_logic_tree"]
+        gmcm_logic_tree = task_arguments["hazard_model-gmcm_logic_tree"]
+        openquake_config = task_arguments["hazard_model-hazard_config"]
         del task_arguments["hazard_model-srm_logic_tree"]
         del task_arguments["hazard_model-gmcm_logic_tree"]
         del task_arguments["hazard_model-hazard_config"]
@@ -81,7 +81,7 @@ class BuilderTask:
                 model_type=task_arguments["model_type"].upper(),
                 srm_logic_tree=srm_logic_tree,
                 gmcm_logic_tree=gmcm_logic_tree,
-                openquake_config=openquake_config
+                openquake_config=openquake_config,
             ),
             arguments=task_arguments,
             environment=environment,

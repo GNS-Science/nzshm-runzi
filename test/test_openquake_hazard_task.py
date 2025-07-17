@@ -6,7 +6,7 @@ from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task i
 class MockClient:
     def __init__(self, result):
         self.result = result
-        
+
     def execute(self, query, variables):
         self.query = query
         self.variables = variables
@@ -45,9 +45,7 @@ def test_create_task_inputs(mocker):
     openquake_hazard_task = OpenquakeHazardTask(mock_api)
     openquake_hazard_task.create_task(
         openquake_hazard_task.get_example_create_variables()
-        | {"srm_logic_tree": srm_logic_tree,
-           "gmcm_logic_tree": gmcm_logic_tree,
-           "openquake_config": openquake_config }
+        | {"srm_logic_tree": srm_logic_tree, "gmcm_logic_tree": gmcm_logic_tree, "openquake_config": openquake_config}
     )
 
     assert mock_api._client.variables["srm_logic_tree"] == srm_logic_tree
