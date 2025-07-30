@@ -1,4 +1,4 @@
-import legacy_versions
+from . import legacy_versions
 
 from .version_25 import branch_permutations_generator_25
 from .version_30 import branch_permutations_generator_30
