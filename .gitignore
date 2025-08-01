@@ -122,3 +122,6 @@ site/
 
 # inversion configs
 runzi/cli/config/saved_configs/
+
+# ariadne-codegen
+graphql_client/
