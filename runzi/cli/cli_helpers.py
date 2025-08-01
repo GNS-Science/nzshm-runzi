@@ -130,13 +130,13 @@ class MenuHandler:
 
         matched = None
         for option in self.options.keys():
-            cmd_part, _ = cmd[: len(option)], cmd[len(option) :]
+            cmd_part, remainder = cmd[: len(option)], cmd[len(option) :]
             if cmd_part == option:
                 matched = True
 
                 # this might be a helper method, or another menuhandler
                 fn = self.options[cmd_part]
-                # res = fn(cmd_part, remainder)
+                _ = fn(cmd_part, remainder)
                 # print(type(fn), dir(fn))
                 if not (hasattr(fn, '__self__') and isinstance(fn.__self__, MenuHandler)):
                     None
