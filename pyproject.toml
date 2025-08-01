@@ -32,7 +32,7 @@ dependencies = [
     "nzshm-model (>=0.13.6)",
     "python-dotenv (>=1.1.0)",
     "toshi-hazard-store (>=1.0.0)",
-    "setuptools (>=80.9.0,<81.0.0)",
+    "ariadne-codegen (>=0.14.0,<0.15.0)",
 ]
 
 
@@ -111,6 +111,12 @@ exclude = [
     'runzi/automation/openquake/run_oq_disagg.py',
 ]
 
+[tool.ariadne-codegen]
+schema_path = "runzi/automation/scaling/toshi_api_codegen/schema.graphql"
+queries_path = "runzi/automation/scaling/toshi_api_codegen/queries.graphql"
+enable_custom_operations = true
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
