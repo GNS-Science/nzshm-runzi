@@ -1,0 +1,58 @@
+mutation CreateGeneralTask (
+    $created:DateTime!,
+    $agent_name:String!,
+    $title:String!,
+    $description:String!,
+    $argument_lists: [KeyValueListPairInput]!,
+    $subtask_type:TaskSubType!,
+    $subtask_count:Int!,
+    $model_type: ModelType!,
+    $meta: [KeyValuePairInput]!)
+    {
+        create_general_task (
+            input: {
+                created: $created
+                agent_name: $agent_name
+                title: $title
+                description: $description
+                argument_lists: $argument_lists
+                subtask_type: $subtask_type
+                subtask_count:$subtask_count
+                model_type: $model_type
+                meta:$meta
+            }
+        )
+    {
+        general_task {
+            id
+        }
+    }
+    }
+
+
+mutation update_subtask_count (
+    $task_id:ID!
+    $subtask_count:Int!)
+    {
+        update_general_task(
+            input:
+                {
+                    task_id:$task_id
+                    subtask_count:$subtask_count
+                }
+        )
+        {ok}
+    }
+
+
+query get_file_detail ($id:ID!) 
+    {
+        node(id: $id) {
+            ... on FileInterface {
+                file_name
+                file_size
+                meta {k v}
+                file_url
+            }
+        }
+    }
