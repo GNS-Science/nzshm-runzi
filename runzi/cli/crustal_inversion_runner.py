@@ -1,7 +1,9 @@
 import datetime as dt
 import getpass
+import copy
 from multiprocessing.dummy import Pool
 from subprocess import check_call
+from typing import TYPE_CHECKING
 
 import boto3
 
@@ -9,11 +11,18 @@ from runzi.automation.scaling.file_utils import download_files, get_output_file_
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, WORK_PATH, EnvMode
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
+# from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
+from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.configuration.crustal_inversions import build_crustal_tasks
 
+from runzi.automation.scaling.toshi_api_codegen.general_task import create_task, update_subtask_count
+from runzi.automation.scaling.toshi_api_codegen.graphql_client import KeyValueListPairInput, TaskSubType, ModelType
 
-def run_crustal_inversion(config):
+if TYPE_CHECKING:
+    from runzi.cli.config.config_builder import Config
+
+
+def run_crustal_inversion(config: 'Config'):
     t0 = dt.datetime.utcnow()
 
     WORKER_POOL_SIZE = config._worker_pool_size
@@ -24,7 +33,8 @@ def run_crustal_inversion(config):
     # MOCK_MODE = config._mock_mode
     file_id = config._file_id
     MODEL_TYPE = ModelType[config._model_type]
-    SUBTASK_TYPE = SubtaskType[config._subtask_type]
+    # SUBTASK_TYPE = SubtaskType[config._subtask_type]
+    SUBTASK_TYPE = TaskSubType[config._subtask_type]
 
     if CLUSTER_MODE == EnvMode['AWS']:
         work_path = '/WORKING'
@@ -37,7 +47,8 @@ def run_crustal_inversion(config):
     args = config.get_run_args()
     args_list = []
     for key, value in args.items():
-        args_list.append(dict(k=key, v=value))
+        val = [str(item) for item in value]
+        args_list.append(KeyValueListPairInput(k=key, v=val))
 
     # for a file id that is a single rupture set
 
@@ -52,6 +63,7 @@ def run_crustal_inversion(config):
         print('GT ID')
     except Exception:  # single file ID
         file_generator = get_output_file_id(toshi_api, file_id)
+        breakpoint()
         rupture_sets = download_files(toshi_api, file_generator, str(work_path), overwrite=False)
         print('file ID')
 
@@ -61,18 +73,27 @@ def run_crustal_inversion(config):
     for rid, rupture_set_info in rupture_sets.items():
         distances.append(rupture_set_info['info']['max_jump_distance'])
 
-    args_list.append(dict(k="max_jump_distances", v=distances))
+    args_list.append(KeyValueListPairInput(k="max_jump_distances", v=distances))
 
     if USE_API:
         # create new task in toshi_api
-        gt_args = (
-            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=TASK_TITLE, description=TASK_DESCRIPTION)
-            .set_argument_list(args_list)
-            .set_subtask_type(SUBTASK_TYPE)
-            .set_model_type(MODEL_TYPE)
-        )
+        # gt_args = (
+        #     CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=TASK_TITLE, description=TASK_DESCRIPTION)
+        #     .set_argument_list(args_list)
+        #     .set_subtask_type(SUBTASK_TYPE)
+        #     .set_model_type(MODEL_TYPE)
+        # )
 
-        GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
+        # GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
+
+        GENERAL_TASK_ID = create_task(
+            title=TASK_TITLE,
+            agent_name=getpass.getuser(),
+            description=TASK_DESCRIPTION,
+            argument_lists=args_list,
+            subtask_type=SUBTASK_TYPE,
+            model_type=MODEL_TYPE
+        )
 
     if CLUSTER_MODE == EnvMode['AWS']:
         batch_client = boto3.client(
@@ -82,11 +103,14 @@ def run_crustal_inversion(config):
     print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
 
     scripts = []
+    breakpoint()
     for script_file_or_config in build_crustal_tasks(GENERAL_TASK_ID, rupture_sets, args, config):
         scripts.append(script_file_or_config)
 
-    toshi_api.general_task.update_subtask_count(GENERAL_TASK_ID, len(scripts))
+    # toshi_api.general_task.update_subtask_count(GENERAL_TASK_ID, len(scripts))
+    update_subtask_count(GENERAL_TASK_ID, len(scripts))
     print(f"GENERAL_TASK_ID:{GENERAL_TASK_ID} with {len(scripts)} subtasks")
+    assert 0
 
     if CLUSTER_MODE == EnvMode['LOCAL']:
 

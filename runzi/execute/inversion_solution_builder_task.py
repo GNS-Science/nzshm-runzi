@@ -50,6 +50,17 @@ class BuilderTask:
             self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     def run(self, task_arguments, job_arguments):  # noqa: C901
+        print()
+        print("task arguments")
+        print()
+        for k, v in task_arguments.items():
+            print(k, type(v), v)
+        print()
+        print("job arguments")
+        print()
+        for k, v in job_arguments.items():
+            print(k, type(v), v)
+        assert 0
 
         # Run the task....
         ta = task_arguments
