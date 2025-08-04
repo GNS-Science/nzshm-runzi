@@ -32,10 +32,14 @@ S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL', "http://localhost:4569")
 ECR_DIGEST = os.getenv('NZSHM22_RUNZI_ECR_DIGEST')
 THS_RLZ_DB = os.getenv('NZSHM22_THS_RLZ_DB')
 
+CLUSTER_MODE = EnvMode[
+    os.getenv('NZSHM22_SCRIPT_CLUSTER_MODE', 'LOCAL')
+]  # Wase True/False now EnvMode: LOCAL, CLUSTER, AWS
+
 # Get API key from AWS secrets manager
-if USE_API and 'TEST' in API_URL.upper():
+if CLUSTER_MODE is not EnvMode.LOCAL and USE_API and 'TEST' in API_URL.upper():
     API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_TEST", "us-east-1").get("NZSHM22_TOSHI_API_KEY_TEST")
-elif USE_API and 'PROD' in API_URL.upper():
+elif CLUSTER_MODE is not EnvMode.LOCAL and USE_API and 'PROD' in API_URL.upper():
     API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_PROD", "us-east-1").get("NZSHM22_TOSHI_API_KEY_PROD")
 else:
     API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
@@ -58,9 +62,6 @@ OPENSHA_JRE = os.getenv('NZSHM22_OPENSHA_JRE', "/usr/lib/jvm/java-11-openjdk-amd
 FATJAR = os.getenv('NZSHM22_FATJAR', None) or str(PurePath(OPENSHA_ROOT, ""))
 WORK_PATH = os.getenv('NZSHM22_SCRIPT_WORK_PATH', PurePath(os.getcwd(), "tmp"))
 
-CLUSTER_MODE = EnvMode[
-    os.getenv('NZSHM22_SCRIPT_CLUSTER_MODE', 'LOCAL')
-]  # Wase True/False now EnvMode: LOCAL, CLUSTER, AWS
 
 BUILD_PLOTS = boolean_env('NZSHM22_BUILD_PLOTS')
 REPORT_LEVEL = os.getenv('NZSHM22_REPORT_LEVEL', None)  # None, LIGHT, DEFAULT, FULL
