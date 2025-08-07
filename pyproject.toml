@@ -5,7 +5,7 @@ readme = "README.md"
 authors = [
     {name = "Chris DiCaprio", email = "christopher.dicaprio@gmail.com"}, 
     {name = "Chris Chamberlain", email = "chrisbc@artisan.co.nz"}, 
-    {name = "Oakley Jurgens", email = "oakley.jurgens@gns.cri.nz"}, 
+    {name = "Oakley Jurgens", email = "o.jurgens@gns.cri.nz"},
 ]
 description = "scripting and cli for the NSHM"
 license = "GPL-3.0-only"
