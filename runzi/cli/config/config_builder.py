@@ -120,14 +120,16 @@ class Config:
     def run_crustal(self):
         run_crustal_inversion(self)
 
+
 if __name__ == "__main__":
     import sys
+
     from runzi.cli.load_json import from_json_format
 
     config_filepath = Path(sys.argv[1])
     loaded_config = json.loads(config_filepath.read_text())
     formatted_json = from_json_format(loaded_config)
-    config =  Config()
+    config = Config()
     config.from_json(formatted_json)
 
     run_crustal_inversion(config)

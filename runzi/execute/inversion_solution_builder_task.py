@@ -303,7 +303,7 @@ class BuilderTask:
 
             # and the log files, why not
             java_log_file = self._output_folder.joinpath(f"java_app.{job_arguments['java_gateway_port']}.log")
-            pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
+            # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
             self._toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
             # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 

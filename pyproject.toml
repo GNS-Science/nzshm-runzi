@@ -32,7 +32,6 @@ dependencies = [
     "nzshm-model (>=0.13.6)",
     "python-dotenv (>=1.1.0)",
     "toshi-hazard-store (>=1.0.0)",
-    "ariadne-codegen (>=0.14.0,<0.15.0)",
 ]
 
 
