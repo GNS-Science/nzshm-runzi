@@ -110,10 +110,6 @@ exclude = [
     'runzi/automation/openquake/run_oq_disagg.py',
 ]
 
-[tool.ariadne-codegen]
-schema_path = "runzi/automation/scaling/toshi_api_codegen/schema.graphql"
-queries_path = "runzi/automation/scaling/toshi_api_codegen/queries.graphql"
-enable_custom_operations = true
 
 [build-system]
 requires = ["poetry-core"]
