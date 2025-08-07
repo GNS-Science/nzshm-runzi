@@ -60,7 +60,6 @@ class BuilderTask:
         print()
         for k, v in job_arguments.items():
             print(k, type(v), v)
-        assert 0
 
         # Run the task....
         ta = task_arguments
@@ -304,9 +303,9 @@ class BuilderTask:
 
             # and the log files, why not
             java_log_file = self._output_folder.joinpath(f"java_app.{job_arguments['java_gateway_port']}.log")
-            self._toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
             pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
-            self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
+            self._toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
+            # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
             # upload the task output
             predecessors = [
@@ -319,31 +318,32 @@ class BuilderTask:
             log.info(f"created inversion solution: {inversion_id}")
 
             # Get the MFD tables...
-            for table_type, table_rows in mfd_table_rows.items():
-                mfd_table_id = None
+            if not SPOOF_INVERSION:
+                for table_type, table_rows in mfd_table_rows.items():
+                    mfd_table_id = None
 
-                mfd_table_data = []
-                for row in table_rows:
-                    mfd_table_data.append([x for x in row])
+                    mfd_table_data = []
+                    for row in table_rows:
+                        mfd_table_data.append([x for x in row])
 
-                result = self._toshi_api.table.create_table(
-                    mfd_table_data,
-                    column_headers=["series", "series_name", "X", "Y"],
-                    column_types=["integer", "string", "double", "double"],
-                    object_id=inversion_id,
-                    table_name="Inversion Solution MFD table",
-                    table_type=table_type,
-                    dimensions=None,
-                )
-                mfd_table_id = result['id']
-                result = self._toshi_api.inversion_solution.append_hazard_table(
-                    inversion_id,
-                    mfd_table_id,
-                    label="Inversion Solution MFD table",
-                    table_type=table_type,
-                    dimensions=None,
-                )
-                log.info(f"created & linked table: {mfd_table_id}")
+                    result = self._toshi_api.table.create_table(
+                        mfd_table_data,
+                        column_headers=["series", "series_name", "X", "Y"],
+                        column_types=["integer", "string", "double", "double"],
+                        object_id=inversion_id,
+                        table_name="Inversion Solution MFD table",
+                        table_type=table_type,
+                        dimensions=None,
+                    )
+                    mfd_table_id = result['id']
+                    result = self._toshi_api.inversion_solution.append_hazard_table(
+                        inversion_id,
+                        mfd_table_id,
+                        label="Inversion Solution MFD table",
+                        table_type=table_type,
+                        dimensions=None,
+                    )
+                    log.info(f"created & linked table: {mfd_table_id}")
 
         else:
             log.info(metrics)
