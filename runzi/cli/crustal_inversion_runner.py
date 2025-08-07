@@ -37,7 +37,8 @@ def run_crustal_inversion(config):
     args = config.get_run_args()
     args_list = []
     for key, value in args.items():
-        args_list.append(dict(k=key, v=value))
+        val = [str(item) for item in value]
+        args_list.append(dict(k=key, v=val))
 
     # for a file id that is a single rupture set
 

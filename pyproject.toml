@@ -1,69 +1,73 @@
-[tool.poetry]
+[project]
 name = "nzshm-runzi"
 version = "0.1.0"
-description = "scripting and cli for the NSHM"
-authors = ["GNS NSHM programme"]
-license = "GPL-3.0-only"
 readme = "README.md"
+authors = [
+    {name = "Chris DiCaprio", email = "christopher.dicaprio@gmail.com"}, 
+    {name = "Chris Chamberlain", email = "chrisbc@artisan.co.nz"}, 
+    {name = "Oakley Jurgens", email = "o.jurgens@gns.cri.nz"},
+]
+description = "scripting and cli for the NSHM"
+license = "GPL-3.0-only"
+requires-python = ">=3.10,<3.12"
+dependencies = [
+    "gitpython (>=3.1.11)",
+    "py4j (==0.10.9.1)",
+    "nshm-toshi-client (>=1.0.0)",
+    "prompt-toolkit (==3.0.20)",
+    "termcolor (>=1.1.0)",
+    "pyfiglet (>=0.8.post1)",
+    "boto3 (>=1.26.43)",
+    "lxml (>=4.9.2)",
+    "tqdm (>=4.65.0)",
+    "click (>=8.1.7)",
+    "python-dateutil (>=2.8.2)",
+    "nzshm-common[geometry] (>=0.8.4)",
+    "inquirer (>=3.4.0)",
+    "pygments (>=2.19.1)",
+    "pytz (>=2025.1)",
+    "pydantic (>=2.10.6)",
+    "tomlkit (>=0.13.2)",
+    "solvis (>=1.0.0)",
+    "nzshm-model (>=0.13.6)",
+    "python-dotenv (>=1.1.0)",
+    "toshi-hazard-store (>=1.0.0)",
+]
+
+
+[tool.poetry]
 packages = [
     {include = "runzi"},
 ]
 
+
 [tool.poetry.scripts]
 runzi-hazard = 'runzi.automation.cli:rnz_hazard'
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-gitpython = "3.1.11"
-py4j = "0.10.9.1"
-nshm-toshi-client = ">=1.0.0"
-prompt-toolkit = "3.0.20"
-termcolor = "1.1.0"
-pyfiglet = "0.8.post1"
-boto3 = "^1.26.43"
-lxml = "^4.9.2"
-tqdm = "^4.65.0"
-click = "^8.1.7"
-python-dateutil = "^2.8.2"
-
-# [tool.poetry.extras]
-# openquake = ["openquake-engine", "fiona"]
-# converter =["openquake-converters-ucerf"]
-nzshm-common = {extras = ["geometry"], version = "^0.8.4"}
-inquirer = "^3.4.0"
-pygments = "^2.19.1"
-pytz = "^2025.1"
-pydantic = "^2.10.6"
-tomlkit = "^0.13.2"
-solvis = "^1.0.0"
-nzshm-model = "^0.13.6"
-python-dotenv = "^1.1.0"
-toshi-hazard-store = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.3.4"
 flake8 = ">=7.1.1"
 black = ">=25.1.0"
 isort = ">=6.0.0"
-bump2version = "^1.0.1"
-tox = "^4.24.1"
-mypy = "^1.14.1"
-pytest-cov = "^6.0.0"
-types-requests = "^2.32.0.20241016"
-types-pytz = "^2025.1.0.20250204"
-types-python-dateutil = "^2.9.0.20241206"
-types-toml = "^0.10.8.20240310"
-pytest-mock = "^3.14.0"
-vulture = "^2.14"
-
+bump2version = ">=1.0.1,<2.0"
+tox = ">=4.24.1,<5.0"
+mypy = ">=1.14.1,<2.0"
+pytest-cov = ">=6.0.0,<7.0"
+types-requests = ">=2.32.0.20241016,<3.0"
+types-pytz = ">=2025.1.0.20250204,<2026"
+types-python-dateutil = ">=2.9.0.20241206,<3.0"
+types-toml = ">=0.10.8.20240310"
+pytest-mock = ">=3.14.0,<4.0"
+vulture = ">=2.14,<3.0"
 
 
 [tool.poetry.group.doc.dependencies]
-mkdocs = "^1.6.1"
-mkdocs-material = "^9.5.50"
-mkdocs-click = "^0.8.1"
-mkdocs-include-markdown-plugin = "^7.1.2"
-mkdocstrings = "^0.27.0"
+mkdocs = ">=1.6.1,<2.0"
+mkdocs-material = ">=9.5.50,<10.0"
+mkdocs-click = ">=0.8.1"
+mkdocs-include-markdown-plugin = ">=7.1.2,<8.0"
+mkdocstrings = ">=0.27.0"
 
 
 [tool.isort]
@@ -106,6 +110,8 @@ exclude = [
     'runzi/automation/openquake/run_oq_disagg.py',
 ]
 
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
