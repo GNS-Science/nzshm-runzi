@@ -40,6 +40,12 @@ ENV NZSHM22_HAZARD_STORE_REGION=ap-southeast-2
 
 RUN chown openquake /WORKING
 
+# create the toshi-hazard-store dataset directory for use 
+WORKDIR /THS
+RUN chown openquake /THS
+ENV NZSHM22_THS_RLZ_DB=/THS
+
+
 # Install Marcos Converter
 # git@gitlab.openquake.org:hazard/converters/ucerf.git
 # we'll use ADD for now as the repo is not public
@@ -54,6 +60,9 @@ USER openquake
 
 ENV NZSHM22_TOSHI_API_ENABLED=1
 ENV NZSHM22_SCRIPT_WORK_PATH=/WORKING
+ENV NZSHM22_THS_RLZ_DB=/WORKING/THS
+
+WORKDIR /home/openquake
 
 CMD ["python3 /app/nzshm-runzi/runzi/cli/cli.py"]
 ENTRYPOINT ["/bin/bash", "-c"]
