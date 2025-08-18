@@ -3075,32 +3075,36 @@ files = [
 
 [[package]]
 name = "toshi-hazard-store"
-version = "1.2.2"
+version = "1.2.3"
 description = "Library for saving and retrieving NZHSM openquake hazard results with convenience (uses AWS Dynamodb)."
 optional = false
-python-versions = "<3.13,>=3.10"
+python-versions = ">=3.10,<3.13"
 groups = ["main"]
-files = [
-    {file = "toshi_hazard_store-1.2.2-py3-none-any.whl", hash = "sha256:9b81aee20ef977a08bfb24465a9ca5011451e3c7f4f27fae21a8ec7a2b1bd8e5"},
-    {file = "toshi_hazard_store-1.2.2.tar.gz", hash = "sha256:035eed1a7fc2caf74cc55a57dff30d6162755d862e2e99938bedd271e57f1dac"},
-]
+files = []
+develop = false
 
 [package.dependencies]
-nshm-toshi-client = ">=1.0.1,<2.0.0"
+nshm-toshi-client = "^1.0.1"
 numpy = ">=1.24,<2"
-nzshm-common = ">=0.8.4,<0.9.0"
-nzshm-model = ">=0.13.6,<0.14.0"
+nzshm-common = "^0.8.4"
+nzshm-model = "^0.13.6"
 pandas = ">2,<3"
-pyarrow = ">=20.0.0,<21.0.0"
-pydantic = ">=2.11.5,<3.0.0"
-pydantic-to-pyarrow = ">=0.1.6,<0.2.0"
-pynamodb = ">=6.0.0,<7.0.0"
-pynamodb-attributes = ">=0.4.0,<0.5.0"
-python-dotenv = ">=1.0.1,<2.0.0"
-s3path = ">=0.6.1,<0.7.0"
+pyarrow = "^20.0.0"
+pydantic = "^2.11.5"
+pydantic-to-pyarrow = "^0.1.6"
+pynamodb = "^6.0.0"
+pynamodb-attributes = "^0.4.0"
+python-dotenv = "^1.0.1"
+s3path = "^0.6.1"
 
 [package.extras]
-openquake = ["fiona (>=1.9.5,<2.0.0)", "networkx (>=3.2.1,<4.0.0)", "numba (<0.61.0)", "openquake-engine (<3.21)"]
+openquake = ["fiona (>=1.9.5,<2.0.0)", "networkx (>=3.2.1,<4.0.0)", "numba (<0.61.0)", "openquake-engine (>=3.20.1,<4.0.0)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/GNS-Science/toshi-hazard-store.git"
+reference = "HEAD"
+resolved_reference = "9e6621b3809ecefaa65fd7b1822f25363d476688"
 
 [[package]]
 name = "tox"
@@ -3617,4 +3621,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.12"
-content-hash = "1a6486682338ec6d3089fa06427e78f8b7be17fbc61b070a17bfc0bd524f95fc"
+content-hash = "bd01d80824b8ceb8215a018c359419628b52b94211c23d234db8787f0136738d"
