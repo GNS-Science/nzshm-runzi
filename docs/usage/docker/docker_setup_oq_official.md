@@ -32,7 +32,7 @@ If running on AWS EC2, update AWS Job Definition with `${CONTAINER_TAG}` on the 
 ## Set environment variables
 Set the locations of the runzi input files
 ```
-export RUNZI_DIR=<path to input files>
+export INPUT_FILES_DIR=<path to input files>
 ```
 
 Set the `NZSHM22_THS_RLZ_DB` to the location of the toshi-hazard-store realization dataset. This can be an S3 bucket or a local path. If running in the cloud, this must be an S3 bucket. For local datasets, the directory and all directories and files below it must allow all users to write to them (i.e. `chmod -R 777 <DATASET DIR>`).
@@ -57,7 +57,7 @@ Set `NZSHM22_SCRIPT_CLUSTER_MODE` to one of `LOCAL`, `AWS`, or `CLUSTER` (`CLUST
 docker run -it --rm --env-file environ \
 --entrypoint "/bin/bash" \
 -v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
--v $RUNZI_DIR:/home/openquake/runzi \
+-v $INPUT_FILES_DIR:/home/openquake/input_files \
 -v $NZSHM22_THS_RLZ_DB:/THS \
 -e AWS_PROFILE \
 -e NZSHM22_TOSHI_S3_URL \
