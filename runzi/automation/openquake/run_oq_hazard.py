@@ -56,7 +56,6 @@ def run_oq_hazard(config: Dict[str, Any]):
 
     task_type = SubtaskType.OPENQUAKE_HAZARD
     model_type = ModelType.COMPOSITE
-
     if USE_API:
         headers = {"x-api-key": API_KEY}
         toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)

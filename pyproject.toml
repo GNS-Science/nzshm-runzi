@@ -31,7 +31,7 @@ dependencies = [
     "solvis (>=1.0.0)",
     "nzshm-model (>=0.13.6)",
     "python-dotenv (>=1.1.0)",
-    "toshi-hazard-store (>=1.0.0)",
+    "toshi-hazard-store (>=1.2.3,<2.0.0)",
 ]
 
 

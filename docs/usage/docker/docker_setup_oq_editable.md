@@ -16,28 +16,45 @@ docker build -f docker/runzi-openquake/Dockerfile_WORKING-BURNER --no-cache \
 
 export NZSHM22_RUNZI_ECR_DIGEST="sha256:WORKING_BURNER"
 
-## run
-Set the path to your toshi-hazard-store DB (local folder or S3 URI) and set your AWS profile.
+## Set environment variables
+Set the locations of the runzi input files
 ```
-$ export AWS_PROFILE="chrisdc"
+export INPUT_FILES_DIR=<path to input files>
 ```
 
-Notice that when we run, we mount the `nzshm-runzi` directory that we can modify the code without re-building the container. The directories we mount as volumes in the docker container must have write access for all users in order for the process in the running container to be able to write to them. The THS datastore files will be written to `$NZSHM22_SCRIPT_WORK_PATH/DOCKER/THS` on the host.
+Set the `NZSHM22_THS_RLZ_DB` environment variable to the location of the toshi-hazard-store realization dataset. This can be an S3 bucket or a local path. If running in the cloud, this must be an S3 bucket. For local datasets, the directory and all directories and files below it must allow all users to write to them (i.e. `chmod -R 777 <DATASET DIR>`).
+
 ```
-export RUNZI_DIR=/home/chrisdc/NSHM/DEV/APP/nzshm-runzi
+export NZSHM22_THS_RLZ_DB=<realization dataset path or S3 URI>
+```
+
+Set your AWS profile.
+```
+export AWS_PROFILE=<your AWS profile name>
+```
+
+Set the path to your development runzi directory and the run mode to local.
+```
+export RUNZI_DIR=<path to your local copy of runzi>
 export NZSHM22_SCRIPT_CLUSTER_MODE=LOCAL
+```
+The directories we mount as volumes in the docker container must have write access for all users in order for the process in the running container to be able to write to them.
+
+## Run
+
+Notice that when we run, we mount the `nzshm-runzi` directory so that that we can modify runzi code outside of the container and have it effect the running container, therefore removing the need to rebuild the docker image.
+```
 docker run -it --rm --env-file docker/runzi-openquake/environ \
 --entrypoint "/bin/bash" \
 -v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
+-v $INPUT_FILES_DIR:/home/openquake/input_files \
 -v $RUNZI_DIR:/app/nzshm-runzi \
--v $NZSHM22_SCRIPT_WORK_PATH/DOCKER:/WORKING \
--e AWS_PROFILE=${AWS_PROFILE} \
+-v $NZSHM22_THS_RLZ_DB:/THS \
+-e AWS_PROFILE \
 -e NZSHM22_TOSHI_S3_URL \
 -e NZSHM22_TOSHI_API_URL \
 -e NZSHM22_TOSHI_API_KEY \
 -e NZSHM22_SCRIPT_CLUSTER_MODE \
--e NZSHM22_S3_REPORT_BUCKET \
 -e NZSHM22_RUNZI_ECR_DIGEST \
--e NZSHM22_THS_RLZ_DB=/WORKING/THS \
 runzi-openquake:${WORKING_CONTAINER_TAG}
 ```
