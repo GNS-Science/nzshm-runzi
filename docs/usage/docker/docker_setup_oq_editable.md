@@ -22,7 +22,7 @@ Set the locations of the runzi input files
 export INPUT_FILES_DIR=<path to input files>
 ```
 
-Set the `NZSHM22_THS_RLZ_DB` to the location of the toshi-hazard-store realization dataset. This can be an S3 bucket or a local path. If running in the cloud, this must be an S3 bucket. For local datasets, the directory and all directories and files below it must allow all users to write to them (i.e. `chmod -R 777 <DATASET DIR>`).
+Set the `NZSHM22_THS_RLZ_DB` environment variable to the location of the toshi-hazard-store realization dataset. This can be an S3 bucket or a local path. If running in the cloud, this must be an S3 bucket. For local datasets, the directory and all directories and files below it must allow all users to write to them (i.e. `chmod -R 777 <DATASET DIR>`).
 
 ```
 export NZSHM22_THS_RLZ_DB=<realization dataset path or S3 URI>
@@ -42,7 +42,7 @@ The directories we mount as volumes in the docker container must have write acce
 
 ## Run
 
-Notice that when we run, we mount the `nzshm-runzi` directory that we can modify the code without re-building the container.
+Notice that when we run, we mount the `nzshm-runzi` directory so that that we can modify runzi code outside of the container and have it effect the running container, therefore removing the need to rebuild the docker image.
 ```
 docker run -it --rm --env-file docker/runzi-openquake/environ \
 --entrypoint "/bin/bash" \
