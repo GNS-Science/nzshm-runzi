@@ -12,10 +12,10 @@ import runzi.automation.scaling.inversion_hazard_report_task
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.util.aws import get_ecs_job_config
 
-from .scaling.file_utils import download_files, get_output_file_ids
+from ..scaling.file_utils import download_files, get_output_file_ids
 
 # Set up your local config, from environment variables, with some sone defaults
-from .scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
+from ..scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
     API_KEY,
     API_URL,
     CLUSTER_MODE,
@@ -29,7 +29,7 @@ from .scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
     WORK_PATH,
     EnvMode,
 )
-from .scaling.toshi_api import ToshiApi
+from ..scaling.toshi_api import ToshiApi
 
 INITIAL_GATEWAY_PORT = 26533
 
