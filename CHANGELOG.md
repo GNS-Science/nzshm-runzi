@@ -13,3 +13,7 @@
 - Hazard realizations written to arrow/parquet dataset with `toshi-hazard-store`
 - General Task: logic trees, location file, hazard config are uploaded as files
 - Hazard Task: logic trees, and hazard config are stored as json
+
+## Removed
+ - Deleted unused automation scripts
+ - Moved deprecated automation scripts to arkive
