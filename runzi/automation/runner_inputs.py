@@ -14,6 +14,10 @@ from typing_extensions import Self
 class InputBase(BaseModel):
     """Base class for input Pydantic classes."""
 
+    worker_pool_size: Optional[int] = None
+    title: str
+    description: str
+
     @classmethod
     def from_toml(cls, toml_file: TextIO | Path | str) -> Self:
         """Creates an input object from a toml file.
@@ -36,9 +40,6 @@ class InputBase(BaseModel):
 class AverageSolutionsInput(InputBase):
     """Input for averaging solutions."""
 
-    title: str
-    description: str
-    worker_pool_size: Optional[int] = None
     solution_groups: list[list[str]]
 
 class AzimuthalRuptureSetsInput(InputBase):

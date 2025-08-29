@@ -6,11 +6,14 @@ import stat
 from multiprocessing.dummy import Pool
 from pathlib import PurePath
 from subprocess import check_call
+from argparse import ArgumentParser
+from pathlib import Path
 
 import scaling.azimuthal_rupture_set_builder_task
 import scaling.coulomb_rupture_set_builder_task
 from dateutil.tz import tzutc
 from nshm_toshi_client.general_task import GeneralTask
+from runzi.automation.runner_inputs import AzimuthalRuptureSetsInput
 
 # Set up your local config, from environment variables, with some sone defaults
 from scaling.local_config import (
@@ -28,30 +31,6 @@ from scaling.local_config import (
     WORK_PATH,
 )
 from scaling.opensha_task_factory import OpenshaTaskFactory
-
-# If you wish to override something in the main config, do so here ..
-WORKER_POOL_SIZE = 2
-
-# If using API give this task a descriptive setting...
-
-TASK_TITLE = "Build Azimuthal CFM 0.9 ruptsets with increased minimum sub-sections - take 2"
-
-TASK_DESCRIPTION = """Azimuthal ruptures with new **min_sub_sections filter**
-
-This will increase the minimum rupture magnitudes produced with no effect on larger ruptures.
-
-
- - models = [CFM_0_9_SANSTVZ_D90, CFM_0_9_SANSTVZ_2010]
- - strategies = ['UCERF3', ]
- - jump_limits = [5.0,]
- - ddw_ratios = [0.5,]
- - max_cumulative_azimuths = [560.0,]
- - thinning_factors = [0.0, 0.1]
- - min_sub_sects_per_parents = [2,]
- - min_sub_sections = [3,4,5]
-
-"""
-
 
 def build_tasks(
     general_task_id,
@@ -146,7 +125,7 @@ def build_tasks(
         return
 
 
-def run(job_input) -> str | None:
+def run(job_input: AzimuthalRuptureSetsInput) -> str | None:
     t0 = dt.datetime.now()
 
     general_task_id = None
@@ -158,51 +137,28 @@ def run(job_input) -> str | None:
         general_task_id = general_api.create_task(
             created=dt.datetime.now(tzutc()).isoformat(),
             agent_name=getpass.getuser(),
-            title=TASK_TITLE,
-            description=TASK_DESCRIPTION,
+            title=job_input.title,
+            description=job_input.description,
         )
 
     # Test parameters
-    models = ["CFM_0_9_SANSTVZ_2010", "CFM_0_9_SANSTVZ_D90"]  # , "CFM_0_9_ALL_D90". "CFM_0_3_SANSTVZ"]
-    strategies = [
-        'UCERF3',
-    ]  # 'POINTS'] #, 'UCERF3' == DOWNDIP]
-    jump_limits = [
-        5.0,
-    ]  # 4.0, 4.5, 5.0, 5.1] #4.0, 4.5, 5.0, 5.1] # , 5.1, 5.2, 5.3]
-    ddw_ratios = [
-        0.5,
-    ]  # 1.0, 1.5, 2.0, 2.5]
-    min_sub_sects_per_parents = [
-        2,
-    ]  # 3,4,5]
-    min_sub_sections_list = [3, 4, 5]
-    max_cumulative_azimuths = [
-        560.0,
-    ]  # 570.0, 580, 590.0, 600] # 580.0, 600.0]
-    thinning_factors = [0.0, 0.1]  # , 0.2, 0.3] #, 0.05, 0.1, 0.2]
-    scaling_relations = [
-        'TMG_CRU_2017',
-    ]  # 'SHAW_2009_MOD'] WARNING this is not yet configurable, need a setter in ruptset builder
 
-    # limit test size, nomally 1000 for NZ CFM
-    MAX_SECTIONS = 200
-
-    pool = Pool(WORKER_POOL_SIZE)
+    worker_pool_size = job_input.worker_pool_size or 2
+    pool = Pool(worker_pool_size)
 
     scripts = []
     for script_file in build_tasks(
         general_task_id,
-        models,
-        jump_limits,
-        ddw_ratios,
-        strategies,
-        max_cumulative_azimuths,
-        min_sub_sects_per_parents,
-        min_sub_sections_list,
-        thinning_factors,
-        scaling_relations,
-        MAX_SECTIONS,
+        job_input.models,
+        job_input.jump_limits,
+        job_input.ddw_ratios,
+        job_input.strategies,
+        job_input.max_cumulative_azimuths,
+        job_input.min_sub_sects_per_parents,
+        job_input.min_sub_sections_list,
+        job_input.thinning_factors,
+        job_input.scaling_relations,
+        job_input.max_sections,
     ):
         scripts.append(script_file)
 
@@ -214,7 +170,7 @@ def run(job_input) -> str | None:
             check_call(['bash', script_name])
 
     print('task count: ', len(scripts))
-    print('worker count: ', WORKER_POOL_SIZE)
+    print('worker count: ', worker_pool_size)
 
     pool.map(call_script, scripts)
     pool.close()
@@ -226,4 +182,9 @@ def run(job_input) -> str | None:
     return general_task_id
 
 if __name__ == "__main__":
-    run()
+    parser = ArgumentParser(description="Create azimuthal rupture sets.")
+    parser.add_argument('filename', help="the input filename")
+    args = parser.parse_args()
+    with Path(args.filename).open() as input_file:
+        job_input = AzimuthalRuptureSetsInput.from_toml(input_file)
+    run(job_input)
