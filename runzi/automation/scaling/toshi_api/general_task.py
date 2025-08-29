@@ -125,7 +125,7 @@ class GeneralTask(object):
         executed = self.api.run_query(qry, input_variables)
         return executed['node']
 
-    def create_task(self, create_args):
+    def create_task(self, create_args) -> str:
         '''
         created: DateTime
         When the taskrecord was created

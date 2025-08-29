@@ -1,0 +1,14 @@
+description = 'test average input'
+title = 'this is just a test.'
+
+solution_groups = [
+    [
+        'SW52ZXJzaW9uU29sdXRpb246MTA1MTk4',
+        'SW52ZXJzaW9uU29sdXRpb246MTA1MjA1',
+        'SW52ZXJzaW9uU29sdXRpb246MTA1MjM4',
+    ],
+    [
+        'SW52ZXJzaW9uU29sdXRpb246MTA1MjM0',
+        'SW52ZXJzaW9uU29sdXRpb246MTA1MjQ3',
+    ],
+]
