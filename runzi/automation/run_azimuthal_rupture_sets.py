@@ -146,17 +146,16 @@ def build_tasks(
         return
 
 
-if __name__ == "__main__":
+def run(job_input) -> str | None:
+    t0 = dt.datetime.now()
 
-    t0 = dt.datetime.utcnow()
-
-    GENERAL_TASK_ID = None
+    general_task_id = None
 
     if USE_API:
         headers = {"x-api-key": API_KEY}
         general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         # create new task in toshi_api
-        GENERAL_TASK_ID = general_api.create_task(
+        general_task_id = general_api.create_task(
             created=dt.datetime.now(tzutc()).isoformat(),
             agent_name=getpass.getuser(),
             title=TASK_TITLE,
@@ -193,7 +192,7 @@ if __name__ == "__main__":
 
     scripts = []
     for script_file in build_tasks(
-        GENERAL_TASK_ID,
+        general_task_id,
         models,
         jump_limits,
         ddw_ratios,
@@ -221,5 +220,10 @@ if __name__ == "__main__":
     pool.close()
     pool.join()
 
-    print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
+    print("GENERAL_TASK_ID:", general_task_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+
+    return general_task_id
+
+if __name__ == "__main__":
+    run()

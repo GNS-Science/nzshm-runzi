@@ -29,8 +29,8 @@ class InputBase(BaseModel):
                 content = f.read()
         else:
             content = toml_file.read()
-        config = tomlkit.parse(content).unwrap()
-        return cls.model_validate(config)
+        data = tomlkit.parse(content).unwrap()
+        return cls(**data)
 
 
 class AverageSolutionsInput(InputBase):
@@ -40,3 +40,17 @@ class AverageSolutionsInput(InputBase):
     description: str
     worker_pool_size: Optional[int] = None
     solution_groups: list[list[str]]
+
+class AzimuthalRuptureSetsInput(InputBase):
+    """"Input for generating azimuthal rupture sets."""
+
+    models: list[str]
+    strategies: list[str]
+    jump_limits: list[float]
+    ddw_ratios: list[float]
+    min_sub_sects_per_parents: list[int]
+    min_sub_sections_list: list[int]
+    max_cumulative_azimuths: list[float]
+    thinning_factors: list[float]
+    scaling_relations: list[str]
+    max_sections: int

@@ -5,7 +5,7 @@ import pwd
 from argparse import ArgumentParser
 from pathlib import Path
 
-from runzi.automation.job_inputs import AverageSolutionsInput
+from runzi.automation.runner_inputs import AverageSolutionsInput
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
@@ -21,12 +21,12 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-def run(config: AverageSolutionsInput) -> str | None:
+def run(job_input: AverageSolutionsInput) -> str | None:
 
-    source_solution_groups = config.solution_groups
-    task_title = config.title
-    task_description = config.description
-    worker_pool_size = config.worker_pool_size
+    source_solution_groups = job_input.solution_groups
+    task_title = job_input.title
+    task_description = job_input.description
+    worker_pool_size = job_input.worker_pool_size
 
     t0 = dt.datetime.now()
 

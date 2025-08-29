@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from runzi.automation.job_inputs.runner_inputs import AverageSolutionsInput
+from runzi.automation.runner_inputs import AverageSolutionsInput
 
 
 def test_input_from_toml():
