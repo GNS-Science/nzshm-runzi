@@ -14,7 +14,7 @@ from typing_extensions import Self
 class InputBase(BaseModel):
     """Base class for input Pydantic classes."""
 
-    worker_pool_size: Optional[int] = None
+    worker_pool_size: int = 1
     title: str
     description: str
 

@@ -149,7 +149,7 @@ def run(job_input: CoulombRuptureSetsInput) -> str | None:
 
     # USE_API = False
     general_task_id = None
-    worker_pool_size = job_input.worker_pool_size or 1
+    worker_pool_size = job_input.worker_pool_size
 
     depth_scaling = [ds.model_dump() for ds in job_input.depth_scaling]
     args = dict(

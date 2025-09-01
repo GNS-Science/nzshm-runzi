@@ -143,7 +143,7 @@ def run(job_input: AzimuthalRuptureSetsInput) -> str | None:
 
     # Test parameters
 
-    worker_pool_size = job_input.worker_pool_size or 2
+    worker_pool_size = job_input.worker_pool_size
     pool = Pool(worker_pool_size)
 
     scripts = []
