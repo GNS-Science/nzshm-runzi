@@ -1,0 +1,12 @@
+title = "Build Azimuthal CFM 0.9 ruptsets with increased minimum sub-sections - take 2"
+description = "Azimuthal ruptures with new **min_sub_sections filter**"
+models = ["CFM_0_9_SANSTVZ_2010", "CFM_0_9_SANSTVZ_D90"]
+strategies = ['UCERF3',]
+jump_limits = [ 5.0, ]
+ddw_ratios = [ 0.5, ]
+min_sub_sects_per_parents = [ 2, ]  
+min_sub_sections_list = [3, 4, 5]
+max_cumulative_azimuths = [ 560.0, ]
+thinning_factors = [0.0, 0.1] 
+scaling_relations = [ 'TMG_CRU_2017', ]
+max_sections = 200
