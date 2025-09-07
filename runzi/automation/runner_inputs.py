@@ -4,7 +4,7 @@ TOML files can be used to initialize the classes using the from_toml method.
 """
 
 from pathlib import Path
-from typing import Optional, TextIO
+from typing import TextIO
 
 import tomlkit
 from pydantic import BaseModel
@@ -42,8 +42,9 @@ class AverageSolutionsInput(InputBase):
 
     solution_groups: list[list[str]]
 
+
 class AzimuthalRuptureSetsInput(InputBase):
-    """"Input for generating azimuthal rupture sets."""
+    """ "Input for generating azimuthal rupture sets."""
 
     models: list[str]
     strategies: list[str]
@@ -55,6 +56,7 @@ class AzimuthalRuptureSetsInput(InputBase):
     thinning_factors: list[float]
     scaling_relations: list[str]
     max_sections: int
+
 
 class CoulombRuptureSetsInput(InputBase):
     """Input for generating Coulomb rupture sets."""

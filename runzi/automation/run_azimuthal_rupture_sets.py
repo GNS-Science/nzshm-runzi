@@ -3,17 +3,15 @@ import getpass
 import itertools
 import os
 import stat
-from multiprocessing.dummy import Pool
-from pathlib import PurePath
-from subprocess import check_call
 from argparse import ArgumentParser
-from pathlib import Path
+from multiprocessing.dummy import Pool
+from pathlib import Path, PurePath
+from subprocess import check_call
 
 import scaling.azimuthal_rupture_set_builder_task
 import scaling.coulomb_rupture_set_builder_task
 from dateutil.tz import tzutc
 from nshm_toshi_client.general_task import GeneralTask
-from runzi.automation.runner_inputs import AzimuthalRuptureSetsInput
 
 # Set up your local config, from environment variables, with some sone defaults
 from scaling.local_config import (
@@ -31,6 +29,9 @@ from scaling.local_config import (
     WORK_PATH,
 )
 from scaling.opensha_task_factory import OpenshaTaskFactory
+
+from runzi.automation.runner_inputs import AzimuthalRuptureSetsInput
+
 
 def build_tasks(
     general_task_id,
@@ -180,6 +181,7 @@ def run(job_input: AzimuthalRuptureSetsInput) -> str | None:
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
 
     return general_task_id
+
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Create azimuthal rupture sets.")

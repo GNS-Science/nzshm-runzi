@@ -1,14 +1,12 @@
 import datetime as dt
-from pathlib import Path
 import getpass
 import itertools
 import logging
 import os
-from argparse import ArgumentParser
-from runzi.automation.runner_inputs import CoulombRuptureSetsInput
 import stat
+from argparse import ArgumentParser
 from multiprocessing.dummy import Pool
-from pathlib import PurePath
+from pathlib import Path, PurePath
 from subprocess import check_call
 
 # Set up your local config, from environment variables, with some sone defaults
@@ -25,6 +23,7 @@ from scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
     WORK_PATH,
 )
 
+from runzi.automation.runner_inputs import CoulombRuptureSetsInput
 from runzi.automation.scaling import coulomb_rupture_set_builder_task
 from runzi.automation.scaling.opensha_task_factory import get_factory
 
@@ -41,7 +40,6 @@ logging.basicConfig(level=logging.INFO)
 JVM_HEAP_MAX = 32
 JAVA_THREADS = 16
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
-
 
 
 def build_tasks(general_task_id, args):
@@ -145,8 +143,6 @@ def run(job_input: CoulombRuptureSetsInput) -> str | None:
     logging.getLogger('botocore').setLevel(loglevel)
     logging.getLogger('git.cmd').setLevel(loglevel)
 
-    log = logging.getLogger(__name__)
-
     # USE_API = False
     general_task_id = None
     worker_pool_size = job_input.worker_pool_size
@@ -173,7 +169,9 @@ def run(job_input: CoulombRuptureSetsInput) -> str | None:
         toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
         gt_args = (
-            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=job_input.title, description=job_input.description)
+            CreateGeneralTaskArgs(
+                agent_name=getpass.getuser(), title=job_input.title, description=job_input.description
+            )
             .set_argument_list(args_list)
             .set_subtask_type('RUPTURE_SET')
             .set_model_type('CRUSTAL')
@@ -205,6 +203,7 @@ def run(job_input: CoulombRuptureSetsInput) -> str | None:
     print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
 
     return general_task_id
+
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Create azimuthal rupture sets.")
