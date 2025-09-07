@@ -7,17 +7,16 @@ import base64
 import datetime as dt
 import getpass
 import logging
+from argparse import ArgumentParser
+from pathlib import Path
 
+from runzi.automation.runner_inputs import ScaleSolutionsInput
 from runzi.automation.scaling.file_utils import get_output_file_ids
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
 from runzi.configuration.scale_inversion_solution import build_scale_tasks
-
-# If you wish to override something in the main config, do so here ..
-WORKER_POOL_SIZE = 27
-# WORKER_POOL_SIZE = None
 
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
@@ -28,16 +27,16 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-def run(
-    source_solution_ids,
-    scales,
-    TASK_TITLE: str,
-    TASK_DESCRIPTION: str,
-    WORKER_POOL_SIZE,
-    polygon_scale=None,
-    polygon_max_mag=None,
-):
-    t0 = dt.datetime.utcnow()
+def run(job_input: ScaleSolutionsInput) -> str | None:
+    source_solution_ids = job_input.solution_ids
+    scales = job_input.scales
+    task_title = job_input.title
+    task_description = job_input.description
+    worker_pool_size = job_input.worker_pool_size
+    polygon_scale = job_input.polygon_scale
+    polygon_max_mag = job_input.polygon_max_mag
+
+    t0 = dt.datetime.now()
 
     logging.basicConfig(level=logging.INFO)
 
@@ -49,9 +48,7 @@ def run(
     logging.getLogger('botocore').setLevel(loglevel)
     logging.getLogger('git.cmd').setLevel(loglevel)
 
-    # log = logging.getLogger(__name__)
-
-    GENERAL_TASK_ID = None
+    general_task_id = None
 
     headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
@@ -83,73 +80,36 @@ def run(
     if USE_API:
         # create new task in toshi_api
         gt_args = (
-            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=TASK_TITLE, description=TASK_DESCRIPTION)
+            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=task_title, description=task_description)
             .set_argument_list(args_list)
             .set_subtask_type(subtask_type)
             .set_model_type(model_type)
         )
 
-        GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
+        general_task_id = toshi_api.general_task.create_task(gt_args)
 
-    print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
+    print("GENERAL_TASK_ID:", general_task_id)
 
-    tasks = build_tasks(GENERAL_TASK_ID, args, subtask_type, model_type, toshi_api)
+    tasks = build_tasks(general_task_id, args, subtask_type, model_type, toshi_api)
 
-    toshi_api.general_task.update_subtask_count(GENERAL_TASK_ID, len(tasks))
+    toshi_api.general_task.update_subtask_count(general_task_id, len(tasks))
 
-    print('worker count: ', WORKER_POOL_SIZE)
+    print('worker count: ', worker_pool_size)
 
-    schedule_tasks(tasks, WORKER_POOL_SIZE)
+    schedule_tasks(tasks, worker_pool_size)
 
-    print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
-    print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+    print("GENERAL_TASK_ID:", general_task_id)
+    print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
 
-    return GENERAL_TASK_ID
+    return general_task_id
 
 
 if __name__ == "__main__":
-
-    # #If using API give this task a descriptive setting...
-    TASK_DESCRIPTION = """scale all max jump distance inversions for polygons"""
-
-    # TASK_TITLE = "Hikurangi Noise Averages"
-    # source_solution_ids = [
-    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzE4",
-    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzIy",
-    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzI0",
-    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzI4",
-    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzMy",
-    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzQw",
-    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzQ0",
-    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzM4",
-    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzQz",
-    #     "QWdncmVnYXRlSW52ZXJzaW9uU29sdXRpb246MTA2MzQ2"
-    # ]
-    # scales = [0.75, 1.0, 1.28]
-
-    # TASK_TITLE = "Scaling Puysegur Inversions"
-    # source_solution_ids = [
-    #     "SW52ZXJzaW9uU29sdXRpb246MTA1NTY1",
-    # ]
-    # scales = [0.4, 1.0, 1.63]
-
-    TASK_TITLE = "Scaling Crustal (geodetic slip, TD)"
-    source_solution_ids = [
-        "R2VuZXJhbFRhc2s6NjUzOTY5Ng==",
-    ]
-    scales = [0.66, 1.0, 1.41]
-    polygon_scale = 0.8
-    polygon_max_mag = 8
-
-    # run(source_solution_ids, scales,
-    #     TASK_TITLE, TASK_DESCRIPTION , WORKER_POOL_SIZE)
-
-    run(
-        source_solution_ids,
-        scales,
-        TASK_TITLE,
-        TASK_DESCRIPTION,
-        WORKER_POOL_SIZE,
-        polygon_scale=polygon_scale,
-        polygon_max_mag=polygon_max_mag,
+    parser = ArgumentParser(
+        description="Scale rupture rates of inversion solutions. This is generally done to blend the IFM with the DSM."
     )
+    parser.add_argument('filename', help="the input filename")
+    args = parser.parse_args()
+    with Path(args.filename).open() as input_file:
+        job_input = ScaleSolutionsInput.from_toml(input_file)
+    run(job_input)

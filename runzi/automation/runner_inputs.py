@@ -4,10 +4,10 @@ TOML files can be used to initialize the classes using the from_toml method.
 """
 
 from pathlib import Path
-from typing import TextIO
+from typing import Optional, TextIO
 
 import tomlkit
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from typing_extensions import Self
 
 
@@ -73,3 +73,20 @@ class CoulombRuptureSetsInput(InputBase):
     min_sub_sects_per_parents: list[int]
     min_sub_sections_list: list[int]
     depth_scaling: list[DepthScaling]
+
+
+class ScaleSolutionsInput(InputBase):
+    """Input for scaling inversion solutions rates."""
+
+    solution_ids: list[str]
+    scales: list[float]
+    polygon_scale: Optional[float] = None
+    polygon_max_mag: Optional[float] = None
+
+    @model_validator(mode='after')
+    def polygon_scale_and_mag(self) -> 'ScaleSolutionsInput':
+        scale = self.polygon_scale is not None
+        mag = self.polygon_max_mag is not None
+        if scale ^ mag:
+            raise ValueError("must set both polygon_scale and polygon_max_mag or neither")
+        return self
