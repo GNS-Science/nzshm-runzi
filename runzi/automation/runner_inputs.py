@@ -90,3 +90,15 @@ class ScaleSolutionsInput(InputBase):
         if scale ^ mag:
             raise ValueError("must set both polygon_scale and polygon_max_mag or neither")
         return self
+
+
+class SubductionRuptureSetsInput(InputBase):
+    models: list[str]
+    min_aspect_ratios: list[float]
+    max_aspect_ratios: list[float]
+    aspect_depth_thresholds: list[int]
+    min_fill_ratios: list[float]
+    growth_position_epsilons: list[float]
+    growth_size_epsilons: list[float]
+    scaling_relationships: list[str]
+    deformation_models: list[str]

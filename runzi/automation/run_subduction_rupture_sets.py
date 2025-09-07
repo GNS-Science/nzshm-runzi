@@ -7,10 +7,12 @@ import getpass
 import itertools
 import os
 import stat
+from argparse import ArgumentParser
 from multiprocessing.dummy import Pool
-from pathlib import PurePath
+from pathlib import Path, PurePath
 from subprocess import check_call
 
+from runzi.automation.runner_inputs import SubductionRuptureSetsInput
 from runzi.automation.scaling import subduction_rupture_set_builder_task
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
@@ -30,8 +32,6 @@ from .scaling.local_config import (  # JVM_HEAP_MAX,; JVM_HEAP_START,
     EnvMode,
 )
 
-# If you wish to override something in the main config, do so here ..
-WORKER_POOL_SIZE = 1
 JVM_HEAP_MAX = 12
 JVM_HEAP_START = 2
 
@@ -39,7 +39,7 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 MAX_JOB_TIME_SECS = 60 * 30  # Change this soon
 
 
-def build_tasks(general_task_id, args):
+def build_tasks(general_task_id, job_input: SubductionRuptureSetsInput):
     """
     build the shell scripts 1 per task, based on all the inputs
 
@@ -75,15 +75,15 @@ def build_tasks(general_task_id, args):
         scaling_relationship,
         deformation_model,
     ) in itertools.product(
-        args['models'],
-        args['min_aspect_ratios'],
-        args['max_aspect_ratios'],
-        args['aspect_depth_thresholds'],
-        args['min_fill_ratios'],
-        args['growth_position_epsilons'],
-        args['growth_size_epsilons'],
-        args['scaling_relationships'],
-        args['deformation_models'],
+        job_input.models,
+        job_input.min_aspect_ratios,
+        job_input.max_aspect_ratios,
+        job_input.aspect_depth_thresholds,
+        job_input.min_fill_ratios,
+        job_input.growth_position_epsilons,
+        job_input.growth_size_epsilons,
+        job_input.scaling_relationships,
+        job_input.deformation_models,
     ):
 
         task_count += 1
@@ -126,48 +126,21 @@ def build_tasks(general_task_id, args):
 
         yield str(script_file_path)
 
-        # testing
-        # return
 
+def run(job_input: SubductionRuptureSetsInput) -> str | None:
 
-if __name__ == "__main__":
+    t0 = dt.datetime.now()
 
-    t0 = dt.datetime.utcnow()
-
-    GENERAL_TASK_ID = None
-    # USE_API = False
+    general_task_id = None
     headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-    # If using API give this task a descriptive setting...
-    TASK_TITLE = "Build Puysegur ruptures - fix dip direction"
+    task_title = job_input.title
+    task_description = job_input.description
+    worker_pool_size = job_input.worker_pool_size
 
-    TASK_DESCRIPTION = """
-    """
-    # Test parameters
-    args = dict(
-        models=[
-            "SBD_0_2_PUY_15",
-        ],  # "SBD_0_1_HKR_KRM_10"]
-        min_aspect_ratios=[
-            "2.0",
-        ],
-        max_aspect_ratios=[
-            "5.0",
-        ],
-        aspect_depth_thresholds=[
-            "5",
-        ],
-        min_fill_ratios=["0.1"],  # 0.8, 0.7, 0.6, 0.5, 0.4,0.3", "0.2",
-        growth_position_epsilons=["0.0"],  # 0.02, 0.01]
-        growth_size_epsilons=["0.0"],  # 0.02, 0.01]
-        scaling_relationships=["TMG_SUB_2017"],
-        deformation_models=[
-            "",
-        ],
-    )
     args_list = []
-    for key, value in args.items():
+    for key, value in job_input.model_dump().items():
         args_list.append(dict(k=key, v=value))
 
     if USE_API:
@@ -176,20 +149,20 @@ if __name__ == "__main__":
         model_type = ModelType.SUBDUCTION
         # create new task in toshi_api
         gt_args = (
-            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=TASK_TITLE, description=TASK_DESCRIPTION)
+            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=task_title, description=task_description)
             .set_argument_list(args_list)
             .set_subtask_type(subtask_type)
             .set_model_type(model_type)
         )
 
-        GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
+        general_task_id = toshi_api.general_task.create_task(gt_args)
 
-    print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
+    print("GENERAL_TASK_ID:", general_task_id)
 
-    pool = Pool(WORKER_POOL_SIZE)
+    pool = Pool(worker_pool_size)
 
     scripts = []
-    for script_file in build_tasks(GENERAL_TASK_ID, args):
+    for script_file in build_tasks(general_task_id, job_input):
         scripts.append(script_file)
 
     def call_script(script_name):
@@ -200,10 +173,21 @@ if __name__ == "__main__":
             check_call(['bash', script_name])
 
     print('task count: ', len(scripts))
-    print('worker count: ', WORKER_POOL_SIZE)
+    print('worker count: ', worker_pool_size)
 
     pool.map(call_script, scripts)
     pool.close()
     pool.join()
 
-    print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+    print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
+
+    return general_task_id
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser(description="Create subduction rupture sets.")
+    parser.add_argument('filename', help="the input filename")
+    args = parser.parse_args()
+    with Path(args.filename).open() as input_file:
+        job_input = SubductionRuptureSetsInput.from_toml(input_file)
+    run(job_input)

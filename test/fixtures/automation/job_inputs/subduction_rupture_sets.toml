@@ -1,0 +1,12 @@
+title = "Scaling Crustal (geodetic slip, TD)"
+description =  "Scale Crustal by 0.66, 1.0, 1.41"
+worker_pool_size = 11
+models=["SBD_0_2_PUY_15"]
+min_aspect_ratios=[2.0, 3.1]
+max_aspect_ratios=[5.0]
+aspect_depth_thresholds=[5, 6]
+min_fill_ratios=[0.1]
+growth_position_epsilons=[0.0, 0.02]
+growth_size_epsilons=[0.0, 0.01]
+scaling_relationships=["TMG_SUB_2017"]
+deformation_models=["foo", "", "bar"]
