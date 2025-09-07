@@ -1,16 +1,18 @@
+import base64
 import datetime as dt
 import logging
 import os
 import stat
+from argparse import ArgumentParser
 from multiprocessing.dummy import Pool
 from pathlib import PurePath
 from subprocess import check_call
 
-from .scaling import ruptset_diags_report_task
-from .scaling.file_utils import download_files, get_output_file_id
+from runzi.automation.scaling import ruptset_diags_report_task
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
 
 # Set up your local config, from environment variables, with some sone defaults
-from .scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
+from runzi.automation.scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
     API_KEY,
     API_URL,
     CLUSTER_MODE,
@@ -23,8 +25,8 @@ from .scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
     USE_API,
     WORK_PATH,
 )
-from .scaling.opensha_task_factory import OpenshaTaskFactory
-from .scaling.toshi_api import ToshiApi
+from runzi.automation.scaling.opensha_task_factory import OpenshaTaskFactory
+from runzi.automation.scaling.toshi_api import ToshiApi
 
 logging.basicConfig(level=logging.INFO)
 
@@ -38,8 +40,6 @@ logging.getLogger('git.cmd').setLevel(loglevel)
 log = logging.getLogger(__name__)
 
 # If you wish to override something in the main config, do so here ..
-# WORKER_POOL_SIZE = 3
-WORKER_POOL_SIZE = 1
 JVM_HEAP_MAX = 16
 JAVA_THREADS = 12
 
@@ -105,39 +105,35 @@ def run_tasks(general_task_id, rupture_sets):
         yield str(script_file_path)
 
 
-if __name__ == "__main__":
+def run(args):
 
+    file_or_task_id = args.id
     t0 = dt.datetime.utcnow()
+    worker_pool_size = args.num_workers
 
     GENERAL_TASK_ID = None
 
-    if USE_API:
-        headers = {"x-api-key": API_KEY}
+    headers = {"x-api-key": API_KEY}
 
-        # general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-        toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+    # general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+    toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-        # get input files from API
-        # upstream_task_id = "R2VuZXJhbFRhc2s6MTAwMDU4"
+    # get input files from API
 
-        """
-        CHOOSE ONE OF:
+    """
+    CHOOSE ONE OF:
 
-         - file_generator = get_output_file_id(file_api, file_id)
-         - file_generator = get_output_file_ids(general_api, upstream_task_id)
-        """
-        # for a single rupture set, pass a valid FileID
-        file_id = "RmlsZToxMjkwOTg0"
-        file_generator = get_output_file_id(toshi_api, file_id)  # for file by file ID
-        # file_generator = get_output_file_ids(toshi_api, upstream_task_id)
+        - file_generator = get_output_file_id(file_api, file_id)
+        - file_generator = get_output_file_ids(general_api, upstream_task_id)
+    """
+    # for a single rupture set, pass a valid FileID, for
+    if 'GeneralTask' in str(base64.b64decode(file_or_task_id)):
+        file_generator = get_output_file_ids(toshi_api, file_or_task_id)
+    else:
+        file_generator = get_output_file_id(toshi_api, file_or_task_id)  # for file by file ID
+    rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
-        rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
-
-        # print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
-
-    # print( rupture_sets )
-
-    pool = Pool(WORKER_POOL_SIZE)
+    pool = Pool(worker_pool_size)
 
     scripts = []
     for script_file in run_tasks(GENERAL_TASK_ID, rupture_sets):
@@ -152,10 +148,26 @@ if __name__ == "__main__":
             check_call(['bash', script_name])
 
     print('task count: ', len(scripts))
-    print('worker count: ', WORKER_POOL_SIZE)
+    print('worker count: ', worker_pool_size)
 
     pool.map(call_script, scripts)
     pool.close()
     pool.join()
 
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+
+
+def parse_args():
+    parser = ArgumentParser(description="Run diagnostics (report generation) for rupture sets.")
+    parser.add_argument(
+        "id",
+        help="""toshi ID of rutpure set (generate single report) or GeneralTask (generate multiple reports, one for
+        each rupture set created by GeneralTask).""",
+    )
+    parser.add_argument("-n", "--num-workers", type=int, default=1, help="number of parallel workers")
+    args = parser.parse_args()
+    return args
+
+
+if __name__ == "__main__":
+    run(parse_args())
