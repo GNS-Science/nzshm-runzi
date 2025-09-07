@@ -7,6 +7,7 @@ import runzi.automation.runner_inputs as runner_inputs
 
 fixtures_path = Path(__file__).parent.parent.parent / 'fixtures/automation/job_inputs'
 
+
 def get_dict_from_toml(filepath):
     toml_str = Path(filepath).read_text()
     return tomlkit.parse(toml_str).unwrap()
@@ -24,6 +25,8 @@ class_filename = [
     (runner_inputs.AzimuthalRuptureSetsInput, 'azimuthal_rupture_sets.toml'),
     (runner_inputs.CoulombRuptureSetsInput, 'coulomb_rupture_sets.toml'),
 ]
+
+
 @pytest.mark.parametrize("cls,filename", class_filename)
 def test_input_class(cls, filename):
     input_filepath = fixtures_path / filename
