@@ -108,7 +108,7 @@ def run_tasks(general_task_id, rupture_sets):
 def run(args):
 
     file_or_task_id = args.id
-    t0 = dt.datetime.utcnow()
+    t0 = dt.datetime.now()
     worker_pool_size = args.num_workers
 
     GENERAL_TASK_ID = None
@@ -154,7 +154,7 @@ def run(args):
     pool.close()
     pool.join()
 
-    print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+    print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
 
 
 def parse_args():
