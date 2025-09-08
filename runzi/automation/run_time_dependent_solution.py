@@ -7,7 +7,10 @@ import base64
 import datetime as dt
 import getpass
 import logging
+from argparse import ArgumentParser
+from pathlib import Path
 
+from runzi.automation.runner_inputs import TimeDependentSolutionInput
 from runzi.automation.scaling.file_utils import get_output_file_ids
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
@@ -24,18 +27,19 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-def run(
-    source_solution_ids,
-    current_years,
-    mre_enums,
-    forecast_timespans,
-    aperiodicities,
-    model_type: ModelType,
-    TASK_TITLE: str,
-    TASK_DESCRIPTION: str,
-    WORKER_POOL_SIZE,
-):
-    t0 = dt.datetime.utcnow()
+def run(job_input: TimeDependentSolutionInput) -> str | None:
+
+    source_solution_ids = job_input.solution_ids
+    current_years = job_input.current_years
+    mre_enums = job_input.mre_enums
+    forecast_timespans = job_input.forecast_timespans
+    aperiodicities = job_input.aperiodicities
+    model_type: ModelType = job_input.model_type
+    task_title: str = job_input.title
+    task_description: str = job_input.description
+    worker_pool_size = job_input.worker_pool_size
+
+    t0 = dt.datetime.now()
 
     logging.basicConfig(level=logging.INFO)
 
@@ -49,7 +53,7 @@ def run(
 
     # log = logging.getLogger(__name__)
 
-    GENERAL_TASK_ID = None
+    general_task_id = None
 
     headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
@@ -80,57 +84,34 @@ def run(
     if USE_API:
         # create new task in toshi_api
         gt_args = (
-            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=TASK_TITLE, description=TASK_DESCRIPTION)
+            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=task_title, description=task_description)
             .set_argument_list(args_list)
             .set_subtask_type(subtask_type)
             .set_model_type(model_type)
         )
 
-        GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
+        general_task_id = toshi_api.general_task.create_task(gt_args)
 
-    print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
+    print("GENERAL_TASK_ID:", general_task_id)
 
-    tasks = build_tasks(GENERAL_TASK_ID, args, subtask_type, model_type, toshi_api)
+    tasks = build_tasks(general_task_id, args, subtask_type, model_type, toshi_api)
 
-    toshi_api.general_task.update_subtask_count(GENERAL_TASK_ID, len(tasks))
+    toshi_api.general_task.update_subtask_count(general_task_id, len(tasks))
 
-    print('worker count: ', WORKER_POOL_SIZE)
+    print('worker count: ', worker_pool_size)
 
-    schedule_tasks(tasks, WORKER_POOL_SIZE)
+    schedule_tasks(tasks, worker_pool_size)
 
-    print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
-    print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+    print("GENERAL_TASK_ID:", general_task_id)
+    print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
 
-    return GENERAL_TASK_ID
+    return general_task_id
 
 
 if __name__ == "__main__":
-
-    # If you wish to override something in the main config, do so here ..
-    WORKER_POOL_SIZE = 9
-    # USE_API =
-
-    # #If using API give this task a descriptive setting...
-    TASK_DESCRIPTION = """Crustal. Geodetic. TD. From LTB89. Final """
-
-    TASK_TITLE = "Crustal. Geodetic. TD. From LTB98. 100yr. NZ-SHM22 aperiodicity"
-    model_type = ModelType.CRUSTAL
-    source_solution_ids = [
-        "R2VuZXJhbFRhc2s6NjUzOTY1OQ==",
-    ]
-    current_years = [2022]
-    mre_enums = ["CFM_1_1"]
-    forecast_timespans = [100]
-    aperiodicities = ["NZSHM22"]
-
-    run(
-        source_solution_ids,
-        current_years,
-        mre_enums,
-        forecast_timespans,
-        aperiodicities,
-        model_type,
-        TASK_TITLE,
-        TASK_DESCRIPTION,
-        WORKER_POOL_SIZE,
-    )
+    parser = ArgumentParser(description="Adjust inversion rates for time dependence.")
+    parser.add_argument('filename', help="the input filename")
+    args = parser.parse_args()
+    with Path(args.filename).open() as input_file:
+        job_input = TimeDependentSolutionInput.from_toml(input_file)
+    run(job_input)

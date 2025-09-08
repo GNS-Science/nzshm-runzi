@@ -5,8 +5,22 @@ import tomlkit
 
 import runzi.automation.runner_inputs as runner_inputs
 from pydantic import ValidationError
+from runzi.automation.scaling.toshi_api.general_task import ModelType
+
 
 fixtures_path = Path(__file__).parent.parent.parent / 'fixtures/automation/job_inputs'
+
+@pytest.fixture(scope='function')
+def td_data():
+    return dict(
+        description="Crustal. Geodetic. TD. From LTB89. Final",
+        title="Crustal. Geodetic. TD. From LTB98. 100yr. NZ-SHM22 aperiodicity",
+        solution_ids=["R2VuZXJhbFRhc2s6NjUzOTY1OQ=="],
+        current_years=[2022],
+        mre_enums=["CFM_1_1"],
+        forecast_timespans=[100],
+        aperiodicities=["NZSHM22"],
+    )
 
 
 def get_dict_from_toml(filepath):
@@ -27,6 +41,7 @@ class_filename = [
     (runner_inputs.CoulombRuptureSetsInput, 'coulomb_rupture_sets.toml'),
     (runner_inputs.ScaleSolutionsInput, 'scale_solutions.toml'),
     (runner_inputs.SubductionRuptureSetsInput, 'subduction_rupture_sets.toml'),
+    (runner_inputs.TimeDependentSolutionInput, 'time_dependent_solution.toml'),
 ]
 
 
@@ -60,3 +75,23 @@ def test_scale_solutions_xor():
     for data in [data1, data2]:
         with pytest.raises(ValidationError):
             runner_inputs.ScaleSolutionsInput(**data)
+
+@pytest.mark.parametrize("model_type", [ModelType(10), 20, "CRUSTAL", "subduction", "SuBdUcTiOn"])
+def test_time_dependent_model_type(model_type, td_data):
+    """model_type can be anything that can be evaluted to ModelType enum."""
+    td_data["model_type"] = model_type
+    assert runner_inputs.TimeDependentSolutionInput(**td_data)
+
+
+def test_time_dependent_error(td_data):
+    """model_type must be able to be evaluted to ModelType enum."""
+    td_data["model_type"] = "foobar"
+    with pytest.raises(ValidationError):
+        assert runner_inputs.TimeDependentSolutionInput(**td_data)
+
+def test_time_dependent_serialize(td_data):
+    """model_type should be serialzed as name of enum."""
+    model_type = ModelType["CRUSTAL"]
+    td_data["model_type"] = model_type
+    data_dump = runner_inputs.TimeDependentSolutionInput(**td_data).model_dump()
+    assert data_dump["model_type"] == model_type.name
