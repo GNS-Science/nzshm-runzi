@@ -37,7 +37,6 @@ def test_input_from_toml_io():
 
 class_filename = [
     (runner_inputs.AverageSolutionsInput, 'average_solutions.toml'),
-    (runner_inputs.AzimuthalRuptureSetsInput, 'azimuthal_rupture_sets.toml'),
     (runner_inputs.CoulombRuptureSetsInput, 'coulomb_rupture_sets.toml'),
     (runner_inputs.ScaleSolutionsInput, 'scale_solutions.toml'),
     (runner_inputs.SubductionRuptureSetsInput, 'subduction_rupture_sets.toml'),

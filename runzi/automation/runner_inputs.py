@@ -45,21 +45,6 @@ class AverageSolutionsInput(InputBase):
     solution_groups: list[list[str]]
 
 
-class AzimuthalRuptureSetsInput(InputBase):
-    """ "Input for generating azimuthal rupture sets."""
-
-    models: list[str]
-    strategies: list[str]
-    jump_limits: list[float]
-    ddw_ratios: list[float]
-    min_sub_sects_per_parents: list[int]
-    min_sub_sections_list: list[int]
-    max_cumulative_azimuths: list[float]
-    thinning_factors: list[float]
-    scaling_relations: list[str]
-    max_sections: int
-
-
 class CoulombRuptureSetsInput(InputBase):
     """Input for generating Coulomb rupture sets."""
 
