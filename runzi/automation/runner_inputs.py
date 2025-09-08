@@ -113,7 +113,7 @@ class TimeDependentSolutionInput(InputBase):
             except ValueError:
                 raise ValueError("model_type input is not valid")
 
-    # becuase we before-validate model_type to convert from a string of the enum name to enum
+    # because we before-validate model_type to convert from a string of the enum name to enum
     # instance, we also want to serialize this way
     @field_serializer('model_type')
     def serialize_model_type(self, model_type: ModelType, _info):
