@@ -1,7 +1,6 @@
 import datetime as dt
+import getpass
 import logging
-import os
-import pwd
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -67,9 +66,7 @@ def run(job_input: AverageSolutionsInput) -> str | None:
     if USE_API:
         # create new task in toshi_api
         gt_args = (
-            CreateGeneralTaskArgs(
-                agent_name=pwd.getpwuid(os.getuid()).pw_name, title=task_title, description=task_description
-            )
+            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=task_title, description=task_description)
             .set_argument_list(args_list)
             .set_subtask_type(subtask_type)
             .set_model_type(model_type)
