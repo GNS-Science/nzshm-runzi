@@ -106,7 +106,7 @@ def parse_args():
     parser.add_argument("title")
     parser.add_argument("description")
     parser.add_argument(
-        "ids", nargs='*', help="IDs of objects to convert. Can be a GeneralTask or InversionSoluiton type"
+        "ids", nargs='*', help="IDs of objects to convert. Can be a GeneralTask or InversionSolution type"
     )
     parser.add_argument("-n", "--num-workers", type=int, default=1, help="number of parallel workers")
     args = parser.parse_args()
