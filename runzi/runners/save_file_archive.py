@@ -1,6 +1,5 @@
-#! python run_save_file.py
 """
-a utility script to zip and save a file (with optional tag metadata) as a ToshiAPI File object
+A utility script to zip and save a file (with optional tag metadata) as a ToshiAPI File object
 
 inputs:-
  - a path to the source file
@@ -9,6 +8,7 @@ inputs:-
  - option to use csv list produced by nz-oq-distseis/list_nrmls.py script.
 
 """
+
 import argparse
 import collections
 import csv

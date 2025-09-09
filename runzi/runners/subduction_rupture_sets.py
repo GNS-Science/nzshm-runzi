@@ -1,6 +1,4 @@
-"""
-Configuration for building subduction rupture sets.
-"""
+"""This module provides the runner function to build subduction rupture sets."""
 
 import datetime as dt
 import getpass

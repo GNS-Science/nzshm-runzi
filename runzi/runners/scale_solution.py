@@ -1,8 +1,5 @@
 #!python3
-"""
-This script produces tasks in either AWS, PBS or LOCAL that scale the rates of an opensha InversionSolution
-
-"""
+"""This module provides the runner function to scale the rates of an opensha InversionSolutions."""
 import base64
 import datetime as dt
 import getpass

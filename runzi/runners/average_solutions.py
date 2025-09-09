@@ -1,3 +1,5 @@
+"""This module provides the runner function for averaging the rupture rates frommultiple inversions."""
+
 import datetime as dt
 import getpass
 import logging

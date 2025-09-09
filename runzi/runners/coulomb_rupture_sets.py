@@ -1,3 +1,5 @@
+"""This module provides the runner function for creating Coulomb rupture sets."""
+
 import datetime as dt
 import getpass
 import itertools

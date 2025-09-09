@@ -1,12 +1,5 @@
-#!python3
-"""
-This script produces tasks in either AWS, PBS or LOCAL that convert an opensha InversionSolution
-into source NRML XML files
+"""This module provides the runner function to convert an opensha InversionSolution into source NRML XML files."""
 
- -  InversionSolution
- - A GT containing Inversion Solutions
-
-"""
 import base64
 import datetime as dt
 import getpass

@@ -1,3 +1,7 @@
+"""This module provides the runner function to zip archive and upload the DSM (background seismisicy)
+files to toshiAPI.
+"""
+
 import csv
 from pathlib import Path
 

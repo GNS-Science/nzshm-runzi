@@ -1,3 +1,5 @@
+"""This module provides the runner function for running rupture set diagnostic reports."""
+
 import base64
 import datetime as dt
 import logging

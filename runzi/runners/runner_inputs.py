@@ -1,4 +1,4 @@
-"""This module provides Pydantic classes for defining the inputs to jobs.
+"""This module provides the base Pydantic class for defining the inputs to jobs.
 
 TOML files can be used to initialize the classes using the from_toml method.
 """

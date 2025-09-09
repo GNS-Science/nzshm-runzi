@@ -1,7 +1,5 @@
-"""
-This script produces tasks that modify InversionSolution event rates based on Most Recevnt Events to
-produce a Time Dependent Solution
-"""
+"""This module provides the runner function to modify InversionSolution event rates based on Most Recevnt
+Events to produce a Time Dependent Solution."""
 
 import base64
 import datetime as dt
