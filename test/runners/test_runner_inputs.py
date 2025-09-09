@@ -3,12 +3,12 @@ from pathlib import Path
 import pytest
 import tomlkit
 
-import runzi.automation.runner_inputs as runner_inputs
+import runzi.runners.runner_inputs as runner_inputs
 from pydantic import ValidationError
 from runzi.automation.scaling.toshi_api.general_task import ModelType
 
 
-fixtures_path = Path(__file__).parent.parent.parent / 'fixtures/automation/job_inputs'
+fixtures_path = Path(__file__).parent.parent / 'fixtures/runners'
 
 @pytest.fixture(scope='function')
 def td_data():

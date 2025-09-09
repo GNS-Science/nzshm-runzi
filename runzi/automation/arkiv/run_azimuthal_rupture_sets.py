@@ -30,7 +30,7 @@ from scaling.local_config import (
 )
 from scaling.opensha_task_factory import OpenshaTaskFactory
 
-from runzi.automation.runner_inputs import AzimuthalRuptureSetsInput
+from runzi.runners.runner_inputs import AzimuthalRuptureSetsInput
 
 
 def build_tasks(

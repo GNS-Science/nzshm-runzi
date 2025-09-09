@@ -10,7 +10,7 @@ import logging
 from argparse import ArgumentParser
 from pathlib import Path
 
-from runzi.automation.runner_inputs import ScaleSolutionsInput
+from runzi.runners.runner_inputs import ScaleSolutionsInput
 from runzi.automation.scaling.file_utils import get_output_file_ids
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
