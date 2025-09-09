@@ -10,9 +10,7 @@ from subprocess import check_call
 
 from runzi.automation.scaling import ruptset_diags_report_task
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
-
-# Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
+from runzi.automation.scaling.local_config import (
     API_KEY,
     API_URL,
     CLUSTER_MODE,
@@ -39,17 +37,8 @@ logging.getLogger('git.cmd').setLevel(loglevel)
 
 log = logging.getLogger(__name__)
 
-# If you wish to override something in the main config, do so here ..
 JVM_HEAP_MAX = 16
 JAVA_THREADS = 12
-
-
-# If using API give this task a descriptive setting...
-TASK_TITLE = "Baseline Inversion - Coulomb"
-TASK_DESCRIPTION = """
-- Coulomb rupture sets
-- Fixed duration comparisons
-"""
 
 
 def run_tasks(general_task_id, rupture_sets):

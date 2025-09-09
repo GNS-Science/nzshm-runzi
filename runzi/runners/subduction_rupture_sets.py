@@ -16,7 +16,7 @@ from runzi.automation.runner_inputs import SubductionRuptureSetsInput
 from runzi.automation.scaling import subduction_rupture_set_builder_task
 
 # Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import (  # JVM_HEAP_MAX,; JVM_HEAP_START,
+from runzi.automation.scaling.local_config import (
     API_KEY,
     API_URL,
     CLUSTER_MODE,

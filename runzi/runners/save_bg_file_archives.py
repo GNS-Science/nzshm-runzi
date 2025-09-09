@@ -1,7 +1,7 @@
 import csv
 from pathlib import Path
 
-from runzi.runners.run_save_file_archive import process_one_file
+from runzi.runners.save_file_archive import process_one_file
 
 
 def run_save_bg_file_archives(search_dir, archive_table_fn, dry_run):

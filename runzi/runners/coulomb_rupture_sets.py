@@ -11,9 +11,7 @@ from subprocess import check_call
 
 from runzi.automation.runner_inputs import CoulombRuptureSetsInput
 from runzi.automation.scaling import coulomb_rupture_set_builder_task
-
-# Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
+from runzi.automation.scaling.local_config import (
     API_KEY,
     API_URL,
     CLUSTER_MODE,
@@ -26,16 +24,9 @@ from runzi.automation.scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_M
     WORK_PATH,
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
-
-# from nshm_toshi_client.general_task import GeneralTask
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
 
 logging.basicConfig(level=logging.INFO)
-
-# If you wish to override something in the main config, do so here ..
-# WORKER_POOL_SIZE = 3
-# JVM_HEAP_MAX = 16
-# JAVA_THREADS = 10
 
 JVM_HEAP_MAX = 32
 JAVA_THREADS = 16
