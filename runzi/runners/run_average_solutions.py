@@ -20,7 +20,7 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-def run_averge_solutions(job_input: AverageSolutionsInput) -> str | None:
+def run(job_input: AverageSolutionsInput) -> str | None:
 
     source_solution_groups = job_input.solution_groups
     task_title = job_input.title
