@@ -1,0 +1,9 @@
+worker_pool_size = 9
+description = "Crustal. Geodetic. TD. From LTB89. Final."
+title = "Crustal. Geodetic. TD. From LTB98. 100yr. NZ-SHM22 aperiodicity"
+model_type = "CRUSTAL"
+solution_ids = ["R2VuZXJhbFRhc2s6NjUzOTY1OQ=="]
+current_years = [2022]
+mre_enums = ["CFM_1_1"]
+forecast_timespans = [100]
+aperiodicities = ["NZSHM22"]

@@ -1,0 +1,6 @@
+title = "Scaling Crustal (geodetic slip, TD)"
+description =  "Scale Crustal by 0.66, 1.0, 1.41"
+solution_ids = ["R2VuZXJhbFRhc2s6NjUzOTY5Ng=="]
+scales = [0.66, 1.0, 1.41]
+polygon_scale = 0.8
+polygon_max_mag = 8

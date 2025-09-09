@@ -11,20 +11,17 @@ import base64
 import datetime as dt
 import getpass
 import logging
+from argparse import ArgumentParser
 
 from runzi.automation.scaling.file_utils import get_output_file_ids
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.oq_opensha_nrml_convert import build_nrml_tasks
 
-# If you wish to override something in the main config, do so here ..
-WORKER_POOL_SIZE = 27
-# USE_API = True
 
-
-def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
+def build_tasks(new_gt_id: str, args: dict, task_type: SubtaskType, model_type: ModelType, toshi_api: ToshiApi) -> list:
     scripts = []
     for script_file in build_nrml_tasks(new_gt_id, task_type, model_type, args, toshi_api):
         print('scheduling: ', script_file)
@@ -32,7 +29,12 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-def run(scaled_solution_ids, TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL_SIZE):
+def run(args):
+
+    scaled_solution_ids = args.ids
+    task_title = args.title
+    task_description = args.description
+    worker_pool_size = args.num_workers
 
     t0 = dt.datetime.utcnow()
 
@@ -76,7 +78,7 @@ def run(scaled_solution_ids, TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL
     if USE_API:
         # create new task in toshi_api
         gt_args = (
-            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=TASK_TITLE, description=TASK_DESCRIPTION)
+            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=task_title, description=task_description)
             .set_argument_list(args_list)
             .set_subtask_type(task_type)
             .set_model_type(model_type)
@@ -91,22 +93,27 @@ def run(scaled_solution_ids, TASK_TITLE: str, TASK_DESCRIPTION: str, WORKER_POOL
     if USE_API:
         toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
 
-    print('worker count: ', WORKER_POOL_SIZE)
+    print('worker count: ', worker_pool_size)
 
-    schedule_tasks(tasks, WORKER_POOL_SIZE)
+    schedule_tasks(tasks, worker_pool_size)
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
 
-    return new_gt_id
+
+def parse_args():
+    parser = ArgumentParser(description="convert OpenSHA inversion solutions to OQ source files.")
+    parser.add_argument("title")
+    parser.add_argument("description")
+    parser.add_argument(
+        "ids",
+        nargs='*',
+        help="IDs of objects to convert (whitespace seperated). Can be a GeneralTask or InversionSolution type",
+    )
+    parser.add_argument("-n", "--num-workers", type=int, default=1, help="number of parallel workers")
+    args = parser.parse_args()
+    return args
 
 
 if __name__ == "__main__":
-
-    TASK_DESCRIPTION = """Crustal NRMLs"""
-    TASK_TITLE = " geodetic. Time Dependent. From R2VuZXJhbFRhc2s6NjUzOTc5MA=="
-    input_ids = [
-        "R2VuZXJhbFRhc2s6NjUzOTc5MA==",
-    ]
-
-    run(input_ids, TASK_TITLE, TASK_DESCRIPTION, WORKER_POOL_SIZE)
+    run(parse_args())

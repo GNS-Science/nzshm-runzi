@@ -4,8 +4,9 @@ import itertools
 import logging
 import os
 import stat
+from argparse import ArgumentParser
 from multiprocessing.dummy import Pool
-from pathlib import PurePath
+from pathlib import Path, PurePath
 from subprocess import check_call
 
 # Set up your local config, from environment variables, with some sone defaults
@@ -22,6 +23,7 @@ from scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
     WORK_PATH,
 )
 
+from runzi.automation.runner_inputs import CoulombRuptureSetsInput
 from runzi.automation.scaling import coulomb_rupture_set_builder_task
 from runzi.automation.scaling.opensha_task_factory import get_factory
 
@@ -35,17 +37,9 @@ logging.basicConfig(level=logging.INFO)
 # JVM_HEAP_MAX = 16
 # JAVA_THREADS = 10
 
-WORKER_POOL_SIZE = 1
 JVM_HEAP_MAX = 32
 JAVA_THREADS = 16
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
-
-# If using API give this task a descriptive setting...
-TASK_TITLE = "Build Coulomb CFM 1.0 sans with regional depth scaling"
-
-TASK_DESCRIPTION = """
-used to test effect of code change to Coulomb builder against older rupture sets that use CFM_1_0_DOM_SANSTVZ
-"""
 
 
 def build_tasks(general_task_id, args):
@@ -136,9 +130,8 @@ def build_tasks(general_task_id, args):
         # return
 
 
-if __name__ == "__main__":
-
-    t0 = dt.datetime.utcnow()
+def run(job_input: CoulombRuptureSetsInput) -> str | None:
+    t0 = dt.datetime.now()
 
     logging.basicConfig(level=logging.INFO)
 
@@ -150,33 +143,20 @@ if __name__ == "__main__":
     logging.getLogger('botocore').setLevel(loglevel)
     logging.getLogger('git.cmd').setLevel(loglevel)
 
-    log = logging.getLogger(__name__)
-
     # USE_API = False
-    GENERAL_TASK_ID = None
+    general_task_id = None
+    worker_pool_size = job_input.worker_pool_size
 
-    # limit test size, nomally 1000 for NZ CFM
-    MAX_SECTIONS = 2000
-    # MAX_SECTIONS = 50
-
+    depth_scaling = [ds.model_dump() for ds in job_input.depth_scaling]
     args = dict(
-        # Test parameters
-        models=["CFM_1_0_DOM_SANSTVZ"],  # , "CFM_0_9_ALL_D90","CFM_0_9_SANSTVZ_2010"]
-        depth_scaling=[{'tvz': 0.667, 'sans': 0.8}],
-        jump_limits=[
-            15,
-        ],  # default is 15
-        # jump_limits = [15,14,13,12,11,10,9,8,7,6,5,4,3,2,1], #default is 15
-        adaptive_min_distances=[
-            6,
-        ],  # 9] default is 6
-        thinning_factors=[
-            0,
-        ],  # 5, 0.1, 0.2, 0.3] #, 0.05, 0.1, 0.2]
-        min_sub_sects_per_parents=[2],  # 3,4,5]
-        min_sub_sections_list=[2],
-        max_sections=[MAX_SECTIONS],
-        # use_inverted_rakes=[True]
+        models=job_input.models,
+        depth_scaling=depth_scaling,
+        jump_limits=job_input.jump_limits,
+        adaptive_min_distances=job_input.adaptive_min_distances,
+        thinning_factors=job_input.thinning_factors,
+        min_sub_sects_per_parents=job_input.min_sub_sections_list,
+        min_sub_sections_list=job_input.min_sub_sections_list,
+        max_sections=[job_input.max_sections],
     )
 
     args_list = []
@@ -189,19 +169,21 @@ if __name__ == "__main__":
         toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
         gt_args = (
-            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=TASK_TITLE, description=TASK_DESCRIPTION)
+            CreateGeneralTaskArgs(
+                agent_name=getpass.getuser(), title=job_input.title, description=job_input.description
+            )
             .set_argument_list(args_list)
             .set_subtask_type('RUPTURE_SET')
             .set_model_type('CRUSTAL')
         )
-        GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
+        general_task_id = toshi_api.general_task.create_task(gt_args)
 
-        print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
+        print("GENERAL_TASK_ID:", general_task_id)
 
-    pool = Pool(WORKER_POOL_SIZE)
+    pool = Pool(worker_pool_size)
 
     scripts = []
-    for script_file in build_tasks(GENERAL_TASK_ID, args):
+    for script_file in build_tasks(general_task_id, args):
         scripts.append(script_file)
 
     def call_script(script_name):
@@ -212,10 +194,21 @@ if __name__ == "__main__":
             check_call(['bash', script_name])
 
     print('task count: ', len(scripts))
-    print('worker count: ', WORKER_POOL_SIZE)
+    print('worker count: ', worker_pool_size)
 
     pool.map(call_script, scripts)
     pool.close()
     pool.join()
 
-    print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+    print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
+
+    return general_task_id
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser(description="Create azimuthal rupture sets.")
+    parser.add_argument('filename', help="the input filename")
+    args = parser.parse_args()
+    with Path(args.filename).open() as input_file:
+        job_input = CoulombRuptureSetsInput.from_toml(input_file)
+    run(job_input)

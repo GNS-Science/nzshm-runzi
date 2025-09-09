@@ -7,6 +7,7 @@
 - Development toolchain and workflows
 - Expand user paths for files specified in hazard config file
 - Hazard Task: docker image hash
+- Classes for specifying input arguments to scripts.
 
 ## Changed
 - Hazard and disaggregation job configuration and parsing of sites handled by `nzhsm-model`
