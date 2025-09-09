@@ -45,7 +45,10 @@ def oq_convert(
     ids: Annotated[
         list[str],
         typer.Argument(
-            help="Whitespace seperated list of IDs of objects to convert. Can be individual InversionSolutions or GeneralTask."
+            help=(
+                "Whitespace seperated list of IDs of objects to convert. "
+                "Can be individual InversionSolutions or GeneralTask."
+            )
         ),
     ],
     num_workers: Optional[int] = None,
