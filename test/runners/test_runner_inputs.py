@@ -3,14 +3,9 @@ from pathlib import Path
 import pytest
 import tomlkit
 
-from runzi.runners.average_solutions import AverageSolutionsInput
-from runzi.runners.coulomb_rupture_sets import CoulombRuptureSetsInput
-from runzi.runners.scale_solution import ScaleSolutionsInput
-from runzi.runners.subduction_rupture_sets import SubductionRuptureSetsInput
-from runzi.runners.time_dependent_solution import TimeDependentSolutionInput
+from runzi.runners import AverageSolutionsInput, CoulombRuptureSetsInput, ScaleSolutionsInput, SubductionRuptureSetsInput, TimeDependentSolutionInput
 from pydantic import ValidationError
 from runzi.automation.scaling.toshi_api.general_task import ModelType
-
 
 fixtures_path = Path(__file__).parent.parent / 'fixtures/runners'
 

@@ -11,7 +11,11 @@ from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
-from runzi.configuration.oq_opensha_nrml_convert import build_nrml_tasks
+
+try:
+    from runzi.configuration.oq_opensha_nrml_convert import build_nrml_tasks
+except ImportError:
+    print("openquake not installed, not importing")
 
 
 def build_tasks(new_gt_id: str, args: dict, task_type: SubtaskType, model_type: ModelType, toshi_api: ToshiApi) -> list:
