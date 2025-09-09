@@ -24,3 +24,7 @@ def sub_rupset(input_filepath: Path):
     """Create subduction rupture sets."""
     job_input = SubductionRuptureSetsInput.from_toml(input_filepath)
     run_subduction_rupture_sets(job_input)
+
+
+if __name__ == "__main__":
+    app()
