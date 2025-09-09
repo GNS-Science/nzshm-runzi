@@ -105,8 +105,6 @@ def run_save_file_archive(
     output_csv_file: Path | None = None,
     dry_run: bool = False,
 ):
-    print(f"{target=}, {tag=}, {input_csv_file=}, {output_csv_file=}, {dry_run=}")
-    return
     if not input_csv_file:
         # just the one file
         process_one_file(dry_run, target, tag)
