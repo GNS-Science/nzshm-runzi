@@ -4,12 +4,18 @@ import logging
 from argparse import ArgumentParser
 from pathlib import Path
 
-from runzi.runners.runner_inputs import AverageSolutionsInput
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
 from runzi.configuration.average_inversion_solutions import build_average_tasks
+from runzi.runners.runner_inputs import InputBase
+
+
+class AverageSolutionsInput(InputBase):
+    """Input for averaging solutions."""
+
+    solution_groups: list[list[str]]
 
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):

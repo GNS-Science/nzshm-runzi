@@ -12,7 +12,6 @@ from multiprocessing.dummy import Pool
 from pathlib import Path, PurePath
 from subprocess import check_call
 
-from runzi.runners.runner_inputs import SubductionRuptureSetsInput
 from runzi.automation.scaling import subduction_rupture_set_builder_task
 
 # Set up your local config, from environment variables, with some sone defaults
@@ -31,12 +30,25 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
+from runzi.runners.runner_inputs import InputBase
 
 JVM_HEAP_MAX = 12
 JVM_HEAP_START = 2
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 MAX_JOB_TIME_SECS = 60 * 30  # Change this soon
+
+
+class SubductionRuptureSetsInput(InputBase):
+    models: list[str]
+    min_aspect_ratios: list[float]
+    max_aspect_ratios: list[float]
+    aspect_depth_thresholds: list[int]
+    min_fill_ratios: list[float]
+    growth_position_epsilons: list[float]
+    growth_size_epsilons: list[float]
+    scaling_relationships: list[str]
+    deformation_models: list[str]
 
 
 def build_tasks(general_task_id, job_input: SubductionRuptureSetsInput):

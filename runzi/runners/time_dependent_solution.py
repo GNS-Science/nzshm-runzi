@@ -9,14 +9,17 @@ import getpass
 import logging
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import Any
 
-from runzi.runners.runner_inputs import TimeDependentSolutionInput
+from pydantic import field_serializer, field_validator
+
 from runzi.automation.scaling.file_utils import get_output_file_ids
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.configuration.time_dependent_inversion_solution import build_time_dependent_tasks
+from runzi.runners.runner_inputs import InputBase
 
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
@@ -25,6 +28,35 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
         print('scheduling: ', script_file)
         scripts.append(script_file)
     return scripts
+
+
+class TimeDependentSolutionInput(InputBase):
+    model_type: ModelType
+    solution_ids: list[str]
+    current_years: list[int]
+    mre_enums: list[str]
+    forecast_timespans: list[int]
+    aperiodicities: list[str]
+
+    # we want to use the (case-insensitive) name for the model_type for input
+    @field_validator('model_type', mode='before')
+    @classmethod
+    def convert_to_enum(cls, value: Any) -> ModelType:
+        if isinstance(value, ModelType):
+            return value
+        try:
+            return ModelType[value.upper()]
+        except (KeyError, AttributeError):
+            try:
+                return ModelType(value)
+            except ValueError:
+                raise ValueError("model_type input is not valid")
+
+    # because we before-validate model_type to convert from a string of the enum name to enum
+    # instance, we also want to serialize this way
+    @field_serializer('model_type')
+    def serialize_model_type(self, model_type: ModelType, _info):
+        return model_type.name
 
 
 def run_time_dependent_solution(job_input: TimeDependentSolutionInput) -> str | None:

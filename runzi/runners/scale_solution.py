@@ -9,14 +9,17 @@ import getpass
 import logging
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import Optional
 
-from runzi.runners.runner_inputs import ScaleSolutionsInput
+from pydantic import model_validator
+
 from runzi.automation.scaling.file_utils import get_output_file_ids
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
 from runzi.configuration.scale_inversion_solution import build_scale_tasks
+from runzi.runners.runner_inputs import InputBase
 
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
@@ -25,6 +28,23 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
         print('scheduling: ', script_file)
         scripts.append(script_file)
     return scripts
+
+
+class ScaleSolutionsInput(InputBase):
+    """Input for scaling inversion solutions rates."""
+
+    solution_ids: list[str]
+    scales: list[float]
+    polygon_scale: Optional[float] = None
+    polygon_max_mag: Optional[float] = None
+
+    @model_validator(mode='after')
+    def polygon_scale_and_mag(self) -> 'ScaleSolutionsInput':
+        scale = self.polygon_scale is not None
+        mag = self.polygon_max_mag is not None
+        if scale ^ mag:
+            raise ValueError("must set both polygon_scale and polygon_max_mag or neither")
+        return self
 
 
 def run_scale_solution(job_input: ScaleSolutionsInput) -> str | None:

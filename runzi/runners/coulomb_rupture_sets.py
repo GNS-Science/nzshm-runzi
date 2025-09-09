@@ -9,7 +9,8 @@ from multiprocessing.dummy import Pool
 from pathlib import Path, PurePath
 from subprocess import check_call
 
-from runzi.runners.runner_inputs import CoulombRuptureSetsInput
+from pydantic import BaseModel
+
 from runzi.automation.scaling import coulomb_rupture_set_builder_task
 from runzi.automation.scaling.local_config import (
     API_KEY,
@@ -25,6 +26,7 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
+from runzi.runners.runner_inputs import InputBase
 
 logging.basicConfig(level=logging.INFO)
 
@@ -117,8 +119,25 @@ def build_tasks(general_task_id, args):
 
         yield str(script_file_path)
 
-        # testing
-        # return
+
+class CoulombRuptureSetsInput(InputBase):
+    """Input for generating Coulomb rupture sets."""
+
+    class DepthScaling(BaseModel):
+        tvz: float
+        sans: float
+
+    max_sections: int
+    models: list[str]
+    jump_limits: list[int]
+    adaptive_min_distances: list[int]
+    thinning_factors: list[float]
+    min_sub_sects_per_parents: list[int]
+    min_sub_sections_list: list[int]
+    depth_scaling: list[DepthScaling]
+
+    # testing
+    # return
 
 
 def run_coulomb_rupture_sets(job_input: CoulombRuptureSetsInput) -> str | None:
