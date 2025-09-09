@@ -19,7 +19,9 @@ except ImportError:
     print("openquake not installed, not importing")
 
 
-def build_tasks(new_gt_id: str | None, args: dict, task_type: SubtaskType, model_type: ModelType, toshi_api: ToshiApi) -> list:
+def build_tasks(
+    new_gt_id: str | None, args: dict, task_type: SubtaskType, model_type: ModelType, toshi_api: ToshiApi
+) -> list:
     scripts = []
     for script_file in build_nrml_tasks(new_gt_id, task_type, model_type, args, toshi_api):
         print('scheduling: ', script_file)

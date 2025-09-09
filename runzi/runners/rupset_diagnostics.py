@@ -96,11 +96,10 @@ def run_tasks(general_task_id, rupture_sets):
         yield str(script_file_path)
 
 
-def run_rupset_diagnostics(args):
+def run_rupset_diagnostics(toshi_id: str, num_workers: int):
 
-    file_or_task_id = args.id
+    file_or_task_id = toshi_id
     t0 = dt.datetime.now()
-    worker_pool_size = args.num_workers
 
     GENERAL_TASK_ID = None
 
@@ -124,7 +123,7 @@ def run_rupset_diagnostics(args):
         file_generator = get_output_file_id(toshi_api, file_or_task_id)  # for file by file ID
     rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
-    pool = Pool(worker_pool_size)
+    pool = Pool(num_workers)
 
     scripts = []
     for script_file in run_tasks(GENERAL_TASK_ID, rupture_sets):
@@ -139,7 +138,7 @@ def run_rupset_diagnostics(args):
             check_call(['bash', script_name])
 
     print('task count: ', len(scripts))
-    print('worker count: ', worker_pool_size)
+    print('worker count: ', num_workers)
 
     pool.map(call_script, scripts)
     pool.close()
@@ -151,14 +150,14 @@ def run_rupset_diagnostics(args):
 def parse_args():
     parser = ArgumentParser(description="Run diagnostics (report generation) for rupture sets.")
     parser.add_argument(
-        "id",
+        "toshi_id",
         help="""toshi ID of rutpure set (generate single report) or GeneralTask (generate multiple reports, one for
         each rupture set created by GeneralTask).""",
     )
     parser.add_argument("-n", "--num-workers", type=int, default=1, help="number of parallel workers")
     args = parser.parse_args()
-    return args
+    return vars(args)
 
 
 if __name__ == "__main__":
-    run_rupset_diagnostics(parse_args())
+    run_rupset_diagnostics(**parse_args())
