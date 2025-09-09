@@ -105,7 +105,7 @@ def run_tasks(general_task_id, rupture_sets):
         yield str(script_file_path)
 
 
-def run(args):
+def run_rupset_diagnostics(args):
 
     file_or_task_id = args.id
     t0 = dt.datetime.now()
@@ -170,4 +170,4 @@ def parse_args():
 
 
 if __name__ == "__main__":
-    run(parse_args())
+    run_rupset_diagnostics(parse_args())

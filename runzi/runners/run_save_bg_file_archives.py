@@ -1,10 +1,10 @@
 import csv
 from pathlib import Path
 
-from run_save_file_archive import process_one_file
+from runzi.runners.run_save_file_archive import process_one_file
 
 
-def multi_directory_crawl(search_dir, archive_table_fn, dry_run):
+def run_save_bg_file_archives(search_dir, archive_table_fn, dry_run):
 
     with open(archive_table_fn, 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     root_dir = Path('/home/chrisdc/NSHM/DEV/nz-oq-distrseis/distseis')
     poi_dir = Path(root_dir, 'version3')
     CRU_dir = Path(root_dir, 'version3/Floor_MULTOT1346GruEEPAScomb')
-    multi_directory_crawl(CRU_dir, archive_table_fn, dry_run)
+    run_save_bg_file_archives(CRU_dir, archive_table_fn, dry_run)
 
     # archive_table_fn = 'zero_poly_dist_seis_PROD.csv'
     # poly_zero_dir =

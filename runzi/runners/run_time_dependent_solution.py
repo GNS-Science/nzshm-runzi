@@ -27,7 +27,7 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-def run(job_input: TimeDependentSolutionInput) -> str | None:
+def run_time_dependent_solution(job_input: TimeDependentSolutionInput) -> str | None:
 
     source_solution_ids = job_input.solution_ids
     current_years = job_input.current_years
@@ -114,4 +114,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with Path(args.filename).open() as input_file:
         job_input = TimeDependentSolutionInput.from_toml(input_file)
-    run(job_input)
+    run_time_dependent_solution(job_input)

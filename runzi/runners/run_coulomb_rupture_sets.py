@@ -130,7 +130,7 @@ def build_tasks(general_task_id, args):
         # return
 
 
-def run(job_input: CoulombRuptureSetsInput) -> str | None:
+def run_coulomb_rupture_sets(job_input: CoulombRuptureSetsInput) -> str | None:
     t0 = dt.datetime.now()
 
     logging.basicConfig(level=logging.INFO)
@@ -211,4 +211,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with Path(args.filename).open() as input_file:
         job_input = CoulombRuptureSetsInput.from_toml(input_file)
-    run(job_input)
+    run_coulomb_rupture_sets(job_input)

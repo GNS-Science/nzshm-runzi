@@ -29,7 +29,7 @@ def build_tasks(new_gt_id: str, args: dict, task_type: SubtaskType, model_type: 
     return scripts
 
 
-def run(args):
+def run_oq_convert_solution(args):
 
     scaled_solution_ids = args.ids
     task_title = args.title
@@ -116,4 +116,4 @@ def parse_args():
 
 
 if __name__ == "__main__":
-    run(parse_args())
+    run_oq_convert_solution(parse_args())

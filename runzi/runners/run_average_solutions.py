@@ -20,7 +20,7 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-def run(job_input: AverageSolutionsInput) -> str | None:
+def run_average_solutions(job_input: AverageSolutionsInput) -> str | None:
 
     source_solution_groups = job_input.solution_groups
     task_title = job_input.title
@@ -97,4 +97,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with Path(args.filename).open() as input_file:
         job_input = AverageSolutionsInput.from_toml(input_file)
-    run(job_input)
+    run_average_solutions(job_input)

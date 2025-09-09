@@ -15,7 +15,7 @@ import csv
 import logging
 from pathlib import Path
 
-from runzi.automation.run_save_file_archive import process_one_file
+from runzi.runners.run_save_file_archive import process_one_file
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -57,7 +57,7 @@ def parse_args():
     return args
 
 
-def main():
+def run_save_distseis_mastertable():
     args = parse_args()
 
     processed = process_masterfile(args)
@@ -72,4 +72,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_save_distseis_mastertable()

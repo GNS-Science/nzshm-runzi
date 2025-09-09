@@ -127,7 +127,7 @@ def build_tasks(general_task_id, job_input: SubductionRuptureSetsInput):
         yield str(script_file_path)
 
 
-def run(job_input: SubductionRuptureSetsInput) -> str | None:
+def run_subduction_rupture_sets(job_input: SubductionRuptureSetsInput) -> str | None:
 
     t0 = dt.datetime.now()
 
@@ -190,4 +190,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with Path(args.filename).open() as input_file:
         job_input = SubductionRuptureSetsInput.from_toml(input_file)
-    run(job_input)
+    run_subduction_rupture_sets(job_input)

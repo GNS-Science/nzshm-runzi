@@ -448,7 +448,7 @@ def convert_index(index):
     return index_new
 
 
-def run(args):
+def run_index_disaggs(args):
     # index_filepath = Path(WORK_PATH, "gt-index", "gt-index.json")
     # if not index_filepath.parent.exists():
     #     index_filepath.parent.mkdir()
@@ -499,4 +499,4 @@ def run(args):
 
 
 if __name__ == "__main__":
-    run(parse_args())
+    run_index_disaggs(parse_args())

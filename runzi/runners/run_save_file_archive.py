@@ -95,7 +95,7 @@ def parse_args():
     return args
 
 
-def main():
+def run_save_file_archive():
     args = parse_args()
 
     if not args.input_csv_file:
@@ -118,4 +118,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_save_file_archive()

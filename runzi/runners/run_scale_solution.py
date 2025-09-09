@@ -27,7 +27,7 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-def run(job_input: ScaleSolutionsInput) -> str | None:
+def run_scale_solution(job_input: ScaleSolutionsInput) -> str | None:
     source_solution_ids = job_input.solution_ids
     scales = job_input.scales
     task_title = job_input.title
@@ -112,4 +112,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with Path(args.filename).open() as input_file:
         job_input = ScaleSolutionsInput.from_toml(input_file)
-    run(job_input)
+    run_scale_solution(job_input)
