@@ -5,6 +5,7 @@ import datetime as dt
 import getpass
 import logging
 from argparse import ArgumentParser
+from typing import Optional
 
 from runzi.automation.scaling.file_utils import get_output_file_ids
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
@@ -26,12 +27,12 @@ def build_tasks(new_gt_id: str, args: dict, task_type: SubtaskType, model_type: 
     return scripts
 
 
-def run_oq_convert_solution(args):
-
-    scaled_solution_ids = args.ids
-    task_title = args.title
-    task_description = args.description
-    worker_pool_size = args.num_workers
+def run_oq_convert_solution(
+    ids: list[str],
+    title: str,
+    description: str,
+    num_workers: Optional[int] = None,
+):
 
     t0 = dt.datetime.utcnow()
 
@@ -52,7 +53,7 @@ def run_oq_convert_solution(args):
 
     # if a GT id has been provided, unpack to get individual solution ids
     source_solution_ids_list = []
-    for source_solution_id in scaled_solution_ids:
+    for source_solution_id in ids:
         if 'GeneralTask' in str(base64.b64decode(source_solution_id)):
             source_solution_ids_list += [out['id'] for out in get_output_file_ids(toshi_api, source_solution_id)]
         else:
@@ -75,7 +76,7 @@ def run_oq_convert_solution(args):
     if USE_API:
         # create new task in toshi_api
         gt_args = (
-            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=task_title, description=task_description)
+            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=title, description=description)
             .set_argument_list(args_list)
             .set_subtask_type(task_type)
             .set_model_type(model_type)
@@ -90,9 +91,9 @@ def run_oq_convert_solution(args):
     if USE_API:
         toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
 
-    print('worker count: ', worker_pool_size)
+    print('worker count: ', num_workers)
 
-    schedule_tasks(tasks, worker_pool_size)
+    schedule_tasks(tasks, num_workers)
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
@@ -109,8 +110,8 @@ def parse_args():
     )
     parser.add_argument("-n", "--num-workers", type=int, default=1, help="number of parallel workers")
     args = parser.parse_args()
-    return args
+    return vars(args)
 
 
 if __name__ == "__main__":
-    run_oq_convert_solution(parse_args())
+    run_oq_convert_solution(**parse_args())
