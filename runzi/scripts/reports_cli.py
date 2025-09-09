@@ -1,3 +1,5 @@
+"""Command line functions for generating diagnostic reports for rupture sets and inversions."""
+
 import typer
 
 from runzi.runners import run_rupset_diagnostics

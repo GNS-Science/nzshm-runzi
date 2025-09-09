@@ -1,3 +1,5 @@
+"""The main runzi CLI script"""
+
 import inversion_post_process_cli
 import reports_cli
 import rupture_sets_cli

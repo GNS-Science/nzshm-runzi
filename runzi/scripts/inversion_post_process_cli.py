@@ -1,3 +1,5 @@
+"""Command line functions for post processing of inversions."""
+
 from pathlib import Path
 from typing import Optional
 

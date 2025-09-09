@@ -1,3 +1,5 @@
+"""The command line functions for generating rupture sets."""
+
 from pathlib import Path
 
 import typer
