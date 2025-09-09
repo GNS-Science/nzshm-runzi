@@ -9,8 +9,11 @@ from multiprocessing.dummy import Pool
 from pathlib import Path, PurePath
 from subprocess import check_call
 
+from runzi.automation.runner_inputs import CoulombRuptureSetsInput
+from runzi.automation.scaling import coulomb_rupture_set_builder_task
+
 # Set up your local config, from environment variables, with some sone defaults
-from scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
+from runzi.automation.scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
     API_KEY,
     API_URL,
     CLUSTER_MODE,
@@ -22,9 +25,6 @@ from scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
     USE_API,
     WORK_PATH,
 )
-
-from runzi.automation.runner_inputs import CoulombRuptureSetsInput
-from runzi.automation.scaling import coulomb_rupture_set_builder_task
 from runzi.automation.scaling.opensha_task_factory import get_factory
 
 # from nshm_toshi_client.general_task import GeneralTask

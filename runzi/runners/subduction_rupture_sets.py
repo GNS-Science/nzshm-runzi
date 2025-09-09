@@ -14,8 +14,6 @@ from subprocess import check_call
 
 from runzi.automation.runner_inputs import SubductionRuptureSetsInput
 from runzi.automation.scaling import subduction_rupture_set_builder_task
-from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (  # JVM_HEAP_MAX,; JVM_HEAP_START,
@@ -31,6 +29,8 @@ from runzi.automation.scaling.local_config import (  # JVM_HEAP_MAX,; JVM_HEAP_S
     WORK_PATH,
     EnvMode,
 )
+from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 
 JVM_HEAP_MAX = 12
 JVM_HEAP_START = 2
