@@ -18,7 +18,7 @@ from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 
 # Set up your local config, from environment variables, with some sone defaults
-from .scaling.local_config import (  # JVM_HEAP_MAX,; JVM_HEAP_START,
+from runzi.automation.scaling.local_config import (  # JVM_HEAP_MAX,; JVM_HEAP_START,
     API_KEY,
     API_URL,
     CLUSTER_MODE,
