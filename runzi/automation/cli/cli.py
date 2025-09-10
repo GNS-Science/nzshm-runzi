@@ -8,7 +8,7 @@ from runzi.automation.openquake.run_oq_disagg import run_oq_disagg
 from runzi.automation.openquake.run_oq_hazard import run_oq_hazard
 
 
-def load_config(config_filename: Union[Path, str]) -> Dict[str, Any]:
+def load_input(config_filename: Union[Path, str]) -> Dict[str, Any]:
     with Path(config_filename).open('r') as config_file:
         data = config_file.read()
     config = tomlkit.parse(data).unwrap()
@@ -24,14 +24,14 @@ def rnz_hazard():
 @rnz_hazard.command(name="oq-hazard", help="launch OpenQuake hazard calculation jobs")
 @click.argument("config-filename", type=click.Path(exists=True))
 def run_oq_hazard_cli(config_filename: str):
-    config = load_config(config_filename)
+    config = load_input(config_filename)
     run_oq_hazard(config)
 
 
 @rnz_hazard.command(name="oq-disagg", help="launch OpenQuake disagg calculation jobs")
 @click.argument("config-filename", type=click.Path(exists=True))
 def run_oq_disagg_cli(config_filename: str):
-    config = load_config(config_filename)
+    config = load_input(config_filename)
     run_oq_disagg(config)
 
 

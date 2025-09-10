@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, TextIO
+import tomlkit
 
 from nzshm_model import all_model_versions
 from pydantic import (
@@ -188,6 +189,22 @@ class HazardInput(BaseModel):
     hazard_curve: HazardCurve
     calculation: Calculation
     site_params: HazardSite
+
+    @classmethod
+    def from_toml(cls, toml_filepath: Path | str) -> Self:
+        """Creates a hazard input object from a toml file.
+
+        Args:
+            toml_file: Path to TOML file.
+
+        Returns:
+            An instance of the class initialized with the TOML file.
+        """
+        with Path(toml_filepath).open() as f:
+            content = f.read()
+        data = tomlkit.parse(content).unwrap()
+        data["filepath"] = Path(toml_filepath).absolute()
+        return cls(**data)
 
     # resolve absolute paths (relative to input file) for optional logic tree and config fields
     @field_validator('hazard_model', mode='before')
