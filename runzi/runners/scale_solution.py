@@ -113,11 +113,12 @@ def run_scale_solution(job_input: ScaleSolutionsInput) -> str | None:
 
         general_task_id = toshi_api.general_task.create_task(gt_args)
 
-    print("GENERAL_TASK_ID:", general_task_id)
+        print("GENERAL_TASK_ID:", general_task_id)
 
     tasks = build_tasks(general_task_id, args, subtask_type, model_type, toshi_api)
 
-    toshi_api.general_task.update_subtask_count(general_task_id, len(tasks))
+    if USE_API:
+        toshi_api.general_task.update_subtask_count(general_task_id, len(tasks))
 
     print('worker count: ', worker_pool_size)
 
