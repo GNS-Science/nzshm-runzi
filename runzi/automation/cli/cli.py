@@ -4,8 +4,8 @@ from typing import Any, Dict, Union
 import click
 import tomlkit
 
-from runzi.runners.run_oq_disagg import run_oq_disagg
-from runzi.runners.run_oq_hazard import run_oq_hazard
+from runzi.runners.oq_disagg import run_oq_disagg
+from runzi.runners.oq_hazard import run_oq_hazard
 
 
 def load_input(config_filename: Union[Path, str]) -> Dict[str, Any]:

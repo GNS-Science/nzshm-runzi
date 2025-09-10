@@ -1,7 +1,7 @@
 from pathlib import Path
-from typing import Any, Dict, Optional, Union, TextIO
-import tomlkit
+from typing import Any, Dict, Optional, Union
 
+import tomlkit
 from nzshm_model import all_model_versions
 from pydantic import (
     AfterValidator,
@@ -107,8 +107,6 @@ class HazardSite(BaseModel):
             raise ValueError("locations file must have vs30 column if uniform vs30 not given")
 
         return self
-
-
 
 
 class DisaggCurve(BaseModel):
@@ -225,8 +223,8 @@ class HazardInput(BaseModel):
                 data["locations_file"] = resolve_path(data["locations_file"], info.data["filepath"])
         return data
 
+
 class DisaggInput(HazardInput):
     disagg: DisaggProb
     output: DisaggOutput
     hazard_curve: DisaggCurve
-
