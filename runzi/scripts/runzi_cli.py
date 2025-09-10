@@ -2,10 +2,7 @@
 
 import typer
 
-from runzi.scripts import inversion_post_process_cli
-from runzi.scripts import reports_cli
-from runzi.scripts import rupture_sets_cli
-from runzi.scripts import utils_cli
+from runzi.scripts import inversion_post_process_cli, reports_cli, rupture_sets_cli, utils_cli
 
 app = typer.Typer(help="The NZ NSHM runzi CLI.", no_args_is_help=True)
 app.add_typer(inversion_post_process_cli.app, name="ipp", help="inversion post processing", no_args_is_help=True)
