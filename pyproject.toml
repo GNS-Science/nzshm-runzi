@@ -44,6 +44,7 @@ packages = [
 
 [tool.poetry.scripts]
 runzi-hazard = 'runzi.automation.cli:rnz_hazard'
+runzi = 'runzi.scripts.runzi_cli:app'
 
 
 [tool.poetry.group.dev.dependencies]
