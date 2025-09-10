@@ -47,13 +47,13 @@ def coerce_to_list(value: Any) -> list[Any]:
     return value
 
 
-class GeneralConfig(BaseModel):
+class General(BaseModel):
     title: str
     description: str = ''
     compatible_calc_id: Annotated[str, AfterValidator(is_compat_calc_id)]
 
 
-class HazardModelConfig(BaseModel):
+class HazardModel(BaseModel):
     nshm_model_version: Annotated[Optional[str], AfterValidator(is_model_version)] = None
     srm_logic_tree: Optional[FilePath] = None
     gmcm_logic_tree: Optional[FilePath] = None
@@ -69,17 +69,17 @@ class HazardModelConfig(BaseModel):
         return self
 
 
-class CalculationConfig(BaseModel):
+class Calculation(BaseModel):
     num_workers: PositiveInt = 1
     sleep_multiplier: Optional[PositiveInt] = None
 
 
-class HazardCurveConfig(BaseModel):
+class HazardCurve(BaseModel):
     imts: Annotated[list[str], BeforeValidator(coerce_to_list)]
     imtls: Annotated[list[float], BeforeValidator(coerce_to_list)]
 
 
-class HazardSiteConfig(BaseModel):
+class HazardSite(BaseModel):
     vs30s: Annotated[Optional[list[PositiveInt]], BeforeValidator(coerce_to_list)] = None
     locations: Annotated[Optional[list[str]], BeforeValidator(coerce_to_list)] = None
     locations_file: Optional[FilePath] = None
@@ -108,13 +108,13 @@ class HazardSiteConfig(BaseModel):
         return self
 
 
-class HazardConfig(BaseModel):
+class HazardInput(BaseModel):
     filepath: FilePath
-    general: GeneralConfig
-    hazard_model: HazardModelConfig
-    calculation: CalculationConfig
-    hazard_curve: HazardCurveConfig
-    site_params: HazardSiteConfig
+    general: General
+    hazard_model: HazardModel
+    calculation: Calculation
+    hazard_curve: HazardCurve
+    site_params: HazardSite
 
     # resolve absolute paths (relative to input file) for optional logic tree and config fields
     @field_validator('hazard_model', mode='before')
@@ -136,13 +136,13 @@ class HazardConfig(BaseModel):
         return data
 
 
-class DisaggCurveConfig(BaseModel):
+class DisaggCurve(BaseModel):
     hazard_model_id: Annotated[str, AfterValidator(is_model_version)]
     aggs: Annotated[list[AggregationEnum], BeforeValidator(coerce_to_list)]
     imts: Annotated[list[str], BeforeValidator(coerce_to_list)]
 
 
-class DisaggProbConfig(BaseModel):
+class DisaggProb(BaseModel):
     inv_time: int
     poes: Annotated[list[float], BeforeValidator(coerce_to_list)]
     disagg_outputs: Annotated[list[str], BeforeValidator(coerce_to_list)]
@@ -207,12 +207,12 @@ class DisaggOutput(BaseModel):
     gt_filename: str
 
 
-class DisaggConfig(BaseModel):
+class DisaggInput(BaseModel):
     filepath: FilePath
-    general: GeneralConfig
-    hazard_model: HazardModelConfig
-    hazard_curve: DisaggCurveConfig
-    site_params: HazardSiteConfig
-    disagg: DisaggProbConfig
-    calculation: CalculationConfig
+    general: General
+    hazard_model: HazardModel
+    hazard_curve: DisaggCurve
+    site_params: HazardSite
+    disagg: DisaggProb
+    calculation: Calculation
     output: DisaggOutput

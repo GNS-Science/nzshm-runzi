@@ -37,7 +37,7 @@ from .util import EC2_CONFIGS, ComputePlatform
 if TYPE_CHECKING:
     from toshi_hazard_store.model import AggregationEnum
 
-    from runzi.automation.openquake.config import DisaggConfig
+    from runzi.automation.openquake.config import DisaggInput
 
 
 HAZARD_MAX_TIME = 20  # minutes
@@ -169,7 +169,7 @@ def new_general_task(gt_arguments, title, description, subtask_type, model_type)
 LocVs30 = namedtuple("LocVs30", ["loc", "vs30"])
 
 
-def get_loc_vs30(job_config: 'DisaggConfig') -> Generator[LocVs30, None, None]:
+def get_loc_vs30(job_config: 'DisaggInput') -> Generator[LocVs30, None, None]:
     if job_config.site_params.locations:
         locations = get_locations(job_config.site_params.locations)
     else:
@@ -189,7 +189,7 @@ def get_loc_vs30(job_config: 'DisaggConfig') -> Generator[LocVs30, None, None]:
                 yield LocVs30(loc=locations[i].code, vs30=int(row[col_vs30]))
 
 
-def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, disagg_config: 'DisaggConfig'):
+def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, disagg_config: 'DisaggInput'):
     task_count = 0
 
     extra_env = [

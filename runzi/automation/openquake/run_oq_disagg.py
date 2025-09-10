@@ -11,7 +11,7 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.configuration.openquake.oq_disagg import build_disagg_tasks
 
-from .config import DisaggConfig
+from .config import DisaggInput
 
 loglevel = logging.INFO
 logging.basicConfig(level=logging.INFO)
@@ -29,7 +29,7 @@ log = logging.getLogger(__name__)
 Disagg = namedtuple("Disagg", "location imt vs30 poe")
 
 
-def build_tasks(job_config: DisaggConfig, task_type: SubtaskType, model_type: ModelType):
+def build_tasks(job_config: DisaggInput, task_type: SubtaskType, model_type: ModelType):
 
     scripts = []
     gt_ids = []
@@ -45,7 +45,7 @@ def run_oq_disagg(config: Dict[str, Any]) -> None:
 
     task_type = SubtaskType.OPENQUAKE_HAZARD
     model_type = ModelType.COMPOSITE
-    job_config = DisaggConfig.model_validate(config)
+    job_config = DisaggInput.model_validate(config)
 
     num_workers = job_config.calculation.num_workers
 

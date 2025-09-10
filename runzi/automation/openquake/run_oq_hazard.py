@@ -14,7 +14,7 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
 
-from .config import HazardConfig
+from .config import HazardInput
 
 loglevel = logging.INFO
 logging.basicConfig(level=logging.INFO)
@@ -46,7 +46,7 @@ def run_oq_hazard(config: Dict[str, Any]):
 
     t0 = dt.datetime.now(dt.timezone.utc)
 
-    job_config = HazardConfig.model_validate(config)
+    job_config = HazardInput.model_validate(config)
 
     # some objects in the config (Path type) are not json serializable so we dump to json using the pydantic method
     # which handles these types and load back to json to clean it up so it can be passed to the toshi API
