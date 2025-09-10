@@ -2,8 +2,8 @@ import pytest
 
 import runzi.runners.oq_hazard as run_oq_hazard_module
 from runzi.automation.scaling.local_config import EnvMode
-from runzi.runners.oq_hazard import run_oq_hazard
 from runzi.runners import HazardInput
+from runzi.runners.oq_hazard import run_oq_hazard
 
 FILE_ID = "ABCD"
 
