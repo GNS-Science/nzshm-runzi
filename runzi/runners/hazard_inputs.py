@@ -180,11 +180,10 @@ class DisaggOutput(BaseModel):
     gt_filename: str
 
 
-class HazardInput(BaseModel):
+class HazardInputBase(BaseModel):
     filepath: FilePath
     general: General
     hazard_model: HazardModel
-    hazard_curve: HazardCurve
     calculation: Calculation
     site_params: HazardSite
 
@@ -224,7 +223,11 @@ class HazardInput(BaseModel):
         return data
 
 
-class DisaggInput(HazardInput):
+class HazardInput(HazardInputBase):
+    hazard_curve: HazardCurve
+
+
+class DisaggInput(HazardInputBase):
     disagg: DisaggProb
     output: DisaggOutput
     hazard_curve: DisaggCurve
