@@ -37,7 +37,7 @@ from .util import EC2_CONFIGS, ComputePlatform
 if TYPE_CHECKING:
     from toshi_hazard_store.model import AggregationEnum
 
-    from runzi.automation.openquake.config import DisaggInput
+    from runzi.runners.run_oq_hazard.hazard_inputs import DisaggInput
 
 
 HAZARD_MAX_TIME = 20  # minutes

@@ -4,7 +4,7 @@ from test.helpers import does_not_raise
 import pytest
 from pydantic import ValidationError
 
-from runzi.automation.openquake.config import DisaggInput, HazardInput
+from runzi.runners.hazard_inputs import DisaggInput, HazardInput
 
 def test_from_toml():
     ref = resources.files('test.fixtures.oq_hazard') / 'hazard.toml'

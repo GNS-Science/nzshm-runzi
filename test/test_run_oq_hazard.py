@@ -1,7 +1,7 @@
 import pytest
 
-import runzi.automation.openquake.run_oq_hazard as run_oq_hazard_module
-from runzi.automation.openquake.run_oq_hazard import run_oq_hazard
+import runzi.runners.run_oq_hazard as run_oq_hazard_module
+from runzi.runners.run_oq_hazard import run_oq_hazard
 from runzi.automation.scaling.local_config import EnvMode
 
 FILE_ID = "ABCD"
