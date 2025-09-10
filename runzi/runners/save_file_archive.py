@@ -105,6 +105,16 @@ def run_save_file_archive(
     output_csv_file: Path | None = None,
     dry_run: bool = False,
 ):
+    """Save files as zip archives to toshi API.
+
+    Args:
+        target: path of file to be archived
+        tag: add tag to metadata
+        input_csv_file: target is CSV list of files to archive
+        output_csv_file write CSV of archived files with assigned toshi IDs
+        dry_run: mock run
+    """
+
     if not input_csv_file:
         # just the one file
         process_one_file(dry_run, target, tag)

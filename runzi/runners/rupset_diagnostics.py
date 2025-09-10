@@ -97,6 +97,15 @@ def run_tasks(general_task_id, rupture_sets):
 
 
 def run_rupset_diagnostics(toshi_id: str, num_workers: int):
+    """Launch jobs to generate rupture set report diagnostics.
+
+    Args:
+        toshi_id: ID of the File (for a single rupture set) or GeneralTask (for multiple rupture sets).
+        num_workers: The number of proceses to run in parallel.
+
+    Returns:
+        general task ID if using toshi API
+    """
 
     file_or_task_id = toshi_id
     t0 = dt.datetime.now()

@@ -9,6 +9,13 @@ from runzi.runners.save_file_archive import process_one_file
 
 
 def run_save_bg_file_archives(search_dir, archive_table_fn, dry_run):
+    """Save the DSM (background seismicity) source files to toshi API.
+
+    Args:
+        search_dir: the directory that contains the source files.
+        archive_table_fn: filepath to write record of saved files to.
+        dry_run: mock the archiving.
+    """
 
     with open(archive_table_fn, 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
@@ -35,6 +42,7 @@ def run_save_bg_file_archives(search_dir, archive_table_fn, dry_run):
 
 
 def single_directory_crawl(search_dir, archive_table_fn, dry_run):
+    """One off use function. Deprecated."""
 
     with open(archive_table_fn, 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')

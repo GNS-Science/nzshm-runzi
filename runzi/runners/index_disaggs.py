@@ -449,6 +449,7 @@ def convert_index(index):
 
 
 def run_index_disaggs(args):
+    """Add disaggregation realizations to a list for use by toshi-hazard-post."""
     # index_filepath = Path(WORK_PATH, "gt-index", "gt-index.json")
     # if not index_filepath.parent.exists():
     #     index_filepath.parent.mkdir()

@@ -138,6 +138,14 @@ def build_tasks(general_task_id, job_input: SubductionRuptureSetsInput):
 
 
 def run_subduction_rupture_sets(job_input: SubductionRuptureSetsInput) -> str | None:
+    """Launch jobs to build subduction rupture sets.
+
+    Args:
+        job_input: input arguments
+
+    Returns:
+        general task ID if using toshi API
+    """
 
     t0 = dt.datetime.now()
 

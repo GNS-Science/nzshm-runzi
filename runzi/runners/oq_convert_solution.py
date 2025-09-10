@@ -34,7 +34,18 @@ def run_oq_convert_solution(
     title: str,
     description: str,
     num_workers: Optional[int] = None,
-):
+) -> str | None:
+    """Launch jobs to convert OpenSHA inversion solutions to OpenQuake source input files.
+
+    Args:
+        ids: List toshi IDs of objects to convert. Can be individual InversionSolutions or GeneralTask.
+        title: Title for the task.
+        description: A description of the task.
+        num_workers: The number of processes to run in parallel.
+
+    Returns:
+        general task ID if using toshi API
+    """
 
     t0 = dt.datetime.utcnow()
 
@@ -99,6 +110,8 @@ def run_oq_convert_solution(
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+
+    return new_gt_id
 
 
 def parse_args():

@@ -23,7 +23,7 @@ def save_file(
     ] = None,
     dry_run: Annotated[bool, typer.Option(help="mock run")] = False,
 ):
-    """Zip a file and save as a ToshiAPI File object.allow_dash=
+    """Zip a file and save as a ToshiAPI File object.
 
     Can provide single target file
     run_save_file_archive(target, tag, input_csv_file, output_csv_file, dry_run)

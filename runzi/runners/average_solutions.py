@@ -29,7 +29,14 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
 
 
 def run_average_solutions(job_input: AverageSolutionsInput) -> str | None:
+    """Launch jobs to calculate averaged inversion solutions by taking mean rates.
 
+    Args:
+        job_input: input arguments
+
+    Returns:
+        general task ID if using toshi API
+    """
     source_solution_groups = job_input.solution_groups
     task_title = job_input.title
     task_description = job_input.description

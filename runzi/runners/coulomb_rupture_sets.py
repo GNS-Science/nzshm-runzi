@@ -143,6 +143,14 @@ class CoulombRuptureSetsInput(InputBase):
 
 
 def run_coulomb_rupture_sets(job_input: CoulombRuptureSetsInput) -> str | None:
+    """Launch jobs to build Coulomb (crustal) rupture sets.
+
+    Args:
+        job_input: input arguments
+
+    Returns:
+        general task ID if using toshi API
+    """
     t0 = dt.datetime.now()
 
     logging.basicConfig(level=logging.INFO)

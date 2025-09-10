@@ -58,7 +58,14 @@ class TimeDependentSolutionInput(InputBase):
 
 
 def run_time_dependent_solution(job_input: TimeDependentSolutionInput) -> str | None:
+    """Launch jobs to modify InversionSolution event rates for time dependence.
 
+    Args:
+        job_input: input arguments
+
+    Returns:
+        general task ID if using toshi API
+    """
     source_solution_ids = job_input.solution_ids
     current_years = job_input.current_years
     mre_enums = job_input.mre_enums

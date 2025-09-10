@@ -45,6 +45,14 @@ class ScaleSolutionsInput(InputBase):
 
 
 def run_scale_solution(job_input: ScaleSolutionsInput) -> str | None:
+    """Launch jobs to scale rupture rates of inversion solutions.
+
+    Args:
+        job_input: input arguments
+
+    Returns:
+        general task ID if using toshi API
+    """
     source_solution_ids = job_input.solution_ids
     scales = job_input.scales
     task_title = job_input.title
