@@ -108,32 +108,6 @@ class HazardSite(BaseModel):
         return self
 
 
-class HazardInput(BaseModel):
-    filepath: FilePath
-    general: General
-    hazard_model: HazardModel
-    calculation: Calculation
-    hazard_curve: HazardCurve
-    site_params: HazardSite
-
-    # resolve absolute paths (relative to input file) for optional logic tree and config fields
-    @field_validator('hazard_model', mode='before')
-    @classmethod
-    def absolute_model_paths(cls, data: Any, info: ValidationInfo) -> Any:
-        if isinstance(data, dict):
-            for key in ["srm_logic_tree", "gmcm_logic_tree", "hazard_config"]:
-                if data.get(key):
-                    data[key] = resolve_path(data[key], info.data["filepath"])
-        return data
-
-    # resolve absolute paths (relative to input file) for optional site file
-    @field_validator('site_params', mode='before')
-    @classmethod
-    def absolute_site_path(cls, data: Any, info: ValidationInfo) -> Any:
-        if isinstance(data, dict):
-            if data.get("locations_file"):
-                data["locations_file"] = resolve_path(data["locations_file"], info.data["filepath"])
-        return data
 
 
 class DisaggCurve(BaseModel):
@@ -207,12 +181,35 @@ class DisaggOutput(BaseModel):
     gt_filename: str
 
 
-class DisaggInput(BaseModel):
+class HazardInput(BaseModel):
     filepath: FilePath
     general: General
     hazard_model: HazardModel
-    hazard_curve: DisaggCurve
-    site_params: HazardSite
-    disagg: DisaggProb
+    hazard_curve: HazardCurve
     calculation: Calculation
+    site_params: HazardSite
+
+    # resolve absolute paths (relative to input file) for optional logic tree and config fields
+    @field_validator('hazard_model', mode='before')
+    @classmethod
+    def absolute_model_paths(cls, data: Any, info: ValidationInfo) -> Any:
+        if isinstance(data, dict):
+            for key in ["srm_logic_tree", "gmcm_logic_tree", "hazard_config"]:
+                if data.get(key):
+                    data[key] = resolve_path(data[key], info.data["filepath"])
+        return data
+
+    # resolve absolute paths (relative to input file) for optional site file
+    @field_validator('site_params', mode='before')
+    @classmethod
+    def absolute_site_path(cls, data: Any, info: ValidationInfo) -> Any:
+        if isinstance(data, dict):
+            if data.get("locations_file"):
+                data["locations_file"] = resolve_path(data["locations_file"], info.data["filepath"])
+        return data
+
+class DisaggInput(HazardInput):
+    disagg: DisaggProb
     output: DisaggOutput
+    hazard_curve: DisaggCurve
+
