@@ -1,7 +1,10 @@
 from .average_solutions import AverageSolutionsInput, run_average_solutions
 from .coulomb_rupture_sets import CoulombRuptureSetsInput, run_coulomb_rupture_sets
+from .hazard_inputs import DisaggInput, HazardInput
 from .index_disaggs import run_index_disaggs
 from .oq_convert_solution import run_oq_convert_solution
+from .oq_disagg import run_oq_disagg
+from .oq_hazard import run_oq_hazard
 from .rupset_diagnostics import run_rupset_diagnostics
 from .save_bg_file_archives import run_save_bg_file_archives
 from .save_distseis_mastertable import run_save_distseis_mastertable

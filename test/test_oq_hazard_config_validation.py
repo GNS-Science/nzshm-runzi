@@ -6,10 +6,12 @@ from pydantic import ValidationError
 
 from runzi.runners.hazard_inputs import DisaggInput, HazardInput
 
+
 def test_from_toml():
     ref = resources.files('test.fixtures.oq_hazard') / 'hazard.toml'
     with resources.as_file(ref) as input_path:
         assert HazardInput.from_toml(input_path)
+
 
 # default fixture should be a valid config
 def test_config_validation(hazard_input_dict):

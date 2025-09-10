@@ -1,8 +1,9 @@
 import pytest
 
 import runzi.runners.oq_hazard as run_oq_hazard_module
-from runzi.runners.oq_hazard import run_oq_hazard
 from runzi.automation.scaling.local_config import EnvMode
+from runzi.runners.oq_hazard import run_oq_hazard
+from runzi.runners import HazardInput
 
 FILE_ID = "ABCD"
 
@@ -36,6 +37,7 @@ def test_create_file(mocker, hazard_input_dict):
     hazard_input_dict["hazard_model"]["gmcm_logic_tree"] = "gmcm_small.json"
     hazard_input_dict["hazard_model"]["srm_logic_tree"] = "srm_small.json"
     hazard_input_dict["hazard_model"]["hazard_config"] = "hazard_config.json"
+    hazard_input = HazardInput(**hazard_input_dict)
 
     mocked_build_tasks = mocker.patch.object(run_oq_hazard_module, "build_tasks")
     mocker.patch.object(run_oq_hazard_module, "USE_API", True)
@@ -43,7 +45,7 @@ def test_create_file(mocker, hazard_input_dict):
     mocker.patch.object(run_oq_hazard_module, "ToshiApi", MockToshiApi)
     mocker.patch.object(run_oq_hazard_module, "schedule_tasks")
 
-    run_oq_hazard(hazard_input_dict)
+    run_oq_hazard(hazard_input)
     assert mocked_build_tasks.call_args.args[1]["site_params"]["locations_file_id"] == FILE_ID
     assert mocked_build_tasks.call_args.args[1]["hazard_model"]["gmcm_logic_tree_id"] == FILE_ID
     assert mocked_build_tasks.call_args.args[1]["hazard_model"]["srm_logic_tree_id"] == FILE_ID
@@ -56,6 +58,7 @@ def test_create_some_files(mocker, hazard_input_dict):
     del hazard_input_dict["site_params"]["locations"]
 
     hazard_input_dict["hazard_model"]["gmcm_logic_tree"] = "gmcm_small.json"
+    hazard_input = HazardInput(**hazard_input_dict)
 
     mocked_build_tasks = mocker.patch.object(run_oq_hazard_module, "build_tasks")
     mocker.patch.object(run_oq_hazard_module, "USE_API", True)
@@ -63,7 +66,7 @@ def test_create_some_files(mocker, hazard_input_dict):
     mocker.patch.object(run_oq_hazard_module, "ToshiApi", MockToshiApi)
     mocker.patch.object(run_oq_hazard_module, "schedule_tasks")
 
-    run_oq_hazard(hazard_input_dict)
+    run_oq_hazard(hazard_input)
     assert mocked_build_tasks.call_args.args[1]["site_params"]["locations_file_id"] == FILE_ID
     assert mocked_build_tasks.call_args.args[1]["hazard_model"]["gmcm_logic_tree_id"] == FILE_ID
 

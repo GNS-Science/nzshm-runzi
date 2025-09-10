@@ -1,9 +1,17 @@
 import importlib.resources as resources
-from typing import Any, Dict
+from pathlib import Path
+from typing import Any, Dict, Union
 
 import pytest
+import tomlkit
 
-from runzi.automation.cli.cli import load_input
+
+def load_input(config_filename: Union[Path, str]) -> Dict[str, Any]:
+    with Path(config_filename).open('r') as config_file:
+        data = config_file.read()
+    config = tomlkit.parse(data).unwrap()
+    config["filepath"] = Path(config_filename).absolute()
+    return config
 
 
 @pytest.fixture(scope='function')
