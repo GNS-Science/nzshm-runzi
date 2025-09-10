@@ -3,12 +3,11 @@ from pathlib import Path
 import pytest
 import tomlkit
 
-import runzi.automation.runner_inputs as runner_inputs
+from runzi.runners import AverageSolutionsInput, CoulombRuptureSetsInput, ScaleSolutionsInput, SubductionRuptureSetsInput, TimeDependentSolutionInput
 from pydantic import ValidationError
 from runzi.automation.scaling.toshi_api.general_task import ModelType
 
-
-fixtures_path = Path(__file__).parent.parent.parent / 'fixtures/automation/job_inputs'
+fixtures_path = Path(__file__).parent.parent / 'fixtures/runners'
 
 @pytest.fixture(scope='function')
 def td_data():
@@ -31,16 +30,16 @@ def get_dict_from_toml(filepath):
 def test_input_from_toml_io():
     input_filepath = fixtures_path / 'average_solutions.toml'
     with input_filepath.open() as input_file:
-        job_input = runner_inputs.AverageSolutionsInput.from_toml(input_file)
+        job_input = AverageSolutionsInput.from_toml(input_file)
     assert job_input
 
 
 class_filename = [
-    (runner_inputs.AverageSolutionsInput, 'average_solutions.toml'),
-    (runner_inputs.CoulombRuptureSetsInput, 'coulomb_rupture_sets.toml'),
-    (runner_inputs.ScaleSolutionsInput, 'scale_solutions.toml'),
-    (runner_inputs.SubductionRuptureSetsInput, 'subduction_rupture_sets.toml'),
-    (runner_inputs.TimeDependentSolutionInput, 'time_dependent_solution.toml'),
+    (AverageSolutionsInput, 'average_solutions.toml'),
+    (CoulombRuptureSetsInput, 'coulomb_rupture_sets.toml'),
+    (ScaleSolutionsInput, 'scale_solutions.toml'),
+    (SubductionRuptureSetsInput, 'subduction_rupture_sets.toml'),
+    (TimeDependentSolutionInput, 'time_dependent_solution.toml'),
 ]
 
 
@@ -70,27 +69,27 @@ def test_scale_solutions_xor():
     del data3['polygon_max_mag']
 
     for data in [data0, data3]:
-        assert runner_inputs.ScaleSolutionsInput(**data)
+        assert ScaleSolutionsInput(**data)
     for data in [data1, data2]:
         with pytest.raises(ValidationError):
-            runner_inputs.ScaleSolutionsInput(**data)
+            ScaleSolutionsInput(**data)
 
 @pytest.mark.parametrize("model_type", [ModelType(10), 20, "CRUSTAL", "subduction", "SuBdUcTiOn"])
 def test_time_dependent_model_type(model_type, td_data):
     """model_type can be anything that can be evaluted to ModelType enum."""
     td_data["model_type"] = model_type
-    assert runner_inputs.TimeDependentSolutionInput(**td_data)
+    assert TimeDependentSolutionInput(**td_data)
 
 
 def test_time_dependent_error(td_data):
     """model_type must be able to be evaluted to ModelType enum."""
     td_data["model_type"] = "foobar"
     with pytest.raises(ValidationError):
-        assert runner_inputs.TimeDependentSolutionInput(**td_data)
+        assert TimeDependentSolutionInput(**td_data)
 
 def test_time_dependent_serialize(td_data):
     """model_type should be serialzed as name of enum."""
     model_type = ModelType["CRUSTAL"]
     td_data["model_type"] = model_type
-    data_dump = runner_inputs.TimeDependentSolutionInput(**td_data).model_dump()
+    data_dump = TimeDependentSolutionInput(**td_data).model_dump()
     assert data_dump["model_type"] == model_type.name

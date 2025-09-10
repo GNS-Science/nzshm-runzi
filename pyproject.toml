@@ -32,6 +32,7 @@ dependencies = [
     "nzshm-model (>=0.13.6)",
     "python-dotenv (>=1.1.0)",
     "toshi-hazard-store (>=1.2.3,<2.0.0)",
+    "typer (>=0.17.4,<0.18.0)",
 ]
 
 
@@ -43,6 +44,7 @@ packages = [
 
 [tool.poetry.scripts]
 runzi-hazard = 'runzi.automation.cli:rnz_hazard'
+runzi = 'runzi.scripts.runzi_cli:app'
 
 
 [tool.poetry.group.dev.dependencies]

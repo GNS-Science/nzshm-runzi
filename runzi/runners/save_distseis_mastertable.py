@@ -1,21 +1,13 @@
-#! python run_save_file.py
-"""
-a utility script to zip and save a file (with optional tag metadata) as a ToshiAPI File object
+"""This module provides the runner function to zip archive and upload the DSM (background seismisicy)
+files to toshiAPI."""
 
-inputs:-
- - a path to the source file
- - tag to include in meta data
- - For ToshiAPI pass the ENV settings for the intended environment (PROD,TEST LOCAL)
- - option to use csv list produced by nz-oq-distseis/list_nrmls.py script.
-
-"""
 import argparse
 import collections
 import csv
 import logging
 from pathlib import Path
 
-from runzi.automation.run_save_file_archive import process_one_file
+from runzi.runners.save_file_archive import process_one_file
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -57,7 +49,7 @@ def parse_args():
     return args
 
 
-def main():
+def run_save_distseis_mastertable():
     args = parse_args()
 
     processed = process_masterfile(args)
@@ -72,4 +64,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_save_distseis_mastertable()

@@ -1,15 +1,23 @@
+"""This module provides the runner function for averaging the rupture rates from multiple inversions."""
+
 import datetime as dt
 import getpass
 import logging
 from argparse import ArgumentParser
 from pathlib import Path
 
-from runzi.automation.runner_inputs import AverageSolutionsInput
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
 from runzi.configuration.average_inversion_solutions import build_average_tasks
+from runzi.runners.runner_inputs import InputBase
+
+
+class AverageSolutionsInput(InputBase):
+    """Input for averaging solutions."""
+
+    solution_groups: list[list[str]]
 
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
@@ -20,8 +28,15 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-def run(job_input: AverageSolutionsInput) -> str | None:
+def run_average_solutions(job_input: AverageSolutionsInput) -> str | None:
+    """Launch jobs to calculate averaged inversion solutions by taking mean rates.
 
+    Args:
+        job_input: input arguments
+
+    Returns:
+        general task ID if using toshi API
+    """
     source_solution_groups = job_input.solution_groups
     task_title = job_input.title
     task_description = job_input.description
@@ -97,4 +112,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with Path(args.filename).open() as input_file:
         job_input = AverageSolutionsInput.from_toml(input_file)
-    run(job_input)
+    run_average_solutions(job_input)

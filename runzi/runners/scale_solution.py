@@ -1,22 +1,22 @@
 #!python3
-"""
-This script produces tasks in either AWS, PBS or LOCAL that scale the rates of an opensha InversionSolution
-
-"""
+"""This module provides the runner function to scale the rates of an opensha InversionSolutions."""
 import base64
 import datetime as dt
 import getpass
 import logging
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import Optional
 
-from runzi.automation.runner_inputs import ScaleSolutionsInput
+from pydantic import model_validator
+
 from runzi.automation.scaling.file_utils import get_output_file_ids
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
 from runzi.configuration.scale_inversion_solution import build_scale_tasks
+from runzi.runners.runner_inputs import InputBase
 
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
@@ -27,7 +27,32 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-def run(job_input: ScaleSolutionsInput) -> str | None:
+class ScaleSolutionsInput(InputBase):
+    """Input for scaling inversion solutions rates."""
+
+    solution_ids: list[str]
+    scales: list[float]
+    polygon_scale: Optional[float] = None
+    polygon_max_mag: Optional[float] = None
+
+    @model_validator(mode='after')
+    def polygon_scale_and_mag(self) -> 'ScaleSolutionsInput':
+        scale = self.polygon_scale is not None
+        mag = self.polygon_max_mag is not None
+        if scale ^ mag:
+            raise ValueError("must set both polygon_scale and polygon_max_mag or neither")
+        return self
+
+
+def run_scale_solution(job_input: ScaleSolutionsInput) -> str | None:
+    """Launch jobs to scale rupture rates of inversion solutions.
+
+    Args:
+        job_input: input arguments
+
+    Returns:
+        general task ID if using toshi API
+    """
     source_solution_ids = job_input.solution_ids
     scales = job_input.scales
     task_title = job_input.title
@@ -88,11 +113,12 @@ def run(job_input: ScaleSolutionsInput) -> str | None:
 
         general_task_id = toshi_api.general_task.create_task(gt_args)
 
-    print("GENERAL_TASK_ID:", general_task_id)
+        print("GENERAL_TASK_ID:", general_task_id)
 
     tasks = build_tasks(general_task_id, args, subtask_type, model_type, toshi_api)
 
-    toshi_api.general_task.update_subtask_count(general_task_id, len(tasks))
+    if USE_API:
+        toshi_api.general_task.update_subtask_count(general_task_id, len(tasks))
 
     print('worker count: ', worker_pool_size)
 
@@ -112,4 +138,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with Path(args.filename).open() as input_file:
         job_input = ScaleSolutionsInput.from_toml(input_file)
-    run(job_input)
+    run_scale_solution(job_input)

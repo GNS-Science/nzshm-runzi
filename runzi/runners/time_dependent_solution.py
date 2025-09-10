@@ -1,7 +1,5 @@
-"""
-This script produces tasks that modify InversionSolution event rates based on Most Recevnt Events to
-produce a Time Dependent Solution
-"""
+"""This module provides the runner function to modify InversionSolution event rates based on Most Recevnt
+Events to produce a Time Dependent Solution."""
 
 import base64
 import datetime as dt
@@ -9,14 +7,17 @@ import getpass
 import logging
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import Any
 
-from runzi.automation.runner_inputs import TimeDependentSolutionInput
+from pydantic import field_serializer, field_validator
+
 from runzi.automation.scaling.file_utils import get_output_file_ids
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.configuration.time_dependent_inversion_solution import build_time_dependent_tasks
+from runzi.runners.runner_inputs import InputBase
 
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
@@ -27,8 +28,44 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-def run(job_input: TimeDependentSolutionInput) -> str | None:
+class TimeDependentSolutionInput(InputBase):
+    model_type: ModelType
+    solution_ids: list[str]
+    current_years: list[int]
+    mre_enums: list[str]
+    forecast_timespans: list[int]
+    aperiodicities: list[str]
 
+    # we want to use the (case-insensitive) name for the model_type for input
+    @field_validator('model_type', mode='before')
+    @classmethod
+    def convert_to_enum(cls, value: Any) -> ModelType:
+        if isinstance(value, ModelType):
+            return value
+        try:
+            return ModelType[value.upper()]
+        except (KeyError, AttributeError):
+            try:
+                return ModelType(value)
+            except ValueError:
+                raise ValueError("model_type input is not valid")
+
+    # because we before-validate model_type to convert from a string of the enum name to enum
+    # instance, we also want to serialize this way
+    @field_serializer('model_type')
+    def serialize_model_type(self, model_type: ModelType, _info):
+        return model_type.name
+
+
+def run_time_dependent_solution(job_input: TimeDependentSolutionInput) -> str | None:
+    """Launch jobs to modify InversionSolution event rates for time dependence.
+
+    Args:
+        job_input: input arguments
+
+    Returns:
+        general task ID if using toshi API
+    """
     source_solution_ids = job_input.solution_ids
     current_years = job_input.current_years
     mre_enums = job_input.mre_enums
@@ -114,4 +151,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with Path(args.filename).open() as input_file:
         job_input = TimeDependentSolutionInput.from_toml(input_file)
-    run(job_input)
+    run_time_dependent_solution(job_input)

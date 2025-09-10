@@ -1,6 +1,4 @@
-"""
-Configuration for building subduction rupture sets.
-"""
+"""This module provides the runner function to build subduction rupture sets."""
 
 import datetime as dt
 import getpass
@@ -12,13 +10,10 @@ from multiprocessing.dummy import Pool
 from pathlib import Path, PurePath
 from subprocess import check_call
 
-from runzi.automation.runner_inputs import SubductionRuptureSetsInput
 from runzi.automation.scaling import subduction_rupture_set_builder_task
-from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 
 # Set up your local config, from environment variables, with some sone defaults
-from .scaling.local_config import (  # JVM_HEAP_MAX,; JVM_HEAP_START,
+from runzi.automation.scaling.local_config import (
     API_KEY,
     API_URL,
     CLUSTER_MODE,
@@ -31,12 +26,27 @@ from .scaling.local_config import (  # JVM_HEAP_MAX,; JVM_HEAP_START,
     WORK_PATH,
     EnvMode,
 )
+from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
+from runzi.runners.runner_inputs import InputBase
 
 JVM_HEAP_MAX = 12
 JVM_HEAP_START = 2
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 MAX_JOB_TIME_SECS = 60 * 30  # Change this soon
+
+
+class SubductionRuptureSetsInput(InputBase):
+    models: list[str]
+    min_aspect_ratios: list[float]
+    max_aspect_ratios: list[float]
+    aspect_depth_thresholds: list[int]
+    min_fill_ratios: list[float]
+    growth_position_epsilons: list[float]
+    growth_size_epsilons: list[float]
+    scaling_relationships: list[str]
+    deformation_models: list[str]
 
 
 def build_tasks(general_task_id, job_input: SubductionRuptureSetsInput):
@@ -127,7 +137,15 @@ def build_tasks(general_task_id, job_input: SubductionRuptureSetsInput):
         yield str(script_file_path)
 
 
-def run(job_input: SubductionRuptureSetsInput) -> str | None:
+def run_subduction_rupture_sets(job_input: SubductionRuptureSetsInput) -> str | None:
+    """Launch jobs to build subduction rupture sets.
+
+    Args:
+        job_input: input arguments
+
+    Returns:
+        general task ID if using toshi API
+    """
 
     t0 = dt.datetime.now()
 
@@ -190,4 +208,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with Path(args.filename).open() as input_file:
         job_input = SubductionRuptureSetsInput.from_toml(input_file)
-    run(job_input)
+    run_subduction_rupture_sets(job_input)

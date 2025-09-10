@@ -1,6 +1,5 @@
-#! python run_save_file.py
 """
-a utility script to zip and save a file (with optional tag metadata) as a ToshiAPI File object
+A utility script to zip and save a file (with optional tag metadata) as a ToshiAPI File object
 
 inputs:-
  - a path to the source file
@@ -9,6 +8,7 @@ inputs:-
  - option to use csv list produced by nz-oq-distseis/list_nrmls.py script.
 
 """
+
 import argparse
 import collections
 import csv
@@ -44,7 +44,7 @@ def create_archive(filename, working_path):
         raise Exception("file does not exist.")
 
 
-def process_one_file(dry_run, filepath, tag=None):
+def process_one_file(dry_run: bool, filepath: str | Path, tag: str | None = None):
     """Archive and upload one file."""
 
     log.info(f"Processing */{Path(filepath).name} :: {tag}")
@@ -70,16 +70,19 @@ def process_one_file(dry_run, filepath, tag=None):
         return archive_file_id
 
 
-def process_file_list(args):
-    with open(args.target, 'r') as csvfile:
+def process_file_list(
+    target: Path,
+    dry_run: bool,
+):
+    with open(target, 'r') as csvfile:
         reader = csv.reader(csvfile)
         header = next(reader)
         if not header == VALID_ROW:
-            log.error(f'file {args.target} is not in the correct format.')
+            log.error(f'file {target} is not in the correct format.')
 
         for dr in map(lambda x: InputDataRow(*x), reader):
-            toshi_id = process_one_file(args.dry_run, dr.fullpath, tag=dr.parent)
-            yield OutputDataRow(dr.fullpath, dr.grandparent, dr.parent, dr.filename, toshi_id)
+            toshi_id = process_one_file(dry_run, dr.fullpath, tag=dr.parent)  # type: ignore
+            yield OutputDataRow(dr.fullpath, dr.grandparent, dr.parent, dr.filename, toshi_id)  # type: ignore
 
 
 def parse_args():
@@ -92,25 +95,38 @@ def parse_args():
     parser.add_argument("-D", "--dry-run", action="store_true", help="mock run")
     parser.add_argument("-o", "--output_csv_file", help="write out CSV, adding toshi_id to input csv")
     args = parser.parse_args()
-    return args
+    return vars(args)
 
 
-def main():
-    args = parse_args()
+def run_save_file_archive(
+    target: Path,
+    tag: str | None,
+    input_csv_file: bool = False,
+    output_csv_file: Path | None = None,
+    dry_run: bool = False,
+):
+    """Save files as zip archives to toshi API.
 
-    if not args.input_csv_file:
+    Args:
+        target: path of file to be archived
+        tag: add tag to metadata
+        input_csv_file: target is CSV list of files to archive
+        output_csv_file write CSV of archived files with assigned toshi IDs
+        dry_run: mock run
+    """
+
+    if not input_csv_file:
         # just the one file
-        process_one_file(args.dry_run, args.target, args.tag)
+        process_one_file(dry_run, target, tag)
         return
 
     # read from input
-    if args.input_csv_file:
-        print(args)
-        processed = process_file_list(args)
+    if input_csv_file:
+        processed = process_file_list(target, dry_run)
 
     # write the output
-    if args.input_csv_file and args.output_csv_file:
-        with open(args.output_csv_file, 'w', newline='') as csvfile:
+    if input_csv_file and output_csv_file:
+        with open(output_csv_file, 'w', newline='') as csvfile:
             _writer = csv.writer(csvfile)
             _writer.writerow(VALID_ROW_OUT)
             for p in processed:
@@ -118,4 +134,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_save_file_archive(**parse_args())

@@ -1,3 +1,5 @@
+"""This module provides the runner function for creating Coulomb rupture sets."""
+
 import datetime as dt
 import getpass
 import itertools
@@ -9,8 +11,10 @@ from multiprocessing.dummy import Pool
 from pathlib import Path, PurePath
 from subprocess import check_call
 
-# Set up your local config, from environment variables, with some sone defaults
-from scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
+from pydantic import BaseModel
+
+from runzi.automation.scaling import coulomb_rupture_set_builder_task
+from runzi.automation.scaling.local_config import (
     API_KEY,
     API_URL,
     CLUSTER_MODE,
@@ -22,20 +26,11 @@ from scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
     USE_API,
     WORK_PATH,
 )
-
-from runzi.automation.runner_inputs import CoulombRuptureSetsInput
-from runzi.automation.scaling import coulomb_rupture_set_builder_task
 from runzi.automation.scaling.opensha_task_factory import get_factory
-
-# from nshm_toshi_client.general_task import GeneralTask
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
+from runzi.runners.runner_inputs import InputBase
 
 logging.basicConfig(level=logging.INFO)
-
-# If you wish to override something in the main config, do so here ..
-# WORKER_POOL_SIZE = 3
-# JVM_HEAP_MAX = 16
-# JAVA_THREADS = 10
 
 JVM_HEAP_MAX = 32
 JAVA_THREADS = 16
@@ -126,11 +121,36 @@ def build_tasks(general_task_id, args):
 
         yield str(script_file_path)
 
-        # testing
-        # return
+
+class CoulombRuptureSetsInput(InputBase):
+    """Input for generating Coulomb rupture sets."""
+
+    class DepthScaling(BaseModel):
+        tvz: float
+        sans: float
+
+    max_sections: int
+    models: list[str]
+    jump_limits: list[int]
+    adaptive_min_distances: list[int]
+    thinning_factors: list[float]
+    min_sub_sects_per_parents: list[int]
+    min_sub_sections_list: list[int]
+    depth_scaling: list[DepthScaling]
+
+    # testing
+    # return
 
 
-def run(job_input: CoulombRuptureSetsInput) -> str | None:
+def run_coulomb_rupture_sets(job_input: CoulombRuptureSetsInput) -> str | None:
+    """Launch jobs to build Coulomb (crustal) rupture sets.
+
+    Args:
+        job_input: input arguments
+
+    Returns:
+        general task ID if using toshi API
+    """
     t0 = dt.datetime.now()
 
     logging.basicConfig(level=logging.INFO)
@@ -211,4 +231,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with Path(args.filename).open() as input_file:
         job_input = CoulombRuptureSetsInput.from_toml(input_file)
-    run(job_input)
+    run_coulomb_rupture_sets(job_input)

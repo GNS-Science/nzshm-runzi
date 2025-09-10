@@ -1,27 +1,27 @@
-#!python3
-"""
-This script produces tasks in either AWS, PBS or LOCAL that convert an opensha InversionSolution
-into source NRML XML files
+"""This module provides the runner function to convert an opensha InversionSolution into source NRML XML files."""
 
- -  InversionSolution
- - A GT containing Inversion Solutions
-
-"""
 import base64
 import datetime as dt
 import getpass
 import logging
 from argparse import ArgumentParser
+from typing import Optional
 
 from runzi.automation.scaling.file_utils import get_output_file_ids
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
-from runzi.configuration.oq_opensha_nrml_convert import build_nrml_tasks
+
+try:
+    from runzi.configuration.oq_opensha_nrml_convert import build_nrml_tasks
+except ImportError:
+    print("openquake not installed, not importing")
 
 
-def build_tasks(new_gt_id: str, args: dict, task_type: SubtaskType, model_type: ModelType, toshi_api: ToshiApi) -> list:
+def build_tasks(
+    new_gt_id: str | None, args: dict, task_type: SubtaskType, model_type: ModelType, toshi_api: ToshiApi
+) -> list:
     scripts = []
     for script_file in build_nrml_tasks(new_gt_id, task_type, model_type, args, toshi_api):
         print('scheduling: ', script_file)
@@ -29,12 +29,23 @@ def build_tasks(new_gt_id: str, args: dict, task_type: SubtaskType, model_type: 
     return scripts
 
 
-def run(args):
+def run_oq_convert_solution(
+    ids: list[str],
+    title: str,
+    description: str,
+    num_workers: Optional[int] = None,
+) -> str | None:
+    """Launch jobs to convert OpenSHA inversion solutions to OpenQuake source input files.
 
-    scaled_solution_ids = args.ids
-    task_title = args.title
-    task_description = args.description
-    worker_pool_size = args.num_workers
+    Args:
+        ids: List toshi IDs of objects to convert. Can be individual InversionSolutions or GeneralTask.
+        title: Title for the task.
+        description: A description of the task.
+        num_workers: The number of processes to run in parallel.
+
+    Returns:
+        general task ID if using toshi API
+    """
 
     t0 = dt.datetime.utcnow()
 
@@ -55,7 +66,7 @@ def run(args):
 
     # if a GT id has been provided, unpack to get individual solution ids
     source_solution_ids_list = []
-    for source_solution_id in scaled_solution_ids:
+    for source_solution_id in ids:
         if 'GeneralTask' in str(base64.b64decode(source_solution_id)):
             source_solution_ids_list += [out['id'] for out in get_output_file_ids(toshi_api, source_solution_id)]
         else:
@@ -78,7 +89,7 @@ def run(args):
     if USE_API:
         # create new task in toshi_api
         gt_args = (
-            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=task_title, description=task_description)
+            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=title, description=description)
             .set_argument_list(args_list)
             .set_subtask_type(task_type)
             .set_model_type(model_type)
@@ -93,12 +104,14 @@ def run(args):
     if USE_API:
         toshi_api.general_task.update_subtask_count(new_gt_id, len(tasks))
 
-    print('worker count: ', worker_pool_size)
+    print('worker count: ', num_workers)
 
-    schedule_tasks(tasks, worker_pool_size)
+    schedule_tasks(tasks, num_workers)
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+
+    return new_gt_id
 
 
 def parse_args():
@@ -112,8 +125,8 @@ def parse_args():
     )
     parser.add_argument("-n", "--num-workers", type=int, default=1, help="number of parallel workers")
     args = parser.parse_args()
-    return args
+    return vars(args)
 
 
 if __name__ == "__main__":
-    run(parse_args())
+    run_oq_convert_solution(**parse_args())

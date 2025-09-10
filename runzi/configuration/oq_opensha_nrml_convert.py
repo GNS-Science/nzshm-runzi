@@ -12,7 +12,11 @@ from runzi.util.aws import get_ecs_job_config
 
 
 def build_nrml_tasks(
-    general_task_id: str, subtask_type: SubtaskType, model_type: ModelType, subtask_arguments, toshi_api: ToshiApi
+    general_task_id: str | None,
+    subtask_type: SubtaskType,
+    model_type: ModelType,
+    subtask_arguments,
+    toshi_api: ToshiApi,
 ):
 
     task_count = 0

@@ -69,7 +69,7 @@ def build_scale_tasks(
             else:
                 # write a config
                 task_factory.write_task_config(task_arguments, job_arguments)
-                script = task_factory.get_task_script()
+                script = task_factory.get_task_script()[0]
 
                 script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
                 with open(script_file_path, 'w') as f:

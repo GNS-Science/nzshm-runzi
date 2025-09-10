@@ -1,3 +1,5 @@
+"""This module provides the runner function for running rupture set diagnostic reports."""
+
 import base64
 import datetime as dt
 import logging
@@ -10,9 +12,7 @@ from subprocess import check_call
 
 from runzi.automation.scaling import ruptset_diags_report_task
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id, get_output_file_ids
-
-# Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_MAX,
+from runzi.automation.scaling.local_config import (
     API_KEY,
     API_URL,
     CLUSTER_MODE,
@@ -39,17 +39,8 @@ logging.getLogger('git.cmd').setLevel(loglevel)
 
 log = logging.getLogger(__name__)
 
-# If you wish to override something in the main config, do so here ..
 JVM_HEAP_MAX = 16
 JAVA_THREADS = 12
-
-
-# If using API give this task a descriptive setting...
-TASK_TITLE = "Baseline Inversion - Coulomb"
-TASK_DESCRIPTION = """
-- Coulomb rupture sets
-- Fixed duration comparisons
-"""
 
 
 def run_tasks(general_task_id, rupture_sets):
@@ -105,11 +96,19 @@ def run_tasks(general_task_id, rupture_sets):
         yield str(script_file_path)
 
 
-def run(args):
+def run_rupset_diagnostics(toshi_id: str, num_workers: int):
+    """Launch jobs to generate rupture set report diagnostics.
 
-    file_or_task_id = args.id
+    Args:
+        toshi_id: ID of the File (for a single rupture set) or GeneralTask (for multiple rupture sets).
+        num_workers: The number of proceses to run in parallel.
+
+    Returns:
+        general task ID if using toshi API
+    """
+
+    file_or_task_id = toshi_id
     t0 = dt.datetime.now()
-    worker_pool_size = args.num_workers
 
     GENERAL_TASK_ID = None
 
@@ -133,7 +132,7 @@ def run(args):
         file_generator = get_output_file_id(toshi_api, file_or_task_id)  # for file by file ID
     rupture_sets = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
-    pool = Pool(worker_pool_size)
+    pool = Pool(num_workers)
 
     scripts = []
     for script_file in run_tasks(GENERAL_TASK_ID, rupture_sets):
@@ -148,7 +147,7 @@ def run(args):
             check_call(['bash', script_name])
 
     print('task count: ', len(scripts))
-    print('worker count: ', worker_pool_size)
+    print('worker count: ', num_workers)
 
     pool.map(call_script, scripts)
     pool.close()
@@ -160,14 +159,14 @@ def run(args):
 def parse_args():
     parser = ArgumentParser(description="Run diagnostics (report generation) for rupture sets.")
     parser.add_argument(
-        "id",
+        "toshi_id",
         help="""toshi ID of rutpure set (generate single report) or GeneralTask (generate multiple reports, one for
         each rupture set created by GeneralTask).""",
     )
     parser.add_argument("-n", "--num-workers", type=int, default=1, help="number of parallel workers")
     args = parser.parse_args()
-    return args
+    return vars(args)
 
 
 if __name__ == "__main__":
-    run(parse_args())
+    run_rupset_diagnostics(**parse_args())
