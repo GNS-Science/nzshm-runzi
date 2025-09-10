@@ -1,3 +1,5 @@
+"""This module provides the Pydantic intput parameter classes of hazard and disaggregation caculations."""
+
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
@@ -224,10 +226,14 @@ class HazardInputBase(BaseModel):
 
 
 class HazardInput(HazardInputBase):
+    """Input for calculating hazard curves."""
+
     hazard_curve: HazardCurve
 
 
 class DisaggInput(HazardInputBase):
+    """Input for calculating disaggregations."""
+
     disagg: DisaggProb
     output: DisaggOutput
     hazard_curve: DisaggCurve
