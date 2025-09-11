@@ -1,7 +1,9 @@
 from .average_solutions import AverageSolutionsInput, run_average_solutions
+from .build_manual_index import build_manual_index
 from .coulomb_rupture_sets import CoulombRuptureSetsInput, run_coulomb_rupture_sets
 from .crustal_inversion import run_crustal_inversion
 from .hazard_inputs import DisaggInput, HazardInput
+from .inversion_diagnostics import run_inversion_diagnostics
 from .oq_convert_solution import run_oq_convert_solution
 from .oq_disagg import run_oq_disagg
 from .oq_hazard import run_oq_hazard
@@ -11,5 +13,3 @@ from .scale_solution import ScaleSolutionsInput, run_scale_solution
 from .subduction_inversion import run_subduction_inversion
 from .subduction_rupture_sets import SubductionRuptureSetsInput, run_subduction_rupture_sets
 from .time_dependent_solution import TimeDependentSolutionInput, run_time_dependent_solution
-from .inversion_diagnostics import run_inversion_diagnostics
-from .build_manual_index import build_manual_index

@@ -130,7 +130,6 @@ def from_json_format(config):
 if __name__ == "__main__":
     import sys
 
-
     config_filepath = Path(sys.argv[1])
     loaded_config = json.loads(config_filepath.read_text())
     formatted_json = from_json_format(loaded_config)
