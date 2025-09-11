@@ -61,10 +61,13 @@ vulture = ">=2.14,<3.0"
 [tool.poetry.group.doc.dependencies]
 mkdocs = ">=1.6.1,<2.0"
 mkdocs-material = ">=9.5.50,<10.0"
-mkdocs-click = ">=0.8.1"
 mkdocs-include-markdown-plugin = ">=7.1.2,<8.0"
-mkdocstrings = ">=0.27.0"
+mkdocstrings = {extras = ["python"], version = "^0.30.0"}
 
+
+
+[tool.poetry.group.docs.dependencies]
+mkdocs-typer2 = "^0.1.6"
 
 [tool.isort]
 multi_line_output = 3
