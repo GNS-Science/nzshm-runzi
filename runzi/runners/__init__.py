@@ -12,3 +12,4 @@ from .subduction_inversion import run_subduction_inversion
 from .subduction_rupture_sets import SubductionRuptureSetsInput, run_subduction_rupture_sets
 from .time_dependent_solution import TimeDependentSolutionInput, run_time_dependent_solution
 from .inversion_diagnostics import run_inversion_diagnostics
+from .build_manual_index import build_manual_index

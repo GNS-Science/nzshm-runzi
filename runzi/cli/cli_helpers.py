@@ -13,7 +13,7 @@ from pygments.formatters import Terminal256Formatter
 from pygments.lexers.python import PythonLexer
 from termcolor import cprint
 
-from runzi.automation.build_manual_index import build_manual_index
+from runzi.runners.build_manual_index import build_manual_index
 from runzi.automation.scaling.local_config import (
     API_URL,
     CLUSTER_MODE,
