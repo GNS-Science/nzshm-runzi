@@ -1,6 +1,9 @@
+"""This module provides the Pydantic intput parameter classes of hazard and disaggregation caculations."""
+
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
+import tomlkit
 from nzshm_model import all_model_versions
 from pydantic import (
     AfterValidator,
@@ -47,13 +50,13 @@ def coerce_to_list(value: Any) -> list[Any]:
     return value
 
 
-class GeneralConfig(BaseModel):
+class General(BaseModel):
     title: str
     description: str = ''
     compatible_calc_id: Annotated[str, AfterValidator(is_compat_calc_id)]
 
 
-class HazardModelConfig(BaseModel):
+class HazardModel(BaseModel):
     nshm_model_version: Annotated[Optional[str], AfterValidator(is_model_version)] = None
     srm_logic_tree: Optional[FilePath] = None
     gmcm_logic_tree: Optional[FilePath] = None
@@ -69,17 +72,17 @@ class HazardModelConfig(BaseModel):
         return self
 
 
-class CalculationConfig(BaseModel):
+class Calculation(BaseModel):
     num_workers: PositiveInt = 1
     sleep_multiplier: Optional[PositiveInt] = None
 
 
-class HazardCurveConfig(BaseModel):
+class HazardCurve(BaseModel):
     imts: Annotated[list[str], BeforeValidator(coerce_to_list)]
     imtls: Annotated[list[float], BeforeValidator(coerce_to_list)]
 
 
-class HazardSiteConfig(BaseModel):
+class HazardSite(BaseModel):
     vs30s: Annotated[Optional[list[PositiveInt]], BeforeValidator(coerce_to_list)] = None
     locations: Annotated[Optional[list[str]], BeforeValidator(coerce_to_list)] = None
     locations_file: Optional[FilePath] = None
@@ -108,41 +111,13 @@ class HazardSiteConfig(BaseModel):
         return self
 
 
-class HazardConfig(BaseModel):
-    filepath: FilePath
-    general: GeneralConfig
-    hazard_model: HazardModelConfig
-    calculation: CalculationConfig
-    hazard_curve: HazardCurveConfig
-    site_params: HazardSiteConfig
-
-    # resolve absolute paths (relative to input file) for optional logic tree and config fields
-    @field_validator('hazard_model', mode='before')
-    @classmethod
-    def absolute_model_paths(cls, data: Any, info: ValidationInfo) -> Any:
-        if isinstance(data, dict):
-            for key in ["srm_logic_tree", "gmcm_logic_tree", "hazard_config"]:
-                if data.get(key):
-                    data[key] = resolve_path(data[key], info.data["filepath"])
-        return data
-
-    # resolve absolute paths (relative to input file) for optional site file
-    @field_validator('site_params', mode='before')
-    @classmethod
-    def absolute_site_path(cls, data: Any, info: ValidationInfo) -> Any:
-        if isinstance(data, dict):
-            if data.get("locations_file"):
-                data["locations_file"] = resolve_path(data["locations_file"], info.data["filepath"])
-        return data
-
-
-class DisaggCurveConfig(BaseModel):
+class DisaggCurve(BaseModel):
     hazard_model_id: Annotated[str, AfterValidator(is_model_version)]
     aggs: Annotated[list[AggregationEnum], BeforeValidator(coerce_to_list)]
     imts: Annotated[list[str], BeforeValidator(coerce_to_list)]
 
 
-class DisaggProbConfig(BaseModel):
+class DisaggProb(BaseModel):
     inv_time: int
     poes: Annotated[list[float], BeforeValidator(coerce_to_list)]
     disagg_outputs: Annotated[list[str], BeforeValidator(coerce_to_list)]
@@ -207,12 +182,58 @@ class DisaggOutput(BaseModel):
     gt_filename: str
 
 
-class DisaggConfig(BaseModel):
+class HazardInputBase(BaseModel):
     filepath: FilePath
-    general: GeneralConfig
-    hazard_model: HazardModelConfig
-    hazard_curve: DisaggCurveConfig
-    site_params: HazardSiteConfig
-    disagg: DisaggProbConfig
-    calculation: CalculationConfig
+    general: General
+    hazard_model: HazardModel
+    calculation: Calculation
+    site_params: HazardSite
+
+    @classmethod
+    def from_toml(cls, toml_filepath: Path | str) -> Self:
+        """Creates a hazard input object from a toml file.
+
+        Args:
+            toml_file: Path to TOML file.
+
+        Returns:
+            An instance of the class initialized with the TOML file.
+        """
+        with Path(toml_filepath).open() as f:
+            content = f.read()
+        data = tomlkit.parse(content).unwrap()
+        data["filepath"] = Path(toml_filepath).absolute()
+        return cls(**data)
+
+    # resolve absolute paths (relative to input file) for optional logic tree and config fields
+    @field_validator('hazard_model', mode='before')
+    @classmethod
+    def absolute_model_paths(cls, data: Any, info: ValidationInfo) -> Any:
+        if isinstance(data, dict):
+            for key in ["srm_logic_tree", "gmcm_logic_tree", "hazard_config"]:
+                if data.get(key):
+                    data[key] = resolve_path(data[key], info.data["filepath"])
+        return data
+
+    # resolve absolute paths (relative to input file) for optional site file
+    @field_validator('site_params', mode='before')
+    @classmethod
+    def absolute_site_path(cls, data: Any, info: ValidationInfo) -> Any:
+        if isinstance(data, dict):
+            if data.get("locations_file"):
+                data["locations_file"] = resolve_path(data["locations_file"], info.data["filepath"])
+        return data
+
+
+class HazardInput(HazardInputBase):
+    """Input for calculating hazard curves."""
+
+    hazard_curve: HazardCurve
+
+
+class DisaggInput(HazardInputBase):
+    """Input for calculating disaggregations."""
+
+    disagg: DisaggProb
     output: DisaggOutput
+    hazard_curve: DisaggCurve

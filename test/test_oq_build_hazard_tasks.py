@@ -14,17 +14,17 @@ def build_task_mock(task_arguments, job_arguments, task_id, extra_env):
 
 
 # if nshm_model_version, check hazard config, gmcm, and 1 srm
-def test_build_hazard_tasks_model_version(mocker, config_dict):
+def test_build_hazard_tasks_model_version(mocker, hazard_input_dict):
 
     mocked_build_task = mocker.patch.object(coh, "build_task")
-    for script_file in build_hazard_tasks("ABC", SubtaskType.OPENQUAKE_HAZARD, ModelType.COMPOSITE, config_dict):
+    for script_file in build_hazard_tasks("ABC", SubtaskType.OPENQUAKE_HAZARD, ModelType.COMPOSITE, hazard_input_dict):
         pass
     task_args = mocked_build_task.call_args_list[-1].args[0]
     gmcm = GMCMLogicTree.from_dict(task_args["hazard_model"]["gmcm_logic_tree"])
     srm = SourceLogicTree.from_dict(task_args["hazard_model"]["srm_logic_tree"])
     hazard_config = OpenquakeConfig.from_dict(task_args["hazard_model"]["hazard_config"])
 
-    model_expected = get_model_version(config_dict["hazard_model"]["nshm_model_version"])
+    model_expected = get_model_version(hazard_input_dict["hazard_model"]["nshm_model_version"])
     gmcm_expected = model_expected.gmm_logic_tree
     for i, branch_expected in enumerate(model_expected.source_logic_tree):
         pass
@@ -39,16 +39,16 @@ def test_build_hazard_tasks_model_version(mocker, config_dict):
 
 
 # if overwrite gmcm, srm, or hazard config, check that they are changed
-def test_build_hazard_tasks_overwrite_model(mocker, config_dict):
+def test_build_hazard_tasks_overwrite_model(mocker, hazard_input_dict):
 
-    root_path = Path(config_dict["filepath"]).parent
+    root_path = Path(hazard_input_dict["filepath"]).parent
 
-    config_dict["hazard_model"]["gmcm_logic_tree"] = str(root_path / "gmcm_small.json")
-    config_dict["hazard_model"]["srm_logic_tree"] = str(root_path / "srm_small.json")
-    config_dict["hazard_model"]["hazard_config"] = str(root_path / "hazard_config.json")
+    hazard_input_dict["hazard_model"]["gmcm_logic_tree"] = str(root_path / "gmcm_small.json")
+    hazard_input_dict["hazard_model"]["srm_logic_tree"] = str(root_path / "srm_small.json")
+    hazard_input_dict["hazard_model"]["hazard_config"] = str(root_path / "hazard_config.json")
 
     mocked_build_task = mocker.patch.object(coh, "build_task")
-    _ = next(build_hazard_tasks("ABC", SubtaskType.OPENQUAKE_HAZARD, ModelType.COMPOSITE, config_dict))
+    _ = next(build_hazard_tasks("ABC", SubtaskType.OPENQUAKE_HAZARD, ModelType.COMPOSITE, hazard_input_dict))
     task_args = mocked_build_task.call_args_list[0].args[0]
     gmcm = GMCMLogicTree.from_dict(task_args["hazard_model"]["gmcm_logic_tree"])
     srm = SourceLogicTree.from_dict(task_args["hazard_model"]["srm_logic_tree"])

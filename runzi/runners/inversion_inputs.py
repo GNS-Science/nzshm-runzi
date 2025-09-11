@@ -1,11 +1,39 @@
 import json
 import os
+import random
+import string
 from datetime import datetime
 from pathlib import Path
 
-from runzi.cli.cli_helpers import to_json_format, unique_id
-from runzi.cli.crustal_inversion_runner import run_crustal_inversion
-from runzi.cli.subduction_inversion_runner import run_subduction_inversion
+from runzi.runners.crustal_inversion import run_crustal_inversion
+from runzi.runners.subduction_inversion import run_subduction_inversion
+
+
+def to_json_format(config):
+    cleaned_args = {k[1:]: v for k, v in config.items()}
+    job_args = ['worker_pool_size', 'jvm_heap_max', 'java_threads', 'use_api', 'general_task_id', 'mock_mode']
+    general_args = [
+        'task_title',
+        'task_description',
+        'file_id',
+        'model_type',
+        'subtask_type',
+        'unique_id',
+        'rounds_range',
+    ]
+    formatted_args = {"job_args": {}, "general_args": {}, "task_args": {}}
+    for arg in cleaned_args:
+        if arg in job_args:
+            formatted_args["job_args"][arg] = cleaned_args[arg]
+        elif arg in general_args:
+            formatted_args["general_args"][arg] = cleaned_args[arg]
+        elif arg not in job_args or general_args:
+            formatted_args["task_args"][arg] = cleaned_args[arg]
+    return formatted_args
+
+
+def unique_id():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
 
 
 class Config:
@@ -121,10 +149,14 @@ class Config:
         run_crustal_inversion(self)
 
 
+def from_json_format(config):
+    flat_dict = {**config['job_args'], **config['general_args'], **config['task_args']}
+    flat_dict['config_version'] = config.get('config_version')
+    return {'_' + k: v for k, v in flat_dict.items()}
+
+
 if __name__ == "__main__":
     import sys
-
-    from runzi.cli.load_json import from_json_format
 
     config_filepath = Path(sys.argv[1])
     loaded_config = json.loads(config_filepath.read_text())

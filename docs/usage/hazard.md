@@ -1,8 +1,9 @@
 # Calculating Hazard Curves
 
-Hazard curves can be calculated via OpenQuake with the `oq-hazard` command
-```
-runzi-hazard oq-hazard CONFIGURATION_FILE
+Hazard curves can be calculated via OpenQuake with the `hazard oq-hazard` sub command.
+
+```console
+$ runzi hazard oq-disagg [OPTIONS] INPUT_FILEPATH
 ```
 
 This will split the SRM logic tree into component branches and spawn an OpenQuake job for each branch. The realizations can then be re-assembled and the full logic tree calculated using `toshi-hazard-post`. The full GMCM logic tree is used for each OpenQuake job (i.e. no decomposition of the GMCM logic tree is performed). Results are stored as hdf5, csv, and, optionally, in the realization database using `toshi-hazard-store`.
