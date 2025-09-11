@@ -15,7 +15,7 @@ from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType,
 from runzi.configuration.subduction_inversions import build_subduction_tasks
 
 if TYPE_CHECKING:
-    from runzi.cli.config.config_builder import Config
+    from runzi.runners.inversion_inputs import Config
 
 
 def run_subduction_inversion(config: 'Config') -> str | None:

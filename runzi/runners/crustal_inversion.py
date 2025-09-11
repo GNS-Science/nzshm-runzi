@@ -15,7 +15,7 @@ from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType,
 from runzi.configuration.crustal_inversions import build_crustal_tasks
 
 if TYPE_CHECKING:
-    from runzi.cli.config.config_builder import Config
+    from runzi.runners.inversion_inputs import Config
 
 
 def run_crustal_inversion(config: 'Config') -> str | None:

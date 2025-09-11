@@ -1,4 +1,4 @@
-from runzi.cli.config.config_builder import Config
+from runzi.runners.inversion_inputs import Config
 
 
 class InversionConfig(Config):

@@ -6,7 +6,7 @@ import inquirer
 
 import runzi.cli.inv_setup
 from runzi.cli.cli_helpers import display
-from runzi.cli.config.config_builder import from_json_format
+from runzi.runners.inversion_inputs import from_json_format
 from runzi.cli.config.inversion_builder import Config
 
 
