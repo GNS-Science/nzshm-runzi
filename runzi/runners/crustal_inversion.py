@@ -1,7 +1,9 @@
 import datetime as dt
 import getpass
 from multiprocessing.dummy import Pool
+from pathlib import PurePath
 from subprocess import check_call
+from typing import TYPE_CHECKING
 
 import boto3
 
@@ -12,20 +14,24 @@ from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.crustal_inversions import build_crustal_tasks
 
+if TYPE_CHECKING:
+    from runzi.cli.config.config_builder import Config
 
-def run_crustal_inversion(config):
-    t0 = dt.datetime.utcnow()
 
-    WORKER_POOL_SIZE = config._worker_pool_size
-    USE_API = config._use_api
-    TASK_TITLE = config._task_title
-    TASK_DESCRIPTION = config._task_description
-    GENERAL_TASK_ID = config._general_task_id
+def run_crustal_inversion(config: 'Config') -> str | None:
+    t0 = dt.datetime.now()
+
+    worker_pool_size = config._worker_pool_size
+    use_api = config._use_api
+    task_title = config._task_title
+    task_description = config._task_description
+    general_task_id = config._general_task_id
     # MOCK_MODE = config._mock_mode
-    file_id = config._file_id
-    MODEL_TYPE = ModelType[config._model_type]
-    SUBTASK_TYPE = SubtaskType[config._subtask_type]
+    file_id = config._file_id  # type: ignore
+    model_type = ModelType[config._model_type]  # type: ignore
+    subtask_type = SubtaskType[config._subtask_type]  # type: ignore
 
+    work_path: str | PurePath
     if CLUSTER_MODE == EnvMode['AWS']:
         work_path = '/WORKING'
     else:
@@ -64,30 +70,30 @@ def run_crustal_inversion(config):
 
     args_list.append(dict(k="max_jump_distances", v=distances))
 
-    if USE_API:
+    if use_api:
         # create new task in toshi_api
         gt_args = (
-            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=TASK_TITLE, description=TASK_DESCRIPTION)
+            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=task_title, description=task_description)
             .set_argument_list(args_list)
-            .set_subtask_type(SUBTASK_TYPE)
-            .set_model_type(MODEL_TYPE)
+            .set_subtask_type(subtask_type)
+            .set_model_type(model_type)
         )
 
-        GENERAL_TASK_ID = toshi_api.general_task.create_task(gt_args)
+        general_task_id = toshi_api.general_task.create_task(gt_args)
 
     if CLUSTER_MODE == EnvMode['AWS']:
         batch_client = boto3.client(
             service_name='batch', region_name='us-east-1', endpoint_url='https://batch.us-east-1.amazonaws.com'
         )
 
-    print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
+    print("GENERAL_TASK_ID:", general_task_id)
 
     scripts = []
-    for script_file_or_config in build_crustal_tasks(GENERAL_TASK_ID, rupture_sets, args, config):
+    for script_file_or_config in build_crustal_tasks(general_task_id, rupture_sets, args, config):
         scripts.append(script_file_or_config)
 
-    toshi_api.general_task.update_subtask_count(GENERAL_TASK_ID, len(scripts))
-    print(f"GENERAL_TASK_ID:{GENERAL_TASK_ID} with {len(scripts)} subtasks")
+    toshi_api.general_task.update_subtask_count(general_task_id, len(scripts))
+    print(f"GENERAL_TASK_ID:{general_task_id} with {len(scripts)} subtasks")
 
     if CLUSTER_MODE == EnvMode['LOCAL']:
 
@@ -96,8 +102,8 @@ def run_crustal_inversion(config):
             check_call(['bash', script_or_config])
 
         print('task count: ', len(scripts))
-        print('worker count: ', WORKER_POOL_SIZE)
-        pool = Pool(WORKER_POOL_SIZE)
+        print('worker count: ', worker_pool_size)
+        pool = Pool(worker_pool_size)
         pool.map(call_script, scripts)
         pool.close()
         pool.join()
@@ -112,5 +118,7 @@ def run_crustal_inversion(config):
         for script_or_config in scripts:
             check_call(['qsub', script_or_config])
 
-    print(f"GENERAL_TASK_ID:{GENERAL_TASK_ID} with {len(scripts)} subtasks")
-    print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+    print(f"GENERAL_TASK_ID:{general_task_id} with {len(scripts)} subtasks")
+    print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
+
+    return general_task_id
