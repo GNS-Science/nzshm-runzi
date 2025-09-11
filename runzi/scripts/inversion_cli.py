@@ -6,8 +6,8 @@ from pathlib import Path
 import typer
 from rich import print as rich_print
 
-from runzi.runners.inversion_inputs import Config, from_json_format
 from runzi.runners import run_crustal_inversion, run_subduction_inversion
+from runzi.runners.inversion_inputs import Config, from_json_format
 
 app = typer.Typer()
 

@@ -6,8 +6,8 @@ import inquirer
 
 import runzi.cli.inv_setup
 from runzi.cli.cli_helpers import display
-from runzi.runners.inversion_inputs import from_json_format
 from runzi.cli.config.inversion_builder import Config
+from runzi.runners.inversion_inputs import from_json_format
 
 
 def load_crustal(*args):
