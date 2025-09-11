@@ -66,9 +66,6 @@ mkdocstrings = {extras = ["python"], version = "^0.30.0"}
 
 
 
-[tool.poetry.group.docs.dependencies]
-mkdocs-typer2 = "^0.1.6"
-
 [tool.isort]
 multi_line_output = 3
 include_trailing_comma = true
