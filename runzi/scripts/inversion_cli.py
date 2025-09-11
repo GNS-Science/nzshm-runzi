@@ -8,7 +8,7 @@ from rich import print as rich_print
 
 from runzi.cli.cli_helpers import from_json_format
 from runzi.cli.config.config_builder import Config
-from runzi.runners import run_crustal_inversion
+from runzi.runners import run_crustal_inversion, run_subduction_inversion
 
 app = typer.Typer()
 
@@ -24,9 +24,18 @@ def load_config(config_filepath: Path):
 @app.command()
 def crustal(input_filepath: Path):
     """Run crustal inversions."""
-    rich_print("[yellow]Starting average solutions jobs.")
+    rich_print("[yellow]Starting crustal inversions.")
     job_input = load_config(input_filepath)
     gt_id = run_crustal_inversion(job_input)
+    rich_print(f"General Task ID: [bold green]{gt_id}")
+
+
+@app.command()
+def subduction(input_filepath: Path):
+    """Run subduction inversions."""
+    rich_print("[yellow]Starting subduction inversions.")
+    job_input = load_config(input_filepath)
+    gt_id = run_subduction_inversion(job_input)
     rich_print(f"General Task ID: [bold green]{gt_id}")
 
 

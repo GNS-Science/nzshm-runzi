@@ -4,8 +4,8 @@ from datetime import datetime
 from pathlib import Path
 
 from runzi.cli.cli_helpers import to_json_format, unique_id
-from runzi.cli.subduction_inversion_runner import run_subduction_inversion
 from runzi.runners.crustal_inversion import run_crustal_inversion
+from runzi.runners.subduction_inversion import run_subduction_inversion
 
 
 class Config:
