@@ -13,7 +13,6 @@ from pygments.formatters import Terminal256Formatter
 from pygments.lexers.python import PythonLexer
 from termcolor import cprint
 
-from runzi.runners.build_manual_index import build_manual_index
 from runzi.automation.scaling.local_config import (
     API_URL,
     CLUSTER_MODE,
@@ -27,6 +26,7 @@ from runzi.automation.scaling.local_config import (
     WORK_PATH,
     WORKER_POOL_SIZE,
 )
+from runzi.runners.build_manual_index import build_manual_index
 
 session: PromptSession[str] = PromptSession()
 
@@ -63,12 +63,6 @@ def to_json_format(config):
         elif arg not in job_args or general_args:
             formatted_args["task_args"][arg] = cleaned_args[arg]
     return formatted_args
-
-
-def from_json_format(config):
-    flat_dict = {**config['job_args'], **config['general_args'], **config['task_args']}
-    flat_dict['config_version'] = config.get('config_version')
-    return {'_' + k: v for k, v in flat_dict.items()}
 
 
 def unique_id():

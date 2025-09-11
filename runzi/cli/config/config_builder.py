@@ -121,10 +121,15 @@ class Config:
         run_crustal_inversion(self)
 
 
+def from_json_format(config):
+    flat_dict = {**config['job_args'], **config['general_args'], **config['task_args']}
+    flat_dict['config_version'] = config.get('config_version')
+    return {'_' + k: v for k, v in flat_dict.items()}
+
+
 if __name__ == "__main__":
     import sys
 
-    from runzi.cli.load_json import from_json_format
 
     config_filepath = Path(sys.argv[1])
     loaded_config = json.loads(config_filepath.read_text())
