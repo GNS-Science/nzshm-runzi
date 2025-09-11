@@ -7,8 +7,6 @@ from .oq_convert_solution import run_oq_convert_solution
 from .oq_disagg import run_oq_disagg
 from .oq_hazard import run_oq_hazard
 from .rupset_diagnostics import run_rupset_diagnostics
-from .save_bg_file_archives import run_save_bg_file_archives
-from .save_distseis_mastertable import run_save_distseis_mastertable
 from .save_file_archive import run_save_file_archive
 from .scale_solution import ScaleSolutionsInput, run_scale_solution
 from .subduction_inversion import run_subduction_inversion
