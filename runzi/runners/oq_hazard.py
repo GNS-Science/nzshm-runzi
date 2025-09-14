@@ -14,7 +14,7 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
 
-from .config import HazardConfig
+from .hazard_inputs import HazardInput
 
 loglevel = logging.INFO
 logging.basicConfig(level=logging.INFO)
@@ -38,7 +38,7 @@ def build_tasks(new_gt_id: str, args: Dict[str, Any], task_type: SubtaskType, mo
     return scripts
 
 
-def run_oq_hazard(config: Dict[str, Any]):
+def run_oq_hazard(job_input: HazardInput) -> str | None:
 
     # cluster mode cannot be AWS if API is disabled
     if CLUSTER_MODE is EnvMode.AWS and not USE_API:
@@ -46,13 +46,11 @@ def run_oq_hazard(config: Dict[str, Any]):
 
     t0 = dt.datetime.now(dt.timezone.utc)
 
-    job_config = HazardConfig.model_validate(config)
-
     # some objects in the config (Path type) are not json serializable so we dump to json using the pydantic method
     # which handles these types and load back to json to clean it up so it can be passed to the toshi API
-    args_dict = json.loads(job_config.model_dump_json())
+    args_dict = json.loads(job_input.model_dump_json())
 
-    num_workers = job_config.calculation.num_workers
+    num_workers = job_input.calculation.num_workers
 
     task_type = SubtaskType.OPENQUAKE_HAZARD
     model_type = ModelType.COMPOSITE
@@ -62,10 +60,10 @@ def run_oq_hazard(config: Dict[str, Any]):
 
         # upload files
         file_paths = [
-            (job_config.site_params.locations_file, "site_params", "locations_file_id"),
-            (job_config.hazard_model.gmcm_logic_tree, "hazard_model", "gmcm_logic_tree_id"),
-            (job_config.hazard_model.srm_logic_tree, "hazard_model", "srm_logic_tree_id"),
-            (job_config.hazard_model.hazard_config, "hazard_model", "hazard_config_id"),
+            (job_input.site_params.locations_file, "site_params", "locations_file_id"),
+            (job_input.hazard_model.gmcm_logic_tree, "hazard_model", "gmcm_logic_tree_id"),
+            (job_input.hazard_model.srm_logic_tree, "hazard_model", "srm_logic_tree_id"),
+            (job_input.hazard_model.hazard_config, "hazard_model", "hazard_config_id"),
         ]
         for file_path, group, property in file_paths:
             if file_path:
@@ -84,8 +82,8 @@ def run_oq_hazard(config: Dict[str, Any]):
         gt_args = (
             CreateGeneralTaskArgs(
                 agent_name=getpass.getuser(),
-                title=config["general"]["title"],
-                description=config["general"]["description"],
+                title=job_input.general.title,
+                description=job_input.general.description,
             )
             .set_argument_list(args_list)
             .set_subtask_type(task_type)
@@ -104,3 +102,5 @@ def run_oq_hazard(config: Dict[str, Any]):
 
     print("GENERAL_TASK_ID:", new_gt_id)
     print("Done! in %s secs" % (dt.datetime.now(dt.timezone.utc) - t0).total_seconds())
+
+    return new_gt_id

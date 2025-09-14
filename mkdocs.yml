@@ -9,9 +9,10 @@ watch:
 nav:
   - Home: index.md
   - Usage:
-    - Introduction: usage/introduction.md
-    - Docker: usage/docker/docker.md
+    - CLI: usage/cli.md
+    - Environment Variables: usage/environment_variables.md
     - Hazard: usage/hazard.md
+    - Docker: usage/docker/docker.md
     - Inversion, Docker, and AWS: usage/docker/AWS_docker_containers_setup.md
   - Installation: installation.md
   - Development and Contributing:
@@ -45,7 +46,6 @@ markdown_extensions:
   - admonition
   - attr_list
   - footnotes
-  - mkdocs-click
   - pymdownx.details
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji

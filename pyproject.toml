@@ -14,17 +14,12 @@ dependencies = [
     "gitpython (>=3.1.11)",
     "py4j (==0.10.9.1)",
     "nshm-toshi-client (>=1.0.0)",
-    "prompt-toolkit (==3.0.20)",
-    "termcolor (>=1.1.0)",
-    "pyfiglet (>=0.8.post1)",
     "boto3 (>=1.26.43)",
     "lxml (>=4.9.2)",
     "tqdm (>=4.65.0)",
     "click (>=8.1.7)",
     "python-dateutil (>=2.8.2)",
     "nzshm-common[geometry] (>=0.8.4)",
-    "inquirer (>=3.4.0)",
-    "pygments (>=2.19.1)",
     "pytz (>=2025.1)",
     "pydantic (>=2.10.6)",
     "tomlkit (>=0.13.2)",
@@ -43,7 +38,6 @@ packages = [
 
 
 [tool.poetry.scripts]
-runzi-hazard = 'runzi.automation.cli:rnz_hazard'
 runzi = 'runzi.scripts.runzi_cli:app'
 
 
@@ -67,9 +61,9 @@ vulture = ">=2.14,<3.0"
 [tool.poetry.group.doc.dependencies]
 mkdocs = ">=1.6.1,<2.0"
 mkdocs-material = ">=9.5.50,<10.0"
-mkdocs-click = ">=0.8.1"
 mkdocs-include-markdown-plugin = ">=7.1.2,<8.0"
-mkdocstrings = ">=0.27.0"
+mkdocstrings = {extras = ["python"], version = "^0.30.0"}
+
 
 
 [tool.isort]
