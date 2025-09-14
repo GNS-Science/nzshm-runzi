@@ -118,7 +118,7 @@ def run_crustal_inversion(config: 'Config') -> str | None:
         for script_or_config in scripts:
             check_call(['qsub', script_or_config])
 
-    print(f"GENERAL_TASK_ID:{general_task_id} with {len(scripts)} subtasks")
+    print(f"general_task_id:{general_task_id} with {len(scripts)} subtasks")
     print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
 
     return general_task_id
