@@ -40,9 +40,8 @@ def run_crustal_inversion(config: 'Config') -> str | None:
     headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-    args = config.get_run_args()
     args_list = []
-    for key, value in args.items():
+    for key, value in config.get_run_args.items():
         val = [str(item) for item in value]
         args_list.append(dict(k=key, v=val))
 
