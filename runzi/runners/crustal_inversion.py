@@ -89,7 +89,7 @@ def run_crustal_inversion(config: 'Config') -> str | None:
     print("GENERAL_TASK_ID:", general_task_id)
 
     scripts = []
-    for script_file_or_config in build_crustal_tasks(general_task_id, rupture_sets, args, config):
+    for script_file_or_config in build_crustal_tasks(general_task_id, rupture_sets, config):
         scripts.append(script_file_or_config)
 
     toshi_api.general_task.update_subtask_count(general_task_id, len(scripts))

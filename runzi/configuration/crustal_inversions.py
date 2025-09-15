@@ -37,9 +37,10 @@ log = logging.getLogger(__name__)
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 
 
-def build_crustal_tasks(general_task_id: str, rupture_sets: dict[str, dict], args: dict[str, Any], config: 'Config') -> Generator[str, None, None]:
+def build_crustal_tasks(general_task_id: str, rupture_sets: dict[str, dict], config: 'Config') -> Generator[str, None, None]:
     work_path = '/WORKING' if CLUSTER_MODE == EnvMode['AWS'] else WORK_PATH
     task_count = 0
+    args = config.get_run_args()
 
     factory_class = get_factory(CLUSTER_MODE)
 
