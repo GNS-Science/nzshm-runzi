@@ -2,6 +2,7 @@ import logging
 import os
 import stat
 from pathlib import PurePath
+from typing import Any, TYPE_CHECKING, Generator
 
 import runzi.configuration.crustal_inversion_permutations as branch_generators
 
@@ -25,6 +26,9 @@ from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.execute import inversion_solution_builder_task
 from runzi.util.aws import get_ecs_job_config
 
+if TYPE_CHECKING:
+    from runzi.runners.inversion_inputs import Config
+
 # JAVA_THREADS = 4
 
 logging.basicConfig()
@@ -33,7 +37,7 @@ log = logging.getLogger(__name__)
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 
 
-def build_crustal_tasks(general_task_id, rupture_sets, args, config):
+def build_crustal_tasks(general_task_id: str, rupture_sets: dict[str, dict], args: dict[str, Any], config: 'Config') -> Generator[str, None, None]:
     work_path = '/WORKING' if CLUSTER_MODE == EnvMode['AWS'] else WORK_PATH
     task_count = 0
 

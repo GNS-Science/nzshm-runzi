@@ -117,7 +117,7 @@ def get_download_info(file_api, file_infos):
 
 def download_files(
     file_api, file_generator, dest_folder, id_suffix=False, overwrite=False, skip_existing=False, skip_download=False
-):
+) -> dict[str, dict]:
     """
     file_generator = get_output_file_ids(general_api, upstream_task_id) # for files by upstream task ID)
 
@@ -133,7 +133,7 @@ def download_files(
         folder.mkdir(parents=True, exist_ok=True)
 
         # we can skip if file exists and has correct file_size
-        file_path = PurePath(folder, info['file_name'])
+        file_path: str | PurePath = PurePath(folder, info['file_name'])
 
         if id_suffix:
             file_path = str(file_path).replace('.zip', f"_{info['id']}.zip")

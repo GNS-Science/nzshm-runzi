@@ -4,6 +4,7 @@ import random
 import string
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from runzi.runners.crustal_inversion import run_crustal_inversion
 from runzi.runners.subduction_inversion import run_subduction_inversion
@@ -117,7 +118,7 @@ class Config:
     def get_task_args(self):
         return {k: v for k, v in self.__dict__.items() if k not in Config.non_task_args}
 
-    def get_run_args(self):
+    def get_run_args(self) -> dict[str, Any]:
         return {k[1:]: v for k, v in self.__dict__.items() if k not in Config.non_task_args}
 
     def get_general_args(self):
