@@ -111,27 +111,27 @@ class Config:
         for k, v in config.items():
             self.__setitem__(k, v)
 
-    def get_job_args(self):
+    def get_job_args(self) -> dict[str, Any]:
         job_args = ['_worker_pool_size', '_jvm_heap_max', '_java_threads', '_use_api', '_general_task_id', '_mock_mode']
         return {k: v for k, v in self.__dict__.items() if k in job_args}
 
-    def get_task_args(self):
+    def get_task_args(self) -> dict[str, Any]:
         return {k: v for k, v in self.__dict__.items() if k not in Config.non_task_args}
 
     def get_run_args(self) -> dict[str, Any]:
         return {k[1:]: v for k, v in self.__dict__.items() if k not in Config.non_task_args}
 
-    def get_general_args(self):
+    def get_general_args(self) -> dict[str, Any]:
         general_args = ['_task_title', '_task_description', '_file_id', '_model_type', '_subtask_type', '_unique_id']
         return {k: v for k, v in self.__dict__.items() if k in general_args}
 
-    def get_config_version(self):
+    def get_config_version(self) -> str:
         return self._config_version
 
-    def get_keys(self):
+    def get_keys(self) -> list[str]:
         return list(self.__dict__.keys())
 
-    def get_all(self):
+    def get_all(self) -> dict[str, Any]:
         return dict(self.__dict__.items())
 
     def __getitem__(self, key):
