@@ -40,7 +40,6 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 def build_crustal_tasks(general_task_id: str, rupture_sets: dict[str, dict], config: 'Config') -> Generator[str, None, None]:
     work_path = '/WORKING' if CLUSTER_MODE == EnvMode['AWS'] else WORK_PATH
     task_count = 0
-    args = config.get_run_args()
 
     factory_class = get_factory(CLUSTER_MODE)
 
@@ -98,7 +97,8 @@ def build_crustal_tasks(general_task_id: str, rupture_sets: dict[str, dict], con
             use_api=USE_API,
         )
 
-        for task_arguments in permutations_generator(args, rupture_set_info):
+        run_args = config.get_run_args()
+        for task_arguments in permutations_generator(run_args, rupture_set_info):
 
             task_count += 1
 
