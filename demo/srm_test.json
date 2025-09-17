@@ -1,0 +1,56 @@
+{
+  "title": "Test SRM (IDs are found in TEST API)",
+  "version": "SLT_v9p0p0",
+  "branch_sets": [
+    {
+      "short_name": "PUY",
+      "long_name": "Puysegur",
+      "branches": [
+        {
+          "branch_id": "0",
+          "weight": 1.0,
+          "values": [
+            {
+              "name": "dm",
+              "long_name": "deformation model",
+              "value": "0.7"
+            },
+            {
+              "name": "bN",
+              "long_name": "bN pair",
+              "value": [
+                0.902,
+                4.6
+              ]
+            },
+            {
+              "name": "C",
+              "long_name": "area-magnitude scaling",
+              "value": 4.0
+            },
+            {
+              "name": "s",
+              "long_name": "moment rate scaling",
+              "value": 0.28
+            }
+          ],
+          "sources": [
+            {
+              "nrml_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NQ==",
+              "rupture_rate_scaling": null,
+              "inversion_id": "",
+              "rupture_set_id": "",
+              "inversion_solution_type": "",
+              "type": "inversion"
+            }
+          ],
+          "rupture_rate_scaling": 1.0,
+          "tectonic_region_types": [
+            "Subduction Interface"
+          ]
+        }
+      ]
+    }
+  ],
+  "logic_tree_version": 2
+}

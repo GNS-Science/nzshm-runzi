@@ -10,26 +10,22 @@ import boto3
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 
 # Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, WORK_PATH, EnvMode
+from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, WORK_PATH, EnvMode, USE_API
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.subduction_inversions import build_subduction_tasks
 
 if TYPE_CHECKING:
-    from runzi.runners.inversion_inputs import Config
+    from runzi.runners.inversion_inputs_v2 import InversionInput
 
 
-def run_subduction_inversion(config: 'Config') -> str | None:
+def run_subduction_inversion(inversion_input: 'InversionInput') -> str | None:
     t0 = dt.datetime.now()
 
-    worker_pool_size = config._worker_pool_size
-    use_api = config._use_api
-    task_title = config._task_title
-    task_description = config._task_description
-    general_task_id = config._general_task_id
-    # MOCK_MODE = config._mock_mode
-    file_id = config._file_id
-    model_type = ModelType[config._model_type]  # type: ignore
-    subtask_type = SubtaskType[config._subtask_type]  # type: ignore
+    worker_pool_size = inversion_input.job.worker_pool_size
+    task_title = inversion_input.general.task_title
+    task_description = inversion_input.general.task_description
+    model_type = inversion_input.general.model_type
+    subtask_type = inversion_input.general.subtask_type
 
     work_path: str | PurePath
     if CLUSTER_MODE == EnvMode['AWS']:
@@ -40,15 +36,13 @@ def run_subduction_inversion(config: 'Config') -> str | None:
     headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-    args = config.get_run_args()
+    args = inversion_input.get_run_args()
     args_list = []
     for key, value in args.items():
         args_list.append(dict(k=key, v=value))
 
-    file_generator = get_output_file_id(toshi_api, file_id)  # for file by file ID
-    rupture_sets = download_files(toshi_api, file_generator, str(work_path), overwrite=False)
-
-    if use_api:
+    general_task_id: str | None = None
+    if USE_API:
         # create new task in toshi_api
         gt_args = (
             CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=task_title, description=task_description)
@@ -67,7 +61,7 @@ def run_subduction_inversion(config: 'Config') -> str | None:
     print("GENERAL_TASK_ID:", general_task_id)
 
     scripts = []
-    for script_file in build_subduction_tasks(general_task_id, rupture_sets, args):
+    for script_file in build_subduction_tasks(general_task_id, inversion_input):
         scripts.append(script_file)
 
     if CLUSTER_MODE == EnvMode['LOCAL']:

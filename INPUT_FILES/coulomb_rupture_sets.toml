@@ -1,0 +1,14 @@
+max_sections = 2000
+models=["CFM_1_0_DOM_SANSTVZ"]
+jump_limits=[ 15, ]
+adaptive_min_distances=[ 6, ]
+thinning_factors=[ 0, ]
+min_sub_sects_per_parents=[2]
+min_sub_sections_list=[2]
+sans = 0.8
+title = "Build Coulomb CFM 1.0 sans with regional depth scaling"
+description = "used to test effect of code change to Coulomb builder against older rupture sets that use CFM_1_0_DOM_SANSTVZ"
+
+
+[[depth_scaling]]
+tvz = 0.667

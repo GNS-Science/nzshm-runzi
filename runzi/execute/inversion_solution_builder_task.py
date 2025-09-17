@@ -50,6 +50,9 @@ class BuilderTask:
             self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     def run(self, task_arguments, job_arguments):  # noqa: C901
+    
+        file_generator = get_output_file_id(toshi_api, rupture_set_id)  # for file by file ID
+        rupture_sets = download_files(toshi_api, file_generator, str(work_path), overwrite=False)
 
         # Run the task....
         ta = task_arguments

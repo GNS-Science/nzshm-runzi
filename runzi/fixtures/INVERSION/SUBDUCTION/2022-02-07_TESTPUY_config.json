@@ -13,7 +13,7 @@
         "mock_mode": false,
         "subtask_type": "INVERSION",
         "model_type": "SUBDUCTION",
-        "unique_id": "PUY1",
+        "unique_id": "PUY1"
     },
     "task_args": {
         "rounds": [0],
