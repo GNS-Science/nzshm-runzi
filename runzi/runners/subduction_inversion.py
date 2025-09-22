@@ -15,40 +15,33 @@ from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType,
 from runzi.configuration.subduction_inversions import build_subduction_tasks
 
 if TYPE_CHECKING:
-    from runzi.runners.inversion_inputs_v2 import InversionInput
+    from runzi.runners.inversion_inputs_v2 import InversionArgs
 
 
-def run_subduction_inversion(inversion_input: 'InversionInput') -> str | None:
+def run_subduction_inversion(inversion_args: 'InversionArgs') -> str | None:
     t0 = dt.datetime.now()
 
-    worker_pool_size = inversion_input.job.worker_pool_size
-    task_title = inversion_input.general.task_title
-    task_description = inversion_input.general.task_description
-    model_type = inversion_input.general.model_type
-    subtask_type = inversion_input.general.subtask_type
-
-    work_path: str | PurePath
-    if CLUSTER_MODE == EnvMode['AWS']:
-        work_path = '/WORKING'
-    else:
-        work_path = WORK_PATH
+    worker_pool_size = inversion_args.java_args.worker_pool_size
+    if inversion_args.general.subtask_type is not SubtaskType.INVERSION:
+        raise ValueError("subtask type must be INVERSION")
+    if inversion_args.general.model_type is not ModelType.SUBDUCTION:
+        raise ValueError("model type must be SUBDUCTION")
 
     headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-    args = inversion_input.get_run_args()
     args_list = []
-    for key, value in args.items():
+    for key, value in inversion_args.get_run_args():
         args_list.append(dict(k=key, v=value))
 
     general_task_id: str | None = None
     if USE_API:
         # create new task in toshi_api
         gt_args = (
-            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=task_title, description=task_description)
+            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=inversion_args.general.title, description=inversion_args.general.description)
             .set_argument_list(args_list)
-            .set_subtask_type(subtask_type)
-            .set_model_type(model_type)
+            .set_subtask_type(inversion_args.general.subtask_type)
+            .set_model_type(inversion_args.general.model_type)
         )
 
         general_task_id = toshi_api.general_task.create_task(gt_args)
@@ -59,9 +52,10 @@ def run_subduction_inversion(inversion_input: 'InversionInput') -> str | None:
         )
 
     print("GENERAL_TASK_ID:", general_task_id)
+    inversion_args.general.general_task_id = general_task_id
 
     scripts = []
-    for script_file in build_subduction_tasks(general_task_id, inversion_input):
+    for script_file in build_subduction_tasks(inversion_args):
         scripts.append(script_file)
 
     if CLUSTER_MODE == EnvMode['LOCAL']:

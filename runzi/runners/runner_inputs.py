@@ -19,7 +19,7 @@ class InputBase(BaseModel):
     description: str
 
     @classmethod
-    def from_toml(cls, toml_file: TextIO | Path | str) -> Self:
+    def from_toml_file(cls, toml_file: TextIO | Path | str) -> Self:
         """Creates an input object from a toml file.
 
         Args:
@@ -35,3 +35,32 @@ class InputBase(BaseModel):
             content = toml_file.read()
         data = tomlkit.parse(content).unwrap()
         return cls(**data)
+
+    @classmethod
+    def from_json_file(cls, json_file: TextIO | Path | str) -> Self:
+        """Creates an input object from a json file.
+
+        Args:
+            toml_file: File-like object or path to TOML file.
+
+        Returns:
+            An instance of the class initialized with the TOML file.
+        """
+        if isinstance(json_file, (Path, str)):
+            with Path(json_file).open() as f:
+                content = f.read()
+        else:
+            content = json_file.read()
+        return cls.model_validate_json(content)
+
+    def to_json_file(self, json_file: TextIO | Path | str):
+        """Serializes the input object to a JSON file.
+        
+        Args:
+            json_file: File-like object or path to file to be written.
+        """
+        json_str = self.model_dump_json(indent=4)
+        if isinstance(json_file, (Path, str)):
+            Path(json_file).write_text(json_str)
+        else:
+            json_file.write(json_str)

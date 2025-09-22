@@ -207,5 +207,5 @@ if __name__ == "__main__":
     parser.add_argument('filename', help="the input filename")
     args = parser.parse_args()
     with Path(args.filename).open() as input_file:
-        job_input = SubductionRuptureSetsInput.from_toml(input_file)
+        job_input = SubductionRuptureSetsInput.from_toml_file(input_file)
     run_subduction_rupture_sets(job_input)

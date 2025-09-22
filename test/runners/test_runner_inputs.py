@@ -37,7 +37,7 @@ def get_dict_from_toml(filepath):
 def test_input_from_toml_io():
     input_filepath = fixtures_path / 'average_solutions.toml'
     with input_filepath.open() as input_file:
-        job_input = AverageSolutionsInput.from_toml(input_file)
+        job_input = AverageSolutionsInput.from_toml_file(input_file)
     assert job_input
 
 

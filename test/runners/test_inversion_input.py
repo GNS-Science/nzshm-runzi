@@ -6,7 +6,7 @@ import pytest
 import runzi
 import runzi.configuration.crustal_inversion_permutations as branch_generators
 from runzi.runners.inversion_inputs import Config, from_json_format
-from runzi.runners.inversion_inputs_v2 import InversionInput
+from runzi.runners.inversion_inputs_v2 import InversionArgs
 
 bad_files = [
     '2021-10-20_TQ9T_config.json',
@@ -40,7 +40,7 @@ all_configs = crustal_configs + subduction_configs
 #     return config
 
 def load_config(config_filepath: Path) -> Config:
-    return InversionInput.model_validate_json(config_filepath.read_text())
+    return InversionArgs.model_validate_json(config_filepath.read_text())
 
 
 def compare_dicts(dict_expected, dict_recieved):

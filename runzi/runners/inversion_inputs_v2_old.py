@@ -9,10 +9,10 @@ class JobArgs(BaseModel):
     jvm_heap_max: int
     java_threads: int
     use_api: bool
-    general_task_id: str
-    mock_mode: bool = False
 
 class GeneralArgs(BaseModel):
+    mock_mode: bool = False
+    general_task_id: str
     unique_id: Optional[str] = None
     task_title: str
     task_description: str

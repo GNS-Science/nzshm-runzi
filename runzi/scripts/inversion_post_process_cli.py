@@ -24,7 +24,7 @@ app = typer.Typer()
 def avg_sol(input_filepath: Path):
     """Average multiple solutions by taking the mean rate of all ruptures."""
     rich_print("[yellow]Starting average solutions jobs.")
-    job_input = AverageSolutionsInput.from_toml(input_filepath)
+    job_input = AverageSolutionsInput.from_toml_file(input_filepath)
     gt_id = run_average_solutions(job_input)
     rich_print(f"General Task ID: [bold green]{gt_id}")
 
@@ -33,7 +33,7 @@ def avg_sol(input_filepath: Path):
 def time_dependent(input_filepath: Path):
     """Create time dependent inversion solutions by modifying rupture rates."""
     rich_print("[yellow]Starting time dependent solutions jobs.")
-    job_input = TimeDependentSolutionInput.from_toml(input_filepath)
+    job_input = TimeDependentSolutionInput.from_toml_file(input_filepath)
     gt_id = run_time_dependent_solution(job_input)
     rich_print(f"General Task ID: [bold green]{gt_id}")
 
@@ -42,7 +42,7 @@ def time_dependent(input_filepath: Path):
 def scale(input_filepath: Path):
     """Scale rupture rates of inversion solutions."""
     rich_print("[yellow]Starting scale solutions jobs.")
-    job_input = ScaleSolutionsInput.from_toml(input_filepath)
+    job_input = ScaleSolutionsInput.from_toml_file(input_filepath)
     gt_id = run_scale_solution(job_input)
     rich_print(f"General Task ID: [bold green]{gt_id}")
 

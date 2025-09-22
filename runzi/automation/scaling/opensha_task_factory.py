@@ -16,6 +16,9 @@ The job is responsible for
 """
 import json
 import os
+from typing import Any, TYPE_CHECKING, cast, Optional
+from pathlib import Path
+from runzi.runners.inversion_inputs_v2 import OpenshaArgs, InversionArgs
 
 from .local_config import EnvMode
 
@@ -31,7 +34,7 @@ class OpenshaTaskFactory:
         python_script_module,
         jre_path=None,
         app_jar_path=None,
-        task_config_path=None,
+        task_config_path: Optional[Path]=None,
         initial_gateway_port=25333,
         python='python3',
         jvm_heap_start=3,
@@ -44,7 +47,7 @@ class OpenshaTaskFactory:
 
         self._jre_path = jre_path or "/opt/sw/java/java-11-openjdk-amd64/bin/java"
         self._app_jar_path = app_jar_path or "~/NSHM/opensha/nshm-nz-opensha/build/libs/nshm-nz-opensha-all.jar"
-        self._config_path = task_config_path or os.getcwd()
+        self._config_path = task_config_path or Path.cwd()
         # self._script_path = os.path.dirname(scaling.rupture_set_builder_task.__file__) #path to the actual task script
         self._python_script = os.path.abspath(python_script_module.__file__)
 
@@ -56,11 +59,9 @@ class OpenshaTaskFactory:
         self._python = str(python)
         # self._python_script = python_script or 'rupture_set_builder_task.py'
 
-    def write_task_config(self, task_arguments, job_arguments):
-        data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
-        fname = f"{self._config_path}/config.{self._next_port}.json"
-        with open(fname, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+    def write_task_config(self, task_args: 'OpenshaArgs'):
+        fname = self._config_path / f"config.{self._next_port}.json"
+        fname.write_text(task_args.model_dump_json(indent=4), encoding='utf-8')
 
     def get_task_script(self):
         return self._get_bash_script()
@@ -126,16 +127,15 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
         self._pbs_nodes = 1  # always ust one PBS node (and which one we don't know)
         self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1)  # defines maximum time the jobs is allocated by PBS
 
-    def write_task_config(self, task_arguments, job_arguments):
-        data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
-        fname = f"{self._config_path}/config.{self._next_port}.json"
-        if task_arguments.get('max_inversion_time'):
-            self._pbs_wall_hours = int(float(task_arguments.get('max_inversion_time')) / 60) + 1
-        if job_arguments.get('java_threads'):
-            self._pbs_ppn = int(job_arguments.get('java_threads'))
+    def write_task_config(self, task_args: 'OpenshaArgs'):
+        fname = self._config_path / f"config.{self._next_port}.json"
+        if isinstance(task_args, InversionArgs):
+            if (max_inversion_time := task_args.inversion.max_inversion_times[0]):
+                self._pbs_wall_hours = int(max_inversion_time / 60) + 1
+        if java_threads := task_args.java_args.java_threads:
+            self._pbs_ppn = java_threads
 
-        with open(fname, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+        fname.write_text(task_args.model_dump_json(indent=4), encoding='utf-8')
 
     def get_task_script(self):
         return f"""

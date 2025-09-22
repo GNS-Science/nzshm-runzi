@@ -19,7 +19,7 @@ app = typer.Typer()
 def coulomb_rupset(input_filepath: Path):
     """Create Coulomb (crustal) rupture sets."""
     rich_print("[yellow]Starting Coulomb rupture set jobs.")
-    job_input = CoulombRuptureSetsInput.from_toml(input_filepath)
+    job_input = CoulombRuptureSetsInput.from_toml_file(input_filepath)
     gt_id = run_coulomb_rupture_sets(job_input)
     rich_print(f"General Task ID: [bold green]{gt_id}")
 
@@ -28,7 +28,7 @@ def coulomb_rupset(input_filepath: Path):
 def sub_rupset(input_filepath: Path):
     """Create subduction rupture sets."""
     rich_print("[yellow]Starting subduction rupture set jobs.")
-    job_input = SubductionRuptureSetsInput.from_toml(input_filepath)
+    job_input = SubductionRuptureSetsInput.from_toml_file(input_filepath)
     gt_id = run_subduction_rupture_sets(job_input)
     rich_print(f"General Task ID: [bold green]{gt_id}")
 

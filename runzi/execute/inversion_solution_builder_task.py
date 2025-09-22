@@ -16,6 +16,7 @@ from py4j.java_gateway import GatewayParameters, JavaGateway
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_INVERSION, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.runners.inversion_inputs_v2 import InversionArgs, GeneralArgs
 
 logging.basicConfig(level=logging.INFO)
 
@@ -34,30 +35,27 @@ class BuilderTask:
     Configure the python client for a InversionTask
     """
 
-    def __init__(self, job_args):
+    def __init__(self, inversion_args: InversionArgs):
 
-        self.use_api = job_args.get('use_api', False)
+        self.inversion_args = inversion_args
+        self.use_api = inversion_args.general.use_api
 
         # setup the java gateway binding
-        self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=job_args['java_gateway_port']))
+        self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=inversion_args.java.java_gateway_port))
         # repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
         # self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
-        self._output_folder = PurePath(job_args.get('working_path'))
+        self._output_folder = PurePath(inversion_args.general.working_path)
 
-        if self.use_api:
-            headers = {"x-api-key": API_KEY}
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
-            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+        headers = {"x-api-key": API_KEY}
+        self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+        self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
-    def run(self, task_arguments, job_arguments):  # noqa: C901
+    def run(self):
     
-        file_generator = get_output_file_id(toshi_api, rupture_set_id)  # for file by file ID
-        rupture_sets = download_files(toshi_api, file_generator, str(work_path), overwrite=False)
+        file_generator = get_output_file_id(self._toshi_api, rupture_set_id)  # for file by file ID
+        rupture_sets_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
-        # Run the task....
-        ta = task_arguments
-
-        t0 = dt.datetime.utcnow()
+        t0 = dt.datetime.now()
 
         API_GitVersion = self._gateway.entry_point.getGitVersion()
 
@@ -360,12 +358,10 @@ if __name__ == "__main__":
 
     try:
         # LOCAL and CLUSTER this is a file
-        config_file = args.config
-        f = open(args.config, 'r', encoding='utf-8')
-        config = json.load(f)
+        config = InversionArgs.from_json_file(args.config)
     except FileNotFoundError:
         # for AWS this must be a quoted JSON string
-        config = json.loads(urllib.parse.unquote(args.config))
+        config = InversionArgs.model_validate_json(urllib.parse.unquote(args.config))
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(0.2)
