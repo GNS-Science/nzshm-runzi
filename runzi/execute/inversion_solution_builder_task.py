@@ -17,6 +17,7 @@ from runzi.automation.scaling.file_utils import download_files, get_output_file_
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_INVERSION, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.runners.inversion_inputs_v2 import InversionArgs, GeneralArgs, InversionSystemArgs
+from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
 
 logging.basicConfig(level=logging.INFO)
 
@@ -52,11 +53,11 @@ class BuilderTask:
 
     def run(self):
         # TODO: not super thrilled with having to [0] index every task argument. Is there a better solution?
-    
-        file_generator = get_output_file_id(self._toshi_api, self.user_args.task.rupture_set_ids[0])  # for file by file ID
-        rupture_sets_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
-
         t0 = dt.datetime.now()
+    
+        rupture_set_id = self.user_args.task.rupture_set_ids[0]
+        file_generator = get_output_file_id(self._toshi_api, rupture_set_id)  # for file by file ID
+        rupture_sets_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
         API_GitVersion = self._gateway.entry_point.getGitVersion()
 
@@ -75,7 +76,7 @@ class BuilderTask:
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type="INVERSION",
-                    model_type=ta['config_type'].upper(),
+                    model_type=self.user_args.general.model_type.name.upper()
                 ),
                 arguments=self.user_args.model_dump(),
                 environment=environment,
@@ -88,7 +89,6 @@ class BuilderTask:
             )
 
             # link task to the input datafiles
-            rupture_set_id = self.user_args.task.rupture_set_ids[0]
             if rupture_set_id:
                 self._toshi_api.automation_task.link_task_file(task_id, rupture_set_id, 'READ')
 
@@ -98,7 +98,7 @@ class BuilderTask:
         else:
             task_id = str(uuid.uuid4())
 
-        if ta['config_type'] == 'crustal':
+        if self.user_args.general.model_type is ModelType.CRUSTAL:
             inversion_runner = self._gateway.entry_point.getCrustalInversionRunner()
 
             if ta.get('spatial_seis_pdf'):
@@ -181,15 +181,14 @@ class BuilderTask:
                         ta['paleo_probability_model'],
                     )
 
-        elif ta['config_type'] == 'subduction':
+        elif self.user_args.general.model_type is ModelType.SUBDUCTION:
             inversion_runner = self._gateway.entry_point.getSubductionInversionRunner()
-            inversion_runner.setDeformationModel(ta['deformation_model'])
-            inversion_runner.setGutenbergRichterMFDWeights(
-                float(ta['mfd_equality_weight']), float(ta['mfd_inequality_weight'])
+            inversion_runner.setDeformationModel(self.user_args.task.deformation_models[0])
+            inversion_runner.setGutenbergRichterMFDWeights(self.user_args.task.mfd_equality_weights[0], self.user_args.task.mfd_inequality_weights[0]
             ).setSlipRateConstraint(
-                ta['slip_rate_weighting_type'],
-                float(ta['slip_rate_normalized_weight']),
-                float(ta['slip_rate_unnormalized_weight']),
+                self.user_args.task.slip_rate_weighting_types[0], 
+                self.user_args.task.slip_rate_normalized_weights[0],
+                self.user_args.task.slip_rate_unnormalized_weights[0],
             )
             if ta['mfd_min_mag']:
                 inversion_runner.setGutenbergRichterMFD(

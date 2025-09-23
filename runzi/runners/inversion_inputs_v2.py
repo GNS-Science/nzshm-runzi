@@ -32,16 +32,26 @@ class GeneralArgs(BaseModel):
     java_threads: int
     root_folder: FilePath
 
+# TODO: should these all be singular?
+# TODO: chould make the fields e.g. list[float] | float. Leaves room for user error
 class TaskArgs(BaseModel):
     max_inversion_times: list[float]
     rupture_set_ids: list[str]
     threads_per_selectors: list[str]
     averaging_threads: list[str]
     initial_solution_ids: Optional[list[str]]
+    deformation_models: list[str]
+    mfd_equality_weights: list[float]
+    mfd_inequality_weights: list[float]
+    slip_rate_weighting_types: list[str]
+    slip_rate_normalized_weights: list[str]
+    slip_rate_unnormalized_weights: list[str]
+
 
 class OpenshaArgs(InputBase):
     # java: JavaArgs
     general: GeneralArgs
+
 
 class InversionArgs(OpenshaArgs):
     task: TaskArgs
