@@ -12,6 +12,8 @@ from typing import List, Optional
 
 import boto3
 from botocore.exceptions import ClientError
+from pydantic import BaseModel
+from runzi.runners.runner_inputs import get_task_config
 
 BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')
 
@@ -84,7 +86,8 @@ def decompress_config(compressed):
 def get_ecs_job_config(
     job_name,
     toshi_file_id,
-    config,
+    task_args: BaseModel,
+    task_system_args: BaseModel,
     toshi_api_url,
     toshi_s3_url,
     toshi_report_bucket,
@@ -98,6 +101,7 @@ def get_ecs_job_config(
     use_compression=False,
 ):
 
+    task_config = get_task_config(task_args, task_system_args)
     if "Fargate" in job_definition:
         assert vcpu in [0.25, 0.5, 1, 2, 4]
         assert memory in [
@@ -167,9 +171,9 @@ def get_ecs_job_config(
                 {
                     "name": "TASK_CONFIG_JSON_QUOTED",
                     "value": (
-                        compress_config(json.dumps(config))
+                        compress_config(json.dumps(task_config))
                         if use_compression
-                        else urllib.parse.quote(json.dumps(config))
+                        else urllib.parse.quote(json.dumps(task_config))
                     ),
                 },
                 {"name": "NZSHM22_SCRIPT_JVM_HEAP_MAX", "value": str(int(memory / 1000) - 2)},

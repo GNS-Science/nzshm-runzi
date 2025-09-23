@@ -1,7 +1,7 @@
 import itertools
 import os
 import stat
-from pathlib import PurePath
+from pathlib import PurePath, Path
 from typing import TYPE_CHECKING
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 
@@ -25,19 +25,19 @@ from runzi.execute import inversion_solution_builder_task
 from runzi.util.aws import get_ecs_job_config
 
 if TYPE_CHECKING:
-    from runzi.runners.inversion_inputs_v2 import InversionArgs
+    from runzi.runners.inversion_inputs_v2 import InversionArgs, InversionSystemArgs
     from runzi.automation.scaling.toshi_api import ToshiApi
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 # JAVA_THREADS = 4
 
 
-def build_subduction_tasks(inversion_args: 'InversionArgs'):
+def build_subduction_tasks(inversion_args: 'InversionArgs', system_args: 'InversionSystemArgs'):
     task_count = 0
 
     factory_class = get_factory(CLUSTER_MODE)
 
-    work_path = '/WORKING' if CLUSTER_MODE == EnvMode['AWS'] else WORK_PATH
+    work_path = PurePath('/WORKING') if CLUSTER_MODE is EnvMode.AWS else WORK_PATH
     task_factory = factory_class(
         OPENSHA_ROOT,
         work_path,
@@ -50,15 +50,16 @@ def build_subduction_tasks(inversion_args: 'InversionArgs'):
         jvm_heap_start=JVM_HEAP_START,
     )
 
-    for task_input in inversion_args.get_task_inputs():
+    for task_args in inversion_args.get_task_args():
+        task_system_args = system_args.model_copy(deep=True)
                     
-        task_input.general.task_id=task_count
-        task_input.java.java_threads=int(task_input.task.threads_per_selectors[0]) * int(task_input.task.averaging_threads[0])
-        task_input.java.jvm_heap_max=JVM_HEAP_MAX
-        task_input.java.java_gateway_port=task_factory.get_next_port()
-        task_input.general.working_path=str(work_path)
-        task_input.java.root_folder=OPENSHA_ROOT
-        task_input.general.use_api=USE_API
+        task_system_args.task_count = task_count
+        task_system_args.java_threads=int(task_args.task.threads_per_selectors[0]) * int(task_args.task.averaging_threads[0])
+        task_system_args.java_gateway_port=task_factory.get_next_port()
+        task_system_args.working_path=work_path
+        task_system_args.opensha_root_folder=OPENSHA_ROOT
+        task_system_args.use_api=USE_API
+            
 
         if CLUSTER_MODE == EnvMode['AWS']:
 
@@ -66,20 +67,21 @@ def build_subduction_tasks(inversion_args: 'InversionArgs'):
 
             yield get_ecs_job_config(
                 job_name,
-                task_input.task.rupture_set_ids[0],  # TODO: we don't need this, can be done by task script
-                task_input.model_dump(),
+                task_args.task.rupture_set_ids[0],  # TODO: we don't need this, can be done by task script
+                task_args,
+                task_system_args,
                 toshi_api_url=API_URL,
                 toshi_s3_url=S3_URL,
                 toshi_report_bucket=S3_REPORT_BUCKET,
                 task_module=inversion_solution_builder_task.__name__,
-                time_minutes=task_input.task.max_inversion_times[0],
+                time_minutes=task_args.task.max_inversion_times[0],
                 memory=30720,
                 vcpu=4,
             )
 
         else:
             # write a config
-            task_factory.write_task_config(task_input.model_dump())
+            task_factory.write_task_config(task_args, task_system_args)
 
             script = task_factory.get_task_script()
 

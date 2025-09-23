@@ -17,10 +17,16 @@ The job is responsible for
 import json
 import os
 from typing import Any, TYPE_CHECKING, cast, Optional
-from pathlib import Path
+from pathlib import PurePath
 from runzi.runners.inversion_inputs_v2 import OpenshaArgs, InversionArgs
+from pydantic import  BaseModel
+from runzi.runners.runner_inputs import get_task_config
 
 from .local_config import EnvMode
+
+from typing import Type, TypeVar
+
+OpenshaTaskFactoryType = TypeVar('OpenshaTaskFactoryType', bound='OpenshaTaskFactory')
 
 # import scaling.rupture_set_builder_task
 
@@ -34,7 +40,7 @@ class OpenshaTaskFactory:
         python_script_module,
         jre_path=None,
         app_jar_path=None,
-        task_config_path: Optional[Path]=None,
+        task_config_path: Optional[PurePath]=None,
         initial_gateway_port=25333,
         python='python3',
         jvm_heap_start=3,
@@ -59,9 +65,10 @@ class OpenshaTaskFactory:
         self._python = str(python)
         # self._python_script = python_script or 'rupture_set_builder_task.py'
 
-    def write_task_config(self, task_args: 'OpenshaArgs'):
+    def write_task_config(self, task_args: BaseModel, task_system_args: BaseModel):
         fname = self._config_path / f"config.{self._next_port}.json"
-        fname.write_text(task_args.model_dump_json(indent=4), encoding='utf-8')
+        task_config = get_task_config(task_args, task_system_args)
+        fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
 
     def get_task_script(self):
         return self._get_bash_script()
@@ -127,15 +134,15 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
         self._pbs_nodes = 1  # always ust one PBS node (and which one we don't know)
         self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1)  # defines maximum time the jobs is allocated by PBS
 
-    def write_task_config(self, task_args: 'OpenshaArgs'):
+    def write_task_config(self, task_args: BaseModel, task_system_args: BaseModel):
         fname = self._config_path / f"config.{self._next_port}.json"
         if isinstance(task_args, InversionArgs):
-            if (max_inversion_time := task_args.inversion.max_inversion_times[0]):
-                self._pbs_wall_hours = int(max_inversion_time / 60) + 1
-        if java_threads := task_args.java_args.java_threads:
-            self._pbs_ppn = java_threads
+            max_inversion_time = task_args.task.max_inversion_times[0]
+            self._pbs_wall_hours = int(max_inversion_time / 60) + 1
+            self._pbs_ppn = task_args.general.java_threads
 
-        fname.write_text(task_args.model_dump_json(indent=4), encoding='utf-8')
+        task_config = get_task_config(task_args, task_system_args)
+        fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
 
     def get_task_script(self):
         return f"""
@@ -158,10 +165,10 @@ export NO_PROXY=${{no_proxy}}
 """
 
 
-def get_factory(environment_mode):
-    if environment_mode == EnvMode['LOCAL']:
+def get_factory(environment_mode: EnvMode) -> type[OpenshaTaskFactory]:
+    if environment_mode is EnvMode.LOCAL:
         return OpenshaTaskFactory
-    elif environment_mode == EnvMode['CLUSTER']:
+    elif environment_mode is EnvMode.CLUSTER:
         return OpenshaPBSTaskFactory
-    elif environment_mode == EnvMode['AWS']:
+    elif environment_mode is EnvMode.AWS:
         return OpenshaAWSTaskFactory

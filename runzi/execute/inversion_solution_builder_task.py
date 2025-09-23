@@ -16,7 +16,7 @@ from py4j.java_gateway import GatewayParameters, JavaGateway
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_INVERSION, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.runners.inversion_inputs_v2 import InversionArgs, GeneralArgs
+from runzi.runners.inversion_inputs_v2 import InversionArgs, GeneralArgs, InversionSystemArgs
 
 logging.basicConfig(level=logging.INFO)
 
@@ -35,24 +35,25 @@ class BuilderTask:
     Configure the python client for a InversionTask
     """
 
-    def __init__(self, inversion_args: InversionArgs):
+    def __init__(self, user_args: InversionArgs, system_args: InversionSystemArgs):
 
-        self.inversion_args = inversion_args
-        self.use_api = inversion_args.general.use_api
+        self.user_args = user_args
+        self.system_args = system_args
 
         # setup the java gateway binding
-        self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=inversion_args.java.java_gateway_port))
+        self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=system_args.java_gateway_port))
         # repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
         # self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
-        self._output_folder = PurePath(inversion_args.general.working_path)
+        self._output_folder = PurePath(system_args.working_path)
 
         headers = {"x-api-key": API_KEY}
         self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     def run(self):
+        # TODO: not super thrilled with having to [0] index every task argument. Is there a better solution?
     
-        file_generator = get_output_file_id(self._toshi_api, rupture_set_id)  # for file by file ID
+        file_generator = get_output_file_id(self._toshi_api, self.user_args.task.rupture_set_ids[0])  # for file by file ID
         rupture_sets_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
         t0 = dt.datetime.now()
@@ -61,14 +62,14 @@ class BuilderTask:
 
         log.info(f"Running nzshm-opensha {API_GitVersion}")
 
-        initial_solution_id = ta.get('initial_solution_id')
-        if initial_solution_id:
+        if initial_solution_id := self.user_args.task.initial_solution_ids
             file_generator = get_output_file_id(self._toshi_api, initial_solution_id)
             initial_solution_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
         environment = {"host": platform.node(), "nzshm-opensha.version": API_GitVersion}
 
-        if self.use_api:
+        if self.system_args.use_api:
+            general_task_id = self.system_args.general_task_id
             # create new task in toshi_api
             task_id = self._toshi_api.automation_task.create_task(
                 dict(
@@ -76,20 +77,20 @@ class BuilderTask:
                     task_type="INVERSION",
                     model_type=ta['config_type'].upper(),
                 ),
-                arguments=task_arguments,
+                arguments=self.user_args.model_dump(),
                 environment=environment,
             )
 
             # link task to the parent task
-            gt_conn = self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
+            gt_conn = self._task_relation_api.create_task_relation(general_task_id, task_id)
             log.info(
-                f"created task_relationship: {gt_conn} for at: {task_id} on GT: {job_arguments['general_task_id']}"
+                f"created task_relationship: {gt_conn} for at: {task_id} on GT: {general_task_id}"
             )
 
             # link task to the input datafiles
-            input_file_id = task_arguments.get('rupture_set_file_id')
-            if input_file_id:
-                self._toshi_api.automation_task.link_task_file(task_id, input_file_id, 'READ')
+            rupture_set_id = self.user_args.task.rupture_set_ids[0]
+            if rupture_set_id:
+                self._toshi_api.automation_task.link_task_file(task_id, rupture_set_id, 'READ')
 
             if initial_solution_id:
                 self._toshi_api.automation_task.link_task_file(task_id, initial_solution_id, 'READ')
@@ -359,13 +360,17 @@ if __name__ == "__main__":
     try:
         # LOCAL and CLUSTER this is a file
         config = InversionArgs.from_json_file(args.config)
+        f = open(args.config, 'r', encoding='utf-8')
+        config = json.load(f)
     except FileNotFoundError:
         # for AWS this must be a quoted JSON string
-        config = InversionArgs.model_validate_json(urllib.parse.unquote(args.config))
+        config = json.loads(urllib.parse.unquote(args.config))
 
+    user_args = InversionArgs(**config['task_args'])
+    system_args = InversionSystemArgs(**config['task_system_args'])
     # maybe the JVM App is a little slow to get listening
     time.sleep(0.2)
-    task = BuilderTask(config['job_arguments'])
+    task = BuilderTask(user_args, system_args)
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(config['job_arguments']['task_id'] * 0.01)
-    task.run(**config)
+    task.run()

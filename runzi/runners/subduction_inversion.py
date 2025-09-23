@@ -13,15 +13,14 @@ from runzi.automation.scaling.file_utils import download_files, get_output_file_
 from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, WORK_PATH, EnvMode, USE_API
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.subduction_inversions import build_subduction_tasks
-
-if TYPE_CHECKING:
-    from runzi.runners.inversion_inputs_v2 import InversionArgs
+from runzi.runners.inversion_inputs_v2 import InversionArgs, InversionSystemArgs
 
 
-def run_subduction_inversion(inversion_args: 'InversionArgs') -> str | None:
+def run_subduction_inversion(inversion_args: InversionArgs) -> str | None:
     t0 = dt.datetime.now()
+    system_args = InversionSystemArgs()
 
-    worker_pool_size = inversion_args.java_args.worker_pool_size
+    worker_pool_size = inversion_args.general.worker_pool_size
     if inversion_args.general.subtask_type is not SubtaskType.INVERSION:
         raise ValueError("subtask type must be INVERSION")
     if inversion_args.general.model_type is not ModelType.SUBDUCTION:
@@ -52,10 +51,10 @@ def run_subduction_inversion(inversion_args: 'InversionArgs') -> str | None:
         )
 
     print("GENERAL_TASK_ID:", general_task_id)
-    inversion_args.general.general_task_id = general_task_id
+    system_args.general_task_id = general_task_id
 
     scripts = []
-    for script_file in build_subduction_tasks(inversion_args):
+    for script_file in build_subduction_tasks(inversion_args, system_args):
         scripts.append(script_file)
 
     if CLUSTER_MODE == EnvMode['LOCAL']:

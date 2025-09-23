@@ -57,10 +57,11 @@ JVM_HEAP_MAX = os.getenv('NZSHM22_SCRIPT_JVM_HEAP_MAX', 10)  # Maximum JAVA Memo
 
 
 # LOCAL SYSTEM SETTINGS
+# TODO: modernize getting path env vars
 OPENSHA_ROOT = os.getenv('NZSHM22_OPENSHA_ROOT', "~/DEV/GNS/opensha-modular")
 OPENSHA_JRE = os.getenv('NZSHM22_OPENSHA_JRE', "/usr/lib/jvm/java-11-openjdk-amd64/bin/java")
 FATJAR = os.getenv('NZSHM22_FATJAR', None) or str(PurePath(OPENSHA_ROOT, ""))
-WORK_PATH = os.getenv('NZSHM22_SCRIPT_WORK_PATH', PurePath(os.getcwd(), "tmp"))
+WORK_PATH = PurePath(os.getenv('NZSHM22_SCRIPT_WORK_PATH', PurePath(os.getcwd(), PurePath("tmp"))))
 
 
 BUILD_PLOTS = boolean_env('NZSHM22_BUILD_PLOTS')
