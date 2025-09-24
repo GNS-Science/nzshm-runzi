@@ -2,9 +2,9 @@
 
 from itertools import product
 from pathlib import Path
-from typing import Generator, Optional
+from typing import Generator, Optional, Any
 
-from pydantic import BaseModel, FilePath
+from pydantic import BaseModel, FilePath, field_serializer, field_validator, ValidationInfo
 
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.runners.runner_inputs import InputBase
@@ -33,6 +33,30 @@ class GeneralArgs(BaseModel):
     jvm_heap_max: int
     java_threads: int
     root_folder: FilePath
+
+        # we want to use the (case-insensitive) name for the model_type for input
+    @field_validator('model_type', 'subtask_type', mode='before')
+    @classmethod
+    def convert_to_enum(cls, value: Any, info: ValidationInfo) -> ModelType | SubtaskType:
+        if isinstance(value, (ModelType, SubtaskType)):
+            return value
+        try:
+            if info.field_name == 'model_type':
+                return ModelType[value.upper()]
+            return SubtaskType[value.upper()]
+        except (KeyError, AttributeError):
+            try:
+                if info.field_name == 'model_type':
+                    return ModelType(value)
+                return SubtaskType(value)
+            except ValueError:
+                raise ValueError("model_type input is not valid")
+
+    # because we before-validate model_type to convert from a string of the enum name to enum
+    # instance, we also want to serialize this way
+    @field_serializer('subtask_type', 'model_type')
+    def serialize_model_type(self, model_type: ModelType | SubtaskType, _info):
+        return model_type.name
 
 
 class MFD(BaseModel):

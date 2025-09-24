@@ -19,7 +19,7 @@ from runzi.automation.scaling.local_config import (
     EnvMode,
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.execute import inversion_solution_builder_task
+from runzi.execute import subduction_inversion_solution_builder_task
 from runzi.util.aws import get_ecs_job_config
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ def build_subduction_tasks(inversion_args: 'InversionArgs', system_args: 'Invers
     task_factory = factory_class(
         OPENSHA_ROOT,
         work_path,
-        inversion_solution_builder_task,
+        subduction_inversion_solution_builder_task,
         initial_gateway_port=INITIAL_GATEWAY_PORT,
         jre_path=OPENSHA_JRE,
         app_jar_path=FATJAR,
