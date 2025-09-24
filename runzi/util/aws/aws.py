@@ -13,6 +13,7 @@ from typing import List, Optional
 import boto3
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
+
 from runzi.runners.runner_inputs import get_task_config
 
 BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')

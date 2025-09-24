@@ -1,9 +1,7 @@
-import itertools
 import os
 import stat
-from pathlib import PurePath, Path
+from pathlib import PurePath
 from typing import TYPE_CHECKING
-from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (
@@ -26,7 +24,6 @@ from runzi.util.aws import get_ecs_job_config
 
 if TYPE_CHECKING:
     from runzi.runners.inversion_inputs_v2 import InversionArgs, InversionSystemArgs
-    from runzi.automation.scaling.toshi_api import ToshiApi
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 # JAVA_THREADS = 4
@@ -52,14 +49,15 @@ def build_subduction_tasks(inversion_args: 'InversionArgs', system_args: 'Invers
 
     for task_args in inversion_args.get_task_args():
         task_system_args = system_args.model_copy(deep=True)
-                    
+
         task_system_args.task_count = task_count
-        task_system_args.java_threads=int(task_args.task.threads_per_selectors[0]) * int(task_args.task.averaging_threads[0])
-        task_system_args.java_gateway_port=task_factory.get_next_port()
-        task_system_args.working_path=work_path
-        task_system_args.opensha_root_folder=OPENSHA_ROOT
-        task_system_args.use_api=USE_API
-            
+        task_system_args.java_threads = int(task_args.task.threads_per_selectors[0]) * int(
+            task_args.task.averaging_threads[0]
+        )
+        task_system_args.java_gateway_port = task_factory.get_next_port()
+        task_system_args.working_path = work_path
+        task_system_args.opensha_root_folder = OPENSHA_ROOT
+        task_system_args.use_api = USE_API
 
         if CLUSTER_MODE == EnvMode['AWS']:
 

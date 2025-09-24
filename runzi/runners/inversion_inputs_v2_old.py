@@ -1,14 +1,18 @@
 """This module provides the Pydantic class for defining inversion job inputs."""
 
-from pydantic import BaseModel, field_validator, field_serializer, ValidationInfo, model_validator
 from typing import Any, Optional
-from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
+
+from pydantic import BaseModel, ValidationInfo, field_serializer, field_validator, model_validator
+
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
+
 
 class JobArgs(BaseModel):
     worker_pool_size: int
     jvm_heap_max: int
     java_threads: int
     use_api: bool
+
 
 class GeneralArgs(BaseModel):
     mock_mode: bool = False
@@ -44,10 +48,12 @@ class GeneralArgs(BaseModel):
     def serialize_model_type(self, model_type: ModelType | SubtaskType, _info):
         return model_type.name
 
+
 class ScalingC(BaseModel):
     tag: str
     dip: float
     strike: float
+
 
 # TODO: which of these are actually optional?
 # optional lists should be [None,] not None
@@ -102,6 +108,7 @@ class TaskArgs(BaseModel):
     slip_uncertainty_scaling_factors: Optional[list[Optional[float]]] = None
     slip_rate_unnormalized_weights: Optional[list[str]] = None
 
+
 class InversionInput(BaseModel):
     config_version: Optional[str] = None
     job_args: JobArgs
@@ -109,16 +116,16 @@ class InversionInput(BaseModel):
     task_args: TaskArgs
 
     def get_job_args(self) -> dict[str, Any]:
-        return {f"_{k}":v for k, v in self.job_args.model_dump().items()}
+        return {f"_{k}": v for k, v in self.job_args.model_dump().items()}
 
     def get_task_args(self) -> dict[str, Any]:
-        return {f"_{k}":v for k, v in self.task_args.model_dump().items()}
+        return {f"_{k}": v for k, v in self.task_args.model_dump().items()}
 
     def get_run_args(self) -> dict[str, Any]:
         return self.task_args.model_dump()
 
     def get_general_args(self) -> dict[str, Any]:
-        return {f"_{k}":v for k, v in self.general_args.model_dump().items()}
+        return {f"_{k}": v for k, v in self.general_args.model_dump().items()}
 
     def get_config_version(self) -> dict[str, Any]:
         return self.config_version
@@ -129,7 +136,6 @@ class InversionInput(BaseModel):
         general_args = self.get_general_args()
         config_verison = {"_config_version": self.config_version}
         return config_verison | job_args | general_args | task_args
-
 
     # some model files put the file_id in job_args instead of general_args. We'll move it here
     @model_validator(mode='before')

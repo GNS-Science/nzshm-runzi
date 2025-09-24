@@ -1,16 +1,12 @@
 import datetime as dt
 import getpass
 from multiprocessing.dummy import Pool
-from pathlib import PurePath
 from subprocess import check_call
-from typing import TYPE_CHECKING
 
 import boto3
 
-from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-
 # Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, WORK_PATH, EnvMode, USE_API
+from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, EnvMode
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.subduction_inversions import build_subduction_tasks
 from runzi.runners.inversion_inputs_v2 import InversionArgs, InversionSystemArgs
@@ -37,7 +33,11 @@ def run_subduction_inversion(inversion_args: InversionArgs) -> str | None:
     if USE_API:
         # create new task in toshi_api
         gt_args = (
-            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=inversion_args.general.title, description=inversion_args.general.description)
+            CreateGeneralTaskArgs(
+                agent_name=getpass.getuser(),
+                title=inversion_args.general.title,
+                description=inversion_args.general.description,
+            )
             .set_argument_list(args_list)
             .set_subtask_type(inversion_args.general.subtask_type)
             .set_model_type(inversion_args.general.model_type)

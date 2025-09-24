@@ -16,15 +16,15 @@ The job is responsible for
 """
 import json
 import os
-from typing import Any, TYPE_CHECKING, cast, Optional
-from pathlib import PurePath
-from runzi.runners.inversion_inputs_v2 import OpenshaArgs, InversionArgs
-from pydantic import  BaseModel
+from pathlib import PurePath, Path
+from typing import Optional, TypeVar
+
+from pydantic import BaseModel
+
+from runzi.runners.inversion_inputs_v2 import InversionArgs
 from runzi.runners.runner_inputs import get_task_config
 
 from .local_config import EnvMode
-
-from typing import Type, TypeVar
 
 OpenshaTaskFactoryType = TypeVar('OpenshaTaskFactoryType', bound='OpenshaTaskFactory')
 
@@ -40,7 +40,7 @@ class OpenshaTaskFactory:
         python_script_module,
         jre_path=None,
         app_jar_path=None,
-        task_config_path: Optional[PurePath]=None,
+        task_config_path: Optional[PurePath] = None,
         initial_gateway_port=25333,
         python='python3',
         jvm_heap_start=3,

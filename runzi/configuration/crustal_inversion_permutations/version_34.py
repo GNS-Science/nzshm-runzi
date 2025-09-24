@@ -11,7 +11,7 @@ def branch_permutations_generator_34(args, rupture_set_info):
     # bit of a no-no to change a list in a for loop,
     # but since we're only altering the contents of the list items, we should be OK
     for i, a in enumerate(bn_list):
-        bn_list[i]['string'] = str(a)  # preserve origional string for TUI
+        bn_list[i]['string'] = str(a)  # preserve origional sting for TUI
         if not (a['enable_tvz_mfd']):
             bn_list[i]['N_sans'] = bn_list[i].pop('N')
             bn_list[i]['b_sans'] = bn_list[i].pop('b')
