@@ -15,9 +15,8 @@ from py4j.java_gateway import GatewayParameters, JavaGateway
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_INVERSION, WORK_PATH
-from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.runners.inversion_inputs_v2 import InversionArgs, GeneralArgs, InversionSystemArgs
-from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
+from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
+from runzi.runners.inversion_inputs_v2 import InversionArgs, InversionSystemArgs
 
 logging.basicConfig(level=logging.INFO)
 
@@ -51,19 +50,139 @@ class BuilderTask:
         self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
         self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
+    def setup_crustal_runner(self):
+        self.inversion_runner = self._gateway.entry_point.getCrustalInversionRunner()
+
+        if (spatial_seis_pdf := self.user_args.task.spatial_seis_pdfs[0]) is not None:
+            self.inversion_runner.setSpatialSeisPDF(spatial_seis_pdf)
+
+        self.inversion_runner.setDeformationModel(self.user_args.task.deformation_models[0])
+        self.inversion_runner.setGutenbergRichterMFD(
+            self.user_args.task.mfds[0].N,
+            self.user_args.task.mfds[0].N_tvz,
+            self.user_args.task.mfds[0].b,
+            self.user_args.task.mfds[0].b_tvz,
+            self.user_args.task.mfd_transition_mags[0],
+        )
+
+        mfd_equality_weight = self.user_args.task.mfd_equality_weights[0]
+        mfd_inequality_weight = self.user_args.task.mfd_inequality_weights[0]
+        mfd_uncertainty_weight = self.user_args.task.mfd_uncertainty_weights[0]
+        mfd_uncertainty_power = self.user_args.task.mfd_uncertainty_powers[0]
+        mfd_uncertainty_scalar = self.user_args.task.mfd_uncertainty_scalars[0]
+        reweight = self.user_args.task.reweights[0]
+        if (mfd_equality_weight is not None) and (mfd_inequality_weight is not None):
+            self.inversion_runner.setGutenbergRichterMFDWeights(mfd_equality_weight, mfd_inequality_weight)
+        elif ((mfd_uncertainty_weight is not None) and (mfd_uncertainty_power is not None)) or (reweight):
+            weight = 1.0 if reweight else mfd_uncertainty_weight
+            self.inversion_runner.setUncertaintyWeightedMFDWeights(
+                weight, mfd_uncertainty_power, mfd_uncertainty_scalar
+            )
+        else:
+            raise ValueError("Neither eq/ineq , nor uncertainty weights provided for MFD constraint setup")
+
+        if self.user_args.task.mfds[0].enable_tvz:
+            self.inversion_runner.setEnableTvzMFDs(True)
+
+        self.inversion_runner.setMinMags(self.user_args.task.min_mag_sans[0], self.user_args.task.min_mag_tvz[0])
+        self.inversion_runner.setMaxMags(
+            self.user_args.task.max_mag_types[0],
+            self.user_args.task.mag_ranges[0].max_mag_sans,
+            self.user_args.task.mag_ranges[0].max_mag_tvz,
+        )
+
+        self.inversion_runner.setSlipRateFactor(
+            self.user_args.task.slip_rate_factors[0].sans,
+            self.user_args.task.slip_rate_factors[0].sans,
+        )
+
+        if reweight:
+            self.inversion_runner.setReweightTargetQuantity("MAD")
+
+        use_slip_scalings = self.user_args.task.use_slip_scalings[0]
+        slip_rate_weighting_type = self.user_args.task.slip_rate_weighting_types[0]
+        slip_rate_normalized_weight = self.user_args.task.slip_rate_normalized_weights[0]
+        slip_rate_unnormalized_weight = self.user_args.task.slip_rate_unnormalized_weights[0]
+        if use_slip_scalings is not None:
+            # V3x config
+            weight = 1.0 if reweight else self.user_args.task.slip_uncertainty_weights[0]
+            self.inversion_runner.setSlipRateUncertaintyConstraint(
+                weight, self.user_args.task.slip_uncertainty_scaling_factors[0]
+            ).setUnmodifiedSlipRateStdvs(
+                not use_slip_scalings
+            )  # True means no slips scaling and vice-versa
+        elif (slip_rate_weighting_type is not None) and slip_rate_weighting_type == 'UNCERTAINTY_ADJUSTED':
+            # Deprecated...
+            self.inversion_runner.setSlipRateUncertaintyConstraint(
+                self.user_args.task.slip_rate_weights[0], self.user_args.task.slip_uncertainty_scaling_factors[0]
+            )
+        elif slip_rate_normalized_weight is not None:
+            # covers UCERF3 style SR constraints
+            self.inversion_runner.setSlipRateConstraint(
+                slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight
+            )
+        else:
+            raise ValueError("invalid slip constraint weight setup")
+
+        paleo_rate_constraint_weight = self.user_args.task.paleo_rate_constraint_weights[0]
+        paleo_parent_rate_smoothness_constraint_weight = (
+            self.user_args.task.paleo_parent_rate_smoothness_constraint_weights[0]
+        )
+        paleo_rate_constraint = self.user_args.task.paleo_rate_constraints[0]
+        paleo_probability_model = self.user_args.task.paleo_probability_models[0]
+        if paleo_rate_constraint_weight is not None:
+            weight = 1.0 if reweight else paleo_rate_constraint_weight
+            self.inversion_runner.setPaleoRateConstraints(
+                weight,
+                weight,
+                paleo_parent_rate_smoothness_constraint_weight,
+                paleo_rate_constraint,
+                paleo_probability_model,
+            )
+
+    def setup_subduction_runner(self):
+        self.inversion_runner = self._gateway.entry_point.getSubductionInversionRunner()
+        self.inversion_runner.setDeformationModel(self.user_args.task.deformation_models[0])
+        self.inversion_runner.setGutenbergRichterMFDWeights(
+            self.user_args.task.mfd_equality_weights[0], self.user_args.task.mfd_inequality_weights[0]
+        ).setSlipRateConstraint(
+            self.user_args.task.slip_rate_weighting_types[0],
+            self.user_args.task.slip_rate_normalized_weights[0],
+            self.user_args.task.slip_rate_unnormalized_weights[0],
+        )
+        if self.user_args.task.mfd_min_mags[0] is not None:
+            self.inversion_runner.setGutenbergRichterMFD(
+                self.user_args.task.mfds[0].N,
+                self.user_args.task.mfds[0].b,
+                self.user_args.task.mfd_transition_mags[0],
+                self.user_args.task.mfd_min_mags[0],
+            )
+        else:
+            self.inversion_runner.setGutenbergRichterMFD(
+                self.user_args.task.mfds[0].N, self.user_args.task.mfds[0].b, self.user_args.task.mfd_transition_mags[0]
+            )
+
+        if self.user_args.task.mfd_uncertainty_weights[0] is not None:
+            self.inversion_runner.setUncertaintyWeightedMFDWeights(
+                self.user_args.task.mfd_uncertainty_weights[0],
+                self.user_args.task.mfd_uncertainty_powers[0],
+                self.user_args.task.mfd_uncertainty_scalars[0],
+            )
+
     def run(self):
         # TODO: not super thrilled with having to [0] index every task argument. Is there a better solution?
         t0 = dt.datetime.now()
-    
+
         rupture_set_id = self.user_args.task.rupture_set_ids[0]
         file_generator = get_output_file_id(self._toshi_api, rupture_set_id)  # for file by file ID
-        rupture_sets_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+        rupture_set_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
         API_GitVersion = self._gateway.entry_point.getGitVersion()
 
         log.info(f"Running nzshm-opensha {API_GitVersion}")
 
-        if initial_solution_id := self.user_args.task.initial_solution_ids
+        initial_solution_id = self.user_args.task.initial_solution_ids[0]
+        if initial_solution_id is not None:
             file_generator = get_output_file_id(self._toshi_api, initial_solution_id)
             initial_solution_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
@@ -76,7 +195,7 @@ class BuilderTask:
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type="INVERSION",
-                    model_type=self.user_args.general.model_type.name.upper()
+                    model_type=self.user_args.general.model_type.name.upper(),
                 ),
                 arguments=self.user_args.model_dump(),
                 environment=environment,
@@ -84,205 +203,105 @@ class BuilderTask:
 
             # link task to the parent task
             gt_conn = self._task_relation_api.create_task_relation(general_task_id, task_id)
-            log.info(
-                f"created task_relationship: {gt_conn} for at: {task_id} on GT: {general_task_id}"
-            )
+            log.info(f"created task_relationship: {gt_conn} for at: {task_id} on GT: {general_task_id}")
 
             # link task to the input datafiles
             if rupture_set_id:
                 self._toshi_api.automation_task.link_task_file(task_id, rupture_set_id, 'READ')
 
-            if initial_solution_id:
+            if initial_solution_id is not None:
                 self._toshi_api.automation_task.link_task_file(task_id, initial_solution_id, 'READ')
 
         else:
             task_id = str(uuid.uuid4())
 
         if self.user_args.general.model_type is ModelType.CRUSTAL:
-            inversion_runner = self._gateway.entry_point.getCrustalInversionRunner()
-
-            if ta.get('spatial_seis_pdf'):
-                inversion_runner.setSpatialSeisPDF(str(ta.get('spatial_seis_pdf')))
-
-            inversion_runner.setDeformationModel(ta['deformation_model'])
-            inversion_runner.setGutenbergRichterMFD(
-                float(ta['mfd_mag_gt_5_sans']),
-                float(ta['mfd_mag_gt_5_tvz']),
-                float(ta['mfd_b_value_sans']),
-                float(ta['mfd_b_value_tvz']),
-                float(ta['mfd_transition_mag']),
-            )
-
-            if ta.get('mfd_equality_weight') and ta.get('mfd_inequality_weight'):
-                inversion_runner.setGutenbergRichterMFDWeights(
-                    float(ta['mfd_equality_weight']), float(ta['mfd_inequality_weight'])
-                )
-            elif (ta.get('mfd_uncertainty_weight') and ta.get('mfd_uncertainty_power')) or (
-                not ta.get('reweight') is None
-            ):
-                weight = 1 if ta.get('reweight') else ta.get('mfd_uncertainty_weight')
-                inversion_runner.setUncertaintyWeightedMFDWeights(
-                    float(weight),  # set default for reweighting
-                    float(ta.get('mfd_uncertainty_power')),
-                    float(ta.get('mfd_uncertainty_scalar')),
-                )
-            else:
-                raise ValueError("Neither eq/ineq , nor uncertainty weights provided for MFD constraint setup")
-
-            if not ta.get('enable_tvz_mfd') is None:
-                inversion_runner.setEnableTvzMFDs(ta.get('enable_tvz_mfd'))
-
-            minMagSans = float(ta['min_mag_sans'])
-            minMagTvz = float(ta['min_mag_tvz'])
-            inversion_runner.setMinMags(minMagSans, minMagTvz)
-
-            maxMagSans = float(ta['max_mag_sans'])
-            maxMagTvz = float(ta['max_mag_tvz'])
-            maxMagType = ta['max_mag_type']
-            inversion_runner.setMaxMags(maxMagType, maxMagSans, maxMagTvz)
-
-            srf_sans = float(ta.get('sans_slip_rate_factor', 1.0))
-            srf_tvz = float(ta.get('tvz_slip_rate_factor', 1.0))
-            inversion_runner.setSlipRateFactor(srf_sans, srf_tvz)
-
-            if not ta.get('reweight') is None:
-                inversion_runner.setReweightTargetQuantity("MAD")
-
-            if not ta.get('slip_use_scaling') is None:
-                # V3x config
-                weight = 1 if ta.get('reweight') else ta.get('slip_uncertainty_weight')
-                inversion_runner.setSlipRateUncertaintyConstraint(
-                    float(weight), float(ta.get('slip_uncertainty_scaling_factor'))  # set default for reweighting
-                ).setUnmodifiedSlipRateStdvs(
-                    not bool(ta.get('slip_use_scaling'))
-                )  # True means no slips scaling and vice-versa
-            elif ta.get('slip_rate_weighting_type') and ta['slip_rate_weighting_type'] == 'UNCERTAINTY_ADJUSTED':
-                # Deprecated...
-                inversion_runner.setSlipRateUncertaintyConstraint(
-                    int(float(ta['slip_rate_weight'])), int(ta['slip_uncertainty_scaling_factor'])
-                )
-            elif ta.get('slip_rate_normalized_weight'):
-                # covers UCERF3 style SR constraints
-                inversion_runner.setSlipRateConstraint(
-                    ta['slip_rate_weighting_type'],
-                    float(ta['slip_rate_normalized_weight']),
-                    float(ta['slip_rate_unnormalized_weight']),
-                )
-            else:
-                raise ValueError(f"invalid slip constraint weight setup {ta}")
-
-            if ta.get('paleo_rate_constraint_weight', 1):
-                weight = 1 if ta.get('reweight') else ta.get('paleo_rate_constraint_weight')
-                if ta.get('paleo_rate_constraint'):
-                    inversion_runner.setPaleoRateConstraints(
-                        float(weight),  # set default for reweighting
-                        float(ta['paleo_parent_rate_smoothness_constraint_weight']),
-                        ta['paleo_rate_constraint'],
-                        ta['paleo_probability_model'],
-                    )
-
+            self.setup_crustal_runner()
         elif self.user_args.general.model_type is ModelType.SUBDUCTION:
-            inversion_runner = self._gateway.entry_point.getSubductionInversionRunner()
-            inversion_runner.setDeformationModel(self.user_args.task.deformation_models[0])
-            inversion_runner.setGutenbergRichterMFDWeights(self.user_args.task.mfd_equality_weights[0], self.user_args.task.mfd_inequality_weights[0]
-            ).setSlipRateConstraint(
-                self.user_args.task.slip_rate_weighting_types[0], 
-                self.user_args.task.slip_rate_normalized_weights[0],
-                self.user_args.task.slip_rate_unnormalized_weights[0],
-            )
-            if ta['mfd_min_mag']:
-                inversion_runner.setGutenbergRichterMFD(
-                    float(ta['mfd_mag_gt_5']),
-                    float(ta['mfd_b_value']),
-                    float(ta['mfd_transition_mag']),
-                    float(ta['mfd_min_mag']),
-                )
-            else:
-                inversion_runner.setGutenbergRichterMFD(
-                    float(ta['mfd_mag_gt_5']), float(ta['mfd_b_value']), float(ta['mfd_transition_mag'])
-                )
+            self.setup_subduction_runner()
 
-            if ta.get('mfd_uncertainty_weight'):
-                inversion_runner.setUncertaintyWeightedMFDWeights(
-                    float(ta['mfd_uncertainty_weight']),
-                    float(ta['mfd_uncertainty_power']),
-                    float(ta.get('mfd_uncertainty_scalar')),
-                )
-
-        if ta.get('scaling_relationship') and ta.get('scaling_recalc_mag'):
+        scaling_relationship = self.user_args.task.scaling_relationship[0]
+        scaling_recalc_mag = self.user_args.task.scaling_recalc_mags[0]
+        if (scaling_relationship is not None) and scaling_recalc_mag:
             sr = self._gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
-            if ta.get('scaling_relationship') == "SIMPLE_CRUSTAL":
-                sr.setupCrustal(float(ta.get('scaling_c_val_dip_slip')), float(ta.get('scaling_c_val_strike_slip')))
-            elif ta.get('scaling_relationship') == "SIMPLE_SUBDUCTION":
-                sr.setupSubduction(float(ta.get('scaling_c_val')))
+            if scaling_relationship == "SIMPLE_CRUSTAL":
+                c_dip = self.user_args.task.scaling_cs[0].dip
+                c_strike = self.user_args.task.scaling_cs[0].strike
+                sr.setupCrustal(c_dip, c_strike)
+            elif scaling_relationship == "SIMPLE_SUBDUCTION":
+                sr.setupSubduction(self.user_args.task.scaling_c_vals[0])
             else:
-                sr = ta.get('scaling_relationship')
-            inversion_runner.setScalingRelationship(sr, bool(ta.get('scaling_recalc_mag')))
+                raise NotImplementedError("not sure how this is supposed to work")
+                # sr = ta.get('scaling_relationship')
+            self.inversion_runner.setScalingRelationship(sr, scaling_recalc_mag)
 
-        inversion_runner.setInversionSeconds(
-            int(float(ta['max_inversion_time']) * 60)
-        ).setEnergyChangeCompletionCriteria(float(0), float(ta['completion_energy']), float(1)).setSelectionInterval(
-            int(ta["selection_interval_secs"])
+        self.inversion_runner.setInversionSeconds(
+            int(self.user_args.task.max_inversion_times[0] * 60)
+        ).setEnergyChangeCompletionCriteria(
+            float(0), self.user_args.task.completion_energies[0], float(1)
+        ).setSelectionInterval(
+            self.user_args.task.selection_interval_secs[0]
         ).setNumThreadsPerSelector(
-            int(ta["threads_per_selector"])
+            self.user_args.task.threads_per_selectors[0]
         ).setNonnegativityConstraintType(
-            ta['non_negativity_function']
+            self.user_args.task.non_negativity_functions[0]
         ).setPerturbationFunction(
-            ta['perturbation_function']
+            self.user_args.task.pertubation_functions[0]
         )
 
-        inversion_runner.setRuptureSetFile(str(PurePath(job_arguments['working_path'], ta['rupture_set'])))
+        rupture_set_filepath = rupture_set_info[rupture_set_id]['filepath']
+        self.inversion_runner.setRuptureSetFile(rupture_set_filepath)
 
-        if initial_solution_id:
-            inversion_runner.setInitialSolution(initial_solution_info[initial_solution_id]['filepath'])
+        if initial_solution_id is not None:
+            self.inversion_runner.setInitialSolution(initial_solution_info[initial_solution_id]['filepath'])
 
-        if ta.get("averaging_threads"):
-            inversion_runner.setInversionAveraging(int(ta["averaging_threads"]), int(ta["averaging_interval_secs"]))
+        if (averaging_threads := self.user_args.task.averaging_threads[0]) is not None:
+            self.inversion_runner.setInversionAveraging(
+                averaging_threads, self.user_args.task.averaging_interval_secs[0]
+            )
 
-        if ta.get('cooling_schedule'):
-            inversion_runner.setCoolingSchedule(ta['cooling_schedule'])
-
-        # int(ta['max_inversion_time'] * 60))\
+        if (cooling_schedule := self.user_args.task.cooling_schedules[0]) is not None:
+            self.inversion_runner.setCoolingSchedule(cooling_schedule)
 
         if not SPOOF_INVERSION:
-            log.info("Starting inversion of up to %s minutes" % ta['max_inversion_time'])
+            log.info("Starting inversion of up to %s minutes" % self.user_args.task.max_inversion_times[0])
             log.info("======================================")
-            inversion_runner.runInversion()
+            self.inversion_runner.runInversion()
 
-        output_file = str(PurePath(job_arguments['working_path'], f"NZSHM22_InversionSolution-{task_id}.zip"))
+        output_file = str(PurePath(self.system_args.working_path, f"NZSHM22_InversionSolution-{task_id}.zip"))
         # name the output file
-        # outputfile = self._output_folder.joinpath(inversion_runner.getDescriptiveName()+ ".zip")
+        # outputfile = self._output_folder.joinpath(self.inversion_runner.getDescriptiveName()+ ".zip")
         # log.info("building %s started at %s" % (outputfile, dt.datetime.utcnow().isoformat()), end=' ')
 
         # output_file = str(PurePath(job_arguments['output_file']))
         if not SPOOF_INVERSION:
-            inversion_runner.writeSolution(output_file)
+            self.inversion_runner.writeSolution(output_file)
         else:
             with open(output_file, 'w') as spoof:
                 spoof.write("this is spoofed solution")
 
-        t1 = dt.datetime.utcnow()
+        t1 = dt.datetime.now()
         log.info("Inversion took %s secs" % (t1 - t0).total_seconds())
 
         # capture task metrics
-        duration = (dt.datetime.utcnow() - t0).total_seconds()
+        duration = (dt.datetime.now() - t0).total_seconds()
 
         metrics = {"SPOOF_INVERSION": True}
         if not SPOOF_INVERSION:
             # fecth metrics and convert Java Map to python dict
-            jmetrics = inversion_runner.getSolutionMetrics()
+            jmetrics = self.inversion_runner.getSolutionMetrics()
             for k in jmetrics:
                 metrics[k] = jmetrics[k]
 
-        if ta['config_type'] == 'subduction':
-            table_rows_v1 = inversion_runner.getTabularSolutionMfds() if not SPOOF_INVERSION else []
+        if self.user_args.general.model_type is ModelType.SUBDUCTION:
+            table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF_INVERSION else []
             mfd_table_rows = {"MFD_CURVES": table_rows_v1}
         else:
-            table_rows_v1 = inversion_runner.getTabularSolutionMfds() if not SPOOF_INVERSION else []
-            table_rows_v2 = inversion_runner.getTabularSolutionMfdsV2() if not SPOOF_INVERSION else []
+            table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF_INVERSION else []
+            table_rows_v2 = self.inversion_runner.getTabularSolutionMfdsV2() if not SPOOF_INVERSION else []
             mfd_table_rows = {"MFD_CURVES": table_rows_v1, "MFD_CURVES_V2": table_rows_v2}
 
-        if self.use_api:
+        if self.system_args.use_api:
             # record the completed task
             done_args = {
                 'task_id': task_id,
@@ -293,18 +312,22 @@ class BuilderTask:
             self._toshi_api.automation_task.complete_task(done_args, metrics)
 
             # and the log files, why not
-            java_log_file = self._output_folder.joinpath(f"java_app.{job_arguments['java_gateway_port']}.log")
+            java_log_file = self._output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
             # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
             self._toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
             # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
             # upload the task output
             predecessors = [
-                dict(id=task_arguments['rupture_set_file_id'], depth=-1),
+                dict(id=rupture_set_id, depth=-1),
             ]
 
             inversion_id = self._toshi_api.inversion_solution.upload_inversion_solution(
-                task_id, filepath=output_file, meta=task_arguments, predecessors=predecessors, metrics=metrics
+                task_id,
+                filepath=output_file,
+                meta=self.user_args.task.model_dump(),
+                predecessors=predecessors,
+                metrics=metrics,
             )
             log.info(f"created inversion solution: {inversion_id}")
 
@@ -338,7 +361,7 @@ class BuilderTask:
 
         else:
             log.info(metrics)
-        log.info("; took %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+        log.info("; took %s secs" % (dt.datetime.now() - t0).total_seconds())
 
 
 def get_repo_heads(rootdir, repos):
