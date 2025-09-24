@@ -13,7 +13,7 @@ from runzi.runners.runner_inputs import InputBase
 class InversionSystemArgs(BaseModel):
     java_gateway_port: int = 0
     working_path: FilePath = Path()
-    general_task_id: str = ""
+    general_task_id: Optional[str] = None
     task_count: int = 0
     java_threads: int = 0
     java_gateway_port: int = 0
