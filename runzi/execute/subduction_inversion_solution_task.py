@@ -5,19 +5,26 @@ import git
 import argparse
 import json
 import urllib.parse
-from runzi.runners.inversion_inputs_v2 import InversionArgs, InversionSystemArgs
+from typing import TYPE_CHECKING, cast
+from runzi.runners.inversion_inputs_v2 import SubductionInversionArgs, InversionSystemArgs, SubductionTaskArgs
+
+if TYPE_CHECKING:
+    from py4j.java_gateway import JavaObject
 
 
-class SubductionInversionSolutionBuilderTask(InversionSolutionBuilder):
+class SubductionInversionSolutionBuilder(InversionSolutionBuilder):
     """
     A task to build inversion solutions specifically for subduction zones.
     Inherits from InversionBuilderTask and may include additional methods or
     overrides specific to subduction zone characteristics.
     """
 
+    def _get_runner(self) -> 'JavaObject':
+        return self._gateway.entry_point.getSubductionInversionRunner()
 
-    def setup_runner(self):
-        self.inversion_runner = self._gateway.entry_point.getSubductionInversionRunner()
+
+    def _setup_runner(self):
+        self.user_args = cast(SubductionInversionArgs, self.user_args)
         self.inversion_runner.setDeformationModel(self.user_args.task.deformation_models[0])
         self.inversion_runner.setGutenbergRichterMFDWeights(
             self.user_args.task.mfd_equality_weights[0], self.user_args.task.mfd_inequality_weights[0]
@@ -70,9 +77,9 @@ def main():
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
-    user_args = InversionArgs(**config['task_args'])
+    user_args = SubductionInversionArgs(**config['task_args'])
     system_args = InversionSystemArgs(**config['task_system_args'])
-    inversion_solution_builder = InversionSolutionBuilder(user_args, system_args)
+    inversion_solution_builder = SubductionInversionSolutionBuilder(user_args, system_args)
 
     inversion_solution_builder.run()
 

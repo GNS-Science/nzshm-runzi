@@ -3,19 +3,36 @@ from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 import time
 import git
 import argparse
+from typing import cast
 import json
 import urllib.parse
-from runzi.runners.inversion_inputs_v2 import InversionArgs, InversionSystemArgs
+from runzi.runners.inversion_inputs_v2 import InversionArgs, InversionSystemArgs, CrustalInversionArgs
 
 
-class CrustalInversionSolutionBuilderTask(InversionSolutionBuilder):
+class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
     """
     A task to build inversion solutions specifically for crustal deformation.
     Inherits from InversionSolutionBuilderTask and may include additional methods or
     overrides specific to crustal characteristics.
     """
 
-    def setup_runner(self):
+    def _set_scaling_relationship(self):
+        scaling_relationship = self.user_args.task.scaling_relationship[0]
+        scaling_recalc_mag = self.user_args.task.scaling_recalc_mags[0]
+        # TODO: would we ever specify a scaling relationship and not want to recalc mags? Isn't that implied?
+        # TODO: is it ok not to set a scaling relationship? Does that simply mean we don't relcalc the mags?
+        if (scaling_relationship is not None) and scaling_recalc_mag: 
+            sr = self._gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
+            if scaling_relationship == "SIMPLE_CRUSTAL":
+                c_dip = self.user_args.task.scaling_c_vals[0].dip
+                c_strike = self.user_args.task.scaling_c_vals[0].strike
+                sr.setupCrustal(c_dip, c_strike)
+            else:
+                sr = scaling_relationship  # setScalingRelationship can be passed a string
+            self.inversion_runner.setScalingRelationship(sr, scaling_recalc_mag)
+
+    def _setup_runner(self):
+        self.user_args = cast(CrustalInversionArgs, self.user_args)
         self.inversion_runner = self._gateway.entry_point.getCrustalInversionRunner()
 
         if (spatial_seis_pdf := self.user_args.task.spatial_seis_pdfs[0]) is not None:
@@ -131,7 +148,7 @@ def main():
 
     user_args = InversionArgs(**config['task_args'])
     system_args = InversionSystemArgs(**config['task_system_args'])
-    inversion_solution_builder = CrustalInversionSolutionBuilderTask(user_args, system_args)
+    inversion_solution_builder = CrustalInversionSolutionBuilder(user_args, system_args)
 
     inversion_solution_builder.run()
 

@@ -75,10 +75,8 @@ class ScalingC(BaseModel):
 
 
 class MagRange(BaseModel):
-    min_mag_sans: float
-    min_mag_tvz: float
-    max_mag_sans: float
-    max_mag_tvz: float
+    min_mag: float
+    min_mag: float
 
 
 class SlipRateFactor(BaseModel):
@@ -87,17 +85,29 @@ class SlipRateFactor(BaseModel):
     tvz: float
 
 
-# TODO: should these all be singular?
+
+# TODO: should these all be singular nouns?
 # TODO: chould make the fields e.g. list[float] | float. Leaves room for user error
 # TODO: default should be [None,] not None or [] so field[0] evaluates to false (or [False,] ?)
-class TaskArgs(BaseModel):
+class InversionTaskArgs(BaseModel):
+    rupture_set_ids: list[str]
     max_inversion_times: list[float]
     completion_energies: list[float]
-    rupture_set_ids: list[str]
     threads_per_selectors: list[int]
     averaging_threads: list[int]
     initial_solution_ids: list[str]
+    scaling_relationship: list[str]
+    scaling_recalc_mags: list[bool]
+    selection_interval_secs: list[int]
+    non_negativity_functions: list[str]
+    pertubation_functions: list[str]
+    averaging_interval_secs: list[int]
+    cooling_schedules: list[str]
     deformation_models: list[str]
+
+
+class SubductionTaskArgs(InversionTaskArgs):
+    scaling_c_vals: list[float]  # subduction (and crustal?)
     mfd_equality_weights: list[float]
     mfd_inequality_weights: list[float]
     slip_rate_weighting_types: list[str]
@@ -109,30 +119,26 @@ class TaskArgs(BaseModel):
     mfd_uncertainty_weights: list[float]
     mfd_uncertainty_powers: list[float]
     mfd_uncertainty_scalars: list[float]
-    scaling_relationship: list[str]
-    scaling_recalc_mags: list[bool]
-    scaling_c_vals: list[float]  # subduction (and crustal?)
-    scaling_cs: list[ScalingC]  # crustal
-    selection_interval_secs: list[int]
-    non_negativity_functions: list[str]
-    pertubation_functions: list[str]
-    averaging_interval_secs: list[int]
-    cooling_schedules: list[str]
-    spatial_seis_pdfs: list[str]  # crustal
-    reweights: list[bool]  # crustal
-    min_mag_sans: list[float]  # crustal
-    min_mag_tvz: list[float]  # crustal
-    max_mag_types: list[str]  # crustal
-    mag_ranges: list[MagRange]  # crustal
+
+
+# WIP
+class CrustalTaskArgs(InversionTaskArgs):
+    scaling_c_vals: list[ScalingC]
+    spatial_seis_pdfs: list[str]
+    reweights: list[bool]
+    min_mag_sans: list[float]
+    min_mag_tvz: list[float]
+    max_mag_types: list[str]
+    mag_ranges: list[MagRange]
     slip_rate_factors: list[SlipRateFactor]
-    use_slip_scalings: list[bool]  # crustal
-    slip_uncertainty_weights: list[float]  # crustal
-    slip_uncertainty_scaling_factors: list[float]  # crustal
-    slip_rate_weights: list[float]  # crustal
-    paleo_rate_constraint_weights: list[float]  # crustal
-    paleo_parent_rate_smoothness_constraint_weights: list[float]  # crustal
-    paleo_rate_constraints: list[str]  # crustal
-    paleo_probability_models: list[str]  # crustal
+    use_slip_scalings: list[bool]
+    slip_uncertainty_weights: list[float]
+    slip_uncertainty_scaling_factors: list[float]
+    slip_rate_weights: list[float]
+    paleo_rate_constraint_weights: list[float]
+    paleo_parent_rate_smoothness_constraint_weights: list[float]
+    paleo_rate_constraints: list[str]
+    paleo_probability_models: list[str]
 
 
 class OpenshaArgs(InputBase):
@@ -141,7 +147,7 @@ class OpenshaArgs(InputBase):
 
 
 class InversionArgs(OpenshaArgs):
-    task: TaskArgs
+    task: InversionTaskArgs
 
     def get_task_args(self) -> Generator['InversionArgs', None, None]:
 
@@ -152,5 +158,13 @@ class InversionArgs(OpenshaArgs):
             task_args = {name: [ta] for name, ta in zip(names, task_combination)}
             yield type(self)(**task_args)
 
+
     def get_run_args(self) -> dict:
         return self.task.model_dump()
+
+class SubductionInversionArgs(InversionArgs):
+    task: SubductionTaskArgs
+
+# WIP
+class CrustalInversionArgs(InversionArgs):
+    task: CrustalTaskArgs

@@ -9,10 +9,10 @@ import boto3
 from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, EnvMode
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.subduction_inversions import build_subduction_tasks
-from runzi.runners.inversion_inputs_v2 import InversionArgs, InversionSystemArgs
+from runzi.runners.inversion_inputs_v2 import SubductionInversionArgs, InversionSystemArgs
 
 
-def run_subduction_inversion(inversion_args: InversionArgs) -> str | None:
+def run_subduction_inversion(inversion_args: SubductionInversionArgs) -> str | None:
     t0 = dt.datetime.now()
     system_args = InversionSystemArgs()
 
