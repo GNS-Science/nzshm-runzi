@@ -2,7 +2,7 @@
 
 from itertools import product
 from pathlib import Path
-from typing import Generator, Optional, Any
+from typing import Generator, Optional, Any, Literal
 
 from pydantic import BaseModel, FilePath, field_serializer, field_validator, ValidationInfo
 
@@ -16,7 +16,6 @@ class InversionSystemArgs(BaseModel):
     general_task_id: Optional[str] = None
     task_count: int = 0
     java_threads: int = 0
-    java_gateway_port: int = 0
     opensha_root_folder: FilePath = Path()
     use_api: bool = False
 
@@ -75,8 +74,10 @@ class ScalingC(BaseModel):
 
 
 class MagRange(BaseModel):
-    min_mag: float
-    min_mag: float
+    min_mag_sans: float
+    max_mag_sans: float
+    min_mag_tvz: float
+    max_mag_tvz: float
 
 
 class SlipRateFactor(BaseModel):
@@ -90,55 +91,70 @@ class SlipRateFactor(BaseModel):
 # TODO: chould make the fields e.g. list[float] | float. Leaves room for user error
 # TODO: default should be [None,] not None or [] so field[0] evaluates to false (or [False,] ?)
 class InversionTaskArgs(BaseModel):
-    rupture_set_ids: list[str]
-    max_inversion_times: list[float]
-    completion_energies: list[float]
-    threads_per_selectors: list[int]
-    averaging_threads: list[int]
-    initial_solution_ids: list[str]
-    scaling_relationship: list[str]
-    scaling_recalc_mags: list[bool]
-    selection_interval_secs: list[int]
-    non_negativity_functions: list[str]
-    pertubation_functions: list[str]
-    averaging_interval_secs: list[int]
-    cooling_schedules: list[str]
-    deformation_models: list[str]
+    rupture_set_id: list[str]
 
+    initial_solution_id: list[str]
+
+    max_inversion_time: list[float]
+    completion_energy: list[float]
+    averaging_threads: list[int]
+    averaging_interval_secs: list[int]
+    selector_threads: list[int]
+    selection_interval_secs: list[int]
+    pertubation_function: list[str]
+    cooling_schedule: list[str]
+    non_negativity_function: list[str]
+
+    scaling_relationship: list[str]  # describes a type of scaling relationship, e.g. "SIMPLE_SUBDUCTION"
+    scaling_recalc_mag: list[bool]
+
+    deformation_model: list[str]  # fault slip rates, could be FAULT_MODEL which uses rupture set, or some other model
+
+    mfd: list[MFD]  # N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated
+
+    reweight: list[bool]  # if true, must also have uncertainty weighting for mfd and slip rate
+
+    # penalize mfd residuals normalized by uncertainty which is a "made up" function of mag
+    mfd_uncertainty_weight: list[float] 
+    mfd_uncertainty_power: list[float]
+    mfd_uncertainty_scalar: list[float]
+
+    # or penalize mfd residuals in absolute terms
+    mfd_equality_weight: list[float]
+    mfd_inequality_weight: list[float]
+    mfd_eq_ineq_transition_mag: list[float]  # magnitude at which to transition from equality to inequality constraint
+
+    # penalize absolute and relative to uncertinaty slip rate residuals
+    slip_rate_weighting_type: list[Literal["BOTH", "NORMALIZED", "UNNORMALIZED", "NORMALIZED_BY_UNCERTAINTY", "UNCERTAINTY_ADJUSTED"]]  # UNCERTAINTY_ADJUSTED is not a OpenSHA option, but a flag to use setSlipRateUncertaintyConstraint, not sure the difference between NORMALIZED_BY_UNCERTAINTY and UNCERTAINTY_ADJUSTED
+    slip_rate_normalized_weight: list[float]
+    slip_rate_unnormalized_weight: list[float]
+
+    # or penalize by uncerainty only
+    use_slip_scaling: list[bool]
+    slip_rate_weight: list[float]
+    slip_uncertainty_scaling_factor: list[float]
 
 class SubductionTaskArgs(InversionTaskArgs):
-    scaling_c_vals: list[float]  # subduction (and crustal?)
-    mfd_equality_weights: list[float]
-    mfd_inequality_weights: list[float]
-    slip_rate_weighting_types: list[str]
-    slip_rate_normalized_weights: list[str]
-    slip_rate_unnormalized_weights: list[str]
-    mfd_min_mags: list[float]
-    mfds: list[MFD]
-    mfd_transition_mags: list[float]
-    mfd_uncertainty_weights: list[float]
-    mfd_uncertainty_powers: list[float]
-    mfd_uncertainty_scalars: list[float]
+    scaling_c_val: list[float]  # subduction (and crustal?)
+    mfd_min_mag: list[float]
 
 
-# WIP
 class CrustalTaskArgs(InversionTaskArgs):
-    scaling_c_vals: list[ScalingC]
-    spatial_seis_pdfs: list[str]
-    reweights: list[bool]
+    spatial_seis_pdf: list[str]
+
+    scaling_c_val: list[ScalingC]
+
     min_mag_sans: list[float]
     min_mag_tvz: list[float]
-    max_mag_types: list[str]
-    mag_ranges: list[MagRange]
-    slip_rate_factors: list[SlipRateFactor]
-    use_slip_scalings: list[bool]
-    slip_uncertainty_weights: list[float]
-    slip_uncertainty_scaling_factors: list[float]
-    slip_rate_weights: list[float]
-    paleo_rate_constraint_weights: list[float]
-    paleo_parent_rate_smoothness_constraint_weights: list[float]
-    paleo_rate_constraints: list[str]
-    paleo_probability_models: list[str]
+    max_mag_type: list[str]
+    mag_range: list[MagRange]
+
+    slip_rate_factor: list[SlipRateFactor]
+
+    paleo_rate_constraint_weight: list[float]
+    paleo_parent_rate_smoothness_constraint_weight: list[float]
+    paleo_rate_constraint: list[str]
+    paleo_probability_model: list[str]
 
 
 class OpenshaArgs(InputBase):
@@ -156,7 +172,7 @@ class InversionArgs(OpenshaArgs):
         values = [getattr(self.task, name) for name in names]
         for task_combination in product(*values):
             task_args = {name: [ta] for name, ta in zip(names, task_combination)}
-            yield type(self)(**task_args)
+            yield type(self).model_validate(task_args)
 
 
     def get_run_args(self) -> dict:

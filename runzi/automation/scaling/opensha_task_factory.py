@@ -137,7 +137,7 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
     def write_task_config(self, task_args: BaseModel, task_system_args: BaseModel):
         fname = self._config_path / f"config.{self._next_port}.json"
         if isinstance(task_args, InversionArgs):
-            max_inversion_time = task_args.task.max_inversion_times[0]
+            max_inversion_time = task_args.task.max_inversion_time[0]
             self._pbs_wall_hours = int(max_inversion_time / 60) + 1
             self._pbs_ppn = task_args.general.java_threads
 

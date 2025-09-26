@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_INVERSION, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
-from runzi.runners.inversion_inputs_v2 import InversionArgs, InversionSystemArgs, SubductionTaskArgs
+from runzi.runners.inversion_inputs_v2 import InversionArgs, InversionSystemArgs, SubductionTaskArgs, InversionTaskArgs
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,6 +33,7 @@ logging.getLogger('git.cmd').setLevel(loglevel)
 log = logging.getLogger(__name__)
 
 
+# TODO: not super thrilled with having to [0] index every task argument. Is there a better solution?
 class InversionSolutionBuilder(ABC):
     """
     Configure the python client for a InversionTask
@@ -60,11 +61,89 @@ class InversionSolutionBuilder(ABC):
         pass
 
     @abstractmethod
-    def _setup_runner(self):
+    def _set_mfd(self):
         pass
 
+    @abstractmethod
+    def _set_scaling_relationship(self):
+        pass
+
+    @abstractmethod
+    def _domain_specific_setup(self):
+        pass
+
+    def _set_sa_params(self):
+        cast(InversionArgs, self.user_args)
+        self.inversion_runner.setInversionSeconds(
+            int(self.user_args.task.max_inversion_time[0] * 60)
+        ).setEnergyChangeCompletionCriteria(
+            float(0), self.user_args.task.completion_energy[0], float(1)
+        ).setSelectionInterval(
+            self.user_args.task.selection_interval_secs[0]
+        ).setNumThreadsPerSelector(
+            self.user_args.task.selector_threads[0]
+        ).setNonnegativityConstraintType(
+            self.user_args.task.non_negativity_function[0]
+        ).setPerturbationFunction(
+            self.user_args.task.pertubation_function[0]
+        )
+
+        if (averaging_threads := self.user_args.task.averaging_threads[0]) is not None:
+            self.inversion_runner.setInversionAveraging(
+                averaging_threads, self.user_args.task.averaging_interval_secs[0]
+            )
+
+        if (cooling_schedule := self.user_args.task.cooling_schedule[0]) is not None:
+            self.inversion_runner.setCoolingSchedule(cooling_schedule)
+
+    @abstractmethod
+    def _set_deformation_model(self):
+        self.inversion_runner.setDeformationModel(self.user_args.task.deformation_model[0])
+
+    def _set_constraint_weights(self):
+        self.user_args = cast(InversionArgs, self.user_args)
+        reweight = self.user_args.task.reweight[0]
+
+        if reweight is not None:
+            self.inversion_runner.setReweightTargetQuantity("MAD")
+
+        mfd_equality_weight = self.user_args.task.mfd_equality_weight[0]
+        mfd_inequality_weight = self.user_args.task.mfd_inequality_weight[0]
+        mfd_uncertainty_weight = self.user_args.task.mfd_uncertainty_weight[0]
+        mfd_uncertainty_power = self.user_args.task.mfd_uncertainty_power[0]
+        mfd_uncertainty_scalar = self.user_args.task.mfd_uncertainty_scalar[0]
+
+        if mfd_uncertainty_weight is not None:
+            weight = 1.0 if reweight else mfd_uncertainty_weight
+            self.inversion_runner.setUncertaintyWeightedMFDWeights(weight, mfd_uncertainty_power, mfd_uncertainty_scalar)
+        if (mfd_equality_weight is not None) and (mfd_inequality_weight is not None):
+            weight_eq = 1.0 if reweight else mfd_equality_weight
+            weight_ineq = 1.0 if reweight else mfd_inequality_weight
+            self.inversion_runner.setGutenbergRichterMFDWeights(weight_eq, weight_ineq)
+
+        slip_rate_weighting_type = self.user_args.task.slip_rate_weighting_type[0],
+        slip_rate_normalized_weight = self.user_args.task.slip_rate_normalized_weight[0],
+        slip_rate_unnormalized_weight = self.user_args.task.slip_rate_unnormalized_weight[0],
+        slip_uncertainty_scaling_factor = self.user_args.task.slip_uncertainty_scaling_factor[0]
+        slip_rate_weight = self.user_args.task.slip_rate_weight[0]
+        use_slip_scalings = self.user_args.task.use_slip_scaling[0]
+
+        if slip_rate_weighting_type is not None:
+            if slip_rate_weighting_type == 'UNCERTAINTY_ADJUSTED':
+                self.inversion_runner.setSlipRateUncertaintyConstraint(slip_rate_weight, slip_uncertainty_scaling_factor)
+            else:
+                self.inversion_runner.setSlipRateConstraint(slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight)
+        elif ((mfd_uncertainty_weight is not None) and (mfd_uncertainty_power is not None)) or (reweight):
+            weight = 1.0 if reweight else mfd_uncertainty_weight
+            self.inversion_runner.setUncertaintyWeightedMFDWeights( weight, mfd_uncertainty_power, mfd_uncertainty_scalar)
+        else:
+            raise ValueError("Neither eq/ineq , nor uncertainty weights provided for MFD constraint setup")
+            
+        # True means no slips scaling and vice-versa
+        self.inversion_runner.setUnmodifiedSlipRateStdvs(not use_slip_scalings)
+
+
     def run(self):
-        # TODO: not super thrilled with having to [0] index every task argument. Is there a better solution?
         t0 = dt.datetime.now()
 
         # maybe the JVM App is a little slow to get listening
@@ -74,7 +153,7 @@ class InversionSolutionBuilder(ABC):
         time.sleep(self.system_args.task_count * 0.01)
         self.inversion_runner = self._get_runner()
 
-        rupture_set_id = self.user_args.task.rupture_set_ids[0]
+        rupture_set_id = self.user_args.task.rupture_set_id[0]
         file_generator = get_output_file_id(self._toshi_api, rupture_set_id)  # for file by file ID
         rupture_set_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
@@ -82,7 +161,7 @@ class InversionSolutionBuilder(ABC):
 
         log.info(f"Running nzshm-opensha {API_GitVersion}")
 
-        initial_solution_id = self.user_args.task.initial_solution_ids[0]
+        initial_solution_id = self.user_args.task.initial_solution_id[0]
         if initial_solution_id is not None:
             file_generator = get_output_file_id(self._toshi_api, initial_solution_id)
             initial_solution_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
@@ -116,24 +195,10 @@ class InversionSolutionBuilder(ABC):
         else:
             task_id = str(uuid.uuid4())
 
-        self._setup_runner()
-
+        self._set_mfd()
         self._set_scaling_relationship()
-
-
-        self.inversion_runner.setInversionSeconds(
-            int(self.user_args.task.max_inversion_times[0] * 60)
-        ).setEnergyChangeCompletionCriteria(
-            float(0), self.user_args.task.completion_energies[0], float(1)
-        ).setSelectionInterval(
-            self.user_args.task.selection_interval_secs[0]
-        ).setNumThreadsPerSelector(
-            self.user_args.task.threads_per_selectors[0]
-        ).setNonnegativityConstraintType(
-            self.user_args.task.non_negativity_functions[0]
-        ).setPerturbationFunction(
-            self.user_args.task.pertubation_functions[0]
-        )
+        self._set_sa_params()
+        self._set_deformation_model()
 
         rupture_set_filepath = rupture_set_info[rupture_set_id]['filepath']
         self.inversion_runner.setRuptureSetFile(rupture_set_filepath)
@@ -141,16 +206,9 @@ class InversionSolutionBuilder(ABC):
         if initial_solution_id is not None:
             self.inversion_runner.setInitialSolution(initial_solution_info[initial_solution_id]['filepath'])
 
-        if (averaging_threads := self.user_args.task.averaging_threads[0]) is not None:
-            self.inversion_runner.setInversionAveraging(
-                averaging_threads, self.user_args.task.averaging_interval_secs[0]
-            )
-
-        if (cooling_schedule := self.user_args.task.cooling_schedules[0]) is not None:
-            self.inversion_runner.setCoolingSchedule(cooling_schedule)
 
         if not SPOOF_INVERSION:
-            log.info("Starting inversion of up to %s minutes" % self.user_args.task.max_inversion_times[0])
+            log.info("Starting inversion of up to %s minutes" % self.user_args.task.max_inversion_time[0])
             log.info("======================================")
             self.inversion_runner.runInversion()
 

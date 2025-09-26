@@ -11,6 +11,7 @@ from runzi.runners.inversion_inputs_v2 import SubductionInversionArgs, Inversion
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
 
+# TODO: do I need all these casts? 
 
 class SubductionInversionSolutionBuilder(InversionSolutionBuilder):
     """
@@ -22,36 +23,40 @@ class SubductionInversionSolutionBuilder(InversionSolutionBuilder):
     def _get_runner(self) -> 'JavaObject':
         return self._gateway.entry_point.getSubductionInversionRunner()
 
-
-    def _setup_runner(self):
+    def _set_scaling_relationship(self):
         self.user_args = cast(SubductionInversionArgs, self.user_args)
-        self.inversion_runner.setDeformationModel(self.user_args.task.deformation_models[0])
-        self.inversion_runner.setGutenbergRichterMFDWeights(
-            self.user_args.task.mfd_equality_weights[0], self.user_args.task.mfd_inequality_weights[0]
-        ).setSlipRateConstraint(
-            self.user_args.task.slip_rate_weighting_types[0],
-            self.user_args.task.slip_rate_normalized_weights[0],
-            self.user_args.task.slip_rate_unnormalized_weights[0],
-        )
-        if self.user_args.task.mfd_min_mags[0] is not None:
+        scaling_relationship = self.user_args.task.scaling_relationship[0]
+        scaling_recalc_mag = self.user_args.task.scaling_recalc_mag[0]
+        # TODO: would we ever specify a scaling relationship and not want to recalc mags? Isn't that implied?
+        # TODO: is it ok not to set a scaling relationship? Does that simply mean we don't relcalc the mags?
+        if (scaling_relationship is not None) and scaling_recalc_mag: 
+            sr = self._gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
+            if scaling_relationship == "SIMPLE_SUBDUCTION":
+                sr.setupSubduction(self.user_args.task.scaling_c_val[0])
+            else:
+                sr = scaling_relationship  # setScalingRelationship can be passed a string
+            self.inversion_runner.setScalingRelationship(sr, scaling_recalc_mag)
+    
+
+    def _set_deformation_model(self):
+        super()._set_deformation_model()
+
+    def _set_mfd(self):
+        self.user_args = cast(SubductionInversionArgs, self.user_args)
+        if self.user_args.task.mfd_min_mag[0] is not None:
             self.inversion_runner.setGutenbergRichterMFD(
-                self.user_args.task.mfds[0].N,
-                self.user_args.task.mfds[0].b,
-                self.user_args.task.mfd_transition_mags[0],
-                self.user_args.task.mfd_min_mags[0],
+                self.user_args.task.mfd[0].N,
+                self.user_args.task.mfd[0].b,
+                self.user_args.task.mfd_eq_ineq_transition_mag[0],
+                self.user_args.task.mfd_min_mag[0],
             )
         else:
             self.inversion_runner.setGutenbergRichterMFD(
-                self.user_args.task.mfds[0].N, self.user_args.task.mfds[0].b, self.user_args.task.mfd_transition_mags[0]
+                self.user_args.task.mfd[0].N, self.user_args.task.mfd[0].b, self.user_args.task.mfd_eq_ineq_transition_mag[0]
             )
 
-        if self.user_args.task.mfd_uncertainty_weights[0] is not None:
-            self.inversion_runner.setUncertaintyWeightedMFDWeights(
-                self.user_args.task.mfd_uncertainty_weights[0],
-                self.user_args.task.mfd_uncertainty_powers[0],
-                self.user_args.task.mfd_uncertainty_scalars[0],
-            )
-
+    def _domain_specific_setup(self):
+        pass
 
 
 def get_repo_heads(rootdir, repos):

@@ -51,7 +51,7 @@ def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args:
         task_system_args = system_args.model_copy(deep=True)
 
         task_system_args.task_count = task_count
-        task_system_args.java_threads = int(task_args.task.threads_per_selectors[0]) * int(
+        task_system_args.java_threads = int(task_args.task.selector_threads[0]) * int(
             task_args.task.averaging_threads[0]
         )
         task_system_args.java_gateway_port = task_factory.get_next_port()
@@ -65,14 +65,14 @@ def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args:
 
             yield get_ecs_job_config(
                 job_name,
-                task_args.task.rupture_set_ids[0],  # TODO: we don't need this, can be done by task script
+                task_args.task.rupture_set_id[0],  # TODO: we don't need this, can be done by task script
                 task_args,
                 task_system_args,
                 toshi_api_url=API_URL,
                 toshi_s3_url=S3_URL,
                 toshi_report_bucket=S3_REPORT_BUCKET,
                 task_module=inversion_solution_builder_task.__name__,
-                time_minutes=task_args.task.max_inversion_times[0],
+                time_minutes=task_args.task.max_inversion_time[0],
                 memory=30720,
                 vcpu=4,
             )
