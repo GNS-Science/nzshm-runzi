@@ -6,7 +6,7 @@ import argparse
 import json
 import urllib.parse
 from typing import TYPE_CHECKING, cast
-from runzi.runners.inversion_inputs_v2 import SubductionInversionArgs, InversionSystemArgs, SubductionTaskArgs
+from runzi.runners.inversion_inputs import SubductionInversionArgs, InversionSystemArgs, SubductionTaskArgs
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject

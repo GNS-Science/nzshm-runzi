@@ -21,7 +21,7 @@ from typing import Optional, TypeVar
 
 from pydantic import BaseModel
 
-from runzi.runners.inversion_inputs_v2 import InversionArgs
+from runzi.runners.inversion_inputs import InversionArgs
 from runzi.runners.runner_inputs import get_task_config
 
 from .local_config import EnvMode

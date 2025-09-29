@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_INVERSION, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
-from runzi.runners.inversion_inputs_v2 import InversionArgs, InversionSystemArgs, SubductionTaskArgs, InversionTaskArgs
+from runzi.runners.inversion_inputs import InversionArgs, InversionSystemArgs, SubductionTaskArgs, InversionTaskArgs
 
 logging.basicConfig(level=logging.INFO)
 

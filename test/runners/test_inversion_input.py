@@ -6,7 +6,7 @@ import pytest
 import runzi
 import runzi.configuration.crustal_inversion_permutations as branch_generators
 from runzi.runners.inversion_inputs import Config, from_json_format
-from runzi.runners.inversion_inputs_v2 import InversionArgs
+from runzi.runners.inversion_inputs import InversionArgs
 
 bad_files = [
     '2021-10-20_TQ9T_config.json',
