@@ -2,7 +2,7 @@
 
 from itertools import product
 from pathlib import Path
-from typing import Any, Generator, Literal, Optional
+from typing import Any, Generator, Literal, Optional, Sequence
 
 from pydantic import BaseModel, FilePath, ValidationInfo, field_serializer, field_validator
 
@@ -91,71 +91,71 @@ class SlipRateFactor(BaseModel):
 
 # TODO: default should be [None,] not None or [] so field[0] can be tested `is None` as a sentinal for "not set"
 class InversionTaskArgs(BaseModel):
-    rupture_set_id: list[str | None] = DEFAULT_FIELD
+    rupture_set_id: Sequence[str | None] = DEFAULT_FIELD
 
-    initial_solution_id: list[str | None] = DEFAULT_FIELD
+    initial_solution_id: Sequence[str | None] = DEFAULT_FIELD
 
-    max_inversion_time: list[float | None] = DEFAULT_FIELD
-    completion_energy: list[float | None] = DEFAULT_FIELD
-    averaging_threads: list[int | None] = DEFAULT_FIELD
-    averaging_interval_secs: list[int | None] = DEFAULT_FIELD
-    selector_threads: list[int | None] = DEFAULT_FIELD
-    selection_interval_secs: list[int | None] = DEFAULT_FIELD
-    pertubation_function: list[str | None] = DEFAULT_FIELD
-    cooling_schedule: list[str | None] = DEFAULT_FIELD
-    non_negativity_function: list[str | None] = DEFAULT_FIELD
+    max_inversion_time: Sequence[float | None] = DEFAULT_FIELD
+    completion_energy: Sequence[float | None] = DEFAULT_FIELD
+    averaging_threads: Sequence[int | None] = DEFAULT_FIELD
+    averaging_interval_secs: Sequence[int | None] = DEFAULT_FIELD
+    selector_threads: Sequence[int | None] = DEFAULT_FIELD
+    selection_interval_secs: Sequence[int | None] = DEFAULT_FIELD
+    pertubation_function: Sequence[str | None] = DEFAULT_FIELD
+    cooling_schedule: Sequence[str | None] = DEFAULT_FIELD
+    non_negativity_function: Sequence[str | None] = DEFAULT_FIELD
 
-    scaling_relationship: list[str | None] = DEFAULT_FIELD  # describes a type of scaling relationship, e.g. "SIMPLE_SUBDUCTION"
-    scaling_recalc_mag: list[bool | None] = DEFAULT_FIELD
+    scaling_relationship: Sequence[str | None] = DEFAULT_FIELD  # describes a type of scaling relationship, e.g. "SIMPLE_SUBDUCTION"
+    scaling_recalc_mag: Sequence[bool | None] = DEFAULT_FIELD
 
-    deformation_model: list[str | None] = DEFAULT_FIELD  # fault slip rates, could be FAULT_MODEL which uses rupture set, or some other model
+    deformation_model: Sequence[str | None] = DEFAULT_FIELD  # fault slip rates, could be FAULT_MODEL which uses rupture set, or some other model
 
-    mfd: list[MFD | None] = DEFAULT_FIELD  # N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated
+    mfd: Sequence[MFD | None] = DEFAULT_FIELD  # N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated
 
-    reweight: list[bool | None] = DEFAULT_FIELD  # if true, must also have uncertainty weighting for mfd and slip rate
+    reweight: Sequence[bool | None] = DEFAULT_FIELD  # if true, must also have uncertainty weighting for mfd and slip rate
 
     # penalize mfd residuals normalized by uncertainty which is a "made up" function of mag
-    mfd_uncertainty_weight: list[float | None] = DEFAULT_FIELD
-    mfd_uncertainty_power: list[float | None] = DEFAULT_FIELD
-    mfd_uncertainty_scalar: list[float | None] = DEFAULT_FIELD
+    mfd_uncertainty_weight: Sequence[float | None] = DEFAULT_FIELD
+    mfd_uncertainty_power: Sequence[float | None] = DEFAULT_FIELD
+    mfd_uncertainty_scalar: Sequence[float | None] = DEFAULT_FIELD
 
     # or penalize mfd residuals in absolute terms
-    mfd_equality_weight: list[float | None] = DEFAULT_FIELD
-    mfd_inequality_weight: list[float | None] = DEFAULT_FIELD
-    mfd_eq_ineq_transition_mag: list[float | None] = DEFAULT_FIELD  # magnitude at which to transition from equality to inequality constraint
+    mfd_equality_weight: Sequence[float | None] = DEFAULT_FIELD
+    mfd_inequality_weight: Sequence[float | None] = DEFAULT_FIELD
+    mfd_eq_ineq_transition_mag: Sequence[float | None] = DEFAULT_FIELD  # magnitude at which to transition from equality to inequality constraint
 
     # penalize absolute and relative to uncertinaty slip rate residuals
-    slip_rate_weighting_type: list[Literal["BOTH", "NORMALIZED", "UNNORMALIZED"] | None] = DEFAULT_FIELD
-    slip_rate_normalized_weight: list[float | None] = DEFAULT_FIELD
-    slip_rate_unnormalized_weight: list[float | None] = DEFAULT_FIELD
+    slip_rate_weighting_type: Sequence[Literal["BOTH", "NORMALIZED", "UNNORMALIZED"] | None] = DEFAULT_FIELD
+    slip_rate_normalized_weight: Sequence[float | None] = DEFAULT_FIELD
+    slip_rate_unnormalized_weight: Sequence[float | None] = DEFAULT_FIELD
 
     # or penalize by uncerainty only
-    use_slip_scaling: list[bool | None] = DEFAULT_FIELD
-    slip_rate_uncertainty_weight: list[float | None] = DEFAULT_FIELD
-    slip_uncertainty_scaling_factor: list[float | None] = DEFAULT_FIELD
+    use_slip_scaling: Sequence[bool | None] = DEFAULT_FIELD
+    slip_rate_uncertainty_weight: Sequence[float | None] = DEFAULT_FIELD
+    slip_uncertainty_scaling_factor: Sequence[float | None] = DEFAULT_FIELD
 
 
 class SubductionTaskArgs(InversionTaskArgs):
-    scaling_c_val: list[float | None] = DEFAULT_FIELD  # subduction (and crustal?)
-    mfd_min_mag: list[float | None] = DEFAULT_FIELD
+    scaling_c_val: Sequence[float | None] = DEFAULT_FIELD  # subduction (and crustal?)
+    mfd_min_mag: Sequence[float | None] = DEFAULT_FIELD
 
 
 class CrustalTaskArgs(InversionTaskArgs):
-    spatial_seis_pdf: list[str | None] = DEFAULT_FIELD
+    spatial_seis_pdf: Sequence[str | None] = DEFAULT_FIELD
 
-    scaling_c_val: list[ScalingC | None] = DEFAULT_FIELD
+    scaling_c_val: Sequence[ScalingC | None] = DEFAULT_FIELD
 
-    min_mag_sans: list[float | None] = DEFAULT_FIELD
-    min_mag_tvz: list[float | None] = DEFAULT_FIELD
-    max_mag_type: list[str | None] = DEFAULT_FIELD
-    mag_range: list[MagRange | None] = DEFAULT_FIELD
+    min_mag_sans: Sequence[float | None] = DEFAULT_FIELD
+    min_mag_tvz: Sequence[float | None] = DEFAULT_FIELD
+    max_mag_type: Sequence[str | None] = DEFAULT_FIELD
+    mag_range: Sequence[MagRange | None] = DEFAULT_FIELD
 
-    slip_rate_factor: list[SlipRateFactor | None] = DEFAULT_FIELD
+    slip_rate_factor: Sequence[SlipRateFactor | None] = DEFAULT_FIELD
 
-    paleo_rate_constraint_weight: list[float | None] = DEFAULT_FIELD
-    paleo_parent_rate_smoothness_constraint_weight: list[float | None] = DEFAULT_FIELD
-    paleo_rate_constraint: list[str | None] = DEFAULT_FIELD
-    paleo_probability_model: list[str | None] = DEFAULT_FIELD
+    paleo_rate_constraint_weight: Sequence[float | None] = DEFAULT_FIELD
+    paleo_parent_rate_smoothness_constraint_weight: Sequence[float | None] = DEFAULT_FIELD
+    paleo_rate_constraint: Sequence[str | None] = DEFAULT_FIELD
+    paleo_probability_model: Sequence[str | None] = DEFAULT_FIELD
 
 
 class OpenshaArgs(InputBase):
