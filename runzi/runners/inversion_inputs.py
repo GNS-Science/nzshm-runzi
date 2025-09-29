@@ -25,16 +25,10 @@ class InversionSystemArgs(BaseModel):
 
 class GeneralArgs(BaseModel):
     mock_mode: bool = False
-    general_task_id: str
-    unique_id: Optional[str] = None
     title: str
     description: str
     subtask_type: SubtaskType
     model_type: ModelType
-    worker_pool_size: int
-    jvm_heap_max: int
-    java_threads: int
-    root_folder: FilePath
 
     # we want to use the (case-insensitive) name for the model_type for input
     @field_validator('model_type', 'subtask_type', mode='before')
@@ -91,28 +85,32 @@ class SlipRateFactor(BaseModel):
 
 # TODO: default should be [None,] not None or [] so field[0] can be tested `is None` as a sentinal for "not set"
 class InversionTaskArgs(BaseModel):
-    rupture_set_id: Sequence[str | None] = DEFAULT_FIELD
+    rupture_set_id: Sequence[str]
 
     initial_solution_id: Sequence[str | None] = DEFAULT_FIELD
 
-    max_inversion_time: Sequence[float | None] = DEFAULT_FIELD
-    completion_energy: Sequence[float | None] = DEFAULT_FIELD
+    max_inversion_time: Sequence[float]
+    completion_energy: Sequence[float]
     averaging_threads: Sequence[int | None] = DEFAULT_FIELD
-    averaging_interval_secs: Sequence[int | None] = DEFAULT_FIELD
-    selector_threads: Sequence[int | None] = DEFAULT_FIELD
-    selection_interval_secs: Sequence[int | None] = DEFAULT_FIELD
-    pertubation_function: Sequence[str | None] = DEFAULT_FIELD
+    averaging_interval_secs: Sequence[int]
+    selector_threads: Sequence[int]
+    selection_interval_secs: Sequence[int]
+    pertubation_function: Sequence[str]
     cooling_schedule: Sequence[str | None] = DEFAULT_FIELD
-    non_negativity_function: Sequence[str | None] = DEFAULT_FIELD
+    non_negativity_function: Sequence[str]
 
-    scaling_relationship: Sequence[str | None] = DEFAULT_FIELD  # describes a type of scaling relationship, e.g. "SIMPLE_SUBDUCTION"
+    # describes a type of scaling relationship, e.g. "SIMPLE_SUBDUCTION"
+    scaling_relationship: Sequence[str | None] = DEFAULT_FIELD
     scaling_recalc_mag: Sequence[bool | None] = DEFAULT_FIELD
 
-    deformation_model: Sequence[str | None] = DEFAULT_FIELD  # fault slip rates, could be FAULT_MODEL which uses rupture set, or some other model
+    # fault slip rates, could be FAULT_MODEL which uses rupture set, or some other model
+    deformation_model: Sequence[str | None] = DEFAULT_FIELD  
 
-    mfd: Sequence[MFD | None] = DEFAULT_FIELD  # N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated
+    # N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated
+    mfd: Sequence[MFD | None] = DEFAULT_FIELD  
 
-    reweight: Sequence[bool | None] = DEFAULT_FIELD  # if true, must also have uncertainty weighting for mfd and slip rate
+    # if true, must also have uncertainty weighting for mfd and slip rate
+    reweight: Sequence[bool | None] = DEFAULT_FIELD
 
     # penalize mfd residuals normalized by uncertainty which is a "made up" function of mag
     mfd_uncertainty_weight: Sequence[float | None] = DEFAULT_FIELD
@@ -122,7 +120,8 @@ class InversionTaskArgs(BaseModel):
     # or penalize mfd residuals in absolute terms
     mfd_equality_weight: Sequence[float | None] = DEFAULT_FIELD
     mfd_inequality_weight: Sequence[float | None] = DEFAULT_FIELD
-    mfd_eq_ineq_transition_mag: Sequence[float | None] = DEFAULT_FIELD  # magnitude at which to transition from equality to inequality constraint
+    # magnitude at which to transition from equality to inequality constraint
+    mfd_eq_ineq_transition_mag: Sequence[float | None] = DEFAULT_FIELD
 
     # penalize absolute and relative to uncertinaty slip rate residuals
     slip_rate_weighting_type: Sequence[Literal["BOTH", "NORMALIZED", "UNNORMALIZED"] | None] = DEFAULT_FIELD
@@ -136,7 +135,7 @@ class InversionTaskArgs(BaseModel):
 
 
 class SubductionTaskArgs(InversionTaskArgs):
-    scaling_c_val: Sequence[float | None] = DEFAULT_FIELD  # subduction (and crustal?)
+    scaling_c_val: Sequence[float | None] = DEFAULT_FIELD
     mfd_min_mag: Sequence[float | None] = DEFAULT_FIELD
 
 
@@ -159,7 +158,6 @@ class CrustalTaskArgs(InversionTaskArgs):
 
 
 class OpenshaArgs(InputBase):
-    # java: JavaArgs
     general: GeneralArgs
 
 

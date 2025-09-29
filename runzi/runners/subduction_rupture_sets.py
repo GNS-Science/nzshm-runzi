@@ -155,7 +155,7 @@ def run_subduction_rupture_sets(job_input: SubductionRuptureSetsInput) -> str | 
 
     task_title = job_input.title
     task_description = job_input.description
-    worker_pool_size = job_input.worker_pool_size
+    worker_pool_size = job_input.worker_pool_size  # TODO: make this an env var. Consistent with inversion?
 
     args_list = []
     for key, value in job_input.model_dump().items():

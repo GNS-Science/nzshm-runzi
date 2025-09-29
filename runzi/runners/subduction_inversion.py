@@ -6,7 +6,7 @@ from subprocess import check_call
 import boto3
 
 # Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, EnvMode
+from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, EnvMode, WORKER_POOL_SIZE
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.subduction_inversions import build_subduction_tasks
 from runzi.runners.inversion_inputs import InversionSystemArgs, SubductionInversionArgs
@@ -16,7 +16,7 @@ def run_subduction_inversion(inversion_args: SubductionInversionArgs) -> str | N
     t0 = dt.datetime.now()
     system_args = InversionSystemArgs()
 
-    worker_pool_size = inversion_args.general.worker_pool_size
+    worker_pool_size = WORKER_POOL_SIZE
     if inversion_args.general.subtask_type is not SubtaskType.INVERSION:
         raise ValueError("subtask type must be INVERSION")
     if inversion_args.general.model_type is not ModelType.SUBDUCTION:

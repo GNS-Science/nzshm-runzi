@@ -70,7 +70,7 @@ def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args:
                 toshi_api_url=API_URL,
                 toshi_s3_url=S3_URL,
                 toshi_report_bucket=S3_REPORT_BUCKET,
-                task_module=inversion_solution_builder_task.__name__,
+                task_module=subduction_inversion_solution_task.__name__,
                 time_minutes=task_args.task.max_inversion_time[0],
                 memory=30720,
                 vcpu=4,
