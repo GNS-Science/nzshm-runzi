@@ -124,15 +124,13 @@ class InversionTaskArgs(BaseModel):
     mfd_eq_ineq_transition_mag: list[float]  # magnitude at which to transition from equality to inequality constraint
 
     # penalize absolute and relative to uncertinaty slip rate residuals
-    slip_rate_weighting_type: list[
-        Literal["BOTH", "NORMALIZED", "UNNORMALIZED", "NORMALIZED_BY_UNCERTAINTY", "UNCERTAINTY_ADJUSTED"]
-    ]  # UNCERTAINTY_ADJUSTED is not a OpenSHA option, but a flag to use setSlipRateUncertaintyConstraint, not sure the difference between NORMALIZED_BY_UNCERTAINTY and UNCERTAINTY_ADJUSTED
+    slip_rate_weighting_type: list[Literal["BOTH", "NORMALIZED", "UNNORMALIZED"]]
     slip_rate_normalized_weight: list[float]
     slip_rate_unnormalized_weight: list[float]
 
     # or penalize by uncerainty only
     use_slip_scaling: list[bool]
-    slip_rate_weight: list[float]
+    slip_rate_uncertainty_weight: list[float]
     slip_uncertainty_scaling_factor: list[float]
 
 

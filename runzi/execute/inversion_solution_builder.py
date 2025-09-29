@@ -117,37 +117,28 @@ class InversionSolutionBuilder(ABC):
             self.inversion_runner.setUncertaintyWeightedMFDWeights(
                 weight, mfd_uncertainty_power, mfd_uncertainty_scalar
             )
-        if (mfd_equality_weight is not None) and (mfd_inequality_weight is not None):
-            weight_eq = 1.0 if reweight else mfd_equality_weight
-            weight_ineq = 1.0 if reweight else mfd_inequality_weight
-            self.inversion_runner.setGutenbergRichterMFDWeights(weight_eq, weight_ineq)
+        else:
+            self.inversion_runner.setGutenbergRichterMFDWeights(mfd_equality_weight, mfd_inequality_weight)
 
         slip_rate_weighting_type = (self.user_args.task.slip_rate_weighting_type[0],)
         slip_rate_normalized_weight = (self.user_args.task.slip_rate_normalized_weight[0],)
         slip_rate_unnormalized_weight = (self.user_args.task.slip_rate_unnormalized_weight[0],)
         slip_uncertainty_scaling_factor = self.user_args.task.slip_uncertainty_scaling_factor[0]
-        slip_rate_weight = self.user_args.task.slip_rate_weight[0]
+        slip_rate_uncertainty_weight = self.user_args.task.slip_rate_uncertainty_weight[0]
         use_slip_scalings = self.user_args.task.use_slip_scaling[0]
 
-        if slip_rate_weighting_type is not None:
-            if slip_rate_weighting_type == 'UNCERTAINTY_ADJUSTED':
-                self.inversion_runner.setSlipRateUncertaintyConstraint(
-                    slip_rate_weight, slip_uncertainty_scaling_factor
-                )
-            else:
-                self.inversion_runner.setSlipRateConstraint(
-                    slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight
-                )
-        elif ((mfd_uncertainty_weight is not None) and (mfd_uncertainty_power is not None)) or (reweight):
-            weight = 1.0 if reweight else mfd_uncertainty_weight
-            self.inversion_runner.setUncertaintyWeightedMFDWeights(
-                weight, mfd_uncertainty_power, mfd_uncertainty_scalar
-            )
+        if slip_rate_uncertainty_weight is not None:
+            weight = 1.0 if reweight else slip_rate_uncertainty_weight
+            self.inversion_runner.setSlipRateUncertaintyConstraint(
+                weight,
+                slip_uncertainty_scaling_factor,
+            ).setUnmodifiedSlipRateStdvs(
+                not use_slip_scalings
+            )  # True means no slips scaling and vice-versa
         else:
-            raise ValueError("Neither eq/ineq , nor uncertainty weights provided for MFD constraint setup")
-
-        # True means no slips scaling and vice-versa
-        self.inversion_runner.setUnmodifiedSlipRateStdvs(not use_slip_scalings)
+            self.inversion_runner.setSlipRateConstraint(
+                slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight
+            )
 
     def run(self):
         t0 = dt.datetime.now()

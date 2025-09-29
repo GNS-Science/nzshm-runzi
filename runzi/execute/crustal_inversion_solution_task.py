@@ -44,7 +44,6 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
     def _set_deformation_model(self):
         self.user_args = cast(CrustalInversionArgs, self.user_args)
         super()._set_deformation_model()
-        self.inversion_runner.setDeformationModel(self.user_args.task.deformation_model[0])
         self.inversion_runner.setSlipRateFactor(
             self.user_args.task.slip_rate_factor[0].sans,
             self.user_args.task.slip_rate_factor[0].sans,
