@@ -1,15 +1,19 @@
-from .inversion_solution_builder import InversionSolutionBuilder
-from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
-import time
-import git
 import argparse
-from typing import cast, TYPE_CHECKING
 import json
+import time
 import urllib.parse
-from runzi.runners.inversion_inputs import InversionArgs, InversionSystemArgs, CrustalInversionArgs
+from typing import TYPE_CHECKING, cast
+
+import git
+
+from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
+from runzi.runners.inversion_inputs import CrustalInversionArgs, InversionArgs, InversionSystemArgs
+
+from .inversion_solution_builder import InversionSolutionBuilder
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
+
 
 class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
     """
@@ -27,7 +31,7 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
         scaling_recalc_mag = self.user_args.task.scaling_recalc_mag[0]
         # TODO: would we ever specify a scaling relationship and not want to recalc mags? Isn't that implied?
         # TODO: is it ok not to set a scaling relationship? Does that simply mean we don't relcalc the mags?
-        if (scaling_relationship is not None) and scaling_recalc_mag: 
+        if (scaling_relationship is not None) and scaling_recalc_mag:
             sr = self._gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
             if scaling_relationship == "SIMPLE_CRUSTAL":
                 c_dip = self.user_args.task.scaling_c_val[0].dip
@@ -36,7 +40,7 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
             else:
                 sr = scaling_relationship  # setScalingRelationship can be passed a string
             self.inversion_runner.setScalingRelationship(sr, scaling_recalc_mag)
-    
+
     def _set_deformation_model(self):
         self.user_args = cast(CrustalInversionArgs, self.user_args)
         super()._set_deformation_model()
@@ -45,7 +49,6 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
             self.user_args.task.slip_rate_factor[0].sans,
             self.user_args.task.slip_rate_factor[0].sans,
         )
-
 
     def _set_constraint_weights(self):
         super()._set_constraint_weights()
@@ -64,7 +67,6 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
                 paleo_rate_constraint,
                 paleo_probability_model,
             )
-
 
     def _domain_specific_setup(self):
         if (spatial_seis_pdf := self.user_args.task.spatial_seis_pdf[0]) is not None:
@@ -92,8 +94,6 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
         )
 
 
-
-
 def get_repo_heads(rootdir, repos):
     result = {}
     for reponame in repos:
@@ -117,12 +117,12 @@ def main():
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
-
     user_args = InversionArgs(**config['task_args'])
     system_args = InversionSystemArgs(**config['task_system_args'])
     inversion_solution_builder = CrustalInversionSolutionBuilder(user_args, system_args)
 
     inversion_solution_builder.run()
+
 
 if __name__ == "__main__":
     main()

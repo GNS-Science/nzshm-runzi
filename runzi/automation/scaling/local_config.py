@@ -5,7 +5,7 @@ and is imported  by the various run_xxx.py scripts
 
 import enum
 import os
-from pathlib import PurePath, Path
+from pathlib import Path, PurePath
 
 from dotenv import load_dotenv
 

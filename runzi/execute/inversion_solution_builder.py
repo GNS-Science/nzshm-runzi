@@ -1,5 +1,4 @@
 import argparse
-from abc import ABC, abstractmethod
 import datetime as dt
 import json
 import logging
@@ -7,19 +6,19 @@ import platform
 import time
 import urllib.parse
 import uuid
+from abc import ABC, abstractmethod
 from pathlib import PurePath
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import git
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway, JavaObject
-from typing import TYPE_CHECKING
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_INVERSION, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
-from runzi.runners.inversion_inputs import InversionArgs, InversionSystemArgs, SubductionTaskArgs, InversionTaskArgs
+from runzi.runners.inversion_inputs import InversionArgs, InversionSystemArgs, InversionTaskArgs, SubductionTaskArgs
 
 logging.basicConfig(level=logging.INFO)
 
@@ -115,40 +114,47 @@ class InversionSolutionBuilder(ABC):
 
         if mfd_uncertainty_weight is not None:
             weight = 1.0 if reweight else mfd_uncertainty_weight
-            self.inversion_runner.setUncertaintyWeightedMFDWeights(weight, mfd_uncertainty_power, mfd_uncertainty_scalar)
+            self.inversion_runner.setUncertaintyWeightedMFDWeights(
+                weight, mfd_uncertainty_power, mfd_uncertainty_scalar
+            )
         if (mfd_equality_weight is not None) and (mfd_inequality_weight is not None):
             weight_eq = 1.0 if reweight else mfd_equality_weight
             weight_ineq = 1.0 if reweight else mfd_inequality_weight
             self.inversion_runner.setGutenbergRichterMFDWeights(weight_eq, weight_ineq)
 
-        slip_rate_weighting_type = self.user_args.task.slip_rate_weighting_type[0],
-        slip_rate_normalized_weight = self.user_args.task.slip_rate_normalized_weight[0],
-        slip_rate_unnormalized_weight = self.user_args.task.slip_rate_unnormalized_weight[0],
+        slip_rate_weighting_type = (self.user_args.task.slip_rate_weighting_type[0],)
+        slip_rate_normalized_weight = (self.user_args.task.slip_rate_normalized_weight[0],)
+        slip_rate_unnormalized_weight = (self.user_args.task.slip_rate_unnormalized_weight[0],)
         slip_uncertainty_scaling_factor = self.user_args.task.slip_uncertainty_scaling_factor[0]
         slip_rate_weight = self.user_args.task.slip_rate_weight[0]
         use_slip_scalings = self.user_args.task.use_slip_scaling[0]
 
         if slip_rate_weighting_type is not None:
             if slip_rate_weighting_type == 'UNCERTAINTY_ADJUSTED':
-                self.inversion_runner.setSlipRateUncertaintyConstraint(slip_rate_weight, slip_uncertainty_scaling_factor)
+                self.inversion_runner.setSlipRateUncertaintyConstraint(
+                    slip_rate_weight, slip_uncertainty_scaling_factor
+                )
             else:
-                self.inversion_runner.setSlipRateConstraint(slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight)
+                self.inversion_runner.setSlipRateConstraint(
+                    slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight
+                )
         elif ((mfd_uncertainty_weight is not None) and (mfd_uncertainty_power is not None)) or (reweight):
             weight = 1.0 if reweight else mfd_uncertainty_weight
-            self.inversion_runner.setUncertaintyWeightedMFDWeights( weight, mfd_uncertainty_power, mfd_uncertainty_scalar)
+            self.inversion_runner.setUncertaintyWeightedMFDWeights(
+                weight, mfd_uncertainty_power, mfd_uncertainty_scalar
+            )
         else:
             raise ValueError("Neither eq/ineq , nor uncertainty weights provided for MFD constraint setup")
-            
+
         # True means no slips scaling and vice-versa
         self.inversion_runner.setUnmodifiedSlipRateStdvs(not use_slip_scalings)
-
 
     def run(self):
         t0 = dt.datetime.now()
 
         # maybe the JVM App is a little slow to get listening
         time.sleep(0.2)
-    
+
         # Wait for some more time, scaled by taskid to avoid S3 consistency issue
         time.sleep(self.system_args.task_count * 0.01)
         self.inversion_runner = self._get_runner()
@@ -206,7 +212,6 @@ class InversionSolutionBuilder(ABC):
 
         if initial_solution_id is not None:
             self.inversion_runner.setInitialSolution(initial_solution_info[initial_solution_id]['filepath'])
-
 
         if not SPOOF_INVERSION:
             log.info("Starting inversion of up to %s minutes" % self.user_args.task.max_inversion_time[0])
@@ -307,4 +312,3 @@ class InversionSolutionBuilder(ABC):
         else:
             log.info(metrics)
         log.info("; took %s secs" % (dt.datetime.now() - t0).total_seconds())
-

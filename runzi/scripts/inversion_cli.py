@@ -7,7 +7,7 @@ import typer
 from rich import print as rich_print
 
 from runzi.runners import run_crustal_inversion, run_subduction_inversion
-from runzi.runners.inversion_inputs import SubductionInversionArgs, CrustalInversionArgs
+from runzi.runners.inversion_inputs import CrustalInversionArgs, SubductionInversionArgs
 
 app = typer.Typer()
 

@@ -20,9 +20,8 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.execute import subduction_inversion_solution_task
+from runzi.runners.inversion_inputs import InversionSystemArgs, SubductionInversionArgs
 from runzi.util.aws import get_ecs_job_config
-from runzi.runners.inversion_inputs import SubductionInversionArgs, InversionSystemArgs
-
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 # JAVA_THREADS = 4

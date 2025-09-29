@@ -16,7 +16,7 @@ The job is responsible for
 """
 import json
 import os
-from pathlib import PurePath, Path
+from pathlib import Path, PurePath
 from typing import Optional, TypeVar
 
 from pydantic import BaseModel
