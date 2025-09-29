@@ -1,6 +1,5 @@
 """Command line functions for running inversions."""
 
-import json
 from pathlib import Path
 
 import typer
