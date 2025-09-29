@@ -26,8 +26,8 @@ def run_subduction_inversion(inversion_args: SubductionInversionArgs) -> str | N
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     args_list = []
-    for key, value in inversion_args.get_run_args():
-        args_list.append(dict(k=key, v=value))
+    for key, value in inversion_args.get_run_args().items():
+        args_list.append(dict(k=key, v=str(value)))
 
     general_task_id: str | None = None
     if USE_API:
@@ -35,8 +35,8 @@ def run_subduction_inversion(inversion_args: SubductionInversionArgs) -> str | N
         gt_args = (
             CreateGeneralTaskArgs(
                 agent_name=getpass.getuser(),
-                title=inversion_args.general.title,
-                description=inversion_args.general.description,
+                title=inversion_args.title,
+                description=inversion_args.description,
             )
             .set_argument_list(args_list)
             .set_subtask_type(inversion_args.general.subtask_type)

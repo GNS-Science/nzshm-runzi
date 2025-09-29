@@ -27,7 +27,7 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 # JAVA_THREADS = 4
 
 
-def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args: 'InversionSystemArgs'):
+def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args: InversionSystemArgs):
     task_count = 0
 
     factory_class = get_factory(CLUSTER_MODE)
@@ -45,14 +45,13 @@ def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args:
         jvm_heap_start=JVM_HEAP_START,
     )
 
-    for task_args in inversion_args.get_task_args():
+    for task_args in inversion_args.get_tasks():
         task_args = cast(SubductionInversionArgs, task_args)
         task_system_args = system_args.model_copy(deep=True)
 
         task_system_args.task_count = task_count
-        task_system_args.java_threads = int(task_args.task.selector_threads[0]) * int(
-            task_args.task.averaging_threads[0]
-        )
+        averaging_threads = task_args.task.averaging_threads[0] or 1
+        task_system_args.java_threads = int(task_args.task.selector_threads[0]) * int(averaging_threads)
         task_system_args.java_gateway_port = task_factory.get_next_port()
         task_system_args.working_path = work_path
         task_system_args.opensha_root_folder = OPENSHA_ROOT

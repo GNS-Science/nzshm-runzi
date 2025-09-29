@@ -28,7 +28,8 @@ def get_task_config(task_args: BaseModel, task_system_args: BaseModel) -> dict:
 class InputBase(BaseModel):
     """Base class for input Pydantic classes."""
 
-    worker_pool_size: int = 1
+    # TODO: should we have a worker size or only use env? Need to be consistent
+    # worker_pool_size: int = 1
     title: str
     description: str
 

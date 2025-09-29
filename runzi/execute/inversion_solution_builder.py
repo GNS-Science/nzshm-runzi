@@ -84,7 +84,7 @@ class InversionSolutionBuilder(ABC):
         ).setNonnegativityConstraintType(
             self.user_args.task.non_negativity_function[0]
         ).setPerturbationFunction(
-            self.user_args.task.pertubation_function[0]
+            self.user_args.task.perturbation_function[0]
         )
 
         if (averaging_threads := self.user_args.task.averaging_threads[0]) is not None:
@@ -103,7 +103,7 @@ class InversionSolutionBuilder(ABC):
         self.user_args = cast(InversionArgs, self.user_args)
         reweight = self.user_args.task.reweight[0]
 
-        if reweight is not None:
+        if reweight:
             self.inversion_runner.setReweightTargetQuantity("MAD")
 
         mfd_equality_weight = self.user_args.task.mfd_equality_weight[0]

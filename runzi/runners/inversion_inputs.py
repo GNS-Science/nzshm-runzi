@@ -24,9 +24,6 @@ class InversionSystemArgs(BaseModel):
 
 
 class GeneralArgs(BaseModel):
-    mock_mode: bool = False
-    title: str
-    description: str
     subtask_type: SubtaskType
     model_type: ModelType
 
@@ -95,7 +92,7 @@ class InversionTaskArgs(BaseModel):
     averaging_interval_secs: Sequence[int]
     selector_threads: Sequence[int]
     selection_interval_secs: Sequence[int]
-    pertubation_function: Sequence[str]
+    perturbation_function: Sequence[str]
     cooling_schedule: Sequence[str | None] = DEFAULT_FIELD
     non_negativity_function: Sequence[str]
 
@@ -104,7 +101,7 @@ class InversionTaskArgs(BaseModel):
     scaling_recalc_mag: Sequence[bool | None] = DEFAULT_FIELD
 
     # fault slip rates, could be FAULT_MODEL which uses rupture set, or some other model
-    deformation_model: Sequence[str | None] = DEFAULT_FIELD  
+    deformation_model: Sequence[str]
 
     # N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated
     mfd: Sequence[MFD | None] = DEFAULT_FIELD  
@@ -136,7 +133,7 @@ class InversionTaskArgs(BaseModel):
 
 class SubductionTaskArgs(InversionTaskArgs):
     scaling_c_val: Sequence[float | None] = DEFAULT_FIELD
-    mfd_min_mag: Sequence[float | None] = DEFAULT_FIELD
+    mfd_min_mag: Sequence[float]
 
 
 class CrustalTaskArgs(InversionTaskArgs):
@@ -144,12 +141,12 @@ class CrustalTaskArgs(InversionTaskArgs):
 
     scaling_c_val: Sequence[ScalingC | None] = DEFAULT_FIELD
 
-    min_mag_sans: Sequence[float | None] = DEFAULT_FIELD
-    min_mag_tvz: Sequence[float | None] = DEFAULT_FIELD
-    max_mag_type: Sequence[str | None] = DEFAULT_FIELD
-    mag_range: Sequence[MagRange | None] = DEFAULT_FIELD
+    min_mag_sans: Sequence[float]
+    min_mag_tvz: Sequence[float]
+    max_mag_type: Sequence[str]
+    mag_range: Sequence[MagRange]
 
-    slip_rate_factor: Sequence[SlipRateFactor | None] = DEFAULT_FIELD
+    slip_rate_factor: Sequence[SlipRateFactor]
 
     paleo_rate_constraint_weight: Sequence[float | None] = DEFAULT_FIELD
     paleo_parent_rate_smoothness_constraint_weight: Sequence[float | None] = DEFAULT_FIELD
@@ -164,14 +161,16 @@ class OpenshaArgs(InputBase):
 class InversionArgs(OpenshaArgs):
     task: InversionTaskArgs
 
-    def get_task_args(self) -> Generator['InversionArgs', None, None]:
+    def get_tasks(self) -> Generator['InversionArgs', None, None]:
 
         # empty/default entries can be anything
         names = self.task.model_fields_set
         values = [getattr(self.task, name) for name in names]
         for task_combination in product(*values):
+            inv_args = self.model_copy(deep=True)
             task_args = {name: [ta] for name, ta in zip(names, task_combination)}
-            yield type(self).model_validate(task_args)
+            inv_args
+            yield type(self.task).model_validate(task_args)
 
     def get_run_args(self) -> dict:
         return self.task.model_dump()
