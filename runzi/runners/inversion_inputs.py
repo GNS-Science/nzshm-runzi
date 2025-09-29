@@ -9,6 +9,9 @@ from pydantic import BaseModel, FilePath, ValidationInfo, field_serializer, fiel
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.runners.runner_inputs import InputBase
 
+# Because we use field[0] for the value of the field in the inversion task we need a sentinal for "not set".
+# We use [None,] for this.
+DEFAULT_FIELD = [None,]
 
 class InversionSystemArgs(BaseModel):
     java_gateway_port: int = 0
@@ -86,75 +89,73 @@ class SlipRateFactor(BaseModel):
     tvz: float
 
 
-# TODO: should these all be singular nouns?
-# TODO: chould make the fields e.g. list[float] | float. Leaves room for user error
-# TODO: default should be [None,] not None or [] so field[0] evaluates to false (or [False,] ?)
+# TODO: default should be [None,] not None or [] so field[0] can be tested `is None` as a sentinal for "not set"
 class InversionTaskArgs(BaseModel):
-    rupture_set_id: list[str]
+    rupture_set_id: list[str | None] = DEFAULT_FIELD
 
-    initial_solution_id: list[str]
+    initial_solution_id: list[str | None] = DEFAULT_FIELD
 
-    max_inversion_time: list[float]
-    completion_energy: list[float]
-    averaging_threads: list[int]
-    averaging_interval_secs: list[int]
-    selector_threads: list[int]
-    selection_interval_secs: list[int]
-    pertubation_function: list[str]
-    cooling_schedule: list[str]
-    non_negativity_function: list[str]
+    max_inversion_time: list[float | None] = DEFAULT_FIELD
+    completion_energy: list[float | None] = DEFAULT_FIELD
+    averaging_threads: list[int | None] = DEFAULT_FIELD
+    averaging_interval_secs: list[int | None] = DEFAULT_FIELD
+    selector_threads: list[int | None] = DEFAULT_FIELD
+    selection_interval_secs: list[int | None] = DEFAULT_FIELD
+    pertubation_function: list[str | None] = DEFAULT_FIELD
+    cooling_schedule: list[str | None] = DEFAULT_FIELD
+    non_negativity_function: list[str | None] = DEFAULT_FIELD
 
-    scaling_relationship: list[str]  # describes a type of scaling relationship, e.g. "SIMPLE_SUBDUCTION"
-    scaling_recalc_mag: list[bool]
+    scaling_relationship: list[str | None] = DEFAULT_FIELD  # describes a type of scaling relationship, e.g. "SIMPLE_SUBDUCTION"
+    scaling_recalc_mag: list[bool | None] = DEFAULT_FIELD
 
-    deformation_model: list[str]  # fault slip rates, could be FAULT_MODEL which uses rupture set, or some other model
+    deformation_model: list[str | None] = DEFAULT_FIELD  # fault slip rates, could be FAULT_MODEL which uses rupture set, or some other model
 
-    mfd: list[MFD]  # N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated
+    mfd: list[MFD | None] = DEFAULT_FIELD  # N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated
 
-    reweight: list[bool]  # if true, must also have uncertainty weighting for mfd and slip rate
+    reweight: list[bool | None] = DEFAULT_FIELD  # if true, must also have uncertainty weighting for mfd and slip rate
 
     # penalize mfd residuals normalized by uncertainty which is a "made up" function of mag
-    mfd_uncertainty_weight: list[float]
-    mfd_uncertainty_power: list[float]
-    mfd_uncertainty_scalar: list[float]
+    mfd_uncertainty_weight: list[float | None] = DEFAULT_FIELD
+    mfd_uncertainty_power: list[float | None] = DEFAULT_FIELD
+    mfd_uncertainty_scalar: list[float | None] = DEFAULT_FIELD
 
     # or penalize mfd residuals in absolute terms
-    mfd_equality_weight: list[float]
-    mfd_inequality_weight: list[float]
-    mfd_eq_ineq_transition_mag: list[float]  # magnitude at which to transition from equality to inequality constraint
+    mfd_equality_weight: list[float | None] = DEFAULT_FIELD
+    mfd_inequality_weight: list[float | None] = DEFAULT_FIELD
+    mfd_eq_ineq_transition_mag: list[float | None] = DEFAULT_FIELD  # magnitude at which to transition from equality to inequality constraint
 
     # penalize absolute and relative to uncertinaty slip rate residuals
-    slip_rate_weighting_type: list[Literal["BOTH", "NORMALIZED", "UNNORMALIZED"]]
-    slip_rate_normalized_weight: list[float]
-    slip_rate_unnormalized_weight: list[float]
+    slip_rate_weighting_type: list[Literal["BOTH", "NORMALIZED", "UNNORMALIZED"] | None] = DEFAULT_FIELD
+    slip_rate_normalized_weight: list[float | None] = DEFAULT_FIELD
+    slip_rate_unnormalized_weight: list[float | None] = DEFAULT_FIELD
 
     # or penalize by uncerainty only
-    use_slip_scaling: list[bool]
-    slip_rate_uncertainty_weight: list[float]
-    slip_uncertainty_scaling_factor: list[float]
+    use_slip_scaling: list[bool | None] = DEFAULT_FIELD
+    slip_rate_uncertainty_weight: list[float | None] = DEFAULT_FIELD
+    slip_uncertainty_scaling_factor: list[float | None] = DEFAULT_FIELD
 
 
 class SubductionTaskArgs(InversionTaskArgs):
-    scaling_c_val: list[float]  # subduction (and crustal?)
-    mfd_min_mag: list[float]
+    scaling_c_val: list[float | None] = DEFAULT_FIELD  # subduction (and crustal?)
+    mfd_min_mag: list[float | None] = DEFAULT_FIELD
 
 
 class CrustalTaskArgs(InversionTaskArgs):
-    spatial_seis_pdf: list[str]
+    spatial_seis_pdf: list[str | None] = DEFAULT_FIELD
 
-    scaling_c_val: list[ScalingC]
+    scaling_c_val: list[ScalingC | None] = DEFAULT_FIELD
 
-    min_mag_sans: list[float]
-    min_mag_tvz: list[float]
-    max_mag_type: list[str]
-    mag_range: list[MagRange]
+    min_mag_sans: list[float | None] = DEFAULT_FIELD
+    min_mag_tvz: list[float | None] = DEFAULT_FIELD
+    max_mag_type: list[str | None] = DEFAULT_FIELD
+    mag_range: list[MagRange | None] = DEFAULT_FIELD
 
-    slip_rate_factor: list[SlipRateFactor]
+    slip_rate_factor: list[SlipRateFactor | None] = DEFAULT_FIELD
 
-    paleo_rate_constraint_weight: list[float]
-    paleo_parent_rate_smoothness_constraint_weight: list[float]
-    paleo_rate_constraint: list[str]
-    paleo_probability_model: list[str]
+    paleo_rate_constraint_weight: list[float | None] = DEFAULT_FIELD
+    paleo_parent_rate_smoothness_constraint_weight: list[float | None] = DEFAULT_FIELD
+    paleo_rate_constraint: list[str | None] = DEFAULT_FIELD
+    paleo_probability_model: list[str | None] = DEFAULT_FIELD
 
 
 class OpenshaArgs(InputBase):
