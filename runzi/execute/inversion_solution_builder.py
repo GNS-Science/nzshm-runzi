@@ -199,6 +199,7 @@ class InversionSolutionBuilder(ABC):
         self._set_scaling_relationship()
         self._set_sa_params()
         self._set_deformation_model()
+        self._set_constraint_weights()
 
         rupture_set_filepath = rupture_set_info[rupture_set_id]['filepath']
         self.inversion_runner.setRuptureSetFile(rupture_set_filepath)
