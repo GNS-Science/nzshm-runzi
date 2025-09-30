@@ -117,7 +117,7 @@ class InversionSolutionBuilder(ABC):
             self.inversion_runner.setUncertaintyWeightedMFDWeights(
                 weight, mfd_uncertainty_power, mfd_uncertainty_scalar
             )
-        else:
+        elif (mfd_equality_weight is not None) and (mfd_inequality_weight is not None):
             self.inversion_runner.setGutenbergRichterMFDWeights(mfd_equality_weight, mfd_inequality_weight)
 
         slip_rate_weighting_type = self.user_args.task.slip_rate_weighting_type[0]
@@ -135,7 +135,7 @@ class InversionSolutionBuilder(ABC):
             ).setUnmodifiedSlipRateStdvs(
                 not use_slip_scalings
             )  # True means no slips scaling and vice-versa
-        else:
+        elif (slip_rate_normalized_weight) and (slip_rate_unnormalized_weight is not None):
             self.inversion_runner.setSlipRateConstraint(
                 slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight
             )

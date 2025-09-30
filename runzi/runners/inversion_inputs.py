@@ -3,8 +3,9 @@
 from itertools import product
 from pathlib import Path
 from typing import Any, Generator, Literal, Optional, Sequence
+from typing_extensions import Self
 
-from pydantic import BaseModel, FilePath, ValidationInfo, field_serializer, field_validator, DirectoryPath
+from pydantic import BaseModel, FilePath, ValidationInfo, field_serializer, field_validator, DirectoryPath, model_validator
 
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.runners.runner_inputs import InputBase
@@ -130,6 +131,17 @@ class InversionTaskArgs(BaseModel):
     slip_rate_uncertainty_weight: Sequence[float | None] = DEFAULT_FIELD
     slip_uncertainty_scaling_factor: Sequence[float | None] = DEFAULT_FIELD
 
+    # TODO: how to do validation of weights? Since all parameters are independent, not grouped, easy to create invalid combinations.
+    # Should we group them? Leave it up to the user to be smart? Only alow one mode (e.g. uncertainty weighted or not) at a time?
+
+    def get_tasks(self) -> Generator[Self, None, None]:
+        names = self.model_fields_set
+        values = [getattr(self, name) for name in names]
+        for task_combination in product(*values):
+            task_args = {name: [ta] for name, ta in zip(names, task_combination)}
+            yield self.model_validate(task_args)
+
+
 
 class SubductionTaskArgs(InversionTaskArgs):
     scaling_c_val: Sequence[float | None] = DEFAULT_FIELD
@@ -154,6 +166,7 @@ class CrustalTaskArgs(InversionTaskArgs):
     paleo_probability_model: Sequence[str | None] = DEFAULT_FIELD
 
 
+# TODO: do we need this? Work through the other OpenSHA tasks (e.g. reports) to find out
 class OpenshaArgs(InputBase):
     general: GeneralArgs
 
@@ -161,15 +174,9 @@ class OpenshaArgs(InputBase):
 class InversionArgs(OpenshaArgs):
     task: InversionTaskArgs
 
-    def get_tasks(self) -> Generator['InversionArgs', None, None]:
-
-        # empty/default entries can be anything
-        names = self.task.model_fields_set
-        values = [getattr(self.task, name) for name in names]
-        for task_combination in product(*values):
+    def get_tasks(self) -> Generator[Self, None, None]:
+        for task in self.task.get_tasks():
             inv_args = self.model_copy(deep=True)
-            task_args = {name: [ta] for name, ta in zip(names, task_combination)}
-            task = type(self.task).model_validate(task_args)
             inv_args.task = task
             yield inv_args
 

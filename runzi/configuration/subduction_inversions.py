@@ -28,7 +28,6 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 
 
 def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args: InversionSystemArgs):
-    task_count = 0
 
     factory_class = get_factory(CLUSTER_MODE)
 
@@ -45,7 +44,7 @@ def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args:
         jvm_heap_start=JVM_HEAP_START,
     )
 
-    for task_args in inversion_args.get_tasks():
+    for task_count, task_args in enumerate(inversion_args.get_tasks()):
         task_args = cast(SubductionInversionArgs, task_args)
         task_system_args = system_args.model_copy(deep=True)
 
@@ -90,3 +89,4 @@ def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args:
             os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
             yield str(script_file_path)
+        

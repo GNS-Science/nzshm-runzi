@@ -81,6 +81,5 @@ def run_subduction_inversion(inversion_args: SubductionInversionArgs) -> str | N
             check_call(['qsub', script_or_config])
 
     print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
-    print("GENERAL_TASK_ID:", general_task_id)
 
     return general_task_id
