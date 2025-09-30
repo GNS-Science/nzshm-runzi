@@ -4,7 +4,7 @@ from itertools import product
 from pathlib import Path
 from typing import Any, Generator, Literal, Optional, Sequence
 
-from pydantic import BaseModel, FilePath, ValidationInfo, field_serializer, field_validator
+from pydantic import BaseModel, FilePath, ValidationInfo, field_serializer, field_validator, DirectoryPath
 
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.runners.runner_inputs import InputBase
@@ -15,11 +15,11 @@ DEFAULT_FIELD = [None,]
 
 class InversionSystemArgs(BaseModel):
     java_gateway_port: int = 0
-    working_path: FilePath = Path()
+    working_path: DirectoryPath = Path()
     general_task_id: Optional[str] = None
     task_count: int = 0
     java_threads: int = 0
-    opensha_root_folder: FilePath = Path()
+    opensha_root_folder: DirectoryPath = Path()
     use_api: bool = False
 
 
@@ -169,8 +169,9 @@ class InversionArgs(OpenshaArgs):
         for task_combination in product(*values):
             inv_args = self.model_copy(deep=True)
             task_args = {name: [ta] for name, ta in zip(names, task_combination)}
-            inv_args
-            yield type(self.task).model_validate(task_args)
+            task = type(self.task).model_validate(task_args)
+            inv_args.task = task
+            yield inv_args
 
     def get_run_args(self) -> dict:
         return self.task.model_dump()

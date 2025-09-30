@@ -22,7 +22,7 @@ def get_task_config(task_args: BaseModel, task_system_args: BaseModel) -> dict:
         A dictionary with keys 'task_args' and 'task_system_args' and values that are the output of
             model_dump() of the Pydantic model objects.
     """
-    return dict(task_args=task_args.model_dump(), task_system_args=task_system_args.model_dump())
+    return dict(task_args=task_args.model_dump(mode='json'), task_system_args=task_system_args.model_dump(mode='json'))
 
 
 class InputBase(BaseModel):

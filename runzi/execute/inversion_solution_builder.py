@@ -120,9 +120,9 @@ class InversionSolutionBuilder(ABC):
         else:
             self.inversion_runner.setGutenbergRichterMFDWeights(mfd_equality_weight, mfd_inequality_weight)
 
-        slip_rate_weighting_type = (self.user_args.task.slip_rate_weighting_type[0],)
-        slip_rate_normalized_weight = (self.user_args.task.slip_rate_normalized_weight[0],)
-        slip_rate_unnormalized_weight = (self.user_args.task.slip_rate_unnormalized_weight[0],)
+        slip_rate_weighting_type = self.user_args.task.slip_rate_weighting_type[0]
+        slip_rate_normalized_weight = self.user_args.task.slip_rate_normalized_weight[0]
+        slip_rate_unnormalized_weight = self.user_args.task.slip_rate_unnormalized_weight[0]
         slip_uncertainty_scaling_factor = self.user_args.task.slip_uncertainty_scaling_factor[0]
         slip_rate_uncertainty_weight = self.user_args.task.slip_rate_uncertainty_weight[0]
         use_slip_scalings = self.user_args.task.use_slip_scaling[0]
@@ -174,7 +174,7 @@ class InversionSolutionBuilder(ABC):
                     task_type="INVERSION",
                     model_type=self.user_args.general.model_type.name.upper(),
                 ),
-                arguments=self.user_args.model_dump(),
+                arguments=self.user_args.model_dump(),  # TODO: should we flatten dict? See https://weka-test.gns.cri.nz/Task/QXV0b21hdGlvblRhc2s6MTAxNzc5
                 environment=environment,
             )
 

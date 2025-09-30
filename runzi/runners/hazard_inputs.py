@@ -17,7 +17,10 @@ from pydantic import (
     model_validator,
 )
 from toshi_hazard_store.model import AggregationEnum
-from toshi_hazard_store.scripts.ths_import import chc_manager
+try:
+    from toshi_hazard_store.scripts.ths_import import chc_manager
+except ImportError:
+    print("openquake not installed, not importing toshi-hazard-store chc_manager")
 from typing_extensions import Annotated, Self
 
 
