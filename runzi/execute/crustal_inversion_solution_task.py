@@ -9,7 +9,7 @@ import git
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 from runzi.runners.inversion_inputs import CrustalInversionArgs, InversionArgs, InversionSystemArgs
 
-from .inversion_solution_builder import InversionSolutionBuilder
+from runzi.execute.inversion_solution_builder import InversionSolutionBuilder
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
@@ -116,7 +116,7 @@ def main():
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
-    user_args = InversionArgs(**config['task_args'])
+    user_args = CrustalInversionArgs(**config['task_args'])
     system_args = InversionSystemArgs(**config['task_system_args'])
     inversion_solution_builder = CrustalInversionSolutionBuilder(user_args, system_args)
 

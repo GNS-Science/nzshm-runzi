@@ -3,7 +3,7 @@
     "description": "An example inversion for a subduction zone",
 
     "general": {
-        "model_type": "SUBDUCTION",
+        "model_type": "CRUSTAL",
         "subtask_type": "INVERSION"
     },
     "task": {
@@ -17,17 +17,17 @@
         "perturbation_function": ["EXPONENTIAL_SCALE"],
         "non_negativity_function": ["TRY_ZERO_RATES_OFTEN"],
 
-        "scaling_relationship": ["SIMPLE_SUBDUCTION"],
+        "scaling_relationship": ["SIMPLE_CRUSTAL"],
         "scaling_recalc_mag": [true],
 
-        "deformation_model": ["SBD_0_2A_HKR_LR_30"],
+        "deformation_model": ["FAULT_MODEL"],
 
         "mfd": [
             {
-                "tag": "b = 0.97, N = 11.6",
-                "b": 0.97,
-                "N": 11.6,
-                "enable_tvz_mfd": true,
+                "tag": "b = 0.811, N = 2.4",
+                "b": 0.811,
+                "N": 2.4,
+                "enable_tvz_mfd": false,
                 "b_tvz": 1.0,
                 "N_tvz": 5.0
             }

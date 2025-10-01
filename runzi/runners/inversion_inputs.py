@@ -238,6 +238,7 @@ class OpenshaArgs(InputBase):
 class InversionArgs(OpenshaArgs):
     task: InversionTaskArgs
 
+
     def get_tasks(self) -> Generator[Self, None, None]:
         for task in self.task.get_tasks():
             inv_args = self.model_copy(deep=True)
@@ -251,7 +252,20 @@ class InversionArgs(OpenshaArgs):
 class SubductionInversionArgs(InversionArgs):
     task: SubductionTaskArgs
 
+    @model_validator(mode='after')
+    def _check_task_type(self) -> Self:
+        """Check that task is of the correct type for the model_type."""
+        if self.general.model_type is not ModelType.SUBDUCTION:
+            raise ValueError("Model type must be SUBDUCTION for SubductionInversionArgs")
+        return self
 
 # WIP
 class CrustalInversionArgs(InversionArgs):
     task: CrustalTaskArgs
+
+    @model_validator(mode='after')
+    def _check_task_type(self) -> Self:
+        """Check that task is of the correct type for the model_type."""
+        if self.general.model_type is not ModelType.CRUSTAL:
+            raise ValueError("Model type must be CRUSTAL for CrustalInversionArgs")
+        return self
