@@ -47,7 +47,7 @@ class InversionSolutionBuilder(ABC):
         self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=system_args.java_gateway_port))
         # repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
         # self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
-        self._output_folder = PurePath(system_args.working_path)
+        self._output_folder = WORK_PATH
 
         headers = {"x-api-key": API_KEY}
         self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
@@ -209,7 +209,7 @@ class InversionSolutionBuilder(ABC):
             log.info("======================================")
             self.inversion_runner.runInversion()
 
-        output_file = str(PurePath(self.system_args.working_path, f"NZSHM22_InversionSolution-{task_id}.zip"))
+        output_file = str(PurePath(WORK_PATH, f"NZSHM22_InversionSolution-{task_id}.zip"))
         # name the output file
         # outputfile = self._output_folder.joinpath(self.inversion_runner.getDescriptiveName()+ ".zip")
         # log.info("building %s started at %s" % (outputfile, dt.datetime.utcnow().isoformat()), end=' ')

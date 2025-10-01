@@ -78,7 +78,7 @@ def run_subduction_inversion(inversion_args: SubductionInversionArgs) -> str | N
 
     elif CLUSTER_MODE == EnvMode['CLUSTER']:
         for script_or_config in scripts:
-            check_call(['qsub', script_or_config])
+            check_call(['qsub', script_or_config])  # type: ignore
 
     print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
 

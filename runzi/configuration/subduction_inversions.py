@@ -1,7 +1,7 @@
 import os
 import stat
 from pathlib import PurePath
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast, Generator, Any
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (
@@ -27,7 +27,7 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 # JAVA_THREADS = 4
 
 
-def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args: InversionSystemArgs):
+def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args: InversionSystemArgs) -> Generator[dict[str, Any] | str, None, None]:
 
     factory_class = get_factory(CLUSTER_MODE)
 
@@ -52,8 +52,6 @@ def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args:
         averaging_threads = task_args.task.averaging_threads[0] or 1
         task_system_args.java_threads = int(task_args.task.selector_threads[0]) * int(averaging_threads)
         task_system_args.java_gateway_port = task_factory.get_next_port()
-        task_system_args.working_path = work_path
-        task_system_args.opensha_root_folder = OPENSHA_ROOT
         task_system_args.use_api = USE_API
 
         if CLUSTER_MODE == EnvMode['AWS']:
