@@ -19,15 +19,23 @@ from runzi.automation.scaling.local_config import (
     EnvMode,
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.execute import subduction_inversion_solution_task
-from runzi.runners.inversion_inputs import InversionSystemArgs, SubductionInversionArgs
+from runzi.execute import subduction_inversion_solution_task, crustal_inversion_solution_task
+from runzi.runners.inversion_inputs import InversionSystemArgs, SubductionInversionArgs, InversionArgs, CrustalInversionArgs
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.util.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 # JAVA_THREADS = 4
 
 
-def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args: InversionSystemArgs) -> Generator[dict[str, Any] | str, None, None]:
+def build_inversion_tasks(inversion_args: InversionArgs, system_args: InversionSystemArgs) -> Generator[dict[str, Any] | str, None, None]:
+
+    if inversion_args.general.model_type is ModelType.SUBDUCTION:
+        task_module = subduction_inversion_solution_task
+    elif inversion_args.general.model_type is ModelType.CRUSTAL:
+        task_module = crustal_inversion_solution_task
+    else:
+        raise ValueError("Model type must be SUBDUCTION or CRUSTAL")
 
     factory_class = get_factory(CLUSTER_MODE)
 
@@ -35,7 +43,7 @@ def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args:
     task_factory = factory_class(
         OPENSHA_ROOT,
         work_path,
-        subduction_inversion_solution_task,
+        task_module,
         initial_gateway_port=INITIAL_GATEWAY_PORT,
         jre_path=OPENSHA_JRE,
         app_jar_path=FATJAR,
@@ -45,7 +53,11 @@ def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args:
     )
 
     for task_count, task_args in enumerate(inversion_args.get_tasks()):
-        task_args = cast(SubductionInversionArgs, task_args)
+        if inversion_args.general.model_type is not ModelType.SUBDUCTION:
+            task_args = cast(SubductionInversionArgs, task_args)
+        elif inversion_args.general.model_type is ModelType.CRUSTAL:
+            task_args = cast(CrustalInversionArgs, task_args)
+
         task_system_args = system_args.model_copy(deep=True)
 
         task_system_args.task_count = task_count
@@ -56,7 +68,10 @@ def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args:
 
         if CLUSTER_MODE == EnvMode['AWS']:
 
-            job_name = f"Runzi-automation-subduction_inversions-{task_count}"
+            if inversion_args.general.model_type is not ModelType.SUBDUCTION:
+                job_name = f"Runzi-automation-subduction_inversions-{task_count}"
+            elif inversion_args.general.model_type is ModelType.CRUSTAL:
+                job_name = f"Runzi-automation-crustal_inversions-{task_count}" 
 
             yield get_ecs_job_config(
                 job_name,
@@ -66,7 +81,7 @@ def build_subduction_tasks(inversion_args: SubductionInversionArgs, system_args:
                 toshi_api_url=API_URL,
                 toshi_s3_url=S3_URL,
                 toshi_report_bucket=S3_REPORT_BUCKET,
-                task_module=subduction_inversion_solution_task.__name__,
+                task_module=task_module.__name__,
                 time_minutes=task_args.task.max_inversion_time[0],
                 memory=30720,
                 vcpu=4,
