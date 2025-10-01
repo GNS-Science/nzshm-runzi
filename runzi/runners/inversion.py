@@ -9,25 +9,31 @@ import boto3
 from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, EnvMode, WORKER_POOL_SIZE
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.subduction_inversions import build_subduction_tasks
-from runzi.runners.inversion_inputs import InversionSystemArgs, SubductionInversionArgs
+from runzi.configuration.crustal_inversions import build_crustal_tasks
+from runzi.runners.inversion_inputs import InversionSystemArgs, SubductionInversionArgs, InversionArgs
 
 
-def run_subduction_inversion(inversion_args: SubductionInversionArgs) -> str | None:
+def run_inversion(inversion_args: InversionArgs) -> str | None:
     t0 = dt.datetime.now()
     system_args = InversionSystemArgs()
 
     worker_pool_size = WORKER_POOL_SIZE
     if inversion_args.general.subtask_type is not SubtaskType.INVERSION:
         raise ValueError("subtask type must be INVERSION")
-    if inversion_args.general.model_type is not ModelType.SUBDUCTION:
-        raise ValueError("model type must be SUBDUCTION")
+    if inversion_args.general.model_type is ModelType.SUBDUCTION:
+        build_tasks = build_subduction_tasks
+    elif inversion_args.general.model_type is ModelType.CRUSTAL:
+        build_tasks = build_crustal_tasks
+    else:   
+        raise ValueError("model type must be SUBDUCTION or CRUSTAL")
 
     headers = {"x-api-key": API_KEY}
     toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     args_list = []
     for key, value in inversion_args.get_run_args().items():
-        args_list.append(dict(k=key, v=str(value)))
+        val = [str(item) for item in value]
+        args_list.append(dict(k=key, v=str(val)))
 
     general_task_id: str | None = None
     if USE_API:
@@ -54,7 +60,7 @@ def run_subduction_inversion(inversion_args: SubductionInversionArgs) -> str | N
     system_args.general_task_id = general_task_id
 
     scripts = []
-    for script_file in build_subduction_tasks(inversion_args, system_args):
+    for script_file in build_tasks(inversion_args, system_args):
         scripts.append(script_file)
 
     if CLUSTER_MODE == EnvMode['LOCAL']:
