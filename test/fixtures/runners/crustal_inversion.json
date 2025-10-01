@@ -1,6 +1,6 @@
 {
-    "title": "Subduction Inversion Example",
-    "description": "An example inversion for a subduction zone",
+    "title": "Crustal Inversion Example",
+    "description": "An example inversion for a crustal faults",
 
     "general": {
         "model_type": "CRUSTAL",
