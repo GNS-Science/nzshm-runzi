@@ -302,4 +302,4 @@ class InversionSolutionBuilder(ABC):
 
         else:
             log.info(metrics)
-        log.info("; took %s secs" % (dt.datetime.now() - t0).total_seconds())
+        log.info("Inversion task took %s secs" % (dt.datetime.now() - t0).total_seconds())

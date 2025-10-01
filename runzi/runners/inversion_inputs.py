@@ -31,7 +31,7 @@ class GeneralArgs(BaseModel):
     # we want to use the (case-insensitive) name for the model_type for input
     @field_validator('model_type', 'subtask_type', mode='before')
     @classmethod
-    def convert_to_enum(cls, value: Any, info: ValidationInfo) -> ModelType | SubtaskType:
+    def _convert_to_enum(cls, value: Any, info: ValidationInfo) -> ModelType | SubtaskType:
         if isinstance(value, (ModelType, SubtaskType)):
             return value
         try:
@@ -131,8 +131,64 @@ class InversionTaskArgs(BaseModel):
     slip_rate_uncertainty_weight: Sequence[float | None] = DEFAULT_FIELD
     slip_uncertainty_scaling_factor: Sequence[float | None] = DEFAULT_FIELD
 
-    # TODO: how to do validation of weights? Since all parameters are independent, not grouped, easy to create invalid combinations.
-    # Should we group them? Leave it up to the user to be smart? Only alow one mode (e.g. uncertainty weighted or not) at a time?
+    @model_validator(mode='after')
+    def _check_reweight(self) -> Self:
+        """If re-weighting, must use uncertinaty weighted constraints"""
+        if self.reweight != DEFAULT_FIELD:
+            if (self.mfd_uncertainty_weight == DEFAULT_FIELD) and (self.slip_rate_uncertainty_weight ==  DEFAULT_FIELD):
+                raise ValueError("Re-weigting requires use of uncertainty weighted constraints for MFD and slip rate")
+        return self
+
+    @model_validator(mode='after')
+    def _check_mfd_constraint(self) -> Self:
+        """Choose either uncertainty weighted or eq/ineq constraints for MFD, not both."""
+        if (self.mfd_uncertainty_weight != DEFAULT_FIELD) and (self.mfd_equality_weight != DEFAULT_FIELD):
+            raise ValueError("Cannot combine uncertainty and equality/inequality MFD weights.")
+        return self
+
+    @model_validator(mode='after')
+    def _check_mfd_unc_complete(self) -> Self:
+        """If using uncertainty weighted MFD constraint, must specify all parameters."""
+        if (self.mfd_uncertainty_weight != DEFAULT_FIELD):
+            if (self.mfd_uncertainty_power == DEFAULT_FIELD) or (self.mfd_uncertainty_scalar == DEFAULT_FIELD):
+                raise ValueError("If using uncertainty weighted MFD constraint, must also set uncertainty power and scalar parameters.")
+        return self
+
+    @model_validator(mode='after')
+    def _check_mfd_eq_complete(self) -> Self:
+        """If using eq/ineq MFD constraint, must specify all parameters."""
+        params = [self.mfd_equality_weight, self.mfd_inequality_weight, self.mfd_eq_ineq_transition_mag]
+        is_default = [param == DEFAULT_FIELD for param in params]
+        if (not all(is_default)) and (any(is_default)):
+            raise ValueError("If using equality/inequality MFD constraints, must set all parameters (equality weight, inequality weight, transition mag)")
+        return self
+
+    @model_validator(mode='after')
+    def _check_mfd_unc_complete(self) -> Self:
+        """If using uncertainty weighted MFD constraint, must specify all parameters."""
+        params = [self.mfd_uncertainty_weight, self.mfd_uncertainty_power, self.mfd_uncertainty_scalar]
+        is_default = [param == DEFAULT_FIELD for param in params]
+        if (not all(is_default)) and (any(is_default)):
+            raise ValueError("If using uncertainty weighted MFD constraints, must set all parameters (weight, power, and scalar)")
+        return self
+
+    @model_validator(mode='after')
+    def _check_slip_abs_complete(self) -> Self:
+        """If using 'regular' slip rate constraint, must specify all parameters."""
+        params = [self.slip_rate_weighting_type, self.slip_rate_normalized_weight, self.slip_rate_unnormalized_weight]
+        is_default = [param == DEFAULT_FIELD for param in params]
+        if (not all(is_default)) and (any(is_default)):
+            raise ValueError("If using uncertainty weighted slip rate constraints, must set all parameters (slip weighting type, normalized weight, unnormalized weight")
+        return self
+        
+    @model_validator(mode='after')
+    def _check_slip_unc_complete(self) -> Self:
+        """If using uncertainty weighted slip rate constraint, must specify all parameters."""
+        params = [self.use_slip_scaling, self.slip_rate_uncertainty_weight, self.slip_uncertainty_scaling_factor]
+        is_default = [param == DEFAULT_FIELD for param in params]
+        if (not all(is_default)) and (any(is_default)):
+            raise ValueError("If using uncertainty weighted slip rate constraints, must set all parameters (slip scaling boolean, weight, and scaling factor)")
+        return self
 
     def get_tasks(self) -> Generator[Self, None, None]:
         names = self.model_fields_set
