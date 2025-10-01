@@ -49,7 +49,7 @@ else:
 JAVA_THREADS = os.getenv('NZSHM22_SCRIPT_JAVA_THREADS', 4)  # each
 
 # How many jobs to run in parallel - keep thread/memory resources in mind
-WORKER_POOL_SIZE = int(os.getenv('NZSHM22_SCRIPT_WORKER_POOL_SIZE', 2))
+WORKER_POOL_SIZE = int(os.getenv('NZSHM22_SCRIPT_WORKER_POOL_SIZE', 1))
 
 # Memory settings, be careful - don't exceed what you have avail, or you'll see swapping!
 JVM_HEAP_START = os.getenv('NZSHM22_SCRIPT_JVM_HEAP_START', 4)  # Startup JAVA Memory (per worker)
