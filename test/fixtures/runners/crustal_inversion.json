@@ -1,0 +1,61 @@
+{
+    "title": "Subduction Inversion Example",
+    "description": "An example inversion for a subduction zone",
+
+    "general": {
+        "model_type": "SUBDUCTION",
+        "subtask_type": "INVERSION"
+    },
+    "task": {
+        "rupture_set_id": ["RmlsZToxMDAwNjk="],
+        "max_inversion_time": [1.0],
+        "completion_energy": [0.0],
+        "averaging_threads": [4],
+        "averaging_interval_secs": [30],
+        "selector_threads": [4],
+        "selection_interval_secs": [1],
+        "perturbation_function": ["EXPONENTIAL_SCALE"],
+        "non_negativity_function": ["TRY_ZERO_RATES_OFTEN"],
+
+        "scaling_relationship": ["SIMPLE_SUBDUCTION"],
+        "scaling_recalc_mag": [true],
+
+        "deformation_model": ["SBD_0_2A_HKR_LR_30"],
+
+        "mfd": [
+            {
+                "tag": "b = 0.97, N = 11.6",
+                "b": 0.97,
+                "N": 11.6,
+                "enable_tvz_mfd": true,
+                "b_tvz": 1.0,
+                "N_tvz": 5.0
+            }
+        ],
+
+        "mfd_equality_weight": [1e4],
+        "mfd_inequality_weight": [0],
+        "mfd_eq_ineq_transition_mag":  [9.15],
+
+        "slip_rate_weighting_type": ["BOTH"],
+        "slip_rate_normalized_weight": [1e3],
+        "slip_rate_unnormalized_weight": [1e5],
+
+        "spatial_seis_pdf": ["","NZSHM22_1246","NZSHM22_1346"],
+        "scaling_c_val": [
+            {"tag": "LOW", "dip": 3.9, "strike": 3.9},
+            {"tag":"MED", "dip": 4.0, "strike": 4.0}
+        ],
+
+        "max_mag_type": ["MANIPULATE_MFD"],
+        "mag_range": [{"min_mag_sans": 6.8, "min_mag_tvz": 6.8, "max_mag_sans": 10.0, "max_mag_tvz": 10.0}],
+
+        "slip_rate_factor": [{"tag": "Sans 0.9 TVZ 0.7", "sans":0.9, "tvz":0.7}],
+
+        "paleo_rate_constraint_weight": [1e3],
+        "paleo_parent_rate_smoothness_constraint_weight": [0.001],
+        "paleo_rate_constraint": ["GEOLOGIC_SLIP_NO_TVZ"],
+        "paleo_probability_model": ["NZSHM22_C_42"]
+
+        }
+}

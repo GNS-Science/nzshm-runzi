@@ -3,8 +3,10 @@ from pydantic import ValidationError
 import pytest
 import json
 from runzi.runners.inversion_inputs import SubductionInversionArgs
+from runzi.runners.inversion_inputs import CrustalInversionArgs
 
 subduction_input_filepath = Path(__file__).parent.parent / "fixtures/runners/subduction_inversion.json"
+crustal_input_filepath = Path(__file__).parent.parent / "fixtures/runners/crustal_inversion.json"
 
 @pytest.fixture(scope='function')
 def subduction_inv_data() -> dict:
@@ -21,6 +23,9 @@ def subduction_inv_data_noweights() -> dict:
     del data['task']['slip_rate_unnormalized_weight']
     return data
 
+@pytest.fixture(scope='function')
+def crustal_inv_data() -> dict:
+    return json.loads(crustal_input_filepath.read_text())
 
 def test_from_json_file():
     """We can load the example input file."""
@@ -83,3 +88,23 @@ def test_missing_weights(subduction_inv_data_noweights, extra_data):
         SubductionInversionArgs(**subduction_inv_data_noweights)
         assert "must set all parameters" in str(e.value)
 
+
+def test_crustal_input():
+    """We can load the crustal example input file."""
+
+    inv_args = CrustalInversionArgs.from_json_file(crustal_input_filepath)
+    assert inv_args
+
+def test_paleo_complete(crustal_inv_data):
+    """If one paleo parameter is set, they all must be set."""
+    del crustal_inv_data['task']['paleo_rate_constraint_weight']
+    with pytest.raises(ValidationError) as e:
+        CrustalInversionArgs(**crustal_inv_data)
+        assert "must set all parameters" in str(e.value)
+
+def test_crustal_tasks(crustal_inv_data):
+    """We can iterate over tasks."""
+    inv_args = CrustalInversionArgs(**crustal_inv_data)
+    for count, task in enumerate(inv_args.get_tasks()):
+        pass
+    assert count + 1 == 6
