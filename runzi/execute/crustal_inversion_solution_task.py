@@ -85,7 +85,7 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
         if self.user_args.task.mfd[0].enable_tvz:
             self.inversion_runner.setEnableTvzMFDs(True)
 
-        self.inversion_runner.setMinMags(self.user_args.task.min_mag_sans[0], self.user_args.task.min_mag_tvz[0])
+        self.inversion_runner.setMinMags(self.user_args.task.mag_range[0].min_mag_sans, self.user_args.task.mag_range[0].min_mag_tvz)
         self.inversion_runner.setMaxMags(
             self.user_args.task.max_mag_type[0],
             self.user_args.task.mag_range[0].max_mag_sans,

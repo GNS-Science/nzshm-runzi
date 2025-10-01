@@ -209,8 +209,6 @@ class CrustalTaskArgs(InversionTaskArgs):
 
     scaling_c_val: Sequence[ScalingC | None] = DEFAULT_FIELD
 
-    min_mag_sans: Sequence[float]
-    min_mag_tvz: Sequence[float]
     max_mag_type: Sequence[str]
     mag_range: Sequence[MagRange]
 
