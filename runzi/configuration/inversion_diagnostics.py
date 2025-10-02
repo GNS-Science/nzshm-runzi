@@ -1,6 +1,7 @@
 import os
 import stat
 from pathlib import PurePath
+from pydantic import BaseModel
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (
@@ -24,14 +25,27 @@ from runzi.automation.scaling.local_config import (
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.execute import inversion_diags_report_task
 from runzi.util.aws import get_ecs_job_config
+from runzi.automation.scaling.local_config import API_KEY
+from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.automation.scaling.file_utils import download_files, get_output_file_ids
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 MAX_JOB_TIME_SECS = 60 * 30  # Change this soon
 
+class InversionReportSystemArgs(BaseModel):
+    java_gateway_port: int
 
-def generate_tasks_or_configs(general_task_id, solutions):
-    work_path = '/WORKING' if CLUSTER_MODE == EnvMode['AWS'] else WORK_PATH
-    task_count = 0
+class InversionReportArgs(BaseModel):
+    file_id: str
+    build_plots: bool
+    build_report_level: str | None
+
+
+def generate_tasks_or_configs(general_task_id: str):
+
+    headers = {"x-api-key": API_KEY}
+    file_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+    file_generator = get_output_file_ids(file_api, general_task_id)
 
     factory_class = get_factory(CLUSTER_MODE)
     task_factory = factory_class(
@@ -46,9 +60,7 @@ def generate_tasks_or_configs(general_task_id, solutions):
         jvm_heap_start=JVM_HEAP_START,
     )
 
-    for sid, solution_info in solutions.items():
-
-        task_count += 1
+    for task_count, solution in enumerate(file_generator.values()):
 
         # get FM name
         fault_model = solution_info['info'].get('fault_model', "")
@@ -60,7 +72,6 @@ def generate_tasks_or_configs(general_task_id, solutions):
             file_path=solution_info['filepath'],
             fault_model=fault_model,
         )
-        # print(task_arguments)
 
         job_arguments = dict(
             task_id=task_count,
@@ -74,6 +85,16 @@ def generate_tasks_or_configs(general_task_id, solutions):
             build_mfd_plots=BUILD_PLOTS,
             build_report_level=REPORT_LEVEL,
         )
+
+        system_args = InversionReportSystemArgs()
+
+        print()
+        print("task_arguments:")
+        print(task_arguments)
+        print()
+        print("job_arguments:")
+        print(job_arguments)
+        assert 0
 
         if CLUSTER_MODE == EnvMode['AWS']:
             del job_arguments['root_folder']

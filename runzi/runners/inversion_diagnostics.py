@@ -30,8 +30,6 @@ def run_inversion_diagnostics(general_task_id: str):
         else:
             check_call(['bash', script_name])
 
-    headers = {"x-api-key": API_KEY}
-    file_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
     # BUILD_PLOTS = True
     # REPORT_LEVEL = 'DEFAULT' # None, 'LIGHT', 'DEFAULT', 'FULL'
@@ -41,18 +39,8 @@ def run_inversion_diagnostics(general_task_id: str):
             service_name='batch', region_name='us-east-1', endpoint_url='https://batch.us-east-1.amazonaws.com'
         )
 
-    file_generator = get_output_file_ids(file_api, general_task_id)
-    solutions = download_files(
-        file_api,
-        file_generator,
-        str(WORK_PATH),
-        overwrite=False,
-        skip_existing=False,
-        skip_download=(CLUSTER_MODE == EnvMode['AWS']),
-    )
-
     scripts = []
-    for script_file in generate_tasks_or_configs(general_task_id, solutions):
+    for script_file in generate_tasks_or_configs(general_task_id):
         print('scheduling: ', script_file)
         scripts.append(script_file)
 
