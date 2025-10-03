@@ -1,6 +1,5 @@
 title = "Scaling Crustal (geodetic slip, TD)"
 description =  "Scale Crustal by 0.66, 1.0, 1.41"
-worker_pool_size = 11
 models=["SBD_0_2_PUY_15"]
 min_aspect_ratios=[2.0, 3.1]
 max_aspect_ratios=[5.0]
