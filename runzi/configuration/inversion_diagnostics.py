@@ -1,7 +1,6 @@
 import os
 import stat
 from pathlib import PurePath
-from pydantic import BaseModel
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (
@@ -24,6 +23,8 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.execute import inversion_diags_report_task
+from runzi.runners.runner_inputs import InversionReportSystemArgs
+from runzi.runners.runner_inputs import InversionReportArgs
 from runzi.util.aws import get_ecs_job_config
 from runzi.automation.scaling.local_config import API_KEY
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -32,20 +33,12 @@ from runzi.automation.scaling.file_utils import download_files, get_output_file_
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 MAX_JOB_TIME_SECS = 60 * 30  # Change this soon
 
-class InversionReportSystemArgs(BaseModel):
-    java_gateway_port: int
-
-class InversionReportArgs(BaseModel):
-    file_id: str
-    build_plots: bool
-    build_report_level: str | None
-
-
 def generate_tasks_or_configs(general_task_id: str):
 
     headers = {"x-api-key": API_KEY}
     file_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
     file_generator = get_output_file_ids(file_api, general_task_id)
+    work_path = PurePath('/WORKING') if CLUSTER_MODE is EnvMode.AWS else WORK_PATH
 
     factory_class = get_factory(CLUSTER_MODE)
     task_factory = factory_class(
@@ -60,51 +53,28 @@ def generate_tasks_or_configs(general_task_id: str):
         jvm_heap_start=JVM_HEAP_START,
     )
 
-    for task_count, solution in enumerate(file_generator.values()):
-
-        # get FM name
-        fault_model = solution_info['info'].get('fault_model', "")
+    for task_count, solution in enumerate(file_generator):
+        fault_model = solution.get('fault_model', '')
         if HACK_FAULT_MODEL:
             fault_model = HACK_FAULT_MODEL
 
-        task_arguments = dict(
-            file_id=str(solution_info['id']),
-            file_path=solution_info['filepath'],
-            fault_model=fault_model,
-        )
-
-        job_arguments = dict(
-            task_id=task_count,
-            # round = round,
-            java_threads=JAVA_THREADS,
-            java_gateway_port=task_factory.get_next_port(),
-            working_path=str(work_path),
-            root_folder=OPENSHA_ROOT,
-            general_task_id=general_task_id,
-            use_api=USE_API,
+        task_args = InversionReportArgs(
+            solution_id=solution['id'],
             build_mfd_plots=BUILD_PLOTS,
             build_report_level=REPORT_LEVEL,
+            fault_model=fault_model,
+            general_task_id=general_task_id,
         )
-
-        system_args = InversionReportSystemArgs()
-
-        print()
-        print("task_arguments:")
-        print(task_arguments)
-        print()
-        print("job_arguments:")
-        print(job_arguments)
-        assert 0
+        task_system_args = InversionReportSystemArgs(java_gateway_port=task_factory.get_next_port(), task_id=task_count)
 
         if CLUSTER_MODE == EnvMode['AWS']:
-            del job_arguments['root_folder']
             job_name = f"Runzi-automation-inversion_diagnostic-{task_count}"
-            config_data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
 
             yield get_ecs_job_config(
                 job_name,
-                solution_info['id'],
-                config_data,
+                solution['id'],
+                task_args,
+                task_system_args,
                 toshi_api_url=API_URL,
                 toshi_s3_url=S3_URL,
                 toshi_report_bucket=S3_REPORT_BUCKET,
@@ -116,7 +86,7 @@ def generate_tasks_or_configs(general_task_id: str):
 
         else:
             # write a config
-            task_factory.write_task_config(task_arguments, job_arguments)
+            task_factory.write_task_config(task_args, task_system_args)
 
             script = task_factory.get_task_script()
 
@@ -129,59 +99,3 @@ def generate_tasks_or_configs(general_task_id: str):
             os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
             yield str(script_file_path)
-            # return
-
-
-# if __name__ == "__main__":
-#     t0 = dt.datetime.utcnow()
-
-#     GENERAL_TASK_ID = None
-#     # If you wish to override something in the main config, do so here ..
-#     WORKER_POOL_SIZE = 3
-#     JVM_HEAP_MAX = 12
-#     JAVA_THREADS = 4
-#     # USE_API = True #to read the ruptset form the API
-
-
-#     #If using API give this task a descriptive setting...
-#     TASK_TITLE = "Inversion diags"
-#     TASK_DESCRIPTION = """
-#     """
-
-#     def call_script(script_name):
-#         print("call_script with:", script_name)
-#         if CLUSTER_MODE:
-#             check_call(['qsub', script_name])
-#         else:
-#             check_call(['bash', script_name])
-
-#     headers={"x-api-key":API_KEY}
-#     file_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-
-#     BUILD_PLOTS = True
-#     REPORT_LEVEL = 'DEFAULT' # None, 'LIGHT', 'DEFAULT', 'FULL'
-
-#     pool = Pool(WORKER_POOL_SIZE)
-#     for inversion_task_id in ["R2VuZXJhbFRhc2s6NDY5NkdnUWpj"]:
-# #"R2VuZXJhbFRhc2s6Mjc4OXphVmN2"]: #, "R2VuZXJhbFRhc2s6MjY4M1FGajVh"]:
-#         #get input files from API
-#         file_generator = get_output_file_ids(file_api, inversion_task_id) #
-#         solutions = download_files(file_api, file_generator, str(work_path), overwrite=False, skip_existing=False)
-
-#         print("GENERAL_TASK_ID:", GENERAL_TASK_ID)
-
-#         #print('SOLUTIONS', solutions)
-#         scripts = []
-#         for script_file in generate_tasks_or_configs(GENERAL_TASK_ID, solutions):
-#             print('scheduling: ', script_file)
-#             scripts.append(script_file)
-
-#         print('task count: ', len(scripts))
-#         pool.map(call_script, scripts)
-
-#     print('worker count: ', WORKER_POOL_SIZE)
-
-#     pool.close()
-#     pool.join()
-
-#     print("Done! in %s secs" % (dt.datetime.utcnow() - t0).total_seconds())

@@ -11,20 +11,6 @@ from pydantic import BaseModel
 from typing_extensions import Self
 
 
-def get_task_config(task_args: BaseModel, task_system_args: BaseModel) -> dict:
-    """Package user inputs and generated system args into a dict for transport.
-
-    Args:
-        task_args: Any Pydantic model that contains the user inputs for a task.
-        task_system_args: Any Pydantic model that contains the auto-generating inputs for a task.
-
-    returns:
-        A dictionary with keys 'task_args' and 'task_system_args' and values that are the output of
-            model_dump() of the Pydantic model objects.
-    """
-    return dict(task_args=task_args.model_dump(mode='json'), task_system_args=task_system_args.model_dump(mode='json'))
-
-
 class InputBase(BaseModel):
     """Base class for input Pydantic classes."""
 
@@ -79,3 +65,16 @@ class InputBase(BaseModel):
             Path(json_file).write_text(json_str)
         else:
             json_file.write(json_str)
+
+
+class InversionReportSystemArgs(BaseModel):
+    java_gateway_port: int
+    task_id: int
+
+
+class InversionReportArgs(BaseModel):
+    solution_id: str
+    build_mfd_plots: bool
+    build_report_level: str | None
+    fault_model: str | None
+    general_task_id: str

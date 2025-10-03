@@ -22,7 +22,7 @@ from typing import Optional, TypeVar
 from pydantic import BaseModel
 
 from runzi.runners.inversion_inputs import InversionArgs
-from runzi.runners.runner_inputs import get_task_config
+from runzi.automation.scaling.task_config import get_task_config
 
 from .local_config import EnvMode
 

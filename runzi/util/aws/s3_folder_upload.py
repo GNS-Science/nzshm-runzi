@@ -16,10 +16,10 @@ logging.basicConfig(level="INFO")
 S3_REPORT_BUCKET_ROOT = 'opensha/DATA'
 
 
-def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT, force_upload=False):
-    info(f"Beginning bucket upload... to {bucket}/{root_path}/{id}")
-    t0 = dt.datetime.utcnow()
-    local_directory = WORK_PATH + '/' + id
+def upload_to_bucket(toshi_id: str, bucket: str, root_path=S3_REPORT_BUCKET_ROOT, force_upload=False):
+    info(f"Beginning bucket upload... to {bucket}/{root_path}/{toshi_id}")
+    t0 = dt.datetime.now()
+    local_directory = WORK_PATH / toshi_id
     session = boto3.session.Session()
     client = session.client('s3')
     file_list = []
@@ -28,7 +28,7 @@ def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT, force_upload=F
 
             local_path = os.path.join(root, filename)
             relative_path = os.path.relpath(local_path, local_directory)
-            s3_path = os.path.join(root_path, id, relative_path)
+            s3_path = os.path.join(root_path, toshi_id, relative_path)
 
             file_list.append((local_path, bucket, s3_path))
 
@@ -68,7 +68,7 @@ def upload_to_bucket(id, bucket, root_path=S3_REPORT_BUCKET_ROOT, force_upload=F
 
     pool.close()
     pool.join()
-    info("Done! uploaded %s in %s secs" % (len(file_list), (dt.datetime.utcnow() - t0).total_seconds()))
+    info("Done! uploaded %s in %s secs" % (len(file_list), (dt.datetime.now() - t0).total_seconds()))
     cleanup(local_directory)
 
 

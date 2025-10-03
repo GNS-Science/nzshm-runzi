@@ -14,7 +14,7 @@ import boto3
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
-from runzi.runners.runner_inputs import get_task_config
+from runzi.automation.scaling.task_config import get_task_config
 
 BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')
 
