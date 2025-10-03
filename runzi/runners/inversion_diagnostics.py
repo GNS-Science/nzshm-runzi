@@ -4,19 +4,8 @@ from subprocess import check_call
 
 import boto3
 
-from runzi.automation.scaling.file_utils import download_files, get_output_file_ids
-
 # Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import (
-    API_KEY,
-    API_URL,
-    CLUSTER_MODE,
-    S3_URL,
-    WORK_PATH,
-    WORKER_POOL_SIZE,
-    EnvMode,
-)
-from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.automation.scaling.local_config import CLUSTER_MODE, WORKER_POOL_SIZE, EnvMode
 from runzi.configuration.inversion_diagnostics import generate_tasks_or_configs
 
 
@@ -29,7 +18,6 @@ def run_inversion_diagnostics(general_task_id: str):
             check_call(['qsub', script_name])
         else:
             check_call(['bash', script_name])
-
 
     # BUILD_PLOTS = True
     # REPORT_LEVEL = 'DEFAULT' # None, 'LIGHT', 'DEFAULT', 'FULL'

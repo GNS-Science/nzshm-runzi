@@ -1,5 +1,4 @@
 import argparse
-from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 import datetime as dt
 import json
 import time
@@ -9,12 +8,13 @@ from pathlib import Path, PurePath
 import git
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
-from runzi.automation.scaling.local_config import S3_REPORT_BUCKET, WORK_PATH, API_KEY, S3_URL, API_URL
-from runzi.runners.runner_inputs import InversionReportSystemArgs
-from runzi.util.aws.s3_folder_upload import upload_to_bucket
-from runzi.util.build_named_fault_mfd_index import build_named_fault_mfd_index
-from runzi.runners.runner_inputs import InversionReportArgs
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
+from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.runners.runner_inputs import InversionReportArgs, InversionReportSystemArgs
+from runzi.util.aws.s3_folder_upload import upload_to_bucket
+
+# from runzi.util.build_named_fault_mfd_index import build_named_fault_mfd_index
 
 
 class BuilderTask:
@@ -47,7 +47,14 @@ class BuilderTask:
         meta_folder.mkdir(parents=True, exist_ok=True)
         # dump the job metadata
         with open(Path(meta_folder, "metadata.json"), "w") as write_file:
-            json.dump(dict(user_args=self.user_args.model_dump(mode='json'), system_args=self.system_args.model_dump(mode='json')), write_file, indent=4)
+            json.dump(
+                dict(
+                    user_args=self.user_args.model_dump(mode='json'),
+                    system_args=self.system_args.model_dump(mode='json'),
+                ),
+                write_file,
+                indent=4,
+            )
 
         if self.user_args.build_mfd_plots:
             self.build_mfd_plots()
@@ -112,7 +119,6 @@ if __name__ == "__main__":
     except FileNotFoundError:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
-
 
     # print(config)
     user_args = InversionReportArgs(**config['task_args'])

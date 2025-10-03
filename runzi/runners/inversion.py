@@ -6,10 +6,18 @@ from subprocess import check_call
 import boto3
 
 # Set up your local config, from environment variables, with some sone defaults
-from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, EnvMode, WORKER_POOL_SIZE
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    S3_URL,
+    USE_API,
+    WORKER_POOL_SIZE,
+    EnvMode,
+)
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
 from runzi.configuration.inversions import build_inversion_tasks
-from runzi.runners.inversion_inputs import InversionSystemArgs, SubductionInversionArgs, InversionArgs
+from runzi.runners.inversion_inputs import InversionArgs, InversionSystemArgs
 
 
 def run_inversion(inversion_args: InversionArgs) -> str | None:
@@ -23,7 +31,7 @@ def run_inversion(inversion_args: InversionArgs) -> str | None:
     #     build_tasks = build_subduction_tasks
     # elif inversion_args.general.model_type is ModelType.CRUSTAL:
     #     build_tasks = build_crustal_tasks
-    # if :   
+    # if :
     #     raise ValueError("model type must be SUBDUCTION or CRUSTAL")
 
     headers = {"x-api-key": API_KEY}

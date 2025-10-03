@@ -1,18 +1,20 @@
 """This module provides the Pydantic class for defining inversion job inputs."""
 
 from itertools import product
-from pathlib import Path
 from typing import Any, Generator, Literal, Optional, Sequence
-from typing_extensions import Self
 
-from pydantic import BaseModel, FilePath, ValidationInfo, field_serializer, field_validator, DirectoryPath, model_validator
+from pydantic import BaseModel, ValidationInfo, field_serializer, field_validator, model_validator
+from typing_extensions import Self
 
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.runners.runner_inputs import InputBase
 
 # Because we use field[0] for the value of the field in the inversion task we need a sentinal for "not set".
 # We use [None,] for this.
-DEFAULT_FIELD = [None,]
+DEFAULT_FIELD = [
+    None,
+]
+
 
 def all_or_none(params: list) -> bool:
     """Checks that either all or none of the parameters have been set."""
@@ -20,6 +22,7 @@ def all_or_none(params: list) -> bool:
     if (not all(is_default)) and (any(is_default)):
         return False
     return True
+
 
 class InversionSystemArgs(BaseModel):
     java_gateway_port: int = 0
@@ -110,7 +113,7 @@ class InversionTaskArgs(BaseModel):
     deformation_model: Sequence[str]
 
     # N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated
-    mfd: Sequence[MFD | None] = DEFAULT_FIELD  
+    mfd: Sequence[MFD | None] = DEFAULT_FIELD
 
     # if true, must also have uncertainty weighting for mfd and slip rate
     reweight: Sequence[bool | None] = DEFAULT_FIELD
@@ -140,7 +143,7 @@ class InversionTaskArgs(BaseModel):
     def _check_reweight(self) -> Self:
         """If re-weighting, must use uncertinaty weighted constraints"""
         if self.reweight != DEFAULT_FIELD:
-            if (self.mfd_uncertainty_weight == DEFAULT_FIELD) and (self.slip_rate_uncertainty_weight ==  DEFAULT_FIELD):
+            if (self.mfd_uncertainty_weight == DEFAULT_FIELD) and (self.slip_rate_uncertainty_weight == DEFAULT_FIELD):
                 raise ValueError("Re-weigting requires use of uncertainty weighted constraints for MFD and slip rate")
         return self
 
@@ -156,7 +159,10 @@ class InversionTaskArgs(BaseModel):
         """If using eq/ineq MFD constraint, must specify all parameters."""
         params = [self.mfd_equality_weight, self.mfd_inequality_weight, self.mfd_eq_ineq_transition_mag]
         if not all_or_none(params):
-            raise ValueError("If using equality/inequality MFD constraints, must set all parameters (equality weight, inequality weight, transition mag)")
+            raise ValueError(
+                "If using equality/inequality MFD constraints, must set all parameters (equality weight, "
+                "inequality weight, transition mag)"
+            )
         return self
 
     @model_validator(mode='after')
@@ -164,9 +170,11 @@ class InversionTaskArgs(BaseModel):
         """If using uncertainty weighted MFD constraint, must specify all parameters."""
         params = [self.mfd_uncertainty_weight, self.mfd_uncertainty_power, self.mfd_uncertainty_scalar]
         if not all_or_none(params):
-            raise ValueError("If using uncertainty weighted MFD constraints, must set all parameters (weight, power, and scalar)")
+            raise ValueError(
+                "If using uncertainty weighted MFD constraints, must set all parameters (weight, power, and scalar)"
+            )
         return self
-    
+
     @model_validator(mode='after')
     def _check_slip_constraint(self) -> Self:
         """Choose either uncertainty weighted or 'regular' slip constraints, not both."""
@@ -179,15 +187,21 @@ class InversionTaskArgs(BaseModel):
         """If using 'regular' slip rate constraint, must specify all parameters."""
         params = [self.slip_rate_weighting_type, self.slip_rate_normalized_weight, self.slip_rate_unnormalized_weight]
         if not all_or_none(params):
-            raise ValueError("If using uncertainty weighted slip rate constraints, must set all parameters (slip weighting type, normalized weight, unnormalized weight")
+            raise ValueError(
+                "If using uncertainty weighted slip rate constraints, must set all parameters (slip "
+                "weighting type, normalized weight, unnormalized weight"
+            )
         return self
-        
+
     @model_validator(mode='after')
     def _check_slip_unc_complete(self) -> Self:
         """If using uncertainty weighted slip rate constraint, must specify all parameters."""
         params = [self.use_slip_scaling, self.slip_rate_uncertainty_weight, self.slip_uncertainty_scaling_factor]
         if not all_or_none(params):
-            raise ValueError("If using uncertainty weighted slip rate constraints, must set all parameters (slip scaling boolean, weight, and scaling factor)")
+            raise ValueError(
+                "If using uncertainty weighted slip rate constraints, must set all parameters (slip "
+                "scaling boolean, weight, and scaling factor)"
+            )
         return self
 
     def get_tasks(self) -> Generator[Self, None, None]:
@@ -196,7 +210,6 @@ class InversionTaskArgs(BaseModel):
         for task_combination in product(*values):
             task_args = {name: [ta] for name, ta in zip(names, task_combination)}
             yield self.model_validate(task_args)
-
 
 
 class SubductionTaskArgs(InversionTaskArgs):
@@ -222,12 +235,19 @@ class CrustalTaskArgs(InversionTaskArgs):
     @model_validator(mode='after')
     def _check_paleo_constraint(self) -> Self:
         """If using paleo constraint, must specify all parameters."""
-        params = [self.paleo_rate_constraint_weight, self.paleo_parent_rate_smoothness_constraint_weight, self.paleo_rate_constraint, self.paleo_probability_model]
+        params = [
+            self.paleo_rate_constraint_weight,
+            self.paleo_parent_rate_smoothness_constraint_weight,
+            self.paleo_rate_constraint,
+            self.paleo_probability_model,
+        ]
         is_default = [param == DEFAULT_FIELD for param in params]
         if (not all(is_default)) and (any(is_default)):
-            raise ValueError("If using paleo constraints, must set all parameters (weight, smoothness weight, constrant enum, probability model)")
+            raise ValueError(
+                "If using paleo constraints, must set all parameters (weight, smoothness weight, "
+                "constrant enum, probability model)"
+            )
         return self
-
 
 
 # TODO: do we need this? Work through the other OpenSHA tasks (e.g. reports) to find out
@@ -237,7 +257,6 @@ class OpenshaArgs(InputBase):
 
 class InversionArgs(OpenshaArgs):
     task: InversionTaskArgs
-
 
     def get_tasks(self) -> Generator[Self, None, None]:
         for task in self.task.get_tasks():
@@ -258,6 +277,7 @@ class SubductionInversionArgs(InversionArgs):
         if self.general.model_type is not ModelType.SUBDUCTION:
             raise ValueError("Model type must be SUBDUCTION for SubductionInversionArgs")
         return self
+
 
 # WIP
 class CrustalInversionArgs(InversionArgs):

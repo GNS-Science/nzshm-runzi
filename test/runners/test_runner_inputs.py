@@ -54,7 +54,7 @@ class_filename = [
 def test_input_class(cls, filename):
     input_filepath = fixtures_path / filename
     data = get_dict_from_toml(input_filepath)
-    job_input = cls.from_toml(input_filepath)
+    job_input = cls.from_toml_file(input_filepath)
     job_input_asdict = job_input.model_dump()
     for k, v in data.items():
         assert job_input_asdict[k] == v

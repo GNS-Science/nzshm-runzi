@@ -1,7 +1,7 @@
 import os
 import stat
 from pathlib import PurePath
-from typing import TYPE_CHECKING, cast, Generator, Any
+from typing import Any, Generator, cast
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (
@@ -19,16 +19,23 @@ from runzi.automation.scaling.local_config import (
     EnvMode,
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.execute import subduction_inversion_solution_task, crustal_inversion_solution_task
-from runzi.runners.inversion_inputs import InversionSystemArgs, SubductionInversionArgs, InversionArgs, CrustalInversionArgs
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
+from runzi.automation.scaling.toshi_api import ModelType
+from runzi.execute import crustal_inversion_solution_task, subduction_inversion_solution_task
+from runzi.runners.inversion_inputs import (
+    CrustalInversionArgs,
+    InversionArgs,
+    InversionSystemArgs,
+    SubductionInversionArgs,
+)
 from runzi.util.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 # JAVA_THREADS = 4
 
 
-def build_inversion_tasks(inversion_args: InversionArgs, system_args: InversionSystemArgs) -> Generator[dict[str, Any] | str, None, None]:
+def build_inversion_tasks(
+    inversion_args: InversionArgs, system_args: InversionSystemArgs
+) -> Generator[dict[str, Any] | str, None, None]:
 
     if inversion_args.general.model_type is ModelType.SUBDUCTION:
         task_module = subduction_inversion_solution_task
@@ -71,7 +78,7 @@ def build_inversion_tasks(inversion_args: InversionArgs, system_args: InversionS
             if inversion_args.general.model_type is not ModelType.SUBDUCTION:
                 job_name = f"Runzi-automation-subduction_inversions-{task_count}"
             elif inversion_args.general.model_type is ModelType.CRUSTAL:
-                job_name = f"Runzi-automation-crustal_inversions-{task_count}" 
+                job_name = f"Runzi-automation-crustal_inversions-{task_count}"
 
             yield get_ecs_job_config(
                 job_name,
@@ -102,4 +109,3 @@ def build_inversion_tasks(inversion_args: InversionArgs, system_args: InversionS
             os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
 
             yield str(script_file_path)
-        

@@ -1,15 +1,12 @@
 import argparse
 import json
-import time
 import urllib.parse
 from typing import TYPE_CHECKING, cast
 
 import git
 
-from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
-from runzi.runners.inversion_inputs import CrustalInversionArgs, InversionArgs, InversionSystemArgs
-
 from runzi.execute.inversion_solution_builder import InversionSolutionBuilder
+from runzi.runners.inversion_inputs import CrustalInversionArgs, InversionSystemArgs
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
@@ -85,7 +82,9 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
         if self.user_args.task.mfd[0].enable_tvz:
             self.inversion_runner.setEnableTvzMFDs(True)
 
-        self.inversion_runner.setMinMags(self.user_args.task.mag_range[0].min_mag_sans, self.user_args.task.mag_range[0].min_mag_tvz)
+        self.inversion_runner.setMinMags(
+            self.user_args.task.mag_range[0].min_mag_sans, self.user_args.task.mag_range[0].min_mag_tvz
+        )
         self.inversion_runner.setMaxMags(
             self.user_args.task.max_mag_type[0],
             self.user_args.task.mag_range[0].max_mag_sans,

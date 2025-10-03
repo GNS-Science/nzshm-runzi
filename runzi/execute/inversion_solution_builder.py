@@ -1,16 +1,12 @@
-import argparse
 import datetime as dt
-import json
 import logging
 import platform
 import time
-import urllib.parse
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import PurePath
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
-import git
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway, JavaObject
@@ -18,7 +14,7 @@ from py4j.java_gateway import GatewayParameters, JavaGateway, JavaObject
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_INVERSION, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
-from runzi.runners.inversion_inputs import InversionArgs, InversionSystemArgs, InversionTaskArgs, SubductionTaskArgs
+from runzi.runners.inversion_inputs import InversionArgs, InversionSystemArgs
 
 logging.basicConfig(level=logging.INFO)
 
@@ -174,7 +170,8 @@ class InversionSolutionBuilder(ABC):
                     task_type="INVERSION",
                     model_type=self.user_args.general.model_type.name.upper(),
                 ),
-                arguments=self.user_args.model_dump(),  # TODO: should we flatten dict? See https://weka-test.gns.cri.nz/Task/QXV0b21hdGlvblRhc2s6MTAxNzc5
+                # TODO: should we flatten dict? See https://weka-test.gns.cri.nz/Task/QXV0b21hdGlvblRhc2s6MTAxNzc5
+                arguments=self.user_args.model_dump(),
                 environment=environment,
             )
 

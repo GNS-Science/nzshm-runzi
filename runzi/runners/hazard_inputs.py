@@ -17,6 +17,7 @@ from pydantic import (
     model_validator,
 )
 from toshi_hazard_store.model import AggregationEnum
+
 try:
     from toshi_hazard_store.scripts.ths_import import chc_manager
 except ImportError:

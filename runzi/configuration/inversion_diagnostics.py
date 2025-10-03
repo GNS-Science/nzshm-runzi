@@ -2,14 +2,16 @@ import os
 import stat
 from pathlib import PurePath
 
+from runzi.automation.scaling.file_utils import get_output_file_ids
+
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (
+    API_KEY,
     API_URL,
     BUILD_PLOTS,
     CLUSTER_MODE,
     FATJAR,
     HACK_FAULT_MODEL,
-    JAVA_THREADS,
     JVM_HEAP_MAX,
     JVM_HEAP_START,
     OPENSHA_JRE,
@@ -17,21 +19,18 @@ from runzi.automation.scaling.local_config import (
     REPORT_LEVEL,
     S3_REPORT_BUCKET,
     S3_URL,
-    USE_API,
     WORK_PATH,
     EnvMode,
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.execute import inversion_diags_report_task
-from runzi.runners.runner_inputs import InversionReportSystemArgs
-from runzi.runners.runner_inputs import InversionReportArgs
-from runzi.util.aws import get_ecs_job_config
-from runzi.automation.scaling.local_config import API_KEY
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.file_utils import download_files, get_output_file_ids
+from runzi.execute import inversion_diags_report_task
+from runzi.runners.runner_inputs import InversionReportArgs, InversionReportSystemArgs
+from runzi.util.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 MAX_JOB_TIME_SECS = 60 * 30  # Change this soon
+
 
 def generate_tasks_or_configs(general_task_id: str):
 
