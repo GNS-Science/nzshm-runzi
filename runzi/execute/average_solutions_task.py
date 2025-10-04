@@ -13,6 +13,7 @@ from solvis import InversionSolution
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import SubtaskType
+from runzi.runners import AverageSolutionsInput
 
 
 class BuilderTask:
@@ -32,7 +33,7 @@ class BuilderTask:
 
     def run(self, task_arguments, job_arguments):
 
-        t0 = dt.datetime.utcnow()
+        t0 = dt.datetime.now()
 
         environment = {}
 
@@ -70,7 +71,7 @@ class BuilderTask:
             # record the complteded task
             done_args = {
                 'task_id': task_id,
-                'duration': (dt.datetime.utcnow() - t0).total_seconds(),
+                'duration': (dt.datetime.now() - t0).total_seconds(),
                 'result': "SUCCESS",
                 'state': "DONE",
             }
@@ -151,6 +152,8 @@ if __name__ == "__main__":
     except FileNotFoundError:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
+    
+    user_args = AverageSolutionsInput(**config['task_args'])
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(config['job_arguments']['task_id'])

@@ -24,9 +24,9 @@ from runzi.execute import crustal_inversion_solution_task, subduction_inversion_
 from runzi.runners.inversion_inputs import (
     CrustalInversionArgs,
     InversionArgs,
-    InversionSystemArgs,
     SubductionInversionArgs,
 )
+from runzi.runners.runner_inputs import SystemArgs
 from runzi.util.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
@@ -34,7 +34,7 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 
 
 def build_inversion_tasks(
-    inversion_args: InversionArgs, system_args: InversionSystemArgs
+    inversion_args: InversionArgs, system_args: SystemArgs
 ) -> Generator[dict[str, Any] | str, None, None]:
 
     if inversion_args.general.model_type is ModelType.SUBDUCTION:

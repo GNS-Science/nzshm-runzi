@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING, cast
 import git
 
 from runzi.execute.inversion_solution_builder import InversionSolutionBuilder
-from runzi.runners.inversion_inputs import CrustalInversionArgs, InversionSystemArgs
+from runzi.runners.inversion_inputs import CrustalInversionArgs
+from runzi.runners.runner_inputs import SystemArgs
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
@@ -116,7 +117,7 @@ def main():
         config = json.loads(urllib.parse.unquote(args.config))
 
     user_args = CrustalInversionArgs(**config['task_args'])
-    system_args = InversionSystemArgs(**config['task_system_args'])
+    system_args = SystemArgs(**config['task_system_args'])
     inversion_solution_builder = CrustalInversionSolutionBuilder(user_args, system_args)
 
     inversion_solution_builder.run()

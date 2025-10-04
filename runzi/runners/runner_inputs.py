@@ -4,7 +4,7 @@ TOML files can be used to initialize the classes using the from_toml method.
 """
 
 from pathlib import Path
-from typing import TextIO
+from typing import TextIO, Optional
 
 import tomlkit
 from pydantic import BaseModel
@@ -67,14 +67,17 @@ class InputBase(BaseModel):
             json_file.write(json_str)
 
 
-class InversionReportSystemArgs(BaseModel):
-    java_gateway_port: int
-    task_id: int
-
-
 class InversionReportArgs(BaseModel):
     solution_id: str
     build_mfd_plots: bool
     build_report_level: str | None
     fault_model: str | None
     general_task_id: str
+
+
+class SystemArgs(BaseModel):
+    java_gateway_port: int = 0
+    general_task_id: Optional[str] = None
+    task_count: int = 0
+    java_threads: int = 0
+    use_api: bool = False

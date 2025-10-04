@@ -14,7 +14,8 @@ from py4j.java_gateway import GatewayParameters, JavaGateway, JavaObject
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_INVERSION, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
-from runzi.runners.inversion_inputs import InversionArgs, InversionSystemArgs
+from runzi.runners.inversion_inputs import InversionArgs
+from runzi.runners.runner_inputs import SystemArgs
 
 logging.basicConfig(level=logging.INFO)
 
@@ -34,7 +35,7 @@ class InversionSolutionBuilder(ABC):
     Configure the python client for a InversionTask
     """
 
-    def __init__(self, user_args: InversionArgs, system_args: InversionSystemArgs):
+    def __init__(self, user_args: InversionArgs, system_args: SystemArgs):
 
         self.user_args = user_args
         self.system_args = system_args

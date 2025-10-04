@@ -19,7 +19,6 @@ class AverageSolutionsInput(InputBase):
 
     solution_groups: list[list[str]]
 
-
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     scripts = []
     for script_file in build_average_tasks(new_gt_id, task_type, model_type, args, toshi_api):

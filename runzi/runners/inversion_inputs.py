@@ -24,14 +24,6 @@ def all_or_none(params: list) -> bool:
     return True
 
 
-class InversionSystemArgs(BaseModel):
-    java_gateway_port: int = 0
-    general_task_id: Optional[str] = None
-    task_count: int = 0
-    java_threads: int = 0
-    use_api: bool = False
-
-
 class GeneralArgs(BaseModel):
     subtask_type: SubtaskType
     model_type: ModelType

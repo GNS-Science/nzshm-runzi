@@ -17,12 +17,13 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
 from runzi.configuration.inversions import build_inversion_tasks
-from runzi.runners.inversion_inputs import InversionArgs, InversionSystemArgs
+from runzi.runners.inversion_inputs import InversionArgs
+from runzi.runners.runner_inputs import SystemArgs
 
 
 def run_inversion(inversion_args: InversionArgs) -> str | None:
     t0 = dt.datetime.now()
-    system_args = InversionSystemArgs()
+    system_args = SystemArgs()
 
     worker_pool_size = WORKER_POOL_SIZE
     if inversion_args.general.subtask_type is not SubtaskType.INVERSION:

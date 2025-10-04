@@ -25,7 +25,7 @@ from runzi.automation.scaling.local_config import (
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.execute import inversion_diags_report_task
-from runzi.runners.runner_inputs import InversionReportArgs, InversionReportSystemArgs
+from runzi.runners.runner_inputs import InversionReportArgs, SystemArgs
 from runzi.util.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
@@ -64,7 +64,7 @@ def generate_tasks_or_configs(general_task_id: str):
             fault_model=fault_model,
             general_task_id=general_task_id,
         )
-        task_system_args = InversionReportSystemArgs(java_gateway_port=task_factory.get_next_port(), task_id=task_count)
+        task_system_args = SystemArgs(java_gateway_port=task_factory.get_next_port(), task_count=task_count)
 
         if CLUSTER_MODE == EnvMode['AWS']:
             job_name = f"Runzi-automation-inversion_diagnostic-{task_count}"

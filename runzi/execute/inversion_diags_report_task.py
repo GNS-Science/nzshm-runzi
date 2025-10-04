@@ -11,7 +11,7 @@ from py4j.java_gateway import GatewayParameters, JavaGateway
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.runners.runner_inputs import InversionReportArgs, InversionReportSystemArgs
+from runzi.runners.runner_inputs import InversionReportArgs, SystemArgs
 from runzi.util.aws.s3_folder_upload import upload_to_bucket
 
 # from runzi.util.build_named_fault_mfd_index import build_named_fault_mfd_index
@@ -22,7 +22,7 @@ class BuilderTask:
     The python client for a Diagnostics Report
     """
 
-    def __init__(self, user_args: InversionReportArgs, system_args: InversionReportSystemArgs):
+    def __init__(self, user_args: InversionReportArgs, system_args: SystemArgs):
 
         # setup the java gateway binding
         self.user_args = user_args
@@ -122,13 +122,13 @@ if __name__ == "__main__":
 
     # print(config)
     user_args = InversionReportArgs(**config['task_args'])
-    system_args = InversionReportSystemArgs(**config['task_system_args'])
+    system_args = SystemArgs(**config['task_system_args'])
     task = BuilderTask(user_args, system_args)
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(5)
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(system_args.task_id)
+    time.sleep(system_args.task_count)
 
     task.run()
 
