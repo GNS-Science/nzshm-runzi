@@ -9,7 +9,7 @@ from pathlib import Path, PurePath
 from subprocess import check_call
 
 import scaling.azimuthal_rupture_set_builder_task
-import scaling.coulomb_rupture_set_builder_task
+import runzi.execute.coulomb_rupture_set_builder_task
 from dateutil.tz import tzutc
 from nshm_toshi_client.general_task import GeneralTask
 
