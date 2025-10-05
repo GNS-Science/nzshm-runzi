@@ -8,7 +8,6 @@ from multiprocessing.dummy import Pool
 from pathlib import Path
 from subprocess import check_call
 
-from pydantic import BaseModel
 
 from runzi.configuration.coulomb_rupture_sets import build_tasks
 from runzi.automation.scaling.local_config import (
@@ -19,7 +18,7 @@ from runzi.automation.scaling.local_config import (
     USE_API,
 )
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
-from runzi.runners.runner_inputs import InputBase
+from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
 
 logging.basicConfig(level=logging.INFO)
 
@@ -27,22 +26,6 @@ JVM_HEAP_MAX = 32
 JAVA_THREADS = 16
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 
-
-class CoulombRuptureSetsInput(InputBase):
-    """Input for generating Coulomb rupture sets."""
-
-    class DepthScaling(BaseModel):
-        tvz: float
-        sans: float
-
-    max_sections: int
-    models: list[str]
-    jump_limits: list[int]
-    adaptive_min_distances: list[int]
-    thinning_factors: list[float]
-    min_sub_sects_per_parents: list[int]
-    min_sub_sections_list: list[int]
-    depth_scaling: list[DepthScaling]
 
     # testing
     # return

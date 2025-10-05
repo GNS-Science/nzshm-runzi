@@ -6,11 +6,11 @@ import typer
 from rich import print as rich_print
 
 from runzi.runners import (
-    CoulombRuptureSetsInput,
     SubductionRuptureSetsInput,
     run_coulomb_rupture_sets,
     run_subduction_rupture_sets,
 )
+from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
 
 app = typer.Typer()
 

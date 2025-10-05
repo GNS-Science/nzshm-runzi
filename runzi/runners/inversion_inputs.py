@@ -281,3 +281,20 @@ class CrustalInversionArgs(InversionArgs):
         if self.general.model_type is not ModelType.CRUSTAL:
             raise ValueError("Model type must be CRUSTAL for CrustalInversionArgs")
         return self
+
+
+class CoulombRuptureSetsInput(InputBase):
+    """Input for generating Coulomb rupture sets."""
+
+    class DepthScaling(BaseModel):
+        tvz: float
+        sans: float
+
+    max_sections: int
+    models: list[str]
+    jump_limits: list[int]
+    adaptive_min_distances: list[int]
+    thinning_factors: list[float]
+    min_sub_sects_per_parents: list[int]
+    min_sub_sections_list: list[int]
+    depth_scaling: list[DepthScaling]
