@@ -11,27 +11,40 @@ The job is responsible for configuring and executing the python script
 """
 import json
 import os
+from pathlib import Path, PurePath
+from types import ModuleType
+from typing import Optional
+
+from pydantic import BaseModel
+
+from runzi.automation.scaling.task_config import get_task_config
 
 from .local_config import EnvMode
 
 
 class PythonTaskFactory:
 
-    def __init__(self, working_path, python_script_module, task_config_path=None, python='python3'):
+    def __init__(
+        self,
+        working_path: Path | PurePath | str,
+        python_script_module: ModuleType,
+        task_config_path: Optional[Path | PurePath | str] = None,
+        python: str = 'python3',
+    ):
 
-        self._config_path = task_config_path or os.getcwd()
-        self._python_script = os.path.abspath(python_script_module.__file__)
+        self._config_path = Path(task_config_path or Path.cwd())
+        self._python_script = os.path.abspath(python_script_module.__file__)  # type: ignore
         self._working_path = working_path
         self._python = str(python)
         self._next_task = 1
 
-    def write_task_config(self, task_arguments, job_arguments):
-        data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
-        fname = f"{self._config_path}/config.{self._next_task}.json"
-        with open(fname, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+    def write_task_config(self, task_arguments: BaseModel, task_system_args: BaseModel):
+        fname = self._config_path / f"config.{self._next_task}.json"
+        task_config = get_task_config(task_arguments, task_system_args)
+        fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
 
-    def get_task_script(self):
+    def get_task_script(self) -> tuple[str, int]:
+        # TODO: do we still need the nex_task - 1?
         return self._get_bash_script(), self._next_task - 1
 
     def _get_bash_script(self):
@@ -50,13 +63,19 @@ class PythonTaskFactory:
 
 class PythonAWSTaskFactory(PythonTaskFactory):
 
-    def __init__(self, working_path, python_script_module, **kwargs):
+    def __init__(self, working_path: Path | PurePath | str, python_script_module: ModuleType, **kwargs):
         super().__init__(working_path, python_script_module, **kwargs)
 
 
 class PythonPBSTaskFactory(PythonTaskFactory):
 
-    def __init__(self, root_path, working_path, python_script_module, **kwargs):
+    def __init__(
+        self,
+        root_path: Path | PurePath | str,
+        working_path: Path | PurePath | str,
+        python_script_module: ModuleType,
+        **kwargs,
+    ):
 
         super().__init__(working_path, python_script_module, **kwargs)
 
@@ -64,16 +83,16 @@ class PythonPBSTaskFactory(PythonTaskFactory):
         self._pbs_nodes = 1  # always ust one PBS node (and which one we don't know)
         self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1)  # defines maximum time the jobs is allocated by PBS
 
-    def write_task_config(self, task_arguments, job_arguments):
-        data = dict(task_arguments=task_arguments, job_arguments=job_arguments)
-        fname = f"{self._config_path}/config.{self._next_port}.json"
-        if task_arguments.get('max_inversion_time'):
-            self._pbs_wall_hours = int(float(task_arguments.get('max_inversion_time')) / 60) + 1
-        if job_arguments.get('threads'):
-            self._pbs_ppn = int(job_arguments.get('threads'))
+    def write_task_config(self, task_args: BaseModel, task_system_args: BaseModel):
+        raise NotImplementedError("PythonPBSTaskFactory.write_task_config not implemented. Need to fix wall hours")
+        # fname = self._config_path / f"config.{self._next_port}.json"
+        # if isinstance(task_args, InversionArgs):
+        #     max_inversion_time = task_args.task.max_inversion_time[0]
+        #     self._pbs_wall_hours = int(max_inversion_time / 60) + 1
+        #     self._pbs_ppn = task_args.general.java_threads
 
-        with open(fname, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+        # task_config = get_task_config(task_args, task_system_args)
+        # fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
 
     def get_task_script(self):
         return f"""

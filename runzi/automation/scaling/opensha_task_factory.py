@@ -17,12 +17,14 @@ The job is responsible for
 import json
 import os
 from pathlib import Path, PurePath
+from types import ModuleType
 from typing import Optional, TypeVar
 
 from pydantic import BaseModel
 
 from runzi.automation.scaling.task_config import get_task_config
 from runzi.runners.inversion_inputs import InversionArgs
+from runzi.runners.runner_inputs import SystemArgs
 
 from .local_config import EnvMode
 
@@ -35,16 +37,16 @@ class OpenshaTaskFactory:
 
     def __init__(
         self,
-        root_path,
-        working_path,
-        python_script_module,
-        jre_path=None,
-        app_jar_path=None,
-        task_config_path: Optional[PurePath] = None,
-        initial_gateway_port=25333,
-        python='python3',
-        jvm_heap_start=3,
-        jvm_heap_max=10,
+        root_path: Path | PurePath | str,
+        working_path: Path | PurePath | str,
+        python_script_module: ModuleType,
+        jre_path: Optional[Path | PurePath | str] = None,
+        app_jar_path: Optional[Path | PurePath | str] = None,
+        task_config_path: Optional[Path | PurePath | str] = None,
+        initial_gateway_port: int = 25333,
+        python: str = 'python3',
+        jvm_heap_start: int = 3,
+        jvm_heap_max: int = 10,
     ):
         """
         initial_gateway_port: what port to start incrementing from
@@ -53,9 +55,9 @@ class OpenshaTaskFactory:
 
         self._jre_path = jre_path or "/opt/sw/java/java-11-openjdk-amd64/bin/java"
         self._app_jar_path = app_jar_path or "~/NSHM/opensha/nshm-nz-opensha/build/libs/nshm-nz-opensha-all.jar"
-        self._config_path = task_config_path or Path.cwd()
+        self._config_path = Path(task_config_path or Path.cwd())
         # self._script_path = os.path.dirname(scaling.rupture_set_builder_task.__file__) #path to the actual task script
-        self._python_script = os.path.abspath(python_script_module.__file__)
+        self._python_script = os.path.abspath(python_script_module.__file__)  # type: ignore
 
         self._root_path = root_path  # path containing the git repos
         self._working_path = working_path
@@ -126,7 +128,13 @@ class OpenshaAWSTaskFactory(OpenshaTaskFactory):
 
 class OpenshaPBSTaskFactory(OpenshaTaskFactory):
 
-    def __init__(self, root_path, working_path, python_script_module, **kwargs):
+    def __init__(
+        self,
+        root_path: Path | PurePath | str,
+        working_path: Path | PurePath | str,
+        python_script_module: ModuleType,
+        **kwargs,
+    ):
 
         super().__init__(root_path, working_path, python_script_module, **kwargs)
 
@@ -139,7 +147,8 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
         if isinstance(task_args, InversionArgs):
             max_inversion_time = task_args.task.max_inversion_time[0]
             self._pbs_wall_hours = int(max_inversion_time / 60) + 1
-            self._pbs_ppn = task_args.general.java_threads
+        if isinstance(task_system_args, SystemArgs):
+            self._pbs_ppn = task_system_args.java_threads
 
         task_config = get_task_config(task_args, task_system_args)
         fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')

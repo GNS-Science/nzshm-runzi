@@ -1,6 +1,7 @@
 import os
 import stat
 from pathlib import PurePath
+from types import ModuleType
 from typing import Any, Generator, cast
 
 # Set up your local config, from environment variables, with some sone defaults
@@ -21,11 +22,7 @@ from runzi.automation.scaling.local_config import (
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import ModelType
 from runzi.execute import crustal_inversion_solution_task, subduction_inversion_solution_task
-from runzi.runners.inversion_inputs import (
-    CrustalInversionArgs,
-    InversionArgs,
-    SubductionInversionArgs,
-)
+from runzi.runners.inversion_inputs import CrustalInversionArgs, InversionArgs, SubductionInversionArgs
 from runzi.runners.runner_inputs import SystemArgs
 from runzi.util.aws import get_ecs_job_config
 
@@ -37,6 +34,7 @@ def build_inversion_tasks(
     inversion_args: InversionArgs, system_args: SystemArgs
 ) -> Generator[dict[str, Any] | str, None, None]:
 
+    task_module: ModuleType
     if inversion_args.general.model_type is ModelType.SUBDUCTION:
         task_module = subduction_inversion_solution_task
     elif inversion_args.general.model_type is ModelType.CRUSTAL:
@@ -59,7 +57,7 @@ def build_inversion_tasks(
         jvm_heap_start=JVM_HEAP_START,
     )
 
-    for task_count, task_args in enumerate(inversion_args.get_tasks()):
+    for task_count, task_args in enumerate(inversion_args.get_tasks(), start=1):
         if inversion_args.general.model_type is not ModelType.SUBDUCTION:
             task_args = cast(SubductionInversionArgs, task_args)
         elif inversion_args.general.model_type is ModelType.CRUSTAL:

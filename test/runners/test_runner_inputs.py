@@ -6,12 +6,12 @@ from pydantic import ValidationError
 
 from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.runners import (
-    AverageSolutionsInput,
     CoulombRuptureSetsInput,
     ScaleSolutionsInput,
     SubductionRuptureSetsInput,
     TimeDependentSolutionInput,
 )
+from runzi.runners.runner_inputs import AverageSolutionsInput
 
 fixtures_path = Path(__file__).parent.parent / 'fixtures/runners'
 

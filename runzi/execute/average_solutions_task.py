@@ -1,19 +1,82 @@
 import argparse
+import base64
 import datetime as dt
 import json
 import time
 import urllib
 import uuid
+from itertools import chain
 from pathlib import PurePath
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
 from solvis import InversionSolution
 
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import SubtaskType
-from runzi.runners import AverageSolutionsInput
+from runzi.runners.runner_inputs import AverageSolutionsInput, SystemArgs
+
+
+def get_common_rupture_set(source_solution_ids: list[str], toshi_api: ToshiApi) -> str:
+
+    rupture_set_id = ''
+    for source_solution_id in source_solution_ids:
+
+        new_rupture_set_id = get_rupture_set_id(source_solution_id, toshi_api)
+        if not rupture_set_id:
+            rupture_set_id = new_rupture_set_id
+        else:
+            if new_rupture_set_id == rupture_set_id:
+                continue
+            else:
+                raise Exception(f'source objects {source_solution_ids} do not have consistant rupture sets')
+
+    return rupture_set_id
+
+
+def get_rupture_set_id(source_solution_id: str, toshi_api: ToshiApi) -> str:
+
+    # I'm going to assume we can always use predecessors,
+    # it should always be the case in the future and backwards
+    # compatability is a bit of a pain to write
+
+    rupture_set_id = get_rupture_set_from_predecessors(source_solution_id, toshi_api)
+
+    if not rupture_set_id:
+        raise Exception(f'cannot find rupture set for {source_solution_id}')
+
+    return rupture_set_id
+
+
+def get_rupture_set_from_predecessors(source_solution_id: str, toshi_api: ToshiApi) -> str:
+
+    rupture_set_id = ''
+
+    # it's possible there are multiple oldest predecessors (if for some reason the user is
+    # calculating the average of average), so check them all
+    # I'm assuming that if typename is 'File' then the object is a rupture set
+    predecessors = toshi_api.get_predecessors(source_solution_id)
+
+    if predecessors:
+        oldest_depth = min([pred['depth'] for pred in predecessors])
+        oldest_ids = [pred['id'] for pred in predecessors if pred['depth'] == oldest_depth]
+
+        for id in oldest_ids:
+            if (is_rupture_set(id)) and (not rupture_set_id):
+                rupture_set_id = id
+            elif is_rupture_set(id):
+                if rupture_set_id == id:
+                    continue
+                else:
+                    raise Exception(f'object with ID {source_solution_id} comes from multiple rupture sets')
+
+    return rupture_set_id
+
+
+def is_rupture_set(file_id: str) -> bool:
+    return "'File:" in str(base64.b64decode(file_id))
 
 
 class BuilderTask:
@@ -21,48 +84,58 @@ class BuilderTask:
     The python client for solution rate averaging
     """
 
-    def __init__(self, job_args):
+    def __init__(self, user_args: AverageSolutionsInput, system_args: SystemArgs):
 
-        self.use_api = job_args.get('use_api', False)
-        self._output_folder = PurePath(job_args.get('working_path'))
+        self.user_args = user_args
+        self.system_args = system_args
+        self.use_api = system_args.use_api
+        self._output_folder = WORK_PATH
 
-        if self.use_api:
-            headers = {"x-api-key": API_KEY}
-            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+        headers = {"x-api-key": API_KEY}
+        self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+        self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
-    def run(self, task_arguments, job_arguments):
+    def run(self):
 
         t0 = dt.datetime.now()
 
         environment = {}
+        source_solution_ids = self.user_args.solution_groups[0]
 
         if self.use_api:
             # create new task in toshi_api
-            print(task_arguments)
             task_id = self._toshi_api.automation_task.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type=SubtaskType.AGGREGATE_SOLUTION.name,
-                    model_type=task_arguments['model_type'],
+                    model_type=self.user_args.model_type,
                 ),
-                arguments=task_arguments,
+                arguments=self.user_args.model_dump(mode='json'),
                 environment=environment,
             )
 
             # link automation task to the parent general task
-            self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
-
-            # link task to the input solution
-            input_file_id = job_arguments.get('source_solution_id')
-            if input_file_id:
-                self._toshi_api.automation_task.link_task_file(task_id, input_file_id, 'READ')
+            self._task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
 
         else:
             task_id = str(uuid.uuid4())
 
+        # download the files
+        common_rupture_set = get_common_rupture_set(source_solution_ids, self._toshi_api)
+
+        file_generators = []
+        for input_id in source_solution_ids:
+            file_generators.append(get_output_file_id(self._toshi_api, input_id))  # for file by file ID
+
+        source_solutions = download_files(
+            self._toshi_api,
+            chain(*file_generators),
+            str(WORK_PATH),
+            overwrite=False,
+        )
+        soln_filepaths = [soln['filepath'] for soln in source_solutions.values()]
+
         # DO THE WORK
-        soln_filepaths = [li['filepath'] for li in job_arguments['source_solution_info']]
         result = self.averageRuptureRates(soln_filepaths, task_id)
 
         # SAVE the results
@@ -78,11 +151,10 @@ class BuilderTask:
             self._toshi_api.automation_task.complete_task(done_args, result['metrics'])
 
             # add the log files
-            pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['task_id']}.log")
-            self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
+            # pyth_log_file = self._output_folder.joinpath(f"python_script.{self.system_args.task_count}.log")
+            # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
             # get the predecessors
-            source_solution_ids = job_arguments.get('source_solution_ids')
             predecessors = []
             for source_solution_id in source_solution_ids:
                 predecessors.append(dict(id=source_solution_id, depth=-1))
@@ -93,21 +165,21 @@ class BuilderTask:
                         predecessor['depth'] += -1
                         predecessors.append(predecessor)
 
-            meta = task_arguments.copy()
+            meta = self.user_args.model_dump(mode='json')
             meta['source_solution_ids'] = source_solution_ids
             inversion_id = self._toshi_api.aggregate_inversion_solution.upload_inversion_solution(
                 task_id,
                 filepath=result['averaged_solution'],
                 source_solution_ids=source_solution_ids,
                 aggregation_fn='MEAN',
-                common_rupture_set=job_arguments['common_rupture_set'],
+                common_rupture_set=common_rupture_set,
                 predecessors=predecessors,
                 meta=meta,
                 metrics=result['metrics'],
             )
             print("created averaged inversion solution: ", inversion_id)
 
-        t1 = dt.datetime.utcnow()
+        t1 = dt.datetime.now()
         print("Report took %s secs" % (t1 - t0).total_seconds())
 
     def averageRuptureRates(self, in_solution_filepaths, task_id):
@@ -152,12 +224,13 @@ if __name__ == "__main__":
     except FileNotFoundError:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
-    
+
     user_args = AverageSolutionsInput(**config['task_args'])
+    system_args = SystemArgs(**config['task_system_args'])
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(config['job_arguments']['task_id'])
+    time.sleep(system_args.task_count)
 
     # print(config)
-    task = BuilderTask(config['job_arguments'])
-    task.run(**config)
+    task = BuilderTask(user_args, system_args)
+    task.run()

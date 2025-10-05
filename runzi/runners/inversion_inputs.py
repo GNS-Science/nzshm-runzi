@@ -1,7 +1,7 @@
 """This module provides the Pydantic class for defining inversion job inputs."""
 
 from itertools import product
-from typing import Any, Generator, Literal, Optional, Sequence
+from typing import Any, Generator, Literal, Sequence
 
 from pydantic import BaseModel, ValidationInfo, field_serializer, field_validator, model_validator
 from typing_extensions import Self

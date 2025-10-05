@@ -8,7 +8,6 @@ from rich import print as rich_print
 from typing_extensions import Annotated
 
 from runzi.runners import (
-    AverageSolutionsInput,
     ScaleSolutionsInput,
     TimeDependentSolutionInput,
     run_average_solutions,
@@ -16,6 +15,7 @@ from runzi.runners import (
     run_scale_solution,
     run_time_dependent_solution,
 )
+from runzi.runners.runner_inputs import AverageSolutionsInput
 
 app = typer.Typer()
 

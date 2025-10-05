@@ -52,8 +52,8 @@ JAVA_THREADS = os.getenv('NZSHM22_SCRIPT_JAVA_THREADS', 4)  # each
 WORKER_POOL_SIZE = int(os.getenv('NZSHM22_SCRIPT_WORKER_POOL_SIZE', 1))
 
 # Memory settings, be careful - don't exceed what you have avail, or you'll see swapping!
-JVM_HEAP_START = os.getenv('NZSHM22_SCRIPT_JVM_HEAP_START', 4)  # Startup JAVA Memory (per worker)
-JVM_HEAP_MAX = os.getenv('NZSHM22_SCRIPT_JVM_HEAP_MAX', 10)  # Maximum JAVA Memory (per worker)
+JVM_HEAP_START = int(os.getenv('NZSHM22_SCRIPT_JVM_HEAP_START', 4))  # Startup JAVA Memory (per worker)
+JVM_HEAP_MAX = int(os.getenv('NZSHM22_SCRIPT_JVM_HEAP_MAX', 10))  # Maximum JAVA Memory (per worker)
 
 
 # LOCAL SYSTEM SETTINGS

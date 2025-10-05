@@ -4,11 +4,13 @@ TOML files can be used to initialize the classes using the from_toml method.
 """
 
 from pathlib import Path
-from typing import TextIO, Optional
+from typing import Optional, TextIO
 
 import tomlkit
 from pydantic import BaseModel
 from typing_extensions import Self
+
+from runzi.automation.scaling.toshi_api import ModelType
 
 
 class InputBase(BaseModel):
@@ -73,6 +75,13 @@ class InversionReportArgs(BaseModel):
     build_report_level: str | None
     fault_model: str | None
     general_task_id: str
+
+
+class AverageSolutionsInput(InputBase):
+    """Input for averaging solutions."""
+
+    solution_groups: list[list[str]]
+    model_type: Optional[ModelType] = None
 
 
 class SystemArgs(BaseModel):

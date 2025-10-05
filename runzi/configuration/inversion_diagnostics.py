@@ -52,7 +52,7 @@ def generate_tasks_or_configs(general_task_id: str):
         jvm_heap_start=JVM_HEAP_START,
     )
 
-    for task_count, solution in enumerate(file_generator):
+    for task_count, solution in enumerate(file_generator, start=1):
         fault_model = solution.get('fault_model', '')
         if HACK_FAULT_MODEL:
             fault_model = HACK_FAULT_MODEL
