@@ -9,7 +9,7 @@ authors = [
 ]
 description = "scripting and cli for the NSHM"
 license = "GPL-3.0-only"
-requires-python = ">=3.10,<3.12"
+requires-python = ">=3.11,<3.12"
 dependencies = [
     "gitpython (>=3.1.11)",
     "py4j (==0.10.9.1)",
