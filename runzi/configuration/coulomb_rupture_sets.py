@@ -1,16 +1,26 @@
-from runzi.automation.scaling.local_config import CLUSTER_MODE, FATJAR, JVM_HEAP_START, OPENSHA_JRE, OPENSHA_ROOT, USE_API, WORK_PATH, EnvMode, API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL
-from runzi.automation.scaling.opensha_task_factory import get_factory 
-from runzi.util.aws import get_ecs_job_config
-from runzi.execute import coulomb_rupture_set_builder_task
-from runzi.runners.runner_inputs import SystemArgs
-from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
-from typing import Generator, Any
-
-
-import itertools
 import os
 import stat
 from pathlib import PurePath
+from typing import Any, Generator
+
+from runzi.automation.scaling.local_config import (
+    API_URL,
+    CLUSTER_MODE,
+    FATJAR,
+    JVM_HEAP_START,
+    OPENSHA_JRE,
+    OPENSHA_ROOT,
+    S3_REPORT_BUCKET,
+    S3_URL,
+    USE_API,
+    WORK_PATH,
+    EnvMode,
+)
+from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.execute import coulomb_rupture_set_builder_task
+from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
+from runzi.runners.runner_inputs import SystemArgs
+from runzi.util.aws import get_ecs_job_config
 
 JVM_HEAP_MAX = 32
 JAVA_THREADS = 16
@@ -18,7 +28,9 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 MAX_JOB_TIME_MIN = 60
 
 
-def build_tasks(rupture_set_args: CoulombRuptureSetsInput, system_args: SystemArgs) -> Generator[dict[str, Any] | str, None, None]:
+def build_tasks(
+    rupture_set_args: CoulombRuptureSetsInput, system_args: SystemArgs
+) -> Generator[dict[str, Any] | str, None, None]:
     """
     build the shell scripts 1 per task, based on all the inputs
 
@@ -40,14 +52,12 @@ def build_tasks(rupture_set_args: CoulombRuptureSetsInput, system_args: SystemAr
 
     for task_count, task_args in enumerate(rupture_set_args.get_tasks(), start=1):
 
-
         task_system_args = system_args.model_copy(deep=True)
 
         task_system_args.task_count = task_count
         task_system_args.java_threads = JAVA_THREADS
         task_system_args.java_gateway_port = task_factory.get_next_port()
         task_system_args.use_api = USE_API
-
 
         if CLUSTER_MODE == EnvMode['AWS']:
 

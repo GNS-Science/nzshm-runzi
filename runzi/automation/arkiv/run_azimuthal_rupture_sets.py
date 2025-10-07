@@ -9,7 +9,6 @@ from pathlib import Path, PurePath
 from subprocess import check_call
 
 import scaling.azimuthal_rupture_set_builder_task
-import runzi.execute.coulomb_rupture_set_builder_task
 from dateutil.tz import tzutc
 from nshm_toshi_client.general_task import GeneralTask
 
@@ -30,6 +29,7 @@ from scaling.local_config import (
 )
 from scaling.opensha_task_factory import OpenshaTaskFactory
 
+import runzi.execute.coulomb_rupture_set_builder_task
 from runzi.runners.runner_inputs import AzimuthalRuptureSetsInput
 
 

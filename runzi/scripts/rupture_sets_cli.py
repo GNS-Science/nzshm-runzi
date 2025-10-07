@@ -5,14 +5,8 @@ from pathlib import Path
 import typer
 from rich import print as rich_print
 
-from runzi.runners import (
-    SubductionRuptureSetsInput,
-    run_coulomb_rupture_sets,
-    run_subduction_rupture_sets,
-)
+from runzi.runners import SubductionRuptureSetsInput, run_coulomb_rupture_sets, run_subduction_rupture_sets
 from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
-from pydantic import ValidationError
-from tomlkit.exceptions import EmptyKeyError
 
 app = typer.Typer()
 

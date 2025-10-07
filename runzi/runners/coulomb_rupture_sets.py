@@ -8,18 +8,9 @@ from multiprocessing.dummy import Pool
 from pathlib import Path
 from subprocess import check_call
 
-
+from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, WORKER_POOL_SIZE
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.coulomb_rupture_sets import build_tasks
-from runzi.automation.scaling.local_config import (
-    API_KEY,
-    API_URL,
-    CLUSTER_MODE,
-    S3_URL,
-    USE_API,
-    WORKER_POOL_SIZE
-)
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi, ModelType
-from runzi.automation.scaling.toshi_api import SubtaskType
 from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
 from runzi.runners.runner_inputs import SystemArgs
 

@@ -283,6 +283,7 @@ class CrustalInversionArgs(InversionArgs):
             raise ValueError("Model type must be CRUSTAL for CrustalInversionArgs")
         return self
 
+
 # TODO: merge with inversion to share methods?
 class CoulombRuptureSetTaskArgs(BaseModel):
     """Input for generating Coulomb rupture sets."""
@@ -308,9 +309,10 @@ class CoulombRuptureSetTaskArgs(BaseModel):
             task_args = {name: [ta] for name, ta in zip(names, task_combination)}
             yield self.model_validate(task_args)
 
+
 class CoulombRuptureSetsInput(InputBase):
     task: CoulombRuptureSetTaskArgs
-    
+
     def get_tasks(self) -> Generator[Self, None, None]:
         for task in self.task.get_tasks():
             inv_args = self.model_copy(deep=True)

@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -5,11 +6,7 @@ import tomlkit
 from pydantic import ValidationError
 
 from runzi.automation.scaling.toshi_api.general_task import ModelType
-from runzi.runners import (
-    ScaleSolutionsInput,
-    SubductionRuptureSetsInput,
-    TimeDependentSolutionInput,
-)
+from runzi.runners import ScaleSolutionsInput, SubductionRuptureSetsInput, TimeDependentSolutionInput
 from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
 from runzi.runners.runner_inputs import AverageSolutionsInput
 
@@ -43,7 +40,7 @@ def test_input_from_toml_io():
 
 class_filename = [
     (AverageSolutionsInput, 'average_solutions.toml'),
-    (CoulombRuptureSetsInput, 'coulomb_rupture_sets.toml'),
+    # (CoulombRuptureSetsInput, 'coulomb_rupture_sets.toml'),
     (ScaleSolutionsInput, 'scale_solutions.toml'),
     (SubductionRuptureSetsInput, 'subduction_rupture_sets.toml'),
     (TimeDependentSolutionInput, 'time_dependent_solution.toml'),
@@ -56,6 +53,16 @@ def test_input_class(cls, filename):
     data = get_dict_from_toml(input_filepath)
     job_input = cls.from_toml_file(input_filepath)
     job_input_asdict = job_input.model_dump()
+    for k, v in data.items():
+        assert job_input_asdict[k] == v
+
+
+def test_coulomb_input_class():
+    """Coulomb imput uses json"""
+    input_filepath = fixtures_path / 'coulomb_rupture_sets.json'
+    data = json.loads(input_filepath.read_text())
+    job_input = CoulombRuptureSetsInput.from_json_file(input_filepath)
+    job_input_asdict = job_input.model_dump(mode='json')
     for k, v in data.items():
         assert job_input_asdict[k] == v
 

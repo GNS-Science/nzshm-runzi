@@ -1,11 +1,10 @@
 import argparse
-import urllib
 import datetime as dt
 import json
 import logging
-import os
 import platform
 import time
+import urllib
 from pathlib import PurePath
 
 import git
@@ -14,9 +13,10 @@ from nshm_toshi_client.general_task import GeneralTask
 from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
-from runzi.runners.runner_inputs import SystemArgs
+
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
+from runzi.runners.runner_inputs import SystemArgs
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -78,7 +78,9 @@ class RuptureSetBuilderTask:
         if self.use_api:
             # create new task in toshi_api
             task_id = self._ruptgen_api.create_task(
-                dict(created=dt.datetime.now(tzutc()).isoformat()), arguments=self.user_args.model_dump(mode='json'), environment=environment
+                dict(created=dt.datetime.now(tzutc()).isoformat()),
+                arguments=self.user_args.model_dump(mode='json'),
+                environment=environment,
             )
 
             # link task tp the parent task
@@ -160,7 +162,9 @@ class RuptureSetBuilderTask:
             self._ruptgen_api.complete_task(done_args, metrics)
 
             # upload the task output
-            self._ruptgen_api.upload_task_file(task_id, outputfile, 'WRITE', meta=self.user_args.model_dump(mode='json'))
+            self._ruptgen_api.upload_task_file(
+                task_id, outputfile, 'WRITE', meta=self.user_args.model_dump(mode='json')
+            )
 
             # and the log files, why not
             java_log_file = self._output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
@@ -182,11 +186,9 @@ def get_repo_heads(rootdir, repos):
 
 if __name__ == "__main__":
 
-
     parser = argparse.ArgumentParser()
     parser.add_argument("config")
     args = parser.parse_args()
-
 
     try:
         # LOCAL and CLUSTER this is a file
@@ -201,7 +203,6 @@ if __name__ == "__main__":
     user_args = CoulombRuptureSetsInput(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
     task = RuptureSetBuilderTask(user_args, system_args)
-
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(3)

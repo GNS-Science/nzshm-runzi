@@ -11,7 +11,7 @@ from typing import Optional
 from pydantic import model_validator
 
 from runzi.automation.scaling.file_utils import get_output_file_ids
-from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API
+from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API, WORKER_POOL_SIZE
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
@@ -57,7 +57,6 @@ def run_scale_solution(job_input: ScaleSolutionsInput) -> str | None:
     scales = job_input.scales
     task_title = job_input.title
     task_description = job_input.description
-    worker_pool_size = job_input.worker_pool_size
     polygon_scale = job_input.polygon_scale
     polygon_max_mag = job_input.polygon_max_mag
 
@@ -120,9 +119,9 @@ def run_scale_solution(job_input: ScaleSolutionsInput) -> str | None:
     if USE_API:
         toshi_api.general_task.update_subtask_count(general_task_id, len(tasks))
 
-    print('worker count: ', worker_pool_size)
+    print('worker count: ', WORKER_POOL_SIZE)
 
-    schedule_tasks(tasks, worker_pool_size)
+    schedule_tasks(tasks, WORKER_POOL_SIZE)
 
     print("GENERAL_TASK_ID:", general_task_id)
     print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
