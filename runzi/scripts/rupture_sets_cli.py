@@ -11,21 +11,23 @@ from runzi.runners import (
     run_subduction_rupture_sets,
 )
 from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
+from pydantic import ValidationError
+from tomlkit.exceptions import EmptyKeyError
 
 app = typer.Typer()
 
 
 @app.command()
-def coulomb_rupset(input_filepath: Path):
+def coulomb(input_filepath: Path):
     """Create Coulomb (crustal) rupture sets."""
     rich_print("[yellow]Starting Coulomb rupture set jobs.")
-    job_input = CoulombRuptureSetsInput.from_toml_file(input_filepath)
+    job_input = CoulombRuptureSetsInput.from_json_file(input_filepath)
     gt_id = run_coulomb_rupture_sets(job_input)
     rich_print(f"General Task ID: [bold green]{gt_id}")
 
 
 @app.command()
-def sub_rupset(input_filepath: Path):
+def subduction(input_filepath: Path):
     """Create subduction rupture sets."""
     rich_print("[yellow]Starting subduction rupture set jobs.")
     job_input = SubductionRuptureSetsInput.from_toml_file(input_filepath)

@@ -29,7 +29,7 @@ from runzi.runners.runner_inputs import InversionReportArgs, SystemArgs
 from runzi.util.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
-MAX_JOB_TIME_SECS = 60 * 30  # Change this soon
+MAX_JOB_TIME_MIN = 60
 
 
 def generate_tasks_or_configs(general_task_id: str):
@@ -78,7 +78,7 @@ def generate_tasks_or_configs(general_task_id: str):
                 toshi_s3_url=S3_URL,
                 toshi_report_bucket=S3_REPORT_BUCKET,
                 task_module=inversion_diags_report_task.__name__,
-                time_minutes=int(MAX_JOB_TIME_SECS),
+                time_minutes=int(MAX_JOB_TIME_MIN),
                 memory=30720,
                 vcpu=4,
             )

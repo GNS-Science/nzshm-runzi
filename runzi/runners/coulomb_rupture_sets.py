@@ -16,19 +16,14 @@ from runzi.automation.scaling.local_config import (
     CLUSTER_MODE,
     S3_URL,
     USE_API,
+    WORKER_POOL_SIZE
 )
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi, ModelType
+from runzi.automation.scaling.toshi_api import SubtaskType
 from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
+from runzi.runners.runner_inputs import SystemArgs
 
 logging.basicConfig(level=logging.INFO)
-
-JVM_HEAP_MAX = 32
-JAVA_THREADS = 16
-INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
-
-
-    # testing
-    # return
 
 
 def run_coulomb_rupture_sets(job_input: CoulombRuptureSetsInput) -> str | None:
@@ -41,6 +36,7 @@ def run_coulomb_rupture_sets(job_input: CoulombRuptureSetsInput) -> str | None:
         general task ID if using toshi API
     """
     t0 = dt.datetime.now()
+    system_args = SystemArgs()
 
     logging.basicConfig(level=logging.INFO)
 
@@ -54,23 +50,11 @@ def run_coulomb_rupture_sets(job_input: CoulombRuptureSetsInput) -> str | None:
 
     # USE_API = False
     general_task_id = None
-    worker_pool_size = job_input.worker_pool_size
-
-    depth_scaling = [ds.model_dump() for ds in job_input.depth_scaling]
-    args = dict(
-        models=job_input.models,
-        depth_scaling=depth_scaling,
-        jump_limits=job_input.jump_limits,
-        adaptive_min_distances=job_input.adaptive_min_distances,
-        thinning_factors=job_input.thinning_factors,
-        min_sub_sects_per_parents=job_input.min_sub_sections_list,
-        min_sub_sections_list=job_input.min_sub_sections_list,
-        max_sections=[job_input.max_sections],
-    )
 
     args_list = []
-    for key, value in args.items():
-        args_list.append(dict(k=key, v=str(value)))
+    for key, value in job_input.get_run_args().items():
+        val = [str(item) for item in value]
+        args_list.append(dict(k=key, v=str(val)))
 
     if USE_API:
         # create new task in toshi_api
@@ -82,17 +66,16 @@ def run_coulomb_rupture_sets(job_input: CoulombRuptureSetsInput) -> str | None:
                 agent_name=getpass.getuser(), title=job_input.title, description=job_input.description
             )
             .set_argument_list(args_list)
-            .set_subtask_type('RUPTURE_SET')
-            .set_model_type('CRUSTAL')
+            .set_subtask_type(SubtaskType['RUPTURE_SET'])
+            .set_model_type(ModelType['CRUSTAL'])
         )
         general_task_id = toshi_api.general_task.create_task(gt_args)
 
-        print("GENERAL_TASK_ID:", general_task_id)
-
-    pool = Pool(worker_pool_size)
+    print("GENERAL_TASK_ID:", general_task_id)
+    system_args.general_task_id = general_task_id
 
     scripts = []
-    for script_file in build_tasks(general_task_id, args):
+    for script_file in build_tasks(job_input, system_args):
         scripts.append(script_file)
 
     def call_script(script_name):
@@ -103,8 +86,9 @@ def run_coulomb_rupture_sets(job_input: CoulombRuptureSetsInput) -> str | None:
             check_call(['bash', script_name])
 
     print('task count: ', len(scripts))
-    print('worker count: ', worker_pool_size)
+    print('worker count: ', WORKER_POOL_SIZE)
 
+    pool = Pool(WORKER_POOL_SIZE)
     pool.map(call_script, scripts)
     pool.close()
     pool.join()

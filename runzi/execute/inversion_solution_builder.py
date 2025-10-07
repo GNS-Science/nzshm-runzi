@@ -172,6 +172,7 @@ class InversionSolutionBuilder(ABC):
                     model_type=self.user_args.general.model_type.name.upper(),
                 ),
                 # TODO: should we flatten dict? See https://weka-test.gns.cri.nz/Task/QXV0b21hdGlvblRhc2s6MTAxNzc5
+                # or at least just dump user_args.task?
                 arguments=self.user_args.model_dump(mode='json'),
                 environment=environment,
             )

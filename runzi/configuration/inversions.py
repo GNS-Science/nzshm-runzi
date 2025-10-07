@@ -44,6 +44,7 @@ def build_inversion_tasks(
 
     factory_class = get_factory(CLUSTER_MODE)
 
+    # TODO: I think this can just be WORK_PATH because the env var should be properly set in the AWS job
     work_path = PurePath('/WORKING') if CLUSTER_MODE is EnvMode.AWS else WORK_PATH
     task_factory = factory_class(
         OPENSHA_ROOT,

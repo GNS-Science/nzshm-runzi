@@ -1,7 +1,10 @@
-from runzi.automation.scaling.local_config import CLUSTER_MODE, FATJAR, JVM_HEAP_START, OPENSHA_JRE, OPENSHA_ROOT, USE_API, WORK_PATH
-from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.automation.scaling.local_config import CLUSTER_MODE, FATJAR, JVM_HEAP_START, OPENSHA_JRE, OPENSHA_ROOT, USE_API, WORK_PATH, EnvMode, API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL
+from runzi.automation.scaling.opensha_task_factory import get_factory 
+from runzi.util.aws import get_ecs_job_config
 from runzi.execute import coulomb_rupture_set_builder_task
-from runzi.runners.coulomb_rupture_sets import INITIAL_GATEWAY_PORT, JAVA_THREADS, JVM_HEAP_MAX
+from runzi.runners.runner_inputs import SystemArgs
+from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
+from typing import Generator, Any
 
 
 import itertools
@@ -9,8 +12,13 @@ import os
 import stat
 from pathlib import PurePath
 
+JVM_HEAP_MAX = 32
+JAVA_THREADS = 16
+INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
+MAX_JOB_TIME_MIN = 60
 
-def build_tasks(general_task_id, args):
+
+def build_tasks(rupture_set_args: CoulombRuptureSetsInput, system_args: SystemArgs) -> Generator[dict[str, Any] | str, None, None]:
     """
     build the shell scripts 1 per task, based on all the inputs
 
@@ -30,66 +38,48 @@ def build_tasks(general_task_id, args):
         jvm_heap_start=JVM_HEAP_START,
     )
 
-    for (
-        model,
-        min_sub_sects_per_parent,
-        min_sub_sections,
-        max_jump_distance,
-        adaptive_min_distance,
-        thinning_factor,
-        max_sections,
-        depth_scaling,
-        # use_inverted_rake
-    ) in itertools.product(
-        args['models'],
-        args['min_sub_sects_per_parents'],
-        args['min_sub_sections_list'],
-        args['jump_limits'],
-        args['adaptive_min_distances'],
-        args['thinning_factors'],
-        args['max_sections'],
-        args['depth_scaling'],
-        # args['use_inverted_rakes']
-    ):
+    for task_count, task_args in enumerate(rupture_set_args.get_tasks(), start=1):
 
-        task_count += 1
 
-        task_arguments = dict(
-            max_sections=max_sections,
-            fault_model=model,  # instead of filename. filekey
-            min_sub_sects_per_parent=min_sub_sects_per_parent,
-            min_sub_sections=min_sub_sections,
-            max_jump_distance=max_jump_distance,
-            adaptive_min_distance=adaptive_min_distance,
-            thinning_factor=thinning_factor,
-            scaling_relationship='SIMPLE_CRUSTAL',  # TMG_CRU_2017, 'SHAW_2009_MOD' default
-            depth_scaling_tvz=depth_scaling['tvz'],
-            depth_scaling_sans=depth_scaling['sans'],
-            # use_inverted_rake=use_inverted_rake
-        )
+        task_system_args = system_args.model_copy(deep=True)
 
-        job_arguments = dict(
-            task_id=task_count,
-            java_threads=JAVA_THREADS,
-            PROC_COUNT=JAVA_THREADS,
-            JVM_HEAP_MAX=JVM_HEAP_MAX,
-            java_gateway_port=task_factory.get_next_port(),
-            working_path=str(WORK_PATH),
-            root_folder=OPENSHA_ROOT,
-            general_task_id=general_task_id,
-            use_api=USE_API,
-            short_name=f'{model}-{thinning_factor}',
-        )
+        task_system_args.task_count = task_count
+        task_system_args.java_threads = JAVA_THREADS
+        task_system_args.java_gateway_port = task_factory.get_next_port()
+        task_system_args.use_api = USE_API
 
-        # write a config
-        task_factory.write_task_config(task_arguments, job_arguments)
-        script = task_factory.get_task_script()
 
-        script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
-        with open(script_file_path, 'w') as f:
-            f.write(script)
-        # make file executable
-        st = os.stat(script_file_path)
-        os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
+        if CLUSTER_MODE == EnvMode['AWS']:
 
-        yield str(script_file_path)
+            job_name = f"Runzi-automation-coulomb-ruputre-sets-{task_count}"
+
+            yield get_ecs_job_config(
+                job_name,
+                # task_args.task.rupture_set_id[0],  # TODO: we don't need this, can be done by task script
+                "",
+                task_args,
+                task_system_args,
+                toshi_api_url=API_URL,
+                toshi_s3_url=S3_URL,
+                toshi_report_bucket=S3_REPORT_BUCKET,
+                task_module=coulomb_rupture_set_builder_task.__name__,
+                time_minutes=MAX_JOB_TIME_MIN,
+                memory=30720,
+                vcpu=4,
+            )
+
+        else:
+            # write a config
+            task_factory.write_task_config(task_args, task_system_args)
+
+            script = task_factory.get_task_script()
+
+            script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
+            with open(script_file_path, 'w') as f:
+                f.write(script)
+
+            # make file executable
+            st = os.stat(script_file_path)
+            os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
+
+            yield str(script_file_path)

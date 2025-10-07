@@ -256,6 +256,7 @@ class InversionArgs(OpenshaArgs):
             inv_args.task = task
             yield inv_args
 
+    # TODO: should this use json mode? Maybe then no need to cast list elements to str?
     def get_run_args(self) -> dict:
         return self.task.model_dump()
 
@@ -282,19 +283,39 @@ class CrustalInversionArgs(InversionArgs):
             raise ValueError("Model type must be CRUSTAL for CrustalInversionArgs")
         return self
 
-
-class CoulombRuptureSetsInput(InputBase):
+# TODO: merge with inversion to share methods?
+class CoulombRuptureSetTaskArgs(BaseModel):
     """Input for generating Coulomb rupture sets."""
 
     class DepthScaling(BaseModel):
         tvz: float
         sans: float
 
-    max_sections: int
-    models: list[str]
-    jump_limits: list[int]
-    adaptive_min_distances: list[int]
-    thinning_factors: list[float]
-    min_sub_sects_per_parents: list[int]
-    min_sub_sections_list: list[int]
+    max_sections: list[int]
+    fault_model: list[str]
+    max_jump_distance: list[float]
+    adaptive_min_distance: list[float]
+    thinning_factor: list[float]
+    min_sub_sects_per_parent: list[int]
+    min_sub_sections: list[int]
     depth_scaling: list[DepthScaling]
+    scaling_relationship: list[str]
+
+    def get_tasks(self) -> Generator[Self, None, None]:
+        names = self.model_fields_set
+        values = [getattr(self, name) for name in names]
+        for task_combination in product(*values):
+            task_args = {name: [ta] for name, ta in zip(names, task_combination)}
+            yield self.model_validate(task_args)
+
+class CoulombRuptureSetsInput(InputBase):
+    task: CoulombRuptureSetTaskArgs
+    
+    def get_tasks(self) -> Generator[Self, None, None]:
+        for task in self.task.get_tasks():
+            inv_args = self.model_copy(deep=True)
+            inv_args.task = task
+            yield inv_args
+
+    def get_run_args(self) -> dict:
+        return self.task.model_dump(mode='json')
