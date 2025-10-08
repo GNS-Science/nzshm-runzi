@@ -5,7 +5,7 @@ from pathlib import Path
 import typer
 from rich import print as rich_print
 
-from runzi.runners import run_inversion
+from runzi.runners.inversion import run_inversion
 from runzi.runners.inversion_inputs import CrustalInversionArgs, SubductionInversionArgs
 
 app = typer.Typer()

@@ -79,7 +79,7 @@ class RuptureSetBuilderTask:
             # create new task in toshi_api
             task_id = self._ruptgen_api.create_task(
                 dict(created=dt.datetime.now(tzutc()).isoformat()),
-                arguments=self.user_args.model_dump(mode='json'),
+                arguments=self.user_args.task.model_dump(mode='json'),
                 environment=environment,
             )
 
