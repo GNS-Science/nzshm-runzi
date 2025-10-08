@@ -1,14 +1,25 @@
-max_sections = [2000]
-fault_model=["CFM_1_0_DOM_SANSTVZ"]
-max_jump_distance=[ 15, ]
-adaptive_min_distance=[ 6, ]
-thinning_factor=[ 0, ]
-min_sub_sects_per_parent=[2]
-min_sub_sections=[2]
-sans = 0.8
-title = "Build Coulomb CFM 1.0 sans with regional depth scaling"
-description = "used to test effect of code change to Coulomb builder against older rupture sets that use CFM_1_0_DOM_SANSTVZ"
+{
+    "title": "test running Coulomb Rupture sets",
+    "description": "test running Coulomb Rupture sets",
 
+    "task_type": "CoulombRuptureSetsInput",
+    "template": {
+        "max_sections": [2000],
+        "fault_model": ["CFM_1_0_DOM_SANSTVZ"],
+        "max_jump_distance": [15],
+        "adaptive_min_distance": [6],
+        "min_sub_sections": [2],
+        "scaling_relationship": ["SIMPLE_CRUSTAL"],
 
-[[depth_scaling]]
-tvz = 0.667
+        "depth_scaling": [
+            {
+                "sans":  0.8,
+                "tvz":  0.667
+            }
+        ]
+    },
+    "swept": {
+        "thinning_factor": [0, 2],
+        "min_sub_sects_per_parent": [2, 4]
+    }
+}
