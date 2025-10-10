@@ -27,7 +27,7 @@
                 "tag": "b = 0.811, N = 2.4",
                 "b": 0.811,
                 "N": 2.4,
-                "enable_tvz_mfd": false,
+                "enable_tvz": false,
                 "b_tvz": 1.0,
                 "N_tvz": 5.0
             }
