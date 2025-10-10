@@ -136,6 +136,7 @@ class InversionTaskArgs(BaseModel):
         """If re-weighting, must use uncertinaty weighted constraints"""
         if self.reweight != DEFAULT_FIELD:
             if (self.mfd_uncertainty_weight == DEFAULT_FIELD) and (self.slip_rate_uncertainty_weight == DEFAULT_FIELD):
+                # TODO: this isn't true, reweighting overrides the weight, but this test does make sure we have the other parameters, so maybe useful?
                 raise ValueError("Re-weigting requires use of uncertainty weighted constraints for MFD and slip rate")
         return self
 
@@ -180,7 +181,7 @@ class InversionTaskArgs(BaseModel):
         params = [self.slip_rate_weighting_type, self.slip_rate_normalized_weight, self.slip_rate_unnormalized_weight]
         if not all_or_none(params):
             raise ValueError(
-                "If using uncertainty weighted slip rate constraints, must set all parameters (slip "
+                "If using normalized/unnormalized slip rate constraints, must set all parameters (slip "
                 "weighting type, normalized weight, unnormalized weight"
             )
         return self
@@ -210,6 +211,11 @@ class SubductionTaskArgs(InversionTaskArgs):
 
 
 class CrustalTaskArgs(InversionTaskArgs):
+    class PaleoRatesFile(BaseModel):
+        archive_id: str
+        file_name: str
+        tag: str
+
     spatial_seis_pdf: Sequence[str | None] = DEFAULT_FIELD
 
     scaling_c_val: Sequence[ScalingC | None] = DEFAULT_FIELD
@@ -223,6 +229,7 @@ class CrustalTaskArgs(InversionTaskArgs):
     paleo_parent_rate_smoothness_constraint_weight: Sequence[float | None] = DEFAULT_FIELD
     paleo_rate_constraint: Sequence[str | None] = DEFAULT_FIELD
     paleo_probability_model: Sequence[str | None] = DEFAULT_FIELD
+    paleo_rates_file: Sequence[PaleoRatesFile | None] = DEFAULT_FIELD
 
     @model_validator(mode='after')
     def _check_paleo_constraint(self) -> Self:

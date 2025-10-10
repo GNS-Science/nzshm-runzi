@@ -37,7 +37,7 @@ class InputBase(BaseModel):
         else:
             content = toml_file.read()
         data = tomlkit.parse(content).unwrap()
-        return cls(**data)
+        return cls.model_validate(data, extra='forbid')
 
     @classmethod
     def from_json_file(cls, json_file: TextIO | Path | str) -> Self:
@@ -54,7 +54,7 @@ class InputBase(BaseModel):
                 content = f.read()
         else:
             content = json_file.read()
-        return cls.model_validate_json(content)
+        return cls.model_validate_json(content, extra='forbid')
 
     def to_json_file(self, json_file: TextIO | Path | str):
         """Serializes the input object to a JSON file.

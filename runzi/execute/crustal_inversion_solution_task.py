@@ -1,4 +1,7 @@
 import argparse
+from zipfile import ZipFile
+from runzi.automation.scaling.local_config import WORK_PATH
+from pathlib import Path
 import json
 import urllib.parse
 from typing import TYPE_CHECKING, cast
@@ -8,6 +11,7 @@ import git
 from runzi.execute.inversion_solution_builder import InversionSolutionBuilder
 from runzi.runners.inversion_inputs import CrustalInversionArgs
 from runzi.runners.runner_inputs import SystemArgs
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
@@ -56,6 +60,7 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
         )
         paleo_rate_constraint = self.user_args.task.paleo_rate_constraint[0]
         paleo_probability_model = self.user_args.task.paleo_probability_model[0]
+        paleo_rates_file = self.user_args.task.paleo_rates_file[0]
         if paleo_rate_constraint_weight is not None:
             weight = 1.0 if reweight else paleo_rate_constraint_weight
             self.inversion_runner.setPaleoRateConstraints(
@@ -64,6 +69,14 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
                 paleo_rate_constraint,
                 paleo_probability_model,
             )
+        if paleo_rates_file is not None:
+            file_generator = get_output_file_id(self._toshi_api, paleo_rates_file.archive_id)
+            paleo_file_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+            paleo_archive_file_path = paleo_file_info[paleo_rates_file.archive_id]['filepath']
+            with ZipFile(paleo_archive_file_path, 'r') as archive:
+                archive.extract(paleo_rates_file.file_name, path=Path(paleo_archive_file_path).parent)
+            paleo_file_path = Path(paleo_archive_file_path).parent / paleo_rates_file.file_name
+            self.inversion_runner.setPaleoRatesFile(str(paleo_file_path))
 
     def _domain_specific_setup(self):
         if (spatial_seis_pdf := self.user_args.task.spatial_seis_pdf[0]) is not None:
@@ -72,12 +85,13 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
     def _set_mfd(self):
         self.user_args = cast(CrustalInversionArgs, self.user_args)
 
+        mfd_transition_mag = self.user_args.task.mfd_eq_ineq_transition_mag[0] or 9.0
         self.inversion_runner.setGutenbergRichterMFD(
             self.user_args.task.mfd[0].N,
             self.user_args.task.mfd[0].N_tvz,
             self.user_args.task.mfd[0].b,
             self.user_args.task.mfd[0].b_tvz,
-            self.user_args.task.mfd_eq_ineq_transition_mag[0],
+            mfd_transition_mag,
         )
 
         if self.user_args.task.mfd[0].enable_tvz:

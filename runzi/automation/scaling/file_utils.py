@@ -159,7 +159,10 @@ def download_files(
         r1 = requests.get(info['file_url'])
         with open(str(file_path), 'wb') as f:
             f.write(r1.content)
+            f.flush()
             print("downloaded input file:", file_path, f)
+            file_size = os.path.getsize(file_path)
+            file_size_expected = info['file_size']
             assert os.path.getsize(file_path) == info['file_size']
 
     return downloads

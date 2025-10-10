@@ -117,8 +117,7 @@ def run_save_file_archive(
 
     if not input_csv_file:
         # just the one file
-        process_one_file(dry_run, target, tag)
-        return
+        return process_one_file(dry_run, target, tag)
 
     # read from input
     if input_csv_file:
@@ -134,4 +133,6 @@ def run_save_file_archive(
 
 
 if __name__ == "__main__":
-    run_save_file_archive(**parse_args())
+    file_id = run_save_file_archive(**parse_args())
+    print()
+    print(f"file_id: {file_id}")
