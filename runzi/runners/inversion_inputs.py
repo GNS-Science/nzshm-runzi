@@ -136,7 +136,8 @@ class InversionTaskArgs(BaseModel):
         """If re-weighting, must use uncertinaty weighted constraints"""
         if self.reweight != DEFAULT_FIELD:
             if (self.mfd_uncertainty_weight == DEFAULT_FIELD) and (self.slip_rate_uncertainty_weight == DEFAULT_FIELD):
-                # TODO: this isn't true, reweighting overrides the weight, but this test does make sure we have the other parameters, so maybe useful?
+                # TODO: this isn't true, reweighting overrides the weight,
+                # but this test does make sure we have the other parameters, so maybe useful?
                 raise ValueError("Re-weigting requires use of uncertainty weighted constraints for MFD and slip rate")
         return self
 

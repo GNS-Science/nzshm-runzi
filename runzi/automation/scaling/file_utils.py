@@ -161,8 +161,7 @@ def download_files(
             f.write(r1.content)
             f.flush()
             print("downloaded input file:", file_path, f)
-            file_size = os.path.getsize(file_path)
-            file_size_expected = info['file_size']
-            assert os.path.getsize(file_path) == info['file_size']
+            if os.path.getsize(file_path) != info['file_size']:
+                raise RuntimeError("downloaded file size mismatch")
 
     return downloads

@@ -1,17 +1,17 @@
 import argparse
-from zipfile import ZipFile
-from runzi.automation.scaling.local_config import WORK_PATH
-from pathlib import Path
 import json
 import urllib.parse
+from pathlib import Path
 from typing import TYPE_CHECKING, cast
+from zipfile import ZipFile
 
 import git
 
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id
+from runzi.automation.scaling.local_config import WORK_PATH
 from runzi.execute.inversion_solution_builder import InversionSolutionBuilder
 from runzi.runners.inversion_inputs import CrustalInversionArgs
 from runzi.runners.runner_inputs import SystemArgs
-from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
