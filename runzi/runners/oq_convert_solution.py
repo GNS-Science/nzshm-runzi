@@ -39,9 +39,11 @@ def run_oq_convert_solution(user_args: OQOpenSHAConvertArgs) -> str | None:
     logging.getLogger('botocore').setLevel(loglevel)
     logging.getLogger('git.cmd').setLevel(loglevel)
 
+    # TODO: this is done so often and handled differently for lists and non-lists, should use a
+    # function to do it the same every time
     args_list = []
     for key, value in user_args.get_run_args().items():
-        args_list.append(dict(k=key, v=value))
+        args_list.append(dict(k=key, v=str(value)))
 
     general_task_id = None
     if USE_API:
