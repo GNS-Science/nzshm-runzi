@@ -7,34 +7,35 @@ These instructions will allow you to build an image for testing in which the run
 
 ## Build new image on top of the base image
 The `WORKING_BURNER` tag indicates that runzi code is from the working directory and the image is not to be used for official calculations as the code is not traceable. The build command must be run from the root directory of the `nzshm-runzi` repo.
-```
+```console
 export WORKING_CONTAINER_TAG=runzi-WORKING-BURNER_nz_openquake-${OQ_VERSION} 
 docker build -f docker/runzi-openquake/Dockerfile_WORKING-BURNER --no-cache \
     --build-arg BASE_IMAGE=runzi-openquake:${CONTAINER_TAG} \
     -t runzi-openquake:$WORKING_CONTAINER_TAG .
 ```
-
+```console
 export NZSHM22_RUNZI_ECR_DIGEST="sha256:WORKING_BURNER"
+```
 
 ## Set environment variables
 Set the locations of the runzi input files
-```
+```console
 export INPUT_FILES_DIR=<path to input files>
 ```
 
 Set the `NZSHM22_THS_RLZ_DB` environment variable to the location of the toshi-hazard-store realization dataset. This can be an S3 bucket or a local path. If running in the cloud, this must be an S3 bucket. For local datasets, the directory and all directories and files below it must allow all users to write to them (i.e. `chmod -R 777 <DATASET DIR>`).
 
-```
+```console
 export NZSHM22_THS_RLZ_DB=<realization dataset path or S3 URI>
 ```
 
 Set your AWS profile.
-```
+```console
 export AWS_PROFILE=<your AWS profile name>
 ```
 
 Set the path to your development runzi directory and the run mode to local.
-```
+```console
 export RUNZI_DIR=<path to your local copy of runzi>
 export NZSHM22_SCRIPT_CLUSTER_MODE=LOCAL
 ```
@@ -43,7 +44,7 @@ The directories we mount as volumes in the docker container must have write acce
 ## Run
 
 Notice that when we run, we mount the `nzshm-runzi` directory so that that we can modify runzi code outside of the container and have it effect the running container, therefore removing the need to rebuild the docker image.
-```
+```console
 docker run -it --rm --env-file docker/runzi-openquake/environ \
 --entrypoint "/bin/bash" \
 -v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \

@@ -1,6 +1,6 @@
 ## Build new container
 The image is build using the GH repo for runzi, so we will tag with the latest commit on the branch from the remote. Set the `RUNZI_BRANCH` variable to the desired branch on the remote to use.
-```
+```console
 cd docker/runzi-openquake
 git fetch
 export OQ_VERSION=desired OQ version, e.g. "3.20.1"
