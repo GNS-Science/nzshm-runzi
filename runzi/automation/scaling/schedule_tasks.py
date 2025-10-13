@@ -30,6 +30,7 @@ def schedule_tasks(scripts: Sequence[Any], worker_pool_size: Optional[int] = Non
 
     if CLUSTER_MODE == EnvMode['LOCAL']:
         print('task count: ', len(scripts))
+        print('worker count: ', worker_pool_size)
         pool = Pool(worker_pool_size)
         pool.map(call_script, scripts)
         pool.close()

@@ -4,10 +4,10 @@ TOML files can be used to initialize the classes using the from_toml method.
 """
 
 from pathlib import Path
-from typing import Optional, TextIO
+from typing import Any, Optional, TextIO
 
 import tomlkit
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing_extensions import Self
 
 from runzi.automation.scaling.toshi_api import ModelType
@@ -75,6 +75,35 @@ class InversionReportArgs(BaseModel):
     build_report_level: str | None
     fault_model: str | None
     general_task_id: str
+
+
+class OQOpenSHAConvertTaskArgs(BaseModel):
+    """Input for OpenSHA to OpenQuake conversion."""
+
+    source_solution_id: str
+    investigation_time_years: float
+    model_type: ModelType
+    rupture_sampling_distance_km: float
+
+    @field_validator('model_type', mode='before')
+    @classmethod
+    def _convert_to_enum(cls, value: Any) -> ModelType:
+        if isinstance(value, ModelType):
+            return value
+        try:
+            return ModelType[value.upper()]
+        except (KeyError, AttributeError):
+            try:
+                return ModelType(value)
+            except ValueError:
+                raise ValueError("model_type input is not valid")
+
+
+class OQOpenSHAConvertArgs(InputBase):
+    task: OQOpenSHAConvertTaskArgs
+
+    def get_run_args(self) -> dict:
+        return self.task.model_dump(mode='json')
 
 
 class AverageSolutionsInput(InputBase):

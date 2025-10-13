@@ -1,11 +1,9 @@
 """Command line functions for post processing of inversions."""
 
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich import print as rich_print
-from typing_extensions import Annotated
 
 from runzi.runners import (
     ScaleSolutionsInput,
@@ -15,7 +13,7 @@ from runzi.runners import (
     run_scale_solution,
     run_time_dependent_solution,
 )
-from runzi.runners.runner_inputs import AverageSolutionsInput
+from runzi.runners.runner_inputs import AverageSolutionsInput, OQOpenSHAConvertArgs
 
 app = typer.Typer()
 
@@ -48,23 +46,11 @@ def scale(input_filepath: Path):
 
 
 @app.command()
-def oq_convert(
-    title: str,
-    description: str,
-    ids: Annotated[
-        list[str],
-        typer.Argument(
-            help=(
-                "Whitespace seperated list of IDs of objects to convert. "
-                "Can be individual InversionSolutions or GeneralTask."
-            )
-        ),
-    ],
-    num_workers: Optional[int] = None,
-):
+def oq_convert(input_filepath: Path):
     """Convert OpenSHA inversion solutions to OpenQuake source input files."""
     rich_print("[yellow]Starting convert to OQ jobs.")
-    gt_id = run_oq_convert_solution(ids, title, description, num_workers)
+    job_input = OQOpenSHAConvertArgs.from_toml_file(input_filepath)
+    gt_id = run_oq_convert_solution(job_input)
     rich_print(f"General Task ID: [bold green]{gt_id}")
 
 
