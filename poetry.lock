@@ -2904,13 +2904,15 @@ files = [
 
 [[package]]
 name = "solvis"
-version = "1.1.1"
+version = "1.2.0"
 description = "analysis of opensha modular solution files."
 optional = false
-python-versions = ">=3.10,<4.0"
+python-versions = "<4.0,>=3.10"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "solvis-1.2.0-py3-none-any.whl", hash = "sha256:521d86a755b6b3d4227035e5252d809c4f35928bd3a8d2873fe17d1976fb76fa"},
+    {file = "solvis-1.2.0.tar.gz", hash = "sha256:163843f3f5d9d0f2f730484e4913b317892afca5aea2a49e37976fefc77be5cf"},
+]
 
 [package.dependencies]
 geopandas = ">=1.0.1"
@@ -2925,12 +2927,6 @@ pytz = ">=2025.1"
 [package.extras]
 demo = ["shapely"]
 vtk = ["pyvista (>=0.44.1)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/GNS-Science/solvis.git"
-reference = "fix/104-pandera-dep"
-resolved_reference = "b5508e9af45b73aabd2fcb3ab9e118a5136cd8b0"
 
 [[package]]
 name = "tomlkit"
@@ -3479,4 +3475,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.12"
-content-hash = "67dba1a689ee6de7016bc7aa2a1af7ca11e5ead8fe15e35fdee8b804270edc07"
+content-hash = "95caba87e6e8c4572a73d576b67a433643c46e9ffac48a898d6fc9c76b139913"
