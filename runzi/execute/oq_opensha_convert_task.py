@@ -62,6 +62,7 @@ class BuilderTask:
         )
 
         # zip this and return the archive path
+        # TODO: should we not archive the huge hdf5. I don't think it's needed, but this needs to be tested
         output_zip = Path(WORK_PATH, self.solution_archive_filename.replace('.zip', '_nrml.zip'))
         print(f'output: {output_zip}')
         zfile = zipfile.ZipFile(output_zip, 'w')
