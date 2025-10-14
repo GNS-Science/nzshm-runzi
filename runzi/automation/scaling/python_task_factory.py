@@ -54,6 +54,7 @@ class PythonTaskFactory:
 
         script = (
             "#export PATH=$PATH\n"
+            f"cd {self._config_path}\n"
             f"{self._python} {self._python_script} {self._config_path}/config.{self._next_task}.json >"
             f"{self._working_path}/python_script.{self._next_task}.log\n"
         )

@@ -57,7 +57,7 @@ def build_nrml_tasks(convert_args: OQOpenSHAConvertArgs, system_args: SystemArgs
 
         else:
             task_factory.write_task_config(task_convert_args, task_system_args)
-            script = task_factory.get_task_script()
+            script, next_task = task_factory.get_task_script()
 
             script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
             with open(script_file_path, 'w') as f:

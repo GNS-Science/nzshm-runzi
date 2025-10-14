@@ -107,6 +107,7 @@ def get_repo_heads(rootdir, repos):
 
 if __name__ == "__main__":
 
+    # TODO: this pattern is repeated for all tasks, use common function(s)
     parser = argparse.ArgumentParser()
     parser.add_argument("config")
     args = parser.parse_args()

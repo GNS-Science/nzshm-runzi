@@ -1,7 +1,6 @@
 import argparse
 import datetime as dt
 import json
-import os
 import time
 import urllib
 import uuid
@@ -58,7 +57,9 @@ class BuilderTask:
         print(computed)
 
         out_file = WORK_PATH / f'{source_id}-ruptures.xml'
-        write_source_model(str(out_file), [computed], name=source_name, investigation_time=investigation_time, prefix=prefix)
+        write_source_model(
+            str(out_file), [computed], name=source_name, investigation_time=investigation_time, prefix=prefix
+        )
 
         # zip this and return the archive path
         output_zip = Path(WORK_PATH, self.solution_archive_filename.replace('.zip', '_nrml.zip'))
@@ -105,7 +106,7 @@ class BuilderTask:
         # get name of zifile like `NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MjQ4OVMycWNI.zip`
         with zipfile.ZipFile(self.solution_archive_filename, 'r') as zip_ref:
             zip_ref.extractall(src_folder)
-        
+
         return src_folder
 
     def run(self):
@@ -171,7 +172,7 @@ if __name__ == "__main__":
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
-    user_args = OQOpenSHAConvertArgs(**config['task_arguments'])
+    user_args = OQOpenSHAConvertArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
     task = BuilderTask(user_args, system_args)
 
