@@ -15,7 +15,6 @@ from pydantic import (
     Field,
     FilePath,
     PositiveInt,
-    SerializerFunctionWrapHandler,
     ValidationInfo,
     field_serializer,
     field_validator,
@@ -85,12 +84,19 @@ class HazardModel(BaseModel):
             )
         return self
 
+    # OpenquakeConfig is not a dataclass so we have to tell pydantic how to serialize it
     @field_serializer('hazard_config', mode='plain')
     def ser_hazard_config(self, value: Any) -> Any:
         if isinstance(value, OpenquakeConfig):
             return value.to_dict()
         return value
-        
+
+    # OpenquakeConfig is not a dataclass so we have to tell pydantic how to validate it
+    @field_validator('hazard_config', mode='before')
+    def validate_hazard_config(cls, value: Any) -> Any:
+        if isinstance(value, dict):
+            return OpenquakeConfig.from_dict(value)
+        return value
 
 
 class HazardCurve(BaseModel):
@@ -231,7 +237,7 @@ class HazardInputBase(BaseModel):
     def absolute_model_paths(cls, data: Any, info: ValidationInfo) -> Any:
         if isinstance(data, dict):
             for key in ["srm_logic_tree", "gmcm_logic_tree", "hazard_config"]:
-                if data.get(key):
+                if isinstance(data.get(key), str):
                     data[key] = resolve_path(data[key], info.data["filepath"])
         return data
 
