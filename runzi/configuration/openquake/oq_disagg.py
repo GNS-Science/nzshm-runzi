@@ -190,6 +190,7 @@ def get_loc_vs30(job_config: 'DisaggInput') -> Generator[LocVs30, None, None]:
 
 
 def build_disagg_tasks(subtask_type: SubtaskType, model_type: ModelType, disagg_config: 'DisaggInput'):
+    # TODO: inject description here to the arguments
     task_count = 0
 
     extra_env = [

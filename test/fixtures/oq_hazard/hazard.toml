@@ -6,9 +6,6 @@ compatible_calc_id = "NZSHM22"
 [hazard_model]
 nshm_model_version = "NSHM_v1.0.4"
 
-[calculation]
-num_workers = 1
-
 [hazard_curve]
 imts = ['PGA', 'SA(0.5)', 'SA(1.5)', 'SA(3.0)']
 imtls = [

@@ -1,22 +1,29 @@
 """This module provides the Pydantic intput parameter classes of hazard and disaggregation caculations."""
 
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, ClassVar, Dict, Optional, Union
 
 import tomlkit
 from nzshm_model import all_model_versions
+from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
+from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 from pydantic import (
     AfterValidator,
     BaseModel,
     BeforeValidator,
+    ConfigDict,
     Field,
     FilePath,
     PositiveInt,
+    SerializerFunctionWrapHandler,
     ValidationInfo,
+    field_serializer,
     field_validator,
     model_validator,
 )
 from toshi_hazard_store.model import AggregationEnum
+
+from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 
 try:
     from toshi_hazard_store.scripts.ths_import import chc_manager
@@ -61,10 +68,13 @@ class General(BaseModel):
 
 
 class HazardModel(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     nshm_model_version: Annotated[Optional[str], AfterValidator(is_model_version)] = None
-    srm_logic_tree: Optional[FilePath] = None
-    gmcm_logic_tree: Optional[FilePath] = None
-    hazard_config: Optional[FilePath] = None
+
+    srm_logic_tree: Optional[FilePath | SourceLogicTree] = None
+    gmcm_logic_tree: Optional[FilePath | GMCMLogicTree] = None
+    hazard_config: Optional[FilePath | OpenquakeConfig] = None
 
     @model_validator(mode='after')
     def check_logic_trees(self) -> Self:
@@ -75,10 +85,12 @@ class HazardModel(BaseModel):
             )
         return self
 
-
-class Calculation(BaseModel):
-    num_workers: PositiveInt = 1
-    sleep_multiplier: Optional[PositiveInt] = None
+    @field_serializer('hazard_config', mode='plain')
+    def ser_hazard_config(self, value: Any) -> Any:
+        if isinstance(value, OpenquakeConfig):
+            return value.to_dict()
+        return value
+        
 
 
 class HazardCurve(BaseModel):
@@ -87,9 +99,11 @@ class HazardCurve(BaseModel):
 
 
 class HazardSite(BaseModel):
+    # TODO: this is another swept argument used as a scalar in the task. Not sure how to fix here
     vs30s: Annotated[Optional[list[PositiveInt]], BeforeValidator(coerce_to_list)] = None
     locations: Annotated[Optional[list[str]], BeforeValidator(coerce_to_list)] = None
     locations_file: Optional[FilePath] = None
+    locations_file_id: Optional[str] = None
 
     @staticmethod
     def has_vs30(filepath: Path):
@@ -187,10 +201,10 @@ class DisaggOutput(BaseModel):
 
 
 class HazardInputBase(BaseModel):
+    task_type: ClassVar[HazardTaskType]
     filepath: FilePath
     general: General
     hazard_model: HazardModel
-    calculation: Calculation
     site_params: HazardSite
 
     @classmethod
@@ -207,7 +221,9 @@ class HazardInputBase(BaseModel):
             content = f.read()
         data = tomlkit.parse(content).unwrap()
         data["filepath"] = Path(toml_filepath).absolute()
-        return cls(**data)
+        # TODO: I like to use strict=True but it seems to cause issues with FilePath type. Could
+        # use field to specify strict=False just for that field maybe?
+        return cls.model_validate(data)
 
     # resolve absolute paths (relative to input file) for optional logic tree and config fields
     @field_validator('hazard_model', mode='before')
@@ -232,12 +248,14 @@ class HazardInputBase(BaseModel):
 class HazardInput(HazardInputBase):
     """Input for calculating hazard curves."""
 
+    task_type: HazardTaskType = Field(default=HazardTaskType.HAZARD, frozen=True)
     hazard_curve: HazardCurve
 
 
 class DisaggInput(HazardInputBase):
     """Input for calculating disaggregations."""
 
+    task_type: HazardTaskType = Field(default=HazardTaskType.DISAGG, frozen=True)
     disagg: DisaggProb
     output: DisaggOutput
     hazard_curve: DisaggCurve

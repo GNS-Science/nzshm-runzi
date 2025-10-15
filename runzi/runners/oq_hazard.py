@@ -7,12 +7,20 @@ import datetime as dt
 import getpass
 import json
 import logging
-from typing import Any, Dict
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, EnvMode
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    S3_URL,
+    USE_API,
+    WORKER_POOL_SIZE,
+    EnvMode,
+)
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
+from runzi.runners.runner_inputs import SystemArgs
 
 from .hazard_inputs import HazardInput
 
@@ -29,17 +37,16 @@ logging.getLogger("gql.transport").setLevel(logging.WARN)
 log = logging.getLogger(__name__)
 
 
-def build_tasks(new_gt_id: str, args: Dict[str, Any], task_type: SubtaskType, model_type: ModelType):
+def build_tasks(user_args: HazardInput, system_args: SystemArgs):
     scripts = []
-    for script_file in build_hazard_tasks(new_gt_id, task_type, model_type, args):
+    for script_file in build_hazard_tasks(user_args, system_args):
         print("scheduling: ", script_file)
         scripts.append(script_file)
 
     return scripts
 
 
-def run_oq_hazard(job_input: HazardInput) -> str | None:
-
+def run_oq_hazard(user_args: HazardInput) -> str | None:
     # cluster mode cannot be AWS if API is disabled
     if CLUSTER_MODE is EnvMode.AWS and not USE_API:
         raise Exception("Toshi API must be enabled when cluster mode is AWS")
@@ -48,9 +55,7 @@ def run_oq_hazard(job_input: HazardInput) -> str | None:
 
     # some objects in the config (Path type) are not json serializable so we dump to json using the pydantic method
     # which handles these types and load back to json to clean it up so it can be passed to the toshi API
-    args_dict = json.loads(job_input.model_dump_json())
-
-    num_workers = job_input.calculation.num_workers
+    args_dict = json.loads(user_args.model_dump_json())
 
     task_type = SubtaskType.OPENQUAKE_HAZARD
     model_type = ModelType.COMPOSITE
@@ -60,10 +65,10 @@ def run_oq_hazard(job_input: HazardInput) -> str | None:
 
         # upload files
         file_paths = [
-            (job_input.site_params.locations_file, "site_params", "locations_file_id"),
-            (job_input.hazard_model.gmcm_logic_tree, "hazard_model", "gmcm_logic_tree_id"),
-            (job_input.hazard_model.srm_logic_tree, "hazard_model", "srm_logic_tree_id"),
-            (job_input.hazard_model.hazard_config, "hazard_model", "hazard_config_id"),
+            (user_args.site_params.locations_file, "site_params", "locations_file_id"),
+            (user_args.hazard_model.gmcm_logic_tree, "hazard_model", "gmcm_logic_tree_id"),
+            (user_args.hazard_model.srm_logic_tree, "hazard_model", "srm_logic_tree_id"),
+            (user_args.hazard_model.hazard_config, "hazard_model", "hazard_config_id"),
         ]
         for file_path, group, property in file_paths:
             if file_path:
@@ -82,25 +87,25 @@ def run_oq_hazard(job_input: HazardInput) -> str | None:
         gt_args = (
             CreateGeneralTaskArgs(
                 agent_name=getpass.getuser(),
-                title=job_input.general.title,
-                description=job_input.general.description,
+                title=user_args.general.title,
+                description=user_args.general.description,
             )
             .set_argument_list(args_list)
             .set_subtask_type(task_type)
             .set_model_type(model_type)
         )
-        new_gt_id = toshi_api.general_task.create_task(gt_args)
+        general_task_id = toshi_api.general_task.create_task(gt_args)
     else:
-        new_gt_id = None
+        general_task_id = None
+    system_args = SystemArgs(general_task_id=general_task_id, use_api=USE_API)
 
-    print("GENERAL_TASK_ID:", new_gt_id)
-    tasks = build_tasks(new_gt_id, args_dict, task_type, model_type)
+    tasks = build_tasks(user_args, system_args)
 
-    print("worker count: ", num_workers)
+    print("worker count: ", WORKER_POOL_SIZE)
     print(f"tasks to schedule: {len(tasks)}")
-    schedule_tasks(tasks, num_workers)
+    schedule_tasks(tasks, WORKER_POOL_SIZE)
 
-    print("GENERAL_TASK_ID:", new_gt_id)
+    print("GENERAL_TASK_ID:", general_task_id)
     print("Done! in %s secs" % (dt.datetime.now(dt.timezone.utc) - t0).total_seconds())
 
-    return new_gt_id
+    return general_task_id

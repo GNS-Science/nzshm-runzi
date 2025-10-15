@@ -1,7 +1,5 @@
 """Openquake Hazard Task."""
 
-# !python3 openquake_hazard_task.py
-
 import argparse
 import copy
 import csv
@@ -21,7 +19,8 @@ from nzshm_common.geometry.geometry import backarc_polygon, within_polygon
 from nzshm_common.location.location import get_locations
 from nzshm_model import NshmModel
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
-from nzshm_model.psha_adapter.openquake import OpenquakeConfig, OpenquakeModelPshaAdapter
+from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
+from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 
 from runzi.automation.scaling.local_config import (
     API_KEY,
@@ -32,9 +31,12 @@ from runzi.automation.scaling.local_config import (
     THS_RLZ_DB,
     WORK_PATH,
 )
-from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.execute.openquake.execute_openquake import execute_openquake
+from runzi.runners import DisaggInput, HazardInput
+from runzi.runners.hazard_inputs import HazardInputBase
+from runzi.runners.runner_inputs import SystemArgs
 from runzi.util.aws import decompress_config
 
 logging.basicConfig(level=logging.DEBUG)
@@ -57,43 +59,52 @@ except ModuleNotFoundError:
 
 
 class BuilderTask:
-    def __init__(self, job_args):
-        self.use_api = job_args.get("use_api", False)
+    def __init__(self, user_args: HazardInput | DisaggInput, system_args: SystemArgs):
+        self.use_api = system_args.use_api
+        self.user_args = user_args
+        self.system_args = system_args
 
-        headers = {"x-api-key": API_KEY}
-        self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-        self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+        if self.use_api:
+            headers = {"x-api-key": API_KEY}
+            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
-    def _setup_automation_task(self, task_arguments, job_arguments, environment, task_type) -> str:
-        print("=" * 50)
-        print("task arguments ...")
-        print(task_arguments)
-        print("=" * 50)
-        srm_logic_tree = task_arguments["hazard_model-srm_logic_tree"]
-        gmcm_logic_tree = task_arguments["hazard_model-gmcm_logic_tree"]
-        openquake_config = task_arguments["hazard_model-hazard_config"]
-        del task_arguments["hazard_model-srm_logic_tree"]
-        del task_arguments["hazard_model-gmcm_logic_tree"]
-        del task_arguments["hazard_model-hazard_config"]
+    def _setup_automation_task(self) -> str:
+
+        model_type = ModelType.COMPOSITE
+        environment = {
+            "host": platform.node(),
+            "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version",
+        }
+
+        srm_logic_tree: SourceLogicTree = self.user_args.hazard_model.srm_logic_tree
+        gmcm_logic_tree: GMCMLogicTree = self.user_args.hazard_model.gmcm_logic_tree
+        openquake_config: OpenquakeConfig = self.user_args.hazard_model.hazard_config
+
         automation_task_id = self._toshi_api.openquake_hazard_task.create_task(
             dict(
                 created=dt.datetime.now(tzutc()).isoformat(),
-                model_type=task_arguments["model_type"].upper(),
-                srm_logic_tree=srm_logic_tree,
-                gmcm_logic_tree=gmcm_logic_tree,
-                openquake_config=openquake_config,
+                model_type=model_type.name.upper(),
+                srm_logic_tree=srm_logic_tree.to_dict(),
+                gmcm_logic_tree=gmcm_logic_tree.to_dict(),
+                openquake_config=openquake_config.to_dict(),
             ),
-            arguments=task_arguments,
+            arguments=self.user_args.model_dump(
+                mode='json',
+                exclude={
+                    'hazard_config',
+                },
+            ),
             environment=environment,
-            task_type=task_type,
+            task_type=self.user_args.task_type,
         )
 
         # link OpenquakeHazardTask to the parent GT
-        gt_conn = self._task_relation_api.create_task_relation(job_arguments["general_task_id"], automation_task_id)
+        gt_conn = self._task_relation_api.create_task_relation(self.system_args.general_task_id, automation_task_id)
         print(
             f"created task_relationship: {gt_conn} "
             f"for at: {automation_task_id} "
-            f"on GT: {job_arguments['general_task_id']}"
+            f"on GT: {self.system_args.general_task_id}"
         )
 
         return automation_task_id
@@ -101,21 +112,18 @@ class BuilderTask:
     def _store_api_result(
         self,
         automation_task_id,
-        task_arguments,
         oq_result,
         duration,
     ):
         """Record results in API."""
-        ta = task_arguments
 
         # make a json file from the ta dict so we can save it.
-        task_args_json = Path(WORK_PATH, "task_args.json")
-        with open(task_args_json, "w") as task_js:
-            task_js.write(json.dumps(ta, indent=2))
+        json_filepath = Path(WORK_PATH, "task_args.json")
+        json_filepath.write_text(self.user_args.model_dump_json(indent=2))
 
         # save the json
-        task_args_id, post_url = self._toshi_api.file.create_file(task_args_json)
-        self._toshi_api.file.upload_content(post_url, task_args_json)
+        task_args_id, post_url = self._toshi_api.file.create_file(json_filepath)
+        self._toshi_api.file.upload_content(post_url, json_filepath)
         # save the two output archives
         if not oq_result.get("no_ruptures"):
             csv_archive_id, post_url = self._toshi_api.file.create_file(oq_result["csv_archive"])
@@ -137,7 +145,7 @@ class BuilderTask:
                 produced_by=automation_task_id,
                 predecessors=predecessors,
                 task_args_id=task_args_id,
-                meta=task_arguments,
+                meta=self.user_args.model_dump(mode='json'),
             )
             metrics = dict()
 
@@ -156,20 +164,20 @@ class BuilderTask:
 
         return solution_id
 
-    def set_site_parameters(self, task_arguments: Dict[str, Any]):
-        """Set site locations and vs30s for the NshmModel
-
-        Args:
-            task_arguments: a dict of task arguments
-        """
-        if vs30 := task_arguments["site_params"].get("vs30"):
+    def set_site_parameters(self):
+        """Set site locations and vs30s for the NshmModel"""
+        if self.user_args.site_params.vs30s:
+            # TODO: this is the same shit swept arg pattern used elsewhere that we will fix, but may
+            # be harder for hazard jobs
+            vs30 = self.user_args.site_params.vs30s[0]
             self.model.hazard_config.set_uniform_site_params(vs30)
 
-        if task_arguments["site_params"].get("locations"):
-            locations = get_locations(task_arguments["site_params"]["locations"])
+        # if task_arguments["site_params"].get("locations"):
+        if self.user_args.site_params.locations:
+            locations = get_locations(self.user_args.site_params.locations)
         else:
             with tempfile.TemporaryDirectory() as temp_dir:
-                if file_id := task_arguments["site_params"].get("locations_file_id"):
+                if file_id := self.user_args.site_params.locations_file_id:
                     headers = {"x-api-key": API_KEY}
                     file_api = ToshiFile(
                         API_URL,
@@ -181,7 +189,7 @@ class BuilderTask:
                     file_api.download_file(file_id, target_dir=temp_dir, target_name="sites.csv")
                     locations_file = Path(temp_dir) / "sites.csv"
                 else:
-                    locations_file = Path(task_arguments["site_params"]["locations_file"])
+                    locations_file = self.user_args.site_params.locations_file
                 locations = get_locations([locations_file])
                 with locations_file.open() as lf:
                     reader = csv.reader(lf)
@@ -197,16 +205,6 @@ class BuilderTask:
             self.model.hazard_config.set_sites(locations, backarc=backarc_flags)
         else:
             self.model.hazard_config.set_sites(locations, vs30=vs30s, backarc=backarc_flags)
-
-    def set_hazard_curve_parameters(self, task_arguments: Dict[str, Any]):
-        """Set hazard curve for hazard curve calculation
-
-        Args:
-            task_arguments: a dict of task arguments
-        """
-        imts = task_arguments["hazard_curve"]["imts"]
-        imtls = task_arguments["hazard_curve"]["imtls"]
-        self.model.hazard_config.set_iml(imts, imtls)
 
     def set_disagg_matrix_parameters(self, task_arguments: Dict[str, Any]):
         """Set disagg matrix coordinates and point on hazard curve to disaggregate
@@ -272,60 +270,47 @@ class BuilderTask:
         ta_clean["hazard_model"]["hazard_config"] = json.dumps(ta_clean["hazard_model"]["hazard_config"])
         return flatten_dict(ta_clean)
 
-    def run(self, task_arguments: Dict[str, Any], job_arguments: Dict[str, Any]):
+    def run(self):
         t0 = dt.datetime.now(dt.timezone.utc)
-        task_arguments, job_arguments
-        environment = {
-            "host": platform.node(),
-            "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version",
-        }
 
-        try:
-            task_type = HazardTaskType[task_arguments["task_type"]]
-        except KeyError:
-            raise ValueError("Invalid configuration.")
-        print(task_type)
-
-        # convert the dict representations of complex objects (from nzshm_model lib) in the args to the correct type
-        source_logic_tree = SourceLogicTree.from_dict(task_arguments["hazard_model"]["srm_logic_tree"])
-        gmcm_logic_tree = GMCMLogicTree.from_dict(task_arguments["hazard_model"]["gmcm_logic_tree"])
-        hazard_config = OpenquakeConfig.from_dict(task_arguments["hazard_model"]["hazard_config"])
+        source_logic_tree = self.user_args.hazard_model.srm_logic_tree
+        gmcm_logic_tree = self.user_args.hazard_model.gmcm_logic_tree
+        hazard_config = self.user_args.hazard_model.hazard_config
 
         ################
         # API SETUP
         ################
         automation_task_id = None
         if self.use_api:
-            ta_clean = self._clean_task_args(task_arguments)
-            automation_task_id = self._setup_automation_task(ta_clean, job_arguments, environment, task_type)
+            automation_task_id = self._setup_automation_task()
 
         #################################
         # SETUP openquake CONFIG FOLDER
         #################################
         work_folder = Path(WORK_PATH)
-        task_no = job_arguments["task_id"]
+        task_no = self.system_args.task_count
         config_folder = work_folder / f"config_{task_no}"
 
         self.model = NshmModel(
             version="",
-            title=task_arguments["general"]["title"],
+            title=self.user_args.general.title,
             source_logic_tree=source_logic_tree,
             gmcm_logic_tree=gmcm_logic_tree,
             hazard_config=hazard_config,
         )
+        self.model.hazard_config.set_description(self.user_args.general.description)
 
         # set sites and site parameters
-        self.set_site_parameters(task_arguments)
+        self.set_site_parameters()
 
         # set description, hazard curve, and disaggregation matrix parameters
-        if HazardTaskType[task_arguments["task_type"]] is HazardTaskType.HAZARD:
-            self.set_hazard_curve_parameters(task_arguments)
-            description = task_arguments["general"]["description"]
-        elif HazardTaskType[task_arguments["task_type"]] is HazardTaskType.DISAGG:
-            self.set_disagg_matrix_parameters(task_arguments)
-            description = self.get_disagg_description(task_arguments)
-
-        self.model.hazard_config.set_description(description)
+        # need user args to include task type
+        if self.user_args.task_type is HazardTaskType.HAZARD:
+            self.model.hazard_config.set_iml(self.user_args.hazard_curve.imts, self.user_args.hazard_curve.imtls)
+        elif self.user_args.task_type is HazardTaskType.DISAGG:
+            pass
+            # self.set_disagg_matrix_parameters(task_arguments)
+            # description = self.get_disagg_description(task_arguments)
 
         cache_folder = config_folder / "downloads"
         job_file = self.model.psha_adapter(OpenquakeModelPshaAdapter).write_config(cache_folder, config_folder)
@@ -335,9 +320,9 @@ class BuilderTask:
         ##############
         oq_result = execute_openquake(
             job_file,
-            job_arguments["task_id"],
+            self.system_args.task_count,
             automation_task_id,
-            HazardTaskType[task_arguments["task_type"]],
+            self.user_args.task_type,
         )
 
         ######################
@@ -346,7 +331,6 @@ class BuilderTask:
         if self.use_api:
             solution_id = self._store_api_result(
                 automation_task_id,
-                ta_clean,
                 oq_result,
                 duration=(dt.datetime.now(dt.timezone.utc) - t0).total_seconds(),
             )
@@ -366,7 +350,7 @@ class BuilderTask:
                 store_hazard(
                     str(oq_result["hdf5_filepath"]),
                     config_filepath,
-                    task_arguments["general"]["compatible_calc_id"],
+                    self.user_args.general.compatible_calc_id,
                     solution_id,
                     ECR_DIGEST,
                     THS_RLZ_DB,
@@ -395,8 +379,17 @@ if __name__ == "__main__":
         # for AWS this must now be a compressed JSON string
         config = json.loads(decompress_config(args.config))
 
-    sleep_multiplier = config["job_arguments"].get("sleep_multiplier", 2)
-    sleep_multiplier = sleep_multiplier if sleep_multiplier else 2
-    time.sleep(int(config["job_arguments"]["task_id"]) * sleep_multiplier)
-    task = BuilderTask(config["job_arguments"])
-    task.run(**config)
+    user_args: HazardInputBase
+    if HazardTaskType(config['task_args']['task_type']) is HazardTaskType.HAZARD:
+        user_args = HazardInput(**config['task_args'])
+    elif HazardTaskType(config['task_args']['task_type']) is HazardTaskType.DISAGG:
+        user_args = DisaggInput(**config['task_args'])
+    else:
+        raise ValueError("task type must be HAZARD or DISAGG")
+
+    system_args = SystemArgs(**config['task_system_args'])
+
+    sleep_multiplier = 2.0
+    time.sleep(system_args.task_count * sleep_multiplier)
+    task = BuilderTask(user_args, system_args)
+    task.run()
