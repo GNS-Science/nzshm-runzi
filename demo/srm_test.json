@@ -3,8 +3,8 @@
   "version": "SLT_v9p0p0",
   "branch_sets": [
     {
-      "short_name": "PUY",
-      "long_name": "Puysegur",
+      "short_name": "CRU",
+      "long_name": "Crustal",
       "branches": [
         {
           "branch_id": "0",
@@ -36,7 +36,7 @@
           ],
           "sources": [
             {
-              "nrml_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMDM0NQ==",
+              "nrml_id": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE1MQ==",
               "rupture_rate_scaling": null,
               "inversion_id": "",
               "rupture_set_id": "",

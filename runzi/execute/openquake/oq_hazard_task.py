@@ -85,15 +85,13 @@ class BuilderTask:
             dict(
                 created=dt.datetime.now(tzutc()).isoformat(),
                 model_type=model_type.name.upper(),
-                srm_logic_tree=srm_logic_tree.to_dict(),
-                gmcm_logic_tree=gmcm_logic_tree.to_dict(),
-                openquake_config=openquake_config.to_dict(),
+                srm_logic_tree=json.dumps(srm_logic_tree.to_dict()),
+                gmcm_logic_tree=json.dumps(gmcm_logic_tree.to_dict()),
+                openquake_config=json.dumps(openquake_config.to_dict()),
             ),
             arguments=self.user_args.model_dump(
                 mode='json',
-                exclude={
-                    'hazard_config',
-                },
+                exclude={'hazard_model'}
             ),
             environment=environment,
             task_type=self.user_args.task_type,
@@ -145,7 +143,7 @@ class BuilderTask:
                 produced_by=automation_task_id,
                 predecessors=predecessors,
                 task_args_id=task_args_id,
-                meta=self.user_args.model_dump(mode='json'),
+                meta=self.user_args.model_dump(mode='json', exclude={'hazard_model'}),
             )
             metrics = dict()
 

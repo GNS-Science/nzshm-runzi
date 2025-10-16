@@ -9,7 +9,7 @@ nshm_model_version = "NSHM_v1.0.4"
 # these entries will overwrite anything in the nshm_model_version.
 # all 3 are required if a nshm_model_version is not specified
 gmcm_logic_tree = "gmcm_small.json"
-srm_logic_tree = "srm_small.json"
+srm_logic_tree = "srm_test_new.json"
 hazard_config = "hazard_config.json"
 
 [calculation]
