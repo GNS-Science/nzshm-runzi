@@ -43,7 +43,8 @@ def run_oq_convert_solution(user_args: OQOpenSHAConvertArgs) -> str | None:
     # function to do it the same every time
     args_list = []
     for key, value in user_args.get_run_args().items():
-        args_list.append(dict(k=key, v=str(value)))
+        val = [str(item) for item in value]
+        args_list.append(dict(k=key, v=val))
 
     general_task_id = None
     if USE_API:

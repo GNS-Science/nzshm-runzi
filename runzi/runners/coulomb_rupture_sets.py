@@ -45,7 +45,7 @@ def run_coulomb_rupture_sets(job_input: CoulombRuptureSetsInput) -> str | None:
     args_list = []
     for key, value in job_input.get_run_args().items():
         val = [str(item) for item in value]
-        args_list.append(dict(k=key, v=str(val)))
+        args_list.append(dict(k=key, v=val))
 
     if USE_API:
         # create new task in toshi_api

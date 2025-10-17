@@ -159,7 +159,8 @@ def run_subduction_rupture_sets(job_input: SubductionRuptureSetsInput) -> str | 
 
     args_list = []
     for key, value in job_input.model_dump().items():
-        args_list.append(dict(k=key, v=value))
+        val = [str(item) for item in value]
+        args_list.append(dict(k=key, v=val))
 
     if USE_API:
 

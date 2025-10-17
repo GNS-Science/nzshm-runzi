@@ -115,7 +115,8 @@ def run_time_dependent_solution(job_input: TimeDependentSolutionInput) -> str | 
 
     args_list = []
     for key, value in args.items():
-        args_list.append(dict(k=key, v=value))
+        val = [str(item) for item in value]
+        args_list.append(dict(k=key, v=val))
     print(args_list)
 
     if USE_API:

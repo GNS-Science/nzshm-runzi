@@ -41,7 +41,7 @@ def run_inversion(inversion_args: InversionArgs) -> str | None:
     args_list = []
     for key, value in inversion_args.get_run_args().items():
         val = [str(item) for item in value]
-        args_list.append(dict(k=key, v=str(val)))
+        args_list.append(dict(k=key, v=val))
 
     general_task_id: str | None = None
     if USE_API:

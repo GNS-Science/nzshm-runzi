@@ -98,7 +98,11 @@ def run_scale_solution(job_input: ScaleSolutionsInput) -> str | None:
 
     args_list = []
     for key, value in args.items():
-        args_list.append(dict(k=key, v=value))
+        if isinstance(value, list):
+            val = [str(item) for item in value]
+        else:
+            val = [str(value)]
+        args_list.append(dict(k=key, v=val))
     print(args_list)
 
     if USE_API:

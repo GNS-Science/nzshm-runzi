@@ -122,4 +122,4 @@ def test_crustal_tasks(crustal_inv_data):
     inv_args = CrustalInversionArgs(**crustal_inv_data)
     for count, task in enumerate(inv_args.get_tasks()):
         pass
-    assert count + 1 == 6
+    assert count + 1 == 4

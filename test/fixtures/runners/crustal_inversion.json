@@ -1,6 +1,6 @@
 {
-    "title": "Crustal Inversion Example",
-    "description": "An example inversion for a crustal faults",
+    "title": "Crustal Inversion Example with swept args",
+    "description": "An example inversion for a crustal faults with swept args",
 
     "general": {
         "model_type": "CRUSTAL",
@@ -30,6 +30,14 @@
                 "enable_tvz": false,
                 "b_tvz": 1.0,
                 "N_tvz": 5.0
+            },
+            {
+                "tag": "b=1.089, N = 4.6",
+                "b": 1.089,
+                "N": 4.6,
+                "enable_tvz": false,
+                "b_tvz": 1.0,
+                "N_tvz": 5.0
             }
         ],
 
@@ -41,7 +49,7 @@
         "slip_rate_normalized_weight": [1e3],
         "slip_rate_unnormalized_weight": [1e5],
 
-        "spatial_seis_pdf": ["","NZSHM22_1246","NZSHM22_1346"],
+        "spatial_seis_pdf": ["FLOOR_ADDOPTIEEPASCOMB_CRU"],
         "scaling_c_val": [
             {"tag": "LOW", "dip": 3.9, "strike": 3.9},
             {"tag":"MED", "dip": 4.0, "strike": 4.0}

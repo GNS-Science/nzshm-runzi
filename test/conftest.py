@@ -26,7 +26,7 @@ def hazard_input_dict() -> Dict[str, Any]:
 @pytest.fixture(scope='function')
 def hazard_input_args() -> HazardInput:
     ref = resources.files('test.fixtures.oq_hazard') / 'hazard.toml'
-    return HazardInput.from_toml(Path(ref))
+    return HazardInput.from_toml(str(ref))
 
 
 @pytest.fixture(scope='function')
