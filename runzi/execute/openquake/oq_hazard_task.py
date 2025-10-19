@@ -89,10 +89,7 @@ class BuilderTask:
                 gmcm_logic_tree=json.dumps(gmcm_logic_tree.to_dict()),
                 openquake_config=json.dumps(openquake_config.to_dict()),
             ),
-            arguments=self.user_args.model_dump(
-                mode='json',
-                exclude={'hazard_model'}
-            ),
+            arguments=self.user_args.model_dump(mode='json', exclude={'hazard_model'}),
             environment=environment,
             task_type=self.user_args.task_type,
         )

@@ -1,7 +1,7 @@
 """This module provides the Pydantic intput parameter classes of hazard and disaggregation caculations."""
 
 from pathlib import Path
-from typing import Any, ClassVar, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import tomlkit
 from nzshm_model import all_model_versions
@@ -207,7 +207,7 @@ class DisaggOutput(BaseModel):
 
 
 class HazardInputBase(BaseModel):
-    task_type: ClassVar[HazardTaskType]
+    task_type: HazardTaskType
     filepath: FilePath
     general: General
     hazard_model: HazardModel
