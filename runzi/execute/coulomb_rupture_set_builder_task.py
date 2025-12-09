@@ -1,4 +1,6 @@
 import argparse
+from zipfile import ZipFile
+from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 import datetime as dt
 import json
 import logging
@@ -6,6 +8,7 @@ import platform
 import time
 import urllib
 from pathlib import PurePath
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 
 import git
 from dateutil.tz import tzutc
@@ -28,6 +31,15 @@ logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
 logging.getLogger('urllib3').setLevel(loglevel)
 logging.getLogger('git.cmd').setLevel(loglevel)
 
+def get_fault_model_file(fault_model_file_id) -> str:
+    headers = {"x-api-key": API_KEY}
+    toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+    file_generator = get_output_file_id(toshi_api, fault_model_file_id)
+    fault_model_file_info = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+    fault_model_archive_file_path = fault_model_file_info[fault_model_file_id]['filepath']
+    with ZipFile(fault_model_archive_file_path, 'r') as archive:
+        archive.extract(paleo_rates_file.file_name, path=Path(fault_model_archive_file_path).parent)
+    paleo_file_path = Path(fault_model_archive_file_path).parent / paleo_rates_file.file_name
 
 class RuptureSetBuilderTask:
     """
@@ -101,6 +113,7 @@ class RuptureSetBuilderTask:
         min_sub_sects_per_parent = self.user_args.task.min_sub_sects_per_parent[0]
         min_sub_sections = self.user_args.task.min_sub_sections[0]
         fault_model = self.user_args.task.fault_model[0]
+        fault_model_file_id = self.user_args.task.fault_model_file[0]
 
         self._builder.setMaxFaultSections(max_sections)
         self._builder.setMaxJumpDistance(max_jump_distance)
@@ -108,9 +121,15 @@ class RuptureSetBuilderTask:
         self._builder.setAdaptiveSectFract(thinning_factor)
         self._builder.setMinSubSectsPerParent(min_sub_sects_per_parent)
         self._builder.setMinSubSections(min_sub_sections)
-        self._builder.setFaultModel(fault_model)
+        
+        if fault_model is not None:
+            self._builder.setFaultModel(fault_model)
+        else:
+            fault_model_file = get_fault_model_file(fault_model_file_id)
+            self._builder.setFaultModelFile(fault_model_file)
 
-        if "CFM_1_0" in fault_model:
+        # if "CFM_1_0" in fault_model:
+        if self.user_args.task.depth_scaling[0] is not None:
             tvzDomain = "4"
             depth_scaling_tvz = self.user_args.task.depth_scaling[0].tvz
             depth_scaling_sans = self.user_args.task.depth_scaling[0].sans

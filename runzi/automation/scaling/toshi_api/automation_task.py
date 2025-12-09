@@ -16,9 +16,10 @@ class AutomationTask(object):
 
     def create_task(self, input_variables, arguments=None, environment=None):
         qry = '''
-            mutation create_task ($created:DateTime!, $task_type:TaskSubType!, $model_type:ModelType!) {
+            mutation create_task ($general_task_id:ID!, $created:DateTime!, $task_type:TaskSubType!, $model_type:ModelType!) {
               create_automation_task (
                 input: {
+                  general_task_id: $general_task_id
                   task_type: $task_type
                   model_type: $model_type
                   created: $created
@@ -64,7 +65,7 @@ class AutomationTask(object):
         return self.link_task_file(task_id, file_id, task_role)
 
     def get_example_create_variables(self):
-        return {"created": "2019-10-01T12:00Z", "task_type": "INVERSION", "model_type": "CRUSTAL"}
+        return {"general_task_id": "ABCD", "created": "2019-10-01T12:00Z", "task_type": "INVERSION", "model_type": "CRUSTAL"}
 
     def get_example_complete_variables(self):
         return {"task_id": "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjA=", "duration": 600, "result": "SUCCESS", "state": "DONE"}

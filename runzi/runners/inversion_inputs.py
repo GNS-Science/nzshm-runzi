@@ -301,14 +301,25 @@ class CoulombRuptureSetTaskArgs(BaseModel):
         sans: float
 
     max_sections: list[int]
-    fault_model: list[str]
     max_jump_distance: list[float]
     adaptive_min_distance: list[float]
     thinning_factor: list[float]
     min_sub_sects_per_parent: list[int]
     min_sub_sections: list[int]
-    depth_scaling: list[DepthScaling]
     scaling_relationship: list[str]
+    depth_scaling: Sequence[DepthScaling | None] = DEFAULT_FIELD
+    fault_model: Sequence[str | None] = DEFAULT_FIELD
+    fault_model_file_id: Sequence[str | None] = DEFAULT_FIELD
+
+    @model_validator(mode='after')
+    def _check_fault_model(self) -> Self:
+        """Must specify either fault_model or fault_model_file_id"""
+        has_fault_model = self.fault_model != DEFAULT_FIELD
+        has_fault_model_file = self.fault_model_file_id != DEFAULT_FIELD
+        if not (has_fault_model != has_fault_model_file):
+            raise ValueError("Must specify fault_model or fault_model_file_id, not both")
+        return self
+
 
     def get_tasks(self) -> Generator[Self, None, None]:
         names = self.model_fields_set

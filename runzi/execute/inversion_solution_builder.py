@@ -163,6 +163,11 @@ class InversionSolutionBuilder(ABC):
         environment = {"host": platform.node(), "nzshm-opensha.version": API_GitVersion}
 
         if self.system_args.use_api:
+            # this is a temporary fix to convert args of list type to single values
+            automation_task_args = self.user_args.task.model_dump(mode='json')
+            for k in automation_task_args.keys():
+                automation_task_args[k] = automation_task_args[k][0]
+
             general_task_id = self.system_args.general_task_id
             # create new task in toshi_api
             task_id = self._toshi_api.automation_task.create_task(
@@ -170,10 +175,11 @@ class InversionSolutionBuilder(ABC):
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type="INVERSION",
                     model_type=self.user_args.general.model_type.name.upper(),
+                    general_task_id=general_task_id,
                 ),
                 # TODO: should we flatten dict? See https://weka-test.gns.cri.nz/Task/QXV0b21hdGlvblRhc2s6MTAxNzc5
                 # or at least just dump user_args.task?
-                arguments=self.user_args.task.model_dump(mode='json'),
+                arguments=automation_task_args,
                 environment=environment,
             )
 
