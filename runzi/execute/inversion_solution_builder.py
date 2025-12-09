@@ -5,7 +5,7 @@ import time
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import PurePath
-from typing import cast
+from typing import cast, TYPE_CHECKING, Any
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
@@ -16,6 +16,9 @@ from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOO
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 from runzi.runners.inversion_inputs import InversionArgs
 from runzi.runners.runner_inputs import SystemArgs
+
+if TYPE_CHECKING:
+    from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
 
@@ -28,6 +31,13 @@ logging.getLogger('git.cmd').setLevel(loglevel)
 
 log = logging.getLogger(__name__)
 
+
+# this is a temporary fix to convert args of list type to single values
+def generate_automation_task_args(task_args: 'BaseModel') -> dict[str, Any]:
+    automation_task_args = task_args.model_dump(mode='json')
+    for k in automation_task_args.keys():
+        automation_task_args[k] = automation_task_args[k][0]
+    return automation_task_args
 
 # TODO: not super thrilled with having to [0] index every task argument. Is there a better solution?
 class InversionSolutionBuilder(ABC):
@@ -163,10 +173,6 @@ class InversionSolutionBuilder(ABC):
         environment = {"host": platform.node(), "nzshm-opensha.version": API_GitVersion}
 
         if self.system_args.use_api:
-            # this is a temporary fix to convert args of list type to single values
-            automation_task_args = self.user_args.task.model_dump(mode='json')
-            for k in automation_task_args.keys():
-                automation_task_args[k] = automation_task_args[k][0]
 
             general_task_id = self.system_args.general_task_id
             # create new task in toshi_api
@@ -179,7 +185,7 @@ class InversionSolutionBuilder(ABC):
                 ),
                 # TODO: should we flatten dict? See https://weka-test.gns.cri.nz/Task/QXV0b21hdGlvblRhc2s6MTAxNzc5
                 # or at least just dump user_args.task?
-                arguments=automation_task_args,
+                arguments=generate_automation_task_args(self.user_args.task),
                 environment=environment,
             )
 

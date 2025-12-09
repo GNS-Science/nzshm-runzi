@@ -9,6 +9,7 @@ import time
 import urllib
 from pathlib import PurePath
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
+from runzi.execute.inversion_solution_builder import generate_automation_task_args
 
 import git
 from dateutil.tz import tzutc
@@ -91,7 +92,7 @@ class RuptureSetBuilderTask:
             # create new task in toshi_api
             task_id = self._ruptgen_api.create_task(
                 dict(created=dt.datetime.now(tzutc()).isoformat()),
-                arguments=self.user_args.task.model_dump(mode='json'),
+                arguments=generate_automation_task_args(self.user_args.task),
                 environment=environment,
             )
 
