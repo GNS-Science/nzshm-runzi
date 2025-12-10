@@ -320,7 +320,6 @@ class CoulombRuptureSetTaskArgs(BaseModel):
             raise ValueError("Must specify fault_model or fault_model_file_id, not both")
         return self
 
-
     def get_tasks(self) -> Generator[Self, None, None]:
         names = self.model_fields_set
         values = [getattr(self, name) for name in names]

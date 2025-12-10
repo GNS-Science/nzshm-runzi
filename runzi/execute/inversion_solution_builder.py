@@ -5,7 +5,7 @@ import time
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import PurePath
-from typing import cast, TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, cast
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
@@ -14,11 +14,9 @@ from py4j.java_gateway import GatewayParameters, JavaGateway, JavaObject
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_INVERSION, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
+from runzi.execute.utils import generate_automation_task_args
 from runzi.runners.inversion_inputs import InversionArgs
 from runzi.runners.runner_inputs import SystemArgs
-
-if TYPE_CHECKING:
-    from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
 
@@ -31,13 +29,6 @@ logging.getLogger('git.cmd').setLevel(loglevel)
 
 log = logging.getLogger(__name__)
 
-
-# this is a temporary fix to convert args of list type to single values
-def generate_automation_task_args(task_args: 'BaseModel') -> dict[str, Any]:
-    automation_task_args = task_args.model_dump(mode='json')
-    for k in automation_task_args.keys():
-        automation_task_args[k] = automation_task_args[k][0]
-    return automation_task_args
 
 # TODO: not super thrilled with having to [0] index every task argument. Is there a better solution?
 class InversionSolutionBuilder(ABC):

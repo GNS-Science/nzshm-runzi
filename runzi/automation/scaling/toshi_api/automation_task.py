@@ -65,7 +65,12 @@ class AutomationTask(object):
         return self.link_task_file(task_id, file_id, task_role)
 
     def get_example_create_variables(self):
-        return {"general_task_id": "ABCD", "created": "2019-10-01T12:00Z", "task_type": "INVERSION", "model_type": "CRUSTAL"}
+        return {
+            "general_task_id": "ABCD",
+            "created": "2019-10-01T12:00Z",
+            "task_type": "INVERSION",
+            "model_type": "CRUSTAL",
+        }
 
     def get_example_complete_variables(self):
         return {"task_id": "UnVwdHVyZUdlbmVyYXRpb25UYXNrOjA=", "duration": 600, "result": "SUCCESS", "state": "DONE"}
