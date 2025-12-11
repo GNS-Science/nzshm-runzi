@@ -120,7 +120,7 @@ class RuptureSetBuilderTask:
         min_sub_sects_per_parent = self.user_args.task.min_sub_sects_per_parent[0]
         min_sub_sections = self.user_args.task.min_sub_sections[0]
         fault_model = self.user_args.task.fault_model[0]
-        fault_model_file_id = self.user_args.task.fault_model_file_id[0]
+        fault_model_file = self.user_args.task.fault_model_file[0]
 
         self._builder.setMaxFaultSections(max_sections)
         self._builder.setMaxJumpDistance(max_jump_distance)
@@ -132,7 +132,7 @@ class RuptureSetBuilderTask:
         if fault_model is not None:
             self._builder.setFaultModel(fault_model)
         else:
-            fault_model_file = get_fault_model_file(fault_model_file_id)
+            fault_model_file = get_fault_model_file(fault_model_file.archive_id)
             self._builder.setFaultModelFile(str(fault_model_file))
 
         # if "CFM_1_0" in fault_model:

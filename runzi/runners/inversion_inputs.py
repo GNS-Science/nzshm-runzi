@@ -300,6 +300,10 @@ class CoulombRuptureSetTaskArgs(BaseModel):
         tvz: float
         sans: float
 
+    class FaultModelFile(BaseModel):
+        tag: str
+        archive_id: str
+
     max_sections: list[int]
     max_jump_distance: list[float]
     adaptive_min_distance: list[float]
@@ -309,15 +313,15 @@ class CoulombRuptureSetTaskArgs(BaseModel):
     scaling_relationship: list[str]
     depth_scaling: Sequence[DepthScaling | None] = DEFAULT_FIELD
     fault_model: Sequence[str | None] = DEFAULT_FIELD
-    fault_model_file_id: Sequence[str | None] = DEFAULT_FIELD
+    fault_model_file: Sequence[FaultModelFile | None] = DEFAULT_FIELD
 
     @model_validator(mode='after')
     def _check_fault_model(self) -> Self:
-        """Must specify either fault_model or fault_model_file_id"""
+        """Must specify either fault_model or fault_model_file"""
         has_fault_model = self.fault_model != DEFAULT_FIELD
-        has_fault_model_file = self.fault_model_file_id != DEFAULT_FIELD
+        has_fault_model_file = self.fault_model_file != DEFAULT_FIELD
         if not (has_fault_model != has_fault_model_file):
-            raise ValueError("Must specify fault_model or fault_model_file_id, not both")
+            raise ValueError("Must specify fault_model or fault_model_file, not both")
         return self
 
     def get_tasks(self) -> Generator[Self, None, None]:
