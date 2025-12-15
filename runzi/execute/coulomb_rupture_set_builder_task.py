@@ -97,7 +97,11 @@ class RuptureSetBuilderTask:
         if self.use_api:
             # create new task in toshi_api
             task_id = self._ruptgen_api.create_task(
-                dict(created=dt.datetime.now(tzutc()).isoformat()),
+                dict(
+                    created=dt.datetime.now(tzutc()).isoformat(),
+                    task_type="RUPTURE_SET",
+                    model_type="CRUSTAL",
+                ),
                 arguments=generate_automation_task_args(self.user_args.task),
                 environment=environment,
             )
@@ -130,8 +134,10 @@ class RuptureSetBuilderTask:
         self._builder.setMinSubSections(min_sub_sections)
 
         if fault_model is not None:
+            fault_models = [fault_model]
             self._builder.setFaultModel(fault_model)
         else:
+            fault_models = [fault_model_file.archive_id]
             fault_model_file = get_fault_model_file(fault_model_file.archive_id)
             self._builder.setFaultModelFile(str(fault_model_file))
 
@@ -194,11 +200,12 @@ class RuptureSetBuilderTask:
             self._ruptgen_api.complete_task(done_args, metrics)
 
             # upload the task output
-            self._ruptgen_api.upload_task_file(
+            self._ruptgen_api.upload_rupture_set(
                 task_id,
                 outputfile,
-                'WRITE',
+                fault_models,
                 meta=generate_automation_task_args(self.user_args.task),
+                metrics=metrics,
             )
 
             # and the log files, why not
