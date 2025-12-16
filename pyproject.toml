@@ -13,7 +13,6 @@ requires-python = ">=3.11,<3.12"
 dependencies = [
     "gitpython (>=3.1.11)",
     "py4j (==0.10.9.1)",
-    "nshm-toshi-client (>=1.0.0)",
     "boto3 (>=1.26.43)",
     "lxml (>=4.9.2)",
     "tqdm (>=4.65.0)",
@@ -28,6 +27,7 @@ dependencies = [
     "toshi-hazard-store (>=1.2.3,<2.0.0)",
     "typer (>=0.17.4,<0.18.0)",
     "solvis (>=1.2.0,<2.0.0)",
+    "nshm-toshi-client (>=1.1.0,<2.0.0)",
 ]
 
 
