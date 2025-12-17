@@ -83,8 +83,12 @@ class SlipRateFactor(BaseModel):
 
 # TODO: default should be [None,] not None or [] so field[0] can be tested `is None` as a sentinal for "not set"
 class InversionTaskArgs(BaseModel):
-    rupture_set_id: Sequence[str]
 
+    class RuptureSet(BaseModel):
+        rupture_set_id: str
+        tag: str
+
+    rupture_set: Sequence[RuptureSet] = DEFAULT_FIELD
     initial_solution_id: Sequence[str | None] = DEFAULT_FIELD
 
     max_inversion_time: Sequence[float]

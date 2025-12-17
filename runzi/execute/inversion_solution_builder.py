@@ -148,7 +148,7 @@ class InversionSolutionBuilder(ABC):
         time.sleep(self.system_args.task_count * 0.01)
         self.inversion_runner = self._get_runner()
 
-        rupture_set_id = self.user_args.task.rupture_set_id[0]
+        rupture_set_id = self.user_args.task.rupture_set[0].rupture_set_id
         file_generator = get_output_file_id(self._toshi_api, rupture_set_id)  # for file by file ID
         rupture_set_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 

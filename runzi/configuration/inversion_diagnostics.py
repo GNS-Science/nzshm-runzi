@@ -54,9 +54,11 @@ def build_inversion_diag_tasks(general_task_id: str) -> Generator[dict[str, Any]
     )
 
     for task_count, solution in enumerate(file_generator, start=1):
-        fault_model = solution.get('fault_model', '')
+        fault_model = solution.get('fault_model')
         if HACK_FAULT_MODEL:
             fault_model = HACK_FAULT_MODEL
+        elif fault_model is None or fault_model == 'None':
+            fault_model = "CUSTOM"
 
         task_args = InversionReportArgs(
             solution_id=solution['id'],
