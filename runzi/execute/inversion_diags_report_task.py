@@ -89,7 +89,8 @@ class BuilderTask:
         named_mfds_folder.mkdir(parents=True, exist_ok=True)
 
         plot_builder = self.gateway.entry_point.getMFDPlotBuilder()
-        plot_builder.setCrustalSolution(self.filepath).setOutputDir(str(named_mfds_folder)).setFaultModel(fault_model)
+        # plot_builder.setCrustalSolution(self.filepath).setOutputDir(str(named_mfds_folder)).setFaultModel(fault_model)
+        plot_builder.setCrustalSolution(self.filepath).setOutputDir(str(named_mfds_folder))
         plot_builder.plot()
 
         t1 = dt.datetime.now()

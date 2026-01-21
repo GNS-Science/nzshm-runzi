@@ -318,6 +318,7 @@ class CoulombRuptureSetTaskArgs(BaseModel):
     depth_scaling: Sequence[DepthScaling | None] = DEFAULT_FIELD
     fault_model: Sequence[str | None] = DEFAULT_FIELD
     fault_model_file: Sequence[FaultModelFile | None] = DEFAULT_FIELD
+    named_faults_file: Sequence[FaultModelFile | None] = DEFAULT_FIELD
 
     @model_validator(mode='after')
     def _check_fault_model(self) -> Self:
