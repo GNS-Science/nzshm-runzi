@@ -4,6 +4,7 @@ docker/runzi-openquake/examples/**
 tmp/**
 shell/**
 bin/**
+INPUT_FILES
 
 # macOS
 .DS_Store
