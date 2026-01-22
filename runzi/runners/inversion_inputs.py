@@ -7,7 +7,8 @@ from pydantic import BaseModel, ValidationInfo, field_serializer, field_validato
 from typing_extensions import Self
 
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-from runzi.runners.runner_inputs import InputBase
+from runzi.configuration.arguments import ArgBase
+from runzi.configuration.arguments import CoulombRuptureSetTaskArgs
 
 # Because we use field[0] for the value of the field in the inversion task we need a sentinal for "not set".
 # We use [None,] for this.
@@ -255,7 +256,7 @@ class CrustalTaskArgs(InversionTaskArgs):
 
 
 # TODO: do we need this? Work through the other OpenSHA tasks (e.g. reports) to find out
-class OpenshaArgs(InputBase):
+class OpenshaArgs(ArgBase):
     general: GeneralArgs
 
 
@@ -297,47 +298,7 @@ class CrustalInversionArgs(InversionArgs):
 
 
 # TODO: merge with inversion to share methods?
-class CoulombRuptureSetTaskArgs(BaseModel):
-    """Input for generating Coulomb rupture sets."""
-
-    class DepthScaling(BaseModel):
-        tvz: float
-        sans: float
-
-    class FaultModelFile(BaseModel):
-        tag: str
-        archive_id: str
-
-    max_sections: list[int]
-    max_jump_distance: list[float]
-    adaptive_min_distance: list[float]
-    thinning_factor: list[float]
-    min_sub_sects_per_parent: list[int]
-    min_sub_sections: list[int]
-    scaling_relationship: list[str]
-    depth_scaling: Sequence[DepthScaling | None] = DEFAULT_FIELD
-    fault_model: Sequence[str | None] = DEFAULT_FIELD
-    fault_model_file: Sequence[FaultModelFile | None] = DEFAULT_FIELD
-    named_faults_file: Sequence[FaultModelFile | None] = DEFAULT_FIELD
-
-    @model_validator(mode='after')
-    def _check_fault_model(self) -> Self:
-        """Must specify either fault_model or fault_model_file"""
-        has_fault_model = self.fault_model != DEFAULT_FIELD
-        has_fault_model_file = self.fault_model_file != DEFAULT_FIELD
-        if not (has_fault_model != has_fault_model_file):
-            raise ValueError("Must specify fault_model or fault_model_file, not both")
-        return self
-
-    def get_tasks(self) -> Generator[Self, None, None]:
-        names = self.model_fields_set
-        values = [getattr(self, name) for name in names]
-        for task_combination in product(*values):
-            task_args = {name: [ta] for name, ta in zip(names, task_combination)}
-            yield self.model_validate(task_args)
-
-
-class CoulombRuptureSetsInput(InputBase):
+class CoulombRuptureSetsInput(ArgBase):
     task: CoulombRuptureSetTaskArgs
 
     def get_tasks(self) -> Generator[Self, None, None]:

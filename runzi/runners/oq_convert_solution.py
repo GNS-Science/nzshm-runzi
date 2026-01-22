@@ -9,7 +9,8 @@ from pathlib import Path
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API, WORKER_POOL_SIZE
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
-from runzi.runners.runner_inputs import OQOpenSHAConvertArgs, SystemArgs
+from runzi.configuration.arguments import SystemArgs
+from runzi.runners.runner_inputs import OQOpenSHAConvertArgs
 
 try:
     from runzi.configuration.oq_opensha_nrml_convert import build_nrml_tasks

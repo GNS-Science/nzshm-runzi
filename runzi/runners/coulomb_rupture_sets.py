@@ -12,7 +12,7 @@ from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.coulomb_rupture_sets import build_tasks
 from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
-from runzi.runners.runner_inputs import SystemArgs
+from runzi.configuration.arguments import SystemArgs
 
 logging.basicConfig(level=logging.INFO)
 

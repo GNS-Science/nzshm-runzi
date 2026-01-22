@@ -7,7 +7,7 @@ from nzshm_model.psha_adapter.openquake import OpenquakeConfig
 import runzi.configuration.openquake.oq_hazard as coh
 from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
 from runzi.runners import HazardInput
-from runzi.runners.runner_inputs import SystemArgs
+from runzi.configuration.arguments import SystemArgs
 
 
 def build_task_mock(task_arguments, job_arguments, task_id, extra_env):

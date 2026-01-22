@@ -16,7 +16,7 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
 from runzi.configuration.scale_inversion_solution import build_scale_tasks
-from runzi.runners.runner_inputs import InputBase
+from runzi.configuration.arguments import ArgBase
 
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
@@ -27,7 +27,7 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-class ScaleSolutionsInput(InputBase):
+class ScaleSolutionsInput(ArgBase):
     """Input for scaling inversion solutions rates."""
 
     solution_ids: list[str]

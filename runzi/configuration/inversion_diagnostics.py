@@ -25,8 +25,9 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.configuration.arguments import SystemArgs
 from runzi.execute import inversion_diags_report_task
-from runzi.runners.runner_inputs import InversionReportArgs, SystemArgs
+from runzi.runners.runner_inputs import InversionReportArgs
 from runzi.util.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash

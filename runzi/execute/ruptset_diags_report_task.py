@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.runners.runner_inputs import SystemArgs
+from runzi.configuration.arguments import SystemArgs
 from runzi.util.aws.s3_folder_upload import upload_to_bucket
 
 

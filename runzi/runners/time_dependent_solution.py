@@ -17,7 +17,7 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import ModelType
 from runzi.configuration.time_dependent_inversion_solution import build_time_dependent_tasks
-from runzi.runners.runner_inputs import InputBase
+from runzi.configuration.arguments import ArgBase
 
 
 def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
@@ -28,7 +28,7 @@ def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
     return scripts
 
 
-class TimeDependentSolutionInput(InputBase):
+class TimeDependentSolutionInput(ArgBase):
     model_type: ModelType
     solution_ids: list[str]
     current_years: list[int]

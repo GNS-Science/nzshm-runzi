@@ -5,7 +5,7 @@ from typing import Any, Dict, Union
 import pytest
 import tomlkit
 
-from runzi.runners import HazardInput
+# from runzi.runners import HazardInput
 
 
 def load_input(config_filename: Union[Path, str]) -> Dict[str, Any]:
@@ -23,10 +23,10 @@ def hazard_input_dict() -> Dict[str, Any]:
         return load_input(config_path)
 
 
-@pytest.fixture(scope='function')
-def hazard_input_args() -> HazardInput:
-    ref = resources.files('test.fixtures.oq_hazard') / 'hazard.toml'
-    return HazardInput.from_toml(str(ref))
+# @pytest.fixture(scope='function')
+# def hazard_input_args() -> HazardInput:
+#     ref = resources.files('test.fixtures.oq_hazard') / 'hazard.toml'
+#     return HazardInput.from_toml(str(ref))
 
 
 @pytest.fixture(scope='function')

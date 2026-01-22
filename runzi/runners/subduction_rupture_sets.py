@@ -28,7 +28,7 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
-from runzi.runners.runner_inputs import InputBase
+from runzi.configuration.arguments import ArgBase
 
 JVM_HEAP_MAX = 12
 JVM_HEAP_START = 2
@@ -37,7 +37,7 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 MAX_JOB_TIME_SECS = 60 * 30  # Change this soon
 
 
-class SubductionRuptureSetsInput(InputBase):
+class SubductionRuptureSetsInput(ArgBase):
     models: list[str]
     min_aspect_ratios: list[float]
     max_aspect_ratios: list[float]

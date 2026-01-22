@@ -16,7 +16,7 @@ from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOO
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 from runzi.execute.utils import generate_automation_task_args
 from runzi.runners.inversion_inputs import InversionArgs
-from runzi.runners.runner_inputs import SystemArgs
+from runzi.configuration.arguments import SystemArgs
 
 logging.basicConfig(level=logging.INFO)
 

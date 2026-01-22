@@ -7,7 +7,7 @@ import git
 
 from runzi.execute.inversion_solution_builder import InversionSolutionBuilder
 from runzi.runners.inversion_inputs import SubductionInversionArgs
-from runzi.runners.runner_inputs import SystemArgs
+from runzi.configuration.arguments import SystemArgs
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject

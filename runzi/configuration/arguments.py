@@ -1,0 +1,130 @@
+import json
+from pathlib import Path
+from typing_extensions import Self
+from pydantic import BaseModel
+from typing import Optional, Sequence, TextIO, Any, Type, Generator
+import tomlkit
+
+
+
+class SystemArgs(BaseModel):
+    java_gateway_port: int = 0
+    general_task_id: Optional[str] = None
+    task_count: int = 0
+    java_threads: int = 0
+    use_api: bool = False
+
+
+
+
+
+class ArgBase(BaseModel):
+    """Base class for job arguments."""
+
+    title: str
+    description: str
+
+    # TODO: remove me?
+    @classmethod
+    def from_toml_file(cls, toml_file: TextIO | Path | str) -> Self:
+        """Creates a job argument object from a toml file.
+
+        Args:
+            toml_file: File-like object or path to TOML file.
+
+        Returns:
+            An instance of the class initialized with the TOML file.
+        """
+        if isinstance(toml_file, (Path, str)):
+            with Path(toml_file).open() as f:
+                content = f.read()
+        else:
+            content = toml_file.read()
+        data = tomlkit.parse(content).unwrap()
+        return cls.model_validate(data, extra='forbid')
+
+    @classmethod
+    def from_json_file(cls, json_file: TextIO | Path | str) -> Self:
+        """Creates a job argument object from a json file.
+
+        Args:
+            toml_file: File-like object or path to TOML file.
+
+        Returns:
+            An instance of the class initialized with the TOML file.
+        """
+        if isinstance(json_file, (Path, str)):
+            with Path(json_file).open() as f:
+                content = f.read()
+        else:
+            content = json_file.read()
+        return cls.model_validate_json(content, extra='forbid')
+
+
+
+
+
+
+class SweptArgs:
+    """Class to hold argument prototype and swept arguments."""
+    
+    def __init__(self, prototype: ArgBase, swept_args: dict[str, Sequence[Any]]):
+        """Initialize a SweptArgs instance.
+
+        Args:
+            prototype: The prototype job argument object.
+            swept_args: A dictionary of argument names to lists of values to be swept.
+        """
+
+        self.prototype = prototype
+        self.swept_args = swept_args
+
+    
+    @classmethod
+    def from_config_file(cls, config_file: TextIO | Path | str, config_type: type[ArgBase]) -> Self:
+        """Create a prototype job argument object and a dict of arguments to be swept.
+
+        The prototype object is generated from the first value from each of the swept arguments. The dict keys are the
+        argument names and values are lists of argument values.
+
+        Args:
+            config_file: File-like object or path to configuration file.
+            config_type: The type of the configuration object.
+
+        Returns:
+            A tuple of the prototype config object and a dictionary of arguments to be swept.
+        """
+
+        if isinstance(config_file, (Path, str)):
+            json_str = Path(config_file).read_text()
+        else:
+            json_str = config_file.read()
+
+        data = json.loads(json_str)
+        swept_args = data.pop("swept_args", {})
+        if swept_args:
+            for k, v in swept_args.items():
+                if not all(isinstance(item, type(v[0])) for item in v):
+                    raise ValueError(f"All values for swept argument '{k}' must be of the same type")
+                data[k] = v[0]
+        prototype = config_type.model_validate(data, extra='forbid')
+
+        return cls(prototype, swept_args)
+
+    def get_tasks(self) -> Generator[ArgBase, None, None]:
+        """Generate all combinations of swept arguments as job argument objects.
+
+        Yields:
+            Job argument objects for each combination of swept arguments.
+        """
+        from itertools import product
+
+        if not self.swept_args:
+            yield self.prototype
+            return
+
+        prototype_data = self.prototype.model_dump()
+        for values in product(*self.swept_args.values()):
+            update_data = dict(zip(self.swept_args.keys(), values))
+            yield self.prototype.model_validate(prototype_data | update_data)
+        
