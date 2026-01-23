@@ -13,6 +13,8 @@ from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
+from runzi.execute.arguments import ArgBase
+
 CLUSTER_MODE = os.getenv('NZSHM22_SCRIPT_CLUSTER_MODE', False)
 
 API_URL = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
@@ -174,3 +176,15 @@ if __name__ == "__main__":
     # print(config)
     task = RuptureSetBuilderTask(config['job_arguments'])
     task.run(**config)
+
+
+class SubductionRuptureSetsInput(ArgBase):
+    models: list[str]
+    min_aspect_ratios: list[float]
+    max_aspect_ratios: list[float]
+    aspect_depth_thresholds: list[int]
+    min_fill_ratios: list[float]
+    growth_position_epsilons: list[float]
+    growth_size_epsilons: list[float]
+    scaling_relationships: list[str]
+    deformation_models: list[str]

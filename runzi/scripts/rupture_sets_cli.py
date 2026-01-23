@@ -8,7 +8,8 @@ from rich import print as rich_print
 # from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
 from runzi.execute.arguments import ArgSweeper
 from runzi.execute.coulomb_rupture_set_builder_task import CoulombRuptureSetArgs
-from runzi.runners import SubductionRuptureSetsInput, run_coulomb_rupture_sets, run_subduction_rupture_sets
+from runzi.execute.subduction_rupture_set_builder_task import SubductionRuptureSetsInput
+from runzi.runners import run_coulomb_rupture_sets, run_subduction_rupture_sets
 
 app = typer.Typer()
 
