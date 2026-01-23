@@ -18,8 +18,8 @@ from runzi.automation.scaling.local_config import (
     EnvMode,
 )
 from runzi.automation.scaling.python_task_factory import get_factory
+from runzi.execute.arguments import SystemArgs
 from runzi.runners import HazardInput
-from runzi.configuration.arguments import SystemArgs
 from runzi.util.aws import BatchEnvironmentSetting, get_ecs_job_config
 
 from .util import EC2_CONFIGS, ComputePlatform

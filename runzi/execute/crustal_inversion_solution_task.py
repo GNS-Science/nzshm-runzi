@@ -9,9 +9,9 @@ import git
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import WORK_PATH
+from runzi.execute.arguments import SystemArgs
 from runzi.execute.inversion_solution_builder import InversionSolutionBuilder
 from runzi.runners.inversion_inputs import CrustalInversionArgs
-from runzi.configuration.arguments import SystemArgs
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject

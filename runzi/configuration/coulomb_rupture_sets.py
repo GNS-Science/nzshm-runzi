@@ -1,11 +1,10 @@
-from itertools import product
 import os
 import stat
+from itertools import product
 from pathlib import PurePath
-from typing import Any, Generator
+from typing import Any, Generator, Optional
 
-from pydantic import BaseModel, model_validator
-from typing_extensions import Self, Sequence
+from typing_extensions import Sequence
 
 from runzi.automation.scaling.local_config import (
     API_URL,
@@ -21,9 +20,8 @@ from runzi.automation.scaling.local_config import (
     EnvMode,
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.execute.arguments import ArgSweeper, SystemArgs
 from runzi.execute import coulomb_rupture_set_builder_task
-from runzi.runners.inversion_inputs import DEFAULT_FIELD, CoulombRuptureSetsInput
-from runzi.configuration.arguments import ArgBase, SystemArgs
 from runzi.util.aws import get_ecs_job_config
 
 JVM_HEAP_MAX = 32
@@ -32,43 +30,7 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 MAX_JOB_TIME_MIN = 60
 
 
-class CoulombRuptureSetArgs(ArgBase):
-    """Input for generating Coulomb rupture sets."""
-
-    class DepthScaling(BaseModel):
-        tvz: float
-        sans: float
-
-    class FaultModelFile(BaseModel):
-        tag: str
-        archive_id: str
-
-    max_sections: list[int]
-    max_jump_distance: list[float]
-    adaptive_min_distance: list[float]
-    thinning_factor: list[float]
-    min_sub_sects_per_parent: list[int]
-    min_sub_sections: list[int]
-    scaling_relationship: list[str]
-    depth_scaling: Sequence[DepthScaling | None] = DEFAULT_FIELD
-    fault_model: Sequence[str | None] = DEFAULT_FIELD
-    fault_model_file: Sequence[FaultModelFile | None] = DEFAULT_FIELD
-    named_faults_file: Sequence[FaultModelFile | None] = DEFAULT_FIELD
-
-    @model_validator(mode='after')
-    def _check_fault_model(self) -> Self:
-        """Must specify either fault_model or fault_model_file"""
-        has_fault_model = self.fault_model != DEFAULT_FIELD
-        has_fault_model_file = self.fault_model_file != DEFAULT_FIELD
-        if not (has_fault_model != has_fault_model_file):
-            raise ValueError("Must specify fault_model or fault_model_file, not both")
-        return self
-
-
-
-def build_tasks(
-    rupture_set_args: CoulombRuptureSetsInput, system_args: SystemArgs
-) -> Generator[dict[str, Any] | str, None, None]:
+def build_tasks(rupture_set_args: ArgSweeper, system_args: SystemArgs) -> Generator[dict[str, Any] | str, None, None]:
     """
     build the shell scripts 1 per task, based on all the inputs
 
@@ -90,7 +52,7 @@ def build_tasks(
 
     for task_count, task_args in enumerate(rupture_set_args.get_tasks(), start=1):
 
-        task_system_args = system_args.model_copy(deep=True)
+        task_system_args = system_args.model_copy()
 
         task_system_args.task_count = task_count
         task_system_args.java_threads = JAVA_THREADS

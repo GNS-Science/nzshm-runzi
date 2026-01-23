@@ -23,8 +23,8 @@ from typing import Optional, TypeVar
 from pydantic import BaseModel
 
 from runzi.automation.scaling.task_config import get_task_config
+from runzi.execute.arguments import ArgBase, SystemArgs
 from runzi.runners.inversion_inputs import InversionArgs
-from runzi.configuration.arguments import SystemArgs
 
 from .local_config import EnvMode
 
@@ -67,7 +67,7 @@ class OpenshaTaskFactory:
         self._python = str(python)
         # self._python_script = python_script or 'rupture_set_builder_task.py'
 
-    def write_task_config(self, task_args: BaseModel, task_system_args: BaseModel):
+    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs):
         fname = self._config_path / f"config.{self._next_port}.json"
         task_config = get_task_config(task_args, task_system_args)
         fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
@@ -142,7 +142,7 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
         self._pbs_nodes = 1  # always ust one PBS node (and which one we don't know)
         self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1)  # defines maximum time the jobs is allocated by PBS
 
-    def write_task_config(self, task_args: BaseModel, task_system_args: BaseModel):
+    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs):
         fname = self._config_path / f"config.{self._next_port}.json"
         if isinstance(task_args, InversionArgs):
             max_inversion_time = task_args.task.max_inversion_time[0]

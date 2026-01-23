@@ -1,4 +1,4 @@
-from ..configuration.arguments import SystemArgs
+from ..execute.arguments import SystemArgs
 from .average_solutions import run_average_solutions
 from .build_manual_index import build_manual_index
 from .coulomb_rupture_sets import run_coulomb_rupture_sets
@@ -6,7 +6,6 @@ from .diagnostic_reports import run_diagnostic_reports
 from .hazard_inputs import DisaggInput, HazardInput
 
 # from .inversion import run_inversion
-from .inversion_inputs import CoulombRuptureSetsInput
 from .oq_convert_solution import run_oq_convert_solution
 from .oq_disagg import run_oq_disagg
 from .oq_hazard import run_oq_hazard

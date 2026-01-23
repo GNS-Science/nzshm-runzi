@@ -28,7 +28,7 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
-from runzi.configuration.arguments import ArgBase
+from runzi.execute.arguments import ArgBase
 
 JVM_HEAP_MAX = 12
 JVM_HEAP_START = 2

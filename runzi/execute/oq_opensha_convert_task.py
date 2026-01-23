@@ -15,7 +15,7 @@ from openquake.hazardlib.sourcewriter import write_source_model
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
-from runzi.configuration.arguments import SystemArgs
+from runzi.execute.arguments import SystemArgs
 from runzi.runners.runner_inputs import OQOpenSHAConvertArgs
 
 

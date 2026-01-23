@@ -7,8 +7,6 @@ from pydantic import BaseModel, ValidationInfo, field_serializer, field_validato
 from typing_extensions import Self
 
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-from runzi.configuration.arguments import ArgBase
-from runzi.configuration.arguments import CoulombRuptureSetTaskArgs
 
 # Because we use field[0] for the value of the field in the inversion task we need a sentinal for "not set".
 # We use [None,] for this.
@@ -256,7 +254,8 @@ class CrustalTaskArgs(InversionTaskArgs):
 
 
 # TODO: do we need this? Work through the other OpenSHA tasks (e.g. reports) to find out
-class OpenshaArgs(ArgBase):
+# class OpenshaArgs(ArgBase):
+class OpenshaArgs:
     general: GeneralArgs
 
 
@@ -295,17 +294,3 @@ class CrustalInversionArgs(InversionArgs):
         if self.general.model_type is not ModelType.CRUSTAL:
             raise ValueError("Model type must be CRUSTAL for CrustalInversionArgs")
         return self
-
-
-# TODO: merge with inversion to share methods?
-class CoulombRuptureSetsInput(ArgBase):
-    task: CoulombRuptureSetTaskArgs
-
-    def get_tasks(self) -> Generator[Self, None, None]:
-        for task in self.task.get_tasks():
-            inv_args = self.model_copy(deep=True)
-            inv_args.task = task
-            yield inv_args
-
-    def get_run_args(self) -> dict:
-        return self.task.model_dump(mode='json')

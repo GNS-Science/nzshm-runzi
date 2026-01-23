@@ -9,7 +9,7 @@ from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API, WOR
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
-from runzi.configuration.arguments import SystemArgs
+from runzi.execute.arguments import SystemArgs
 from runzi.configuration.average_inversion_solutions import build_average_tasks
 from runzi.runners.runner_inputs import AverageSolutionsInput
 

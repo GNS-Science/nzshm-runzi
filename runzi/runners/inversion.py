@@ -16,9 +16,9 @@ from runzi.automation.scaling.local_config import (
     EnvMode,
 )
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
+from runzi.execute.arguments import SystemArgs
 from runzi.configuration.inversions import build_inversion_tasks
 from runzi.runners.inversion_inputs import InversionArgs
-from runzi.configuration.arguments import SystemArgs
 
 
 def run_inversion(inversion_args: InversionArgs) -> str | None:

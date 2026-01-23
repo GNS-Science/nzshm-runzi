@@ -14,9 +14,9 @@ from py4j.java_gateway import GatewayParameters, JavaGateway, JavaObject
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_INVERSION, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
+from runzi.execute.arguments import SystemArgs
 from runzi.execute.utils import generate_automation_task_args
 from runzi.runners.inversion_inputs import InversionArgs
-from runzi.configuration.arguments import SystemArgs
 
 logging.basicConfig(level=logging.INFO)
 

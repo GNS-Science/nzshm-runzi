@@ -2,10 +2,10 @@ import os
 import stat
 from pathlib import PurePath
 
-from runzi.configuration.arguments import SystemArgs
 import runzi.execute.average_solutions_task
 from runzi.automation.scaling.local_config import API_URL, CLUSTER_MODE, S3_REPORT_BUCKET, S3_URL, WORK_PATH, EnvMode
 from runzi.automation.scaling.python_task_factory import get_factory
+from runzi.execute.arguments import SystemArgs
 from runzi.runners.runner_inputs import AverageSolutionsInput
 from runzi.util.aws import get_ecs_job_config
 

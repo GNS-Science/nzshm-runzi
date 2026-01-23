@@ -15,6 +15,7 @@ from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
 from runzi.automation.scaling.task_config import get_task_config
+from runzi.execute.arguments import ArgBase, SystemArgs
 
 BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')
 
@@ -87,8 +88,8 @@ def decompress_config(compressed):
 def get_ecs_job_config(
     job_name,
     toshi_file_id,
-    task_args: BaseModel,
-    task_system_args: BaseModel,
+    task_args: ArgBase,
+    task_system_args: SystemArgs,
     toshi_api_url,
     toshi_s3_url,
     toshi_report_bucket,

@@ -19,8 +19,8 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
+from runzi.execute.arguments import SystemArgs
 from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
-from runzi.configuration.arguments import SystemArgs
 
 from .hazard_inputs import HazardInput
 

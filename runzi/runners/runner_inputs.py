@@ -8,7 +8,7 @@ from typing import Any, Optional
 from pydantic import BaseModel, field_validator
 
 from runzi.automation.scaling.toshi_api import ModelType
-from runzi.configuration.arguments import ArgBase
+from runzi.execute.arguments import ArgBase
 
 
 class InversionReportArgs(BaseModel):
@@ -53,5 +53,3 @@ class AverageSolutionsInput(ArgBase):
 
     solution_groups: list[list[str]]
     model_type: Optional[ModelType] = None
-
-

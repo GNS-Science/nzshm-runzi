@@ -4,6 +4,8 @@ import json
 import logging
 import platform
 import time
+from typing_extensions import Self
+from typing import Optional
 import urllib
 from pathlib import Path, PurePath
 from zipfile import ZipFile
@@ -14,13 +16,13 @@ from nshm_toshi_client.general_task import GeneralTask
 from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
+from pydantic import BaseModel, model_validator
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_RUPTURESET, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
+from runzi.execute.arguments import ArgBase, SystemArgs
 from runzi.execute.utils import generate_automation_task_args
-from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
-from runzi.configuration.arguments import SystemArgs
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -48,12 +50,45 @@ def get_fault_model_file(fault_model_file_id) -> Path:
     return Path(fault_model_archive_file_path).parent / fault_model_file
 
 
+class CoulombRuptureSetArgs(ArgBase):
+    """Input for generating Coulomb rupture sets."""
+
+    class DepthScaling(BaseModel):
+        tvz: float
+        sans: float
+
+    class FaultModelFile(BaseModel):
+        tag: str
+        archive_id: str
+
+    max_sections: int
+    max_jump_distance: float
+    adaptive_min_distance: float
+    thinning_factor: float
+    min_sub_sects_per_parent: int
+    min_sub_sections: int
+    scaling_relationship: str
+    depth_scaling: Optional[DepthScaling] = None
+    fault_model: Optional[str] = None
+    fault_model_file: Optional[FaultModelFile] = None
+    named_faults_file: Optional[FaultModelFile] = None
+
+    @model_validator(mode='after')
+    def _check_fault_model(self) -> Self:
+        """Must specify either fault_model or fault_model_file"""
+        has_fault_model = bool(self.fault_model)
+        has_fault_model_file = bool(self.fault_model_file)
+        if not (has_fault_model != has_fault_model_file):
+            raise ValueError("Must specify fault_model or fault_model_file, not both")
+        return self
+
+
 class RuptureSetBuilderTask:
     """
     The python client for a RuptureSetBuildTask
     """
 
-    def __init__(self, user_args: CoulombRuptureSetsInput, system_args: SystemArgs):
+    def __init__(self, user_args: CoulombRuptureSetArgs, system_args: SystemArgs):
 
         self.user_args = user_args
         self.system_args = system_args
@@ -102,7 +137,7 @@ class RuptureSetBuilderTask:
                     task_type="RUPTURE_SET",
                     model_type="CRUSTAL",
                 ),
-                arguments=generate_automation_task_args(self.user_args.task),
+                arguments=self.user_args.model_dump(mode='json'),
                 environment=environment,
             )
 
@@ -117,15 +152,15 @@ class RuptureSetBuilderTask:
             raise RuntimeError("Java Gateway could not get CoulombRuptureSetBuilder")
         print('Got RuptureSetBuilder: ', self._builder)
 
-        max_sections = self.user_args.task.max_sections[0]
-        max_jump_distance = self.user_args.task.max_jump_distance[0]
-        adaptive_min_distance = self.user_args.task.adaptive_min_distance[0]
-        thinning_factor = self.user_args.task.thinning_factor[0]
-        min_sub_sects_per_parent = self.user_args.task.min_sub_sects_per_parent[0]
-        min_sub_sections = self.user_args.task.min_sub_sections[0]
-        fault_model = self.user_args.task.fault_model[0]
-        fault_model_file = self.user_args.task.fault_model_file[0]
-        named_faults_file = self.user_args.task.named_faults_file[0]
+        max_sections = self.user_args.max_sections
+        max_jump_distance = self.user_args.max_jump_distance
+        adaptive_min_distance = self.user_args.adaptive_min_distance
+        thinning_factor = self.user_args.thinning_factor
+        min_sub_sects_per_parent = self.user_args.min_sub_sects_per_parent
+        min_sub_sections = self.user_args.min_sub_sections
+        fault_model = self.user_args.fault_model
+        fault_model_file = self.user_args.fault_model_file
+        named_faults_file = self.user_args.named_faults_file
 
         self._builder.setMaxFaultSections(max_sections)
         self._builder.setMaxJumpDistance(max_jump_distance)
@@ -147,10 +182,10 @@ class RuptureSetBuilderTask:
             self._builder.setNamedFaultsFile(str(named_faults_file))
 
         # if "CFM_1_0" in fault_model:
-        if self.user_args.task.depth_scaling[0] is not None:
+        if self.user_args.depth_scaling is not None:
             tvzDomain = "4"
-            depth_scaling_tvz = self.user_args.task.depth_scaling[0].tvz
-            depth_scaling_sans = self.user_args.task.depth_scaling[0].sans
+            depth_scaling_tvz = self.user_args.depth_scaling.tvz
+            depth_scaling_sans = self.user_args.depth_scaling.sans
             self._builder.setScaleDepthIncludeDomain(tvzDomain, depth_scaling_tvz).setScaleDepthExcludeDomain(
                 tvzDomain, depth_scaling_sans
             )
@@ -159,7 +194,7 @@ class RuptureSetBuilderTask:
         # if invert_rake:
         #     print('use inverted rake!')
         #     self._builder.setInvertRake(invert_rake)
-        scaling_relationship = self.user_args.task.scaling_relationship[0]
+        scaling_relationship = self.user_args.scaling_relationship
 
         if scaling_relationship == "SIMPLE_CRUSTAL":
             sr = self._gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
@@ -209,7 +244,7 @@ class RuptureSetBuilderTask:
                 task_id,
                 outputfile,
                 fault_models,
-                meta=generate_automation_task_args(self.user_args.task),
+                meta=self.user_args.model_dump(mode='json'),
                 metrics=metrics,
             )
 
@@ -247,7 +282,7 @@ if __name__ == "__main__":
         config = json.loads(urllib.parse.unquote(args.config))
 
     # print(config)
-    user_args = CoulombRuptureSetsInput(**config['task_args'])
+    user_args = CoulombRuptureSetArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
     task = RuptureSetBuilderTask(user_args, system_args)
 

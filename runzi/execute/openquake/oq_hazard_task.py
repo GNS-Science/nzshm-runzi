@@ -33,10 +33,10 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
+from runzi.execute.arguments import SystemArgs
 from runzi.execute.openquake.execute_openquake import execute_openquake
 from runzi.runners import DisaggInput, HazardInput
 from runzi.runners.hazard_inputs import HazardInputBase
-from runzi.configuration.arguments import SystemArgs
 from runzi.util.aws import decompress_config
 
 logging.basicConfig(level=logging.DEBUG)

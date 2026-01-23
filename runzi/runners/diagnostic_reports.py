@@ -1,9 +1,9 @@
 import datetime as dt
+from argparse import ArgumentParser
 from multiprocessing.dummy import Pool
+from pathlib import Path
 from subprocess import check_call
 from typing import Any, Callable, Generator, Literal, cast
-from argparse import ArgumentParser
-from pathlib import Path
 
 import boto3
 
@@ -53,6 +53,7 @@ def run_diagnostic_reports(general_task_id: str, mode=Literal["inversion", "rupt
             call_script(script_or_config)
 
     print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
+
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Create azimuthal rupture sets.")

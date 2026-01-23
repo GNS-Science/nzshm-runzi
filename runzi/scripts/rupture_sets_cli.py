@@ -5,8 +5,10 @@ from pathlib import Path
 import typer
 from rich import print as rich_print
 
+# from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
+from runzi.execute.arguments import ArgSweeper
+from runzi.execute.coulomb_rupture_set_builder_task import CoulombRuptureSetArgs
 from runzi.runners import SubductionRuptureSetsInput, run_coulomb_rupture_sets, run_subduction_rupture_sets
-from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
 
 app = typer.Typer()
 
@@ -15,7 +17,7 @@ app = typer.Typer()
 def coulomb(input_filepath: Path):
     """Create Coulomb (crustal) rupture sets."""
     rich_print("[yellow]Starting Coulomb rupture set jobs.")
-    job_input = CoulombRuptureSetsInput.from_json_file(input_filepath)
+    job_input = ArgSweeper.from_config_file(input_filepath, CoulombRuptureSetArgs)
     gt_id = run_coulomb_rupture_sets(job_input)
     rich_print(f"General Task ID: [bold green]{gt_id}")
 

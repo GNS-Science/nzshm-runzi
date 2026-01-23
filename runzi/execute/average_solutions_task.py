@@ -16,7 +16,7 @@ from runzi.automation.scaling.file_utils import download_files, get_output_file_
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import SubtaskType
-from runzi.configuration.arguments import SystemArgs
+from runzi.execute.arguments import SystemArgs
 from runzi.runners.runner_inputs import AverageSolutionsInput
 
 
