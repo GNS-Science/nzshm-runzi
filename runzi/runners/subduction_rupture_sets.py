@@ -10,7 +10,7 @@ from multiprocessing.dummy import Pool
 from pathlib import Path, PurePath
 from subprocess import check_call
 
-from runzi.automation.scaling import subduction_rupture_set_builder_task
+from runzi.execute import subduction_rupture_set_builder_task
 
 # Set up your local config, from environment variables, with some sone defaults
 from runzi.automation.scaling.local_config import (
