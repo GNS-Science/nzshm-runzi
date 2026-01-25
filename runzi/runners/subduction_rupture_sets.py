@@ -5,7 +5,10 @@ import getpass
 from argparse import ArgumentParser
 from multiprocessing.dummy import Pool
 from pathlib import Path
+import logging
 from subprocess import check_call
+
+from runzi.execute.arguments import SystemArgs, ArgSweeper
 
 
 # Set up your local config, from environment variables, with some sone defaults
@@ -19,7 +22,7 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
 from runzi.configuration.subduction_rupture_sets import build_tasks
-from runzi.execute.subduction_rupture_set_builder_task import SubductionRuptureSetsInput
+from runzi.execute.subduction_rupture_set_builder_task import SubductionRuptureSetArgs
 
 JVM_HEAP_MAX = 12
 JVM_HEAP_START = 2
@@ -28,7 +31,7 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 MAX_JOB_TIME_SECS = 60 * 30  # Change this soon
 
 
-def run_subduction_rupture_sets(job_input: SubductionRuptureSetsInput) -> str | None:
+def run_subduction_rupture_sets(job_input: ArgSweeper) -> str | None:
     """Launch jobs to build subduction rupture sets.
 
     Args:
@@ -99,5 +102,5 @@ if __name__ == "__main__":
     parser.add_argument('filename', help="the input filename")
     args = parser.parse_args()
     with Path(args.filename).open() as input_file:
-        job_input = SubductionRuptureSetsInput.from_toml_file(input_file)
+        job_input = SubductionRuptureSetArgs.from_toml_file(input_file)
     run_subduction_rupture_sets(job_input)

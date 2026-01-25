@@ -152,23 +152,15 @@ class RuptureSetBuilderTask:
             raise RuntimeError("Java Gateway could not get CoulombRuptureSetBuilder")
         print('Got RuptureSetBuilder: ', self._builder)
 
-        max_sections = self.user_args.max_sections
-        max_jump_distance = self.user_args.max_jump_distance
-        adaptive_min_distance = self.user_args.adaptive_min_distance
-        thinning_factor = self.user_args.thinning_factor
-        min_sub_sects_per_parent = self.user_args.min_sub_sects_per_parent
-        min_sub_sections = self.user_args.min_sub_sections
+        self._builder.setMaxFaultSections(self.user_args.max_sections)
+        self._builder.setMaxJumpDistance(self.user_args.max_jump_distance)
+        self._builder.setAdaptiveMinDist(self.user_args.adaptive_min_distance)
+        self._builder.setAdaptiveSectFract(self.user_args.thinning_factor)
+        self._builder.setMinSubSectsPerParent(self.user_args.min_sub_sects_per_parent)
+        self._builder.setMinSubSections(self.user_args.min_sub_sections)
+
         fault_model = self.user_args.fault_model
         fault_model_file = self.user_args.fault_model_file
-        named_faults_file = self.user_args.named_faults_file
-
-        self._builder.setMaxFaultSections(max_sections)
-        self._builder.setMaxJumpDistance(max_jump_distance)
-        self._builder.setAdaptiveMinDist(adaptive_min_distance)
-        self._builder.setAdaptiveSectFract(thinning_factor)
-        self._builder.setMinSubSectsPerParent(min_sub_sects_per_parent)
-        self._builder.setMinSubSections(min_sub_sections)
-
         if fault_model is not None:
             fault_models = [fault_model]
             self._builder.setFaultModel(fault_model)
@@ -177,6 +169,7 @@ class RuptureSetBuilderTask:
             fault_model_file = get_fault_model_file(fault_model_file.archive_id)
             self._builder.setFaultModelFile(str(fault_model_file))
 
+        named_faults_file = self.user_args.named_faults_file
         if named_faults_file is not None:
             named_faults_file = get_fault_model_file(named_faults_file.archive_id)
             self._builder.setNamedFaultsFile(str(named_faults_file))

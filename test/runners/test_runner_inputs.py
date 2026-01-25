@@ -6,7 +6,7 @@ import tomlkit
 from pydantic import ValidationError
 
 from runzi.automation.scaling.toshi_api.general_task import ModelType
-from runzi.execute.subduction_rupture_set_builder_task import SubductionRuptureSetsInput
+from runzi.execute.subduction_rupture_set_builder_task import SubductionRuptureSetArgs
 from runzi.runners import ScaleSolutionsInput, TimeDependentSolutionInput
 from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
 from runzi.runners.runner_inputs import AverageSolutionsInput
@@ -43,7 +43,7 @@ class_filename = [
     (AverageSolutionsInput, 'average_solutions.toml'),
     # (CoulombRuptureSetsInput, 'coulomb_rupture_sets.toml'),
     (ScaleSolutionsInput, 'scale_solutions.toml'),
-    (SubductionRuptureSetsInput, 'subduction_rupture_sets.toml'),
+    (SubductionRuptureSetArgs, 'subduction_rupture_sets.toml'),
     (TimeDependentSolutionInput, 'time_dependent_solution.toml'),
 ]
 

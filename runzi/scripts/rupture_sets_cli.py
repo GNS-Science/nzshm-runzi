@@ -8,7 +8,7 @@ from rich import print as rich_print
 # from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
 from runzi.execute.arguments import ArgSweeper
 from runzi.execute.coulomb_rupture_set_builder_task import CoulombRuptureSetArgs
-from runzi.execute.subduction_rupture_set_builder_task import SubductionRuptureSetsInput
+from runzi.execute.subduction_rupture_set_builder_task import SubductionRuptureSetArgs
 from runzi.runners import run_coulomb_rupture_sets, run_subduction_rupture_sets
 
 app = typer.Typer()
@@ -27,7 +27,7 @@ def coulomb(input_filepath: Path):
 def subduction(input_filepath: Path):
     """Create subduction rupture sets."""
     rich_print("[yellow]Starting subduction rupture set jobs.")
-    job_input = SubductionRuptureSetsInput.from_toml_file(input_filepath)
+    job_input = SubductionRuptureSetArgs.from_toml_file(input_filepath)
     gt_id = run_subduction_rupture_sets(job_input)
     rich_print(f"General Task ID: [bold green]{gt_id}")
 

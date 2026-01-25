@@ -1,99 +1,94 @@
-from runzi.automation.scaling.local_config import CLUSTER_MODE, FATJAR, OPENSHA_JRE, OPENSHA_ROOT, USE_API, WORK_PATH, EnvMode
-from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.execute import subduction_rupture_set_builder_task
-from runzi.execute.subduction_rupture_set_builder_task import SubductionRuptureSetsInput
-from runzi.runners.subduction_rupture_sets import INITIAL_GATEWAY_PORT, JVM_HEAP_MAX, JVM_HEAP_START
 
-
-import itertools
 import os
 import stat
+from itertools import product
 from pathlib import PurePath
+from typing import Any, Generator, Optional
+
+from typing_extensions import Sequence
+
+from runzi.automation.scaling.local_config import (
+    API_URL,
+    CLUSTER_MODE,
+    FATJAR,
+    JVM_HEAP_START,
+    OPENSHA_JRE,
+    OPENSHA_ROOT,
+    S3_REPORT_BUCKET,
+    S3_URL,
+    USE_API,
+    WORK_PATH,
+    EnvMode,
+)
+from runzi.automation.scaling.opensha_task_factory import get_factory
+from runzi.execute.arguments import ArgSweeper, SystemArgs
+from runzi.execute import subduction_rupture_set_builder_task
+from runzi.util.aws import get_ecs_job_config
+from runzi.execute.subduction_rupture_set_builder_task import SubductionRuptureSetArgs
+
+JVM_HEAP_MAX = 32
+JAVA_THREADS = 16
+INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
+MAX_JOB_TIME_MIN = 60
 
 
-def build_tasks(general_task_id, job_input: SubductionRuptureSetsInput):
-    """
-    build the shell scripts 1 per task, based on all the inputs
 
-    """
-    work_path = '/WORKING' if CLUSTER_MODE == EnvMode['AWS'] else WORK_PATH
-    task_count = 0
+def build_tasks(rupture_set_args: ArgSweeper, system_args: SystemArgs) -> Generator[dict[str, Any] | str, None, None]:
+    """Build the shell scripts 1 per task, based on all the inputs."""
     factory_class = get_factory(CLUSTER_MODE)
 
     task_factory = factory_class(
         OPENSHA_ROOT,
-        work_path,
+        WORK_PATH,
         subduction_rupture_set_builder_task,
         initial_gateway_port=INITIAL_GATEWAY_PORT,
         jre_path=OPENSHA_JRE,
         app_jar_path=FATJAR,
-        task_config_path=work_path,
+        task_config_path=WORK_PATH,
         jvm_heap_max=JVM_HEAP_MAX,
         jvm_heap_start=JVM_HEAP_START,
     )
 
-    # task_factory = OpenshaTaskFactory(OPENSHA_ROOT, work_path, scaling.subduction_rupture_set_builder_task,
-    #     initial_gateway_port=25733,
-    #     jre_path=OPENSHA_JRE, app_jar_path=FATJAR,
-    #     task_config_path=work_path, jvm_heap_max=JVM_HEAP_MAX, jvm_heap_start=JVM_HEAP_START)
-    for (
-        model,
-        min_aspect_ratio,
-        max_aspect_ratio,
-        aspect_depth_threshold,
-        min_fill_ratio,
-        growth_position_epsilon,
-        growth_size_epsilon,
-        scaling_relationship,
-        deformation_model,
-    ) in itertools.product(
-        job_input.models,
-        job_input.min_aspect_ratios,
-        job_input.max_aspect_ratios,
-        job_input.aspect_depth_thresholds,
-        job_input.min_fill_ratios,
-        job_input.growth_position_epsilons,
-        job_input.growth_size_epsilons,
-        job_input.scaling_relationships,
-        job_input.deformation_models,
-    ):
 
-        task_count += 1
+    for task_count, task_args in enumerate(rupture_set_args.get_tasks(), start=1):
 
-        task_arguments = dict(
-            fault_model=model,
-            min_aspect_ratio=min_aspect_ratio,
-            max_aspect_ratio=max_aspect_ratio,
-            aspect_depth_threshold=aspect_depth_threshold,
-            min_fill_ratio=min_fill_ratio,
-            growth_position_epsilon=growth_position_epsilon,
-            growth_size_epsilon=growth_size_epsilon,
-            scaling_relationship=scaling_relationship,
-            slip_along_rupture_model='UNIFORM',
-            deformation_model=deformation_model,
-        )
+        task_system_args = system_args.model_copy()
+        task_system_args.task_count = task_count
+        task_system_args.java_threads = JAVA_THREADS
+        task_system_args.java_gateway_port = task_factory.get_next_port()
+        task_system_args.use_api = USE_API
 
-        job_arguments = dict(
-            task_id=task_count,
-            java_threads=JAVA_THREADS,
-            PROC_COUNT=JAVA_THREADS,
-            JVM_HEAP_MAX=JVM_HEAP_MAX,
-            java_gateway_port=task_factory.get_next_port(),
-            working_path=str(work_path),
-            root_folder=OPENSHA_ROOT,
-            general_task_id=general_task_id,
-            use_api=USE_API,
-        )
+        if CLUSTER_MODE == EnvMode['AWS']:
 
-        # write a config
-        task_factory.write_task_config(task_arguments, job_arguments)
-        script = task_factory.get_task_script()
+            job_name = f"Runzi-automation-coulomb-ruputre-sets-{task_count}"
 
-        script_file_path = PurePath(work_path, f"task_{task_count}.sh")
-        with open(script_file_path, 'w') as f:
-            f.write(script)
-        # make file executable
-        st = os.stat(script_file_path)
-        os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
+            yield get_ecs_job_config(
+                job_name,
+                # task_args.task.rupture_set_id[0],  # TODO: we don't need this, can be done by task script
+                "",
+                task_args,
+                task_system_args,
+                toshi_api_url=API_URL,
+                toshi_s3_url=S3_URL,
+                toshi_report_bucket=S3_REPORT_BUCKET,
+                task_module=subduction_rupture_set_builder_task.__name__,
+                time_minutes=MAX_JOB_TIME_MIN,
+                memory=30720,
+                vcpu=4,
+            )
 
-        yield str(script_file_path)
+        else:
+            # write a config
+            task_factory.write_task_config(task_args, task_system_args)
+
+            script = task_factory.get_task_script()
+
+            script_file_path = PurePath(WORK_PATH, f"task_{task_count}.sh")
+            with open(script_file_path, 'w') as f:
+                f.write(script)
+
+            # make file executable
+            st = os.stat(script_file_path)
+            os.chmod(script_file_path, st.st_mode | stat.S_IEXEC)
+
+            yield str(script_file_path)

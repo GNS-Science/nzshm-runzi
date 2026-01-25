@@ -1,4 +1,4 @@
-from ..execute.subduction_rupture_set_builder_task import SubductionRuptureSetsInput
+from ..execute.subduction_rupture_set_builder_task import SubductionRuptureSetArgs
 from ..execute.arguments import SystemArgs
 from .average_solutions import run_average_solutions
 from .build_manual_index import build_manual_index

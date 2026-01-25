@@ -35,7 +35,6 @@ def build_tasks(rupture_set_args: ArgSweeper, system_args: SystemArgs) -> Genera
     build the shell scripts 1 per task, based on all the inputs
 
     """
-    task_count = 0
     factory_class = get_factory(CLUSTER_MODE)
 
     task_factory = factory_class(
@@ -53,7 +52,6 @@ def build_tasks(rupture_set_args: ArgSweeper, system_args: SystemArgs) -> Genera
     for task_count, task_args in enumerate(rupture_set_args.get_tasks(), start=1):
 
         task_system_args = system_args.model_copy()
-
         task_system_args.task_count = task_count
         task_system_args.java_threads = JAVA_THREADS
         task_system_args.java_gateway_port = task_factory.get_next_port()

@@ -1,10 +1,14 @@
 import argparse
+from pathlib import Path
+from typing import Optional
+import urllib
 import datetime as dt
 import json
 import os
 import platform
 import time
 from pathlib import PurePath
+import logging
 
 import git
 from dateutil.tz import tzutc
@@ -12,37 +16,51 @@ from nshm_toshi_client.general_task import GeneralTask
 from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_RUPTURESET, WORK_PATH
 
-from runzi.execute.arguments import ArgBase
+from runzi.execute.arguments import ArgBase, SystemArgs
 
-CLUSTER_MODE = os.getenv('NZSHM22_SCRIPT_CLUSTER_MODE', False)
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
-API_URL = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
-API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
-S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL', "http://localhost:4569")
+loglevel = logging.INFO
+logging.getLogger('py4j.java_gateway').setLevel(loglevel)
+logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
+logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
+logging.getLogger('urllib3').setLevel(loglevel)
+logging.getLogger('git.cmd').setLevel(loglevel)
 
+class SubductionRuptureSetArgs(ArgBase):
+    """Input for generating subduction rupture sets."""
+
+    fault_model: str
+    min_aspect_ratio: float
+    max_aspect_ratio: float
+    aspect_depth_threshold: int
+    min_fill_ratio: float
+    growth_position_epsilon: float
+    growth_size_epsilon: float
+    scaling_relationship: str
+    slip_along_rupture_model: str
+    deformation_model: Optional[str]
 
 class RuptureSetBuilderTask:
     """
     The python client for a RuptureSetBuildTask
     """
 
-    def __init__(self, job_args):
+    def __init__(self, user_args: SubductionRuptureSetArgs, system_args: SystemArgs):
 
-        self.use_api = job_args.get('use_api', False)
+        self.user_args = user_args
+        self.system_args = system_args
+        self.use_api = system_args.use_api
 
         # setup the java gateway binding
-        gateway = JavaGateway(gateway_parameters=GatewayParameters(port=job_args['java_gateway_port']))
+        gateway = JavaGateway(gateway_parameters=GatewayParameters(port=self.system_args.java_gateway_port))
         app = gateway.entry_point
         self._builder = app.getSubductionRuptureSetBuilder()
 
-        # repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
-        self._output_folder = PurePath(
-            job_args.get('working_path')
-        )  # .joinpath('tmp').joinpath(dt.datetime.utcnow().isoformat().replace(':','-'))
-
-        # setup the csv (backup) task recorder
-        # self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
+        self._output_folder = PurePath(WORK_PATH)
 
         if self.use_api:
             headers = {"x-api-key": API_KEY}
@@ -53,80 +71,75 @@ class RuptureSetBuilderTask:
             self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
     def ruptureSetMetrics(self):
-        metrics = {}
-        metrics["subsection_count"] = self._builder.getSubSections().size()
-        metrics["rupture_count"] = self._builder.getRuptures().size()
-        return metrics
+        return dict(
+            subsection_count = self._builder.getSubSections().size(),
+            rupture_count = self._builder.getRuptures().size()
+        )
 
     def run(self, task_arguments, job_arguments):
 
-        # print(task_arguments)
-        # print(job_arguments)
-
-        t0 = dt.datetime.utcnow()
+        t0 = dt.datetime.now()
 
         environment = {
             "host": platform.node(),
-            # "gitref_opensha":self._repoheads['opensha'],
-            # "gitref_nzshm-opensha":self._repoheads['nzshm-opensha'],
-            # "gitref_nzshm-runzi":self._repoheads['nzshm-runzi'],
-            "java_threads": job_arguments["java_threads"],
-            "proc_count": job_arguments["PROC_COUNT"],
-            "jvm_heap_max": job_arguments["JVM_HEAP_MAX"],
+            "java_threads": self.system_args.java_threads,
+            "proc_count": self.system_args.java_threads,
         }
 
         if self.use_api:
-            # create new task in toshi_api
             task_id = self._ruptgen_api.create_task(
-                dict(created=dt.datetime.now(tzutc()).isoformat()), arguments=task_arguments, environment=environment
+                dict(
+                    created=dt.datetime.now(tzutc()).isoformat(),
+                    task_type="RUPTURE_SET",
+                    model_type="SUBDUCTION",
+                ),
+                arguments=self.user_args.model_dump(mode='json'),
+                environment=environment,
             )
 
             # link task tp the parent task
-            self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
-            # #link task to the input datafile (*.XML)
-            # self._ruptgen_api.link_task_file(task_id, crustal_id, 'READ')
-
+            self._task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
         else:
             task_id = None
 
-        # Run the task....
-        ta = task_arguments
-
-        assert self._builder
+        if not self._builder:
+            raise RuntimeError("Java Gateway could not get CoulombRuptureSetBuilder")
         print('Got RuptureSetBuilder: ', self._builder)
 
-        self._builder.setDownDipAspectRatio(
-            float(ta['min_aspect_ratio']), float(ta['max_aspect_ratio']), int(ta['aspect_depth_threshold'])
-        ).setDownDipMinFill(float(ta['min_fill_ratio'])).setDownDipPositionCoarseness(
-            float(ta['growth_position_epsilon'])
-        ).setDownDipSizeCoarseness(
-            float(ta['growth_size_epsilon'])
-        ).setScalingRelationship(
-            ta['scaling_relationship']
-        ).setSlipAlongRuptureModel(
-            ta['slip_along_rupture_model']
-        ).setFaultModel(
-            ta['fault_model']
-        )
+        self._builder.setDownDipAspectRatio(self.user_args.min_aspect_ratio, self.user_args.max_aspect_ratio, self.user_args.aspect_depth_threshold)
+        self._builder.setDownDipMinFill(self.user_args.min_fill_ratio)
+        self._builder.setDownDipPositionCoarseness(self.user_args.growth_position_epsilon)
+        self._builder.setDownDipSizeCoarseness(self.user_args.growth_size_epsilon)
+        self._builder.setScalingRelationship(self.user_args.scaling_relationship)
+        self._builder.setSlipAlongRuptureModel(self.user_args.slip_along_rupture_model)
+        self._builder.setFaultModel(self.user_args.fault_model)
 
-        if ta['deformation_model']:
-            self._builder.setDeformationModel(ta['deformation_model'])
+        if deformation_model := self.user_args.deformation_model:
+            self._builder.setDeformationModel(deformation_model)
 
         # name the output file
-        outputfile = self._output_folder.joinpath(self._builder.getDescriptiveName() + ".zip")
-        print("building %s started at %s" % (outputfile, dt.datetime.utcnow().isoformat()), end=' ')
+        if self.use_api:
+            outputfile = self._output_folder.joinpath(f"NZSHM22_RuptureSet-{task_id}.zip")
+        else:
+            outputfile = self._output_folder.joinpath(self._builder.getDescriptiveName() + ".zip")
+        log.info("building %s started at %s" % (outputfile, dt.datetime.now().isoformat()))
 
-        self._builder.setNumThreads(int(job_arguments["java_threads"])).buildRuptureSet()
+        if not SPOOF_RUPTURESET:
+            self._builder.setNumThreads(self.system_args.java_threads).buildRuptureSet()
+            metrics = self.ruptureSetMetrics()
+        else:
+            metrics = {"subsection_count": 0, "rupture_count": 0}
 
         # capture task metrics
-        duration = (dt.datetime.utcnow() - t0).total_seconds()
-        metrics = self.ruptureSetMetrics()
+        duration = (dt.datetime.now() - t0).total_seconds()
 
         # write the result
-        self._builder.writeRuptureSet(str(outputfile))
+        if not SPOOF_RUPTURESET:
+            self._builder.writeRuptureSet(str(outputfile))
+        else:
+            Path(outputfile).touch()
 
         if self.use_api:
-            # record the completed task
             done_args = {
                 'task_id': task_id,
                 'duration': duration,
@@ -139,12 +152,12 @@ class RuptureSetBuilderTask:
             self._ruptgen_api.upload_task_file(task_id, outputfile, 'WRITE', meta=task_arguments)
 
             # and the log files, why not
-            java_log_file = self._output_folder.joinpath(f"java_app.{job_arguments['java_gateway_port']}.log")
+            java_log_file = self._output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
             self._ruptgen_api.upload_task_file(task_id, java_log_file, 'WRITE')
-            pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
-            self._ruptgen_api.upload_task_file(task_id, pyth_log_file, 'WRITE')
+            # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
+            # self._ruptgen_api.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
-        print("; took %s secs" % (dt.datetime.utcnow() - t0).total_seconds())
+        print("; took %s secs" % (dt.datetime.now() - t0).total_seconds())
 
 
 def get_repo_heads(rootdir, repos):
@@ -162,29 +175,23 @@ if __name__ == "__main__":
     parser.add_argument("config")
     args = parser.parse_args()
 
-    config_file = args.config
-    f = open(config_file, 'r', encoding='utf-8')
-    config = json.load(f)
+    try:
+        # LOCAL and CLUSTER this is a file
+        config_file = args.config
+        f = open(args.config, 'r', encoding='utf-8')
+        config = json.load(f)
+    except FileNotFoundError:
+        # for AWS this must be a quoted JSON string
+        config = json.loads(urllib.parse.unquote(args.config))
+
+    # print(config)
+    user_args = SubductionRuptureSetArgs(**config['task_args'])
+    system_args = SystemArgs(**config['task_system_args'])
+    task = RuptureSetBuilderTask(user_args, system_args)
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(3)
-    if CLUSTER_MODE:
-        time.sleep(5)
-        # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-        time.sleep(config['job_arguments']['task_id'] * 5)
+    # Wait for some more time, scaled by taskid to avoid S3 consistency issue
+    time.sleep(system_args.task_count)
 
-    # print(config)
-    task = RuptureSetBuilderTask(config['job_arguments'])
-    task.run(**config)
-
-
-class SubductionRuptureSetsInput(ArgBase):
-    models: list[str]
-    min_aspect_ratios: list[float]
-    max_aspect_ratios: list[float]
-    aspect_depth_thresholds: list[int]
-    min_fill_ratios: list[float]
-    growth_position_epsilons: list[float]
-    growth_size_epsilons: list[float]
-    scaling_relationships: list[str]
-    deformation_models: list[str]
+    task.run()
