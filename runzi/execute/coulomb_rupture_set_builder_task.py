@@ -83,10 +83,8 @@ class CoulombRuptureSetArgs(ArgBase):
         return self
 
 
-class RuptureSetBuilderTask:
-    """
-    The python client for a RuptureSetBuildTask
-    """
+class CoulombRuptureSetBuilderTask:
+    """Class for building Coulomb rupture sets."""
 
     def __init__(self, user_args: CoulombRuptureSetArgs, system_args: SystemArgs):
 
@@ -277,7 +275,7 @@ if __name__ == "__main__":
     # print(config)
     user_args = CoulombRuptureSetArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
-    task = RuptureSetBuilderTask(user_args, system_args)
+    task = CoulombRuptureSetBuilderTask(user_args, system_args)
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(3)

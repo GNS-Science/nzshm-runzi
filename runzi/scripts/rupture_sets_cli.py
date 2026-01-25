@@ -5,11 +5,11 @@ from pathlib import Path
 import typer
 from rich import print as rich_print
 
-# from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
-from runzi.execute.arguments import ArgSweeper
 from runzi.execute.coulomb_rupture_set_builder_task import CoulombRuptureSetArgs
 from runzi.execute.subduction_rupture_set_builder_task import SubductionRuptureSetArgs
-from runzi.runners import run_coulomb_rupture_sets, run_subduction_rupture_sets
+from runzi.execute.arguments import ArgSweeper
+from runzi.runners.coulomb_rupture_sets import CoulombRuptureSetJobRunner
+from runzi.runners.subduction_rupture_sets import SubductionRuptureSetJobRunner
 
 app = typer.Typer()
 
@@ -19,7 +19,8 @@ def coulomb(input_filepath: Path):
     """Create Coulomb (crustal) rupture sets."""
     rich_print("[yellow]Starting Coulomb rupture set jobs.")
     job_input = ArgSweeper.from_config_file(input_filepath, CoulombRuptureSetArgs)
-    gt_id = run_coulomb_rupture_sets(job_input)
+    runner = CoulombRuptureSetJobRunner(job_input)
+    gt_id = runner.run_jobs()
     rich_print(f"General Task ID: [bold green]{gt_id}")
 
 
@@ -27,8 +28,9 @@ def coulomb(input_filepath: Path):
 def subduction(input_filepath: Path):
     """Create subduction rupture sets."""
     rich_print("[yellow]Starting subduction rupture set jobs.")
-    job_input = SubductionRuptureSetArgs.from_toml_file(input_filepath)
-    gt_id = run_subduction_rupture_sets(job_input)
+    job_input = ArgSweeper.from_config_file(input_filepath, SubductionRuptureSetArgs)
+    runner = SubductionRuptureSetJobRunner(job_input)
+    gt_id = runner.run_jobs()
     rich_print(f"General Task ID: [bold green]{gt_id}")
 
 

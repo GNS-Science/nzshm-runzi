@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
-from typing import Any, Generator, Optional, Sequence, TextIO, Type
+from typing import Any, Generator, Optional, Sequence, TextIO
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 
 import tomlkit
 from pydantic import BaseModel
@@ -8,11 +9,16 @@ from typing_extensions import Self
 
 
 class SystemArgs(BaseModel):
-    java_gateway_port: int = 0
+    use_api: bool
+    subtask_type: Optional[SubtaskType] = None
+    model_type: Optional[ModelType] = None
+    java_gateway_port: Optional[int] = None
     general_task_id: Optional[str] = None
-    task_count: int = 0
-    java_threads: int = 0
-    use_api: bool = False
+    task_count: Optional[int] = None
+    java_threads: Optional[int] = None
+    jvm_heap_max: Optional[int] = None
+    max_job_time_min: Optional[int] = None
+    job_name: Optional[str] = None
 
 
 class ArgBase(BaseModel):

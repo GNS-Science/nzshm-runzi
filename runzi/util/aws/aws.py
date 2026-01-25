@@ -87,7 +87,6 @@ def decompress_config(compressed):
 
 def get_ecs_job_config(
     job_name,
-    toshi_file_id,
     task_args: ArgBase,
     task_system_args: SystemArgs,
     toshi_api_url,
@@ -183,7 +182,6 @@ def get_ecs_job_config(
                 {"name": "NZSHM22_TOSHI_S3_URL", "value": toshi_s3_url},
                 {"name": "NZSHM22_TOSHI_API_URL", "value": toshi_api_url},
                 {"name": "NZSHM22_S3_REPORT_BUCKET", "value": toshi_report_bucket},
-                {"name": "TOSHI_FILE_ID", "value": toshi_file_id},
                 {"name": "PYTHON_PREP_MODULE", "value": 'runzi.execute.prepare_inputs'},
                 {"name": "PYTHON_TASK_MODULE", "value": task_module},
             ],

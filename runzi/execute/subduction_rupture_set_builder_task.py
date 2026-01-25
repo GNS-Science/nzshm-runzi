@@ -42,12 +42,10 @@ class SubductionRuptureSetArgs(ArgBase):
     growth_size_epsilon: float
     scaling_relationship: str
     slip_along_rupture_model: str
-    deformation_model: Optional[str]
+    deformation_model: Optional[str] = None
 
-class RuptureSetBuilderTask:
-    """
-    The python client for a RuptureSetBuildTask
-    """
+class SubductionRuptureSetBuilderTask:
+    """Class for building subduction rupture sets."""
 
     def __init__(self, user_args: SubductionRuptureSetArgs, system_args: SystemArgs):
 
@@ -76,7 +74,7 @@ class RuptureSetBuilderTask:
             rupture_count = self._builder.getRuptures().size()
         )
 
-    def run(self, task_arguments, job_arguments):
+    def run(self):
 
         t0 = dt.datetime.now()
 
@@ -113,6 +111,7 @@ class RuptureSetBuilderTask:
         self._builder.setScalingRelationship(self.user_args.scaling_relationship)
         self._builder.setSlipAlongRuptureModel(self.user_args.slip_along_rupture_model)
         self._builder.setFaultModel(self.user_args.fault_model)
+        fault_models = [self.user_args.fault_model]
 
         if deformation_model := self.user_args.deformation_model:
             self._builder.setDeformationModel(deformation_model)
@@ -149,7 +148,13 @@ class RuptureSetBuilderTask:
             self._ruptgen_api.complete_task(done_args, metrics)
 
             # upload the task output
-            self._ruptgen_api.upload_task_file(task_id, outputfile, 'WRITE', meta=task_arguments)
+            self._ruptgen_api.upload_rupture_set(
+                task_id,
+                outputfile,
+                fault_models,
+                meta=self.user_args.model_dump(mode='json'),
+                metrics=metrics,
+            )
 
             # and the log files, why not
             java_log_file = self._output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
@@ -187,7 +192,7 @@ if __name__ == "__main__":
     # print(config)
     user_args = SubductionRuptureSetArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
-    task = RuptureSetBuilderTask(user_args, system_args)
+    task = SubductionRuptureSetBuilderTask(user_args, system_args)
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(3)
