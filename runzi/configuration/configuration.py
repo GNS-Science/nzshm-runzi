@@ -27,17 +27,17 @@ from runzi.util.aws import get_ecs_job_config
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 
 
-def build_tasks(rupture_set_args: ArgSweeper, system_args: SystemArgs, task_module: ModuleType) -> Generator[dict[str, Any] | str, None, None]:
+def build_tasks(user_args: ArgSweeper, system_args: SystemArgs, task_module: ModuleType) -> Generator[dict[str, Any] | str, None, None]:
     """
     build the shell scripts 1 per task, based on all the inputs
 
     """
-    factory_class = get_factory(CLUSTER_MODE)
+    factory_class = get_factory(CLUSTER_MODE, system_args.task_language)
 
-    task_factory = factory_class(
-        OPENSHA_ROOT,
-        WORK_PATH,
-        task_module,
+    task_factory = factory_class.create(
+        root_path=OPENSHA_ROOT,
+        working_path=WORK_PATH,
+        python_script_module=task_module,
         initial_gateway_port=INITIAL_GATEWAY_PORT,
         jre_path=OPENSHA_JRE,
         app_jar_path=FATJAR,
@@ -46,7 +46,7 @@ def build_tasks(rupture_set_args: ArgSweeper, system_args: SystemArgs, task_modu
         jvm_heap_start=JVM_HEAP_START,
     )
 
-    for task_count, task_args in enumerate(rupture_set_args.get_tasks(), start=1):
+    for task_count, task_args in enumerate(user_args.get_tasks(), start=1):
 
         task_system_args = system_args.model_copy()
         task_system_args.task_count = task_count
@@ -63,7 +63,7 @@ def build_tasks(rupture_set_args: ArgSweeper, system_args: SystemArgs, task_modu
                 toshi_api_url=API_URL,
                 toshi_s3_url=S3_URL,
                 toshi_report_bucket=S3_REPORT_BUCKET,
-                task_module=coulomb_rupture_set_builder_task.__name__,
+                task_module=task_module.__name__,
                 time_minutes=system_args.max_job_time_min,
                 memory=30720,
                 vcpu=4,

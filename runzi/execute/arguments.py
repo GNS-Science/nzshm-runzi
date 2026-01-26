@@ -1,3 +1,4 @@
+from enum import Enum
 import json
 from pathlib import Path
 from typing import Any, Generator, Optional, Sequence, TextIO
@@ -8,8 +9,14 @@ from pydantic import BaseModel
 from typing_extensions import Self
 
 
+
+class TaskLanguage(Enum):
+    PYTHON = 'python'
+    JAVA = 'java'
+
 class SystemArgs(BaseModel):
     use_api: bool
+    task_language: Optional[TaskLanguage] = None
     subtask_type: Optional[SubtaskType] = None
     model_type: Optional[ModelType] = None
     java_gateway_port: Optional[int] = None

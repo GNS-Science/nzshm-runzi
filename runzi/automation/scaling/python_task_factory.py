@@ -38,16 +38,27 @@ class PythonTaskFactory:
         self._python = str(python)
         self._next_task = 1
 
+    @classmethod
+    def create(cls, **kwargs) -> 'PythonTaskFactory':
+        return cls(
+            kwargs['working_path'],
+            kwargs['python_script_module'],
+            task_config_path=kwargs.get('task_config_path'),
+            python=kwargs.get('python', 'python3'),
+        )
+
+    def get_next_port(self) -> int:
+        return self._next_task
+
     def write_task_config(self, task_arguments: BaseModel, task_system_args: BaseModel):
         fname = self._config_path / f"config.{self._next_task}.json"
         task_config = get_task_config(task_arguments, task_system_args)
         fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
 
-    def get_task_script(self) -> tuple[str, int]:
-        # TODO: do we still need the nex_task - 1?
-        return self._get_bash_script(), self._next_task - 1
+    def get_task_script(self) -> str:
+        return self._get_bash_script()
 
-    def _get_bash_script(self):
+    def _get_bash_script(self) -> str:
         """
         get the bash for the next task
         """
@@ -95,7 +106,7 @@ class PythonPBSTaskFactory(PythonTaskFactory):
         # task_config = get_task_config(task_args, task_system_args)
         # fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
 
-    def get_task_script(self):
+    def get_task_script(self) -> str:
         return f"""
 #PBS -l nodes={self._pbs_nodes}:ppn={self._pbs_ppn}
 #PBS -l walltime={self._pbs_wall_hours}:00:00
@@ -116,7 +127,7 @@ export NO_PROXY=${{no_proxy}}
 """
 
 
-def get_factory(environment_mode):
+def get_factory(environment_mode) -> type[PythonTaskFactory]:
     if environment_mode == EnvMode['LOCAL']:
         return PythonTaskFactory
     elif environment_mode == EnvMode['CLUSTER']:

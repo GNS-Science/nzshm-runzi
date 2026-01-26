@@ -6,7 +6,7 @@ import time
 import urllib
 import uuid
 from itertools import chain
-from pathlib import PurePath
+from pathlib import PurePath, Path
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
@@ -16,8 +16,15 @@ from runzi.automation.scaling.file_utils import download_files, get_output_file_
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import SubtaskType
+from runzi.execute.arguments import ArgBase, SystemArgs
 from runzi.execute.arguments import SystemArgs
 from runzi.runners.runner_inputs import AverageSolutionsInput
+
+
+class AverageSolutionsInput(ArgBase):
+    """Input for averaging solutions."""
+
+    source_solution_ids: list[str]
 
 
 def get_common_rupture_set(source_solution_ids: list[str], toshi_api: ToshiApi) -> str:
@@ -80,7 +87,7 @@ def is_rupture_set(file_id: str) -> bool:
     return "'File:" in str(base64.b64decode(file_id))
 
 
-class BuilderTask:
+class AverageSolutionsTask:
     """
     The python client for solution rate averaging
     """
@@ -101,7 +108,7 @@ class BuilderTask:
         t0 = dt.datetime.now()
 
         environment = {}
-        source_solution_ids = self.user_args.solution_groups[0]
+        source_solution_ids = self.user_args.source_solution_ids
 
         if self.use_api:
             # create new task in toshi_api
@@ -109,7 +116,7 @@ class BuilderTask:
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type=SubtaskType.AGGREGATE_SOLUTION.name,
-                    model_type=self.user_args.model_type,
+                    model_type=self.system_args.model_type.name,
                 ),
                 arguments=self.user_args.model_dump(mode='json'),
                 environment=environment,
@@ -205,8 +212,7 @@ class BuilderTask:
 
         new_archive = PurePath(WORK_PATH, 'NZSHM22_AveragedInversionSolution-' + str(task_id) + '.zip')
 
-        scaled_soln.to_archive(new_archive, in_solution_filepath)
-
+        # scaled_soln.to_archive(new_archive, in_solution_filepath)
         metrics = dict(num_input_solns=len(in_solution_filepaths))
         return dict(averaged_solution=new_archive, metrics=metrics)
 
@@ -233,5 +239,5 @@ if __name__ == "__main__":
     time.sleep(system_args.task_count)
 
     # print(config)
-    task = BuilderTask(user_args, system_args)
+    task = AverageSolutionsTask(user_args, system_args)
     task.run()

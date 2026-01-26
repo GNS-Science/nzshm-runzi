@@ -16,10 +16,9 @@ class AutomationTask(object):
 
     def create_task(self, input_variables, arguments=None, environment=None):
         qry = '''
-            mutation create_task ($general_task_id:ID!, $created:DateTime!, $task_type:TaskSubType!, $model_type:ModelType!) {
+            mutation create_task ($created:DateTime!, $task_type:TaskSubType!, $model_type:ModelType!) {
               create_automation_task (
                 input: {
-                  general_task_id: $general_task_id
                   task_type: $task_type
                   model_type: $model_type
                   created: $created
@@ -66,7 +65,6 @@ class AutomationTask(object):
 
     def get_example_create_variables(self):
         return {
-            "general_task_id": "ABCD",
             "created": "2019-10-01T12:00Z",
             "task_type": "INVERSION",
             "model_type": "CRUSTAL",
@@ -81,7 +79,7 @@ class AutomationTask(object):
             diffs = set(valid_keys).difference(set(values.keys()))
             missing_keys = ", ".join(diffs)
             print(valid_keys)
-            print(values.leys())
+            print(values.keys())
             raise ValueError("complete_variables must contain keys: %s" % missing_keys)
 
     def complete_task(self, input_variables, metrics=None):

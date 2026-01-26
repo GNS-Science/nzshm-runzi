@@ -4,16 +4,20 @@ from pathlib import Path
 
 import typer
 from rich import print as rich_print
+from runzi.execute.arguments import ArgSweeper
 
 from runzi.runners import (
     ScaleSolutionsInput,
     TimeDependentSolutionInput,
-    run_average_solutions,
+    # run_average_solutions,
     run_oq_convert_solution,
     run_scale_solution,
     run_time_dependent_solution,
 )
-from runzi.runners.runner_inputs import AverageSolutionsInput, OQOpenSHAConvertArgs
+from runzi.runners.runner_inputs import OQOpenSHAConvertArgs
+from runzi.runners.average_solutions import AverageSolutionsJobRunner
+from runzi.execute.average_solutions_task import AverageSolutionsInput
+from runzi.execute.arguments import ArgSweeper
 
 app = typer.Typer()
 
@@ -22,8 +26,9 @@ app = typer.Typer()
 def avg_sol(input_filepath: Path):
     """Average multiple solutions by taking the mean rate of all ruptures."""
     rich_print("[yellow]Starting average solutions jobs.")
-    job_input = AverageSolutionsInput.from_toml_file(input_filepath)
-    gt_id = run_average_solutions(job_input)
+    job_input = ArgSweeper.from_config_file(input_filepath, AverageSolutionsInput)
+    runner = AverageSolutionsJobRunner(job_input)
+    gt_id = runner.run_jobs()
     rich_print(f"General Task ID: [bold green]{gt_id}")
 
 

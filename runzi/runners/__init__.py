@@ -1,6 +1,6 @@
 from ..execute.subduction_rupture_set_builder_task import SubductionRuptureSetArgs
 from ..execute.arguments import SystemArgs
-from .average_solutions import run_average_solutions
+# from .average_solutions import run_average_solutions
 from .build_manual_index import build_manual_index
 # from .coulomb_rupture_sets import run_coulomb_rupture_sets
 from .diagnostic_reports import run_diagnostic_reports

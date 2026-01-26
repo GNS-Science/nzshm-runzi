@@ -172,7 +172,7 @@ class InversionSolutionBuilder(ABC):
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type="INVERSION",
                     model_type=self.user_args.general.model_type.name.upper(),
-                    general_task_id=general_task_id,
+                    # general_task_id=general_task_id,
                 ),
                 # TODO: should we flatten dict? See https://weka-test.gns.cri.nz/Task/QXV0b21hdGlvblRhc2s6MTAxNzc5
                 # or at least just dump user_args.task?

@@ -18,12 +18,14 @@ import json
 import os
 from pathlib import Path, PurePath
 from types import ModuleType
-from typing import Optional, TypeVar
+from typing import Optional, TypeVar, Protocol
 
 from pydantic import BaseModel
+from runzi.automation.scaling.python_task_factory import get_factory as get_python_factory
 
 from runzi.automation.scaling.task_config import get_task_config
 from runzi.execute.arguments import ArgBase, SystemArgs
+from runzi.execute.arguments import TaskLanguage
 from runzi.runners.inversion_inputs import InversionArgs
 
 from .local_config import EnvMode
@@ -32,6 +34,21 @@ OpenshaTaskFactoryType = TypeVar('OpenshaTaskFactoryType', bound='OpenshaTaskFac
 
 # import scaling.rupture_set_builder_task
 
+class TaskFactory(Protocol):
+    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs) -> None:
+        ...
+
+    def get_task_script(self) -> str:
+        ...
+
+    def get_next_port(self) -> int:
+        ...
+
+    @classmethod
+    def create(cls, **kwargs) -> 'TaskFactory':
+        ...
+
+    
 
 class OpenshaTaskFactory:
 
@@ -67,18 +84,33 @@ class OpenshaTaskFactory:
         self._python = str(python)
         # self._python_script = python_script or 'rupture_set_builder_task.py'
 
+    @classmethod
+    def create(cls, **kwargs) -> 'TaskFactory':
+        return cls(
+            kwargs['root_path'],
+            kwargs['working_path'],
+            kwargs['python_script_module'],
+            jre_path=kwargs.get('jre_path'),
+            app_jar_path=kwargs.get('app_jar_path'),
+            task_config_path=kwargs.get('task_config_path'),
+            initial_gateway_port=kwargs.get('initial_gateway_port', 25333),
+            python=kwargs.get('python', 'python3'),
+            jvm_heap_start=kwargs.get('jvm_heap_start', 3),
+            jvm_heap_max=kwargs.get('jvm_heap_max', 10),
+        )
+
     def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs):
         fname = self._config_path / f"config.{self._next_port}.json"
         task_config = get_task_config(task_args, task_system_args)
         fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
 
-    def get_task_script(self):
+    def get_task_script(self) -> str:
         return self._get_bash_script()
 
-    def get_next_port(self):
+    def get_next_port(self) -> int:
         return self._next_port
 
-    def _get_bash_script(self):
+    def _get_bash_script(self) -> str:
         """
         get the bash for the next task
         """
@@ -153,7 +185,7 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
         task_config = get_task_config(task_args, task_system_args)
         fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
 
-    def get_task_script(self):
+    def get_task_script(self) -> str:
         return f"""
 #PBS -l nodes={self._pbs_nodes}:ppn={self._pbs_ppn}
 #PBS -l walltime={self._pbs_wall_hours}:00:00
@@ -173,11 +205,17 @@ export NO_PROXY=${{no_proxy}}
 #END_OF_PBS
 """
 
+def get_java_factory(environment_mode: EnvMode) -> type[OpenshaTaskFactory]:
+        if environment_mode is EnvMode.LOCAL:
+            return OpenshaTaskFactory
+        elif environment_mode is EnvMode.CLUSTER:
+            return OpenshaPBSTaskFactory
+        elif environment_mode is EnvMode.AWS:
+            return OpenshaAWSTaskFactory
+    
 
-def get_factory(environment_mode: EnvMode) -> type[OpenshaTaskFactory]:
-    if environment_mode is EnvMode.LOCAL:
-        return OpenshaTaskFactory
-    elif environment_mode is EnvMode.CLUSTER:
-        return OpenshaPBSTaskFactory
-    elif environment_mode is EnvMode.AWS:
-        return OpenshaAWSTaskFactory
+def get_factory(environment_mode: EnvMode, task_language: TaskLanguage) -> type[OpenshaTaskFactory]:
+    if task_language is TaskLanguage.JAVA:
+        return get_java_factory(environment_mode)
+    elif task_language is TaskLanguage.PYTHON:
+        return get_python_factory(environment_mode)

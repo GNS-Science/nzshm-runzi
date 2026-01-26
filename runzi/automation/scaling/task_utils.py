@@ -44,6 +44,7 @@ def get_model_type(ids: list, toshi_api):
     # check that all models types are the same
     for id in ids:
         mt = _get_model_type(id, toshi_api)
-        assert mt is model_type, 'not all model types in source id list are the same'
+        if mt is not model_type:
+            raise ValueError('not all model types in source id list are the same')
 
     return model_type
