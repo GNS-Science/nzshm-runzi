@@ -88,9 +88,7 @@ def is_rupture_set(file_id: str) -> bool:
 
 
 class AverageSolutionsTask:
-    """
-    The python client for solution rate averaging
-    """
+    """The python client for solution rate averaging."""
 
     def __init__(self, user_args: AverageSolutionsInput, system_args: SystemArgs):
 

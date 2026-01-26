@@ -42,14 +42,14 @@ class InversionSolutionBuilder(ABC):
         self.system_args = system_args
 
         # setup the java gateway binding
-        self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=system_args.java_gateway_port))
+        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=system_args.java_gateway_port))
         # repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
         # self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
-        self._output_folder = WORK_PATH
+        self.output_folder = WORK_PATH
 
         headers = {"x-api-key": API_KEY}
-        self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
-        self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+        self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
         self.inversion_runner: JavaObject
 
     # the purpose of this method is simply to be explicit about creating the runner object.
@@ -149,17 +149,17 @@ class InversionSolutionBuilder(ABC):
         self.inversion_runner = self._get_runner()
 
         rupture_set_id = self.user_args.task.rupture_set[0].rupture_set_id
-        file_generator = get_output_file_id(self._toshi_api, rupture_set_id)  # for file by file ID
-        rupture_set_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+        file_generator = get_output_file_id(self.toshi_api, rupture_set_id)  # for file by file ID
+        rupture_set_info = download_files(self.toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
-        API_GitVersion = self._gateway.entry_point.getGitVersion()
+        API_GitVersion = self.gateway.entry_point.getGitVersion()
 
         log.info(f"Running nzshm-opensha {API_GitVersion}")
 
         initial_solution_id = self.user_args.task.initial_solution_id[0]
         if initial_solution_id is not None:
-            file_generator = get_output_file_id(self._toshi_api, initial_solution_id)
-            initial_solution_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+            file_generator = get_output_file_id(self.toshi_api, initial_solution_id)
+            initial_solution_info = download_files(self.toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
         environment = {"host": platform.node(), "nzshm-opensha.version": API_GitVersion}
 
@@ -167,7 +167,7 @@ class InversionSolutionBuilder(ABC):
 
             general_task_id = self.system_args.general_task_id
             # create new task in toshi_api
-            task_id = self._toshi_api.automation_task.create_task(
+            task_id = self.toshi_api.automation_task.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type="INVERSION",
@@ -181,15 +181,15 @@ class InversionSolutionBuilder(ABC):
             )
 
             # link task to the parent task
-            gt_conn = self._task_relation_api.create_task_relation(general_task_id, task_id)
+            gt_conn = self.task_relation_api.create_task_relation(general_task_id, task_id)
             log.info(f"created task_relationship: {gt_conn} for at: {task_id} on GT: {general_task_id}")
 
             # link task to the input datafiles
             if rupture_set_id:
-                self._toshi_api.automation_task.link_task_file(task_id, rupture_set_id, 'READ')
+                self.toshi_api.automation_task.link_task_file(task_id, rupture_set_id, 'READ')
 
             if initial_solution_id is not None:
-                self._toshi_api.automation_task.link_task_file(task_id, initial_solution_id, 'READ')
+                self.toshi_api.automation_task.link_task_file(task_id, initial_solution_id, 'READ')
 
         else:
             task_id = str(uuid.uuid4())
@@ -253,12 +253,12 @@ class InversionSolutionBuilder(ABC):
                 'result': "SUCCESS",
                 'state': "DONE",
             }
-            self._toshi_api.automation_task.complete_task(done_args, metrics)
+            self.toshi_api.automation_task.complete_task(done_args, metrics)
 
             # and the log files, why not
-            java_log_file = self._output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
+            java_log_file = self.output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
             # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
-            self._toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
+            self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
             # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
             # upload the task output
@@ -266,7 +266,7 @@ class InversionSolutionBuilder(ABC):
                 dict(id=rupture_set_id, depth=-1),
             ]
 
-            inversion_id = self._toshi_api.inversion_solution.upload_inversion_solution(
+            inversion_id = self.toshi_api.inversion_solution.upload_inversion_solution(
                 task_id,
                 filepath=output_file,
                 meta=self.user_args.task.model_dump(),
@@ -284,7 +284,7 @@ class InversionSolutionBuilder(ABC):
                     for row in table_rows:
                         mfd_table_data.append([x for x in row])
 
-                    result = self._toshi_api.table.create_table(
+                    result = self.toshi_api.table.create_table(
                         mfd_table_data,
                         column_headers=["series", "series_name", "X", "Y"],
                         column_types=["integer", "string", "double", "double"],
@@ -294,7 +294,7 @@ class InversionSolutionBuilder(ABC):
                         dimensions=None,
                     )
                     mfd_table_id = result['id']
-                    result = self._toshi_api.inversion_solution.append_hazard_table(
+                    result = self.toshi_api.inversion_solution.append_hazard_table(
                         inversion_id,
                         mfd_table_id,
                         label="Inversion Solution MFD table",

@@ -23,7 +23,7 @@ class SubductionInversionSolutionBuilder(InversionSolutionBuilder):
     """
 
     def _get_runner(self) -> 'JavaObject':
-        return self._gateway.entry_point.getSubductionInversionRunner()
+        return self.gateway.entry_point.getSubductionInversionRunner()
 
     def _set_scaling_relationship(self):
         self.user_args = cast(SubductionInversionArgs, self.user_args)
@@ -32,7 +32,7 @@ class SubductionInversionSolutionBuilder(InversionSolutionBuilder):
         # TODO: would we ever specify a scaling relationship and not want to recalc mags? Isn't that implied?
         # TODO: is it ok not to set a scaling relationship? Does that simply mean we don't relcalc the mags?
         if (scaling_relationship is not None) and scaling_recalc_mag:
-            sr = self._gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
+            sr = self.gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
             if scaling_relationship == "SIMPLE_SUBDUCTION":
                 sr.setupSubduction(self.user_args.task.scaling_c_val[0])
             else:

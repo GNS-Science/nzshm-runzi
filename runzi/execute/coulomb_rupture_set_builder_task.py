@@ -93,9 +93,9 @@ class CoulombRuptureSetBuilderTask:
         self.use_api = system_args.use_api
 
         # setup the java gateway binding
-        self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=self.system_args.java_gateway_port))
-        app = self._gateway.entry_point
-        self._builder = app.getCoulombRuptureSetBuilder()
+        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=self.system_args.java_gateway_port))
+        app = self.gateway.entry_point
+        self.builder = app.getCoulombRuptureSetBuilder()
 
         self._output_folder = PurePath(WORK_PATH)
 
@@ -109,8 +109,8 @@ class CoulombRuptureSetBuilderTask:
 
     def ruptureSetMetrics(self):
         metrics = {}
-        metrics["subsection_count"] = self._builder.getSubSections().size()
-        metrics["rupture_count"] = self._builder.getRuptures().size()
+        metrics["subsection_count"] = self.builder.getSubSections().size()
+        metrics["rupture_count"] = self.builder.getRuptures().size()
         return metrics
 
     def run(self):
@@ -146,38 +146,38 @@ class CoulombRuptureSetBuilderTask:
             task_id = None
 
         # Run the task....
-        if not self._builder:
+        if not self.builder:
             raise RuntimeError("Java Gateway could not get CoulombRuptureSetBuilder")
-        print('Got RuptureSetBuilder: ', self._builder)
+        print('Got RuptureSetBuilder: ', self.builder)
 
-        self._builder.setMaxFaultSections(self.user_args.max_sections)
-        self._builder.setMaxJumpDistance(self.user_args.max_jump_distance)
-        self._builder.setAdaptiveMinDist(self.user_args.adaptive_min_distance)
-        self._builder.setAdaptiveSectFract(self.user_args.thinning_factor)
-        self._builder.setMinSubSectsPerParent(self.user_args.min_sub_sects_per_parent)
-        self._builder.setMinSubSections(self.user_args.min_sub_sections)
+        self.builder.setMaxFaultSections(self.user_args.max_sections)
+        self.builder.setMaxJumpDistance(self.user_args.max_jump_distance)
+        self.builder.setAdaptiveMinDist(self.user_args.adaptive_min_distance)
+        self.builder.setAdaptiveSectFract(self.user_args.thinning_factor)
+        self.builder.setMinSubSectsPerParent(self.user_args.min_sub_sects_per_parent)
+        self.builder.setMinSubSections(self.user_args.min_sub_sections)
 
         fault_model = self.user_args.fault_model
         fault_model_file = self.user_args.fault_model_file
         if fault_model is not None:
             fault_models = [fault_model]
-            self._builder.setFaultModel(fault_model)
+            self.builder.setFaultModel(fault_model)
         else:
             fault_models = [fault_model_file.archive_id]
             fault_model_file = get_fault_model_file(fault_model_file.archive_id)
-            self._builder.setFaultModelFile(str(fault_model_file))
+            self.builder.setFaultModelFile(str(fault_model_file))
 
         named_faults_file = self.user_args.named_faults_file
         if named_faults_file is not None:
             named_faults_file = get_fault_model_file(named_faults_file.archive_id)
-            self._builder.setNamedFaultsFile(str(named_faults_file))
+            self.builder.setNamedFaultsFile(str(named_faults_file))
 
         # if "CFM_1_0" in fault_model:
         if self.user_args.depth_scaling is not None:
             tvzDomain = "4"
             depth_scaling_tvz = self.user_args.depth_scaling.tvz
             depth_scaling_sans = self.user_args.depth_scaling.sans
-            self._builder.setScaleDepthIncludeDomain(tvzDomain, depth_scaling_tvz).setScaleDepthExcludeDomain(
+            self.builder.setScaleDepthIncludeDomain(tvzDomain, depth_scaling_tvz).setScaleDepthExcludeDomain(
                 tvzDomain, depth_scaling_sans
             )
 
@@ -188,13 +188,13 @@ class CoulombRuptureSetBuilderTask:
         scaling_relationship = self.user_args.scaling_relationship
 
         if scaling_relationship == "SIMPLE_CRUSTAL":
-            sr = self._gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
+            sr = self.gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
             sr.setupCrustal(4.2, 4.2)  # TODO this is hard-wired
-            self._builder.setScalingRelationship(sr)
+            self.builder.setScalingRelationship(sr)
         elif scaling_relationship == "TMG_CRU_2017":
-            sr = self._gateway.jvm.org.opensha.commons.calc.magScalingRelations.magScalingRelImpl.TMG2017CruMagAreaRel()
+            sr = self.gateway.jvm.org.opensha.commons.calc.magScalingRelations.magScalingRelImpl.TMG2017CruMagAreaRel()
             sr.setRake(0.0)
-            self._builder.setScalingRelationship(sr)
+            self.builder.setScalingRelationship(sr)
         else:
             raise ValueError(f"Unsupported scaling relationship: {scaling_relationship}")
 
@@ -202,11 +202,11 @@ class CoulombRuptureSetBuilderTask:
         if self.use_api:
             outputfile = self._output_folder.joinpath(f"NZSHM22_RuptureSet-{task_id}.zip")
         else:
-            outputfile = self._output_folder.joinpath(self._builder.getDescriptiveName() + ".zip")
+            outputfile = self._output_folder.joinpath(self.builder.getDescriptiveName() + ".zip")
         log.info("building %s started at %s" % (outputfile, dt.datetime.now().isoformat()))
 
         if not SPOOF_RUPTURESET:
-            self._builder.setNumThreads(self.system_args.java_threads).buildRuptureSet()
+            self.builder.setNumThreads(self.system_args.java_threads).buildRuptureSet()
             metrics = self.ruptureSetMetrics()
         else:
             metrics = {"subsection_count": 0, "rupture_count": 0}
@@ -216,7 +216,7 @@ class CoulombRuptureSetBuilderTask:
 
         # write the result
         if not SPOOF_RUPTURESET:
-            self._builder.writeRuptureSet(str(outputfile))
+            self.builder.writeRuptureSet(str(outputfile))
         else:
             Path(outputfile).touch()
 

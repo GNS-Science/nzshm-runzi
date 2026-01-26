@@ -10,6 +10,7 @@ from pathlib import PurePath
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
@@ -28,76 +29,80 @@ logging.getLogger('gql.transport').setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
 
+from runzi.execute.arguments import ArgBase, SystemArgs
+from runzi.execute.arguments import SystemArgs
 
-class BuilderTask:
-    """
-    The python client for time dependent rate scaling.
-    """
+class TimeDependentSolutionInput(ArgBase):
+    """Input for time dependent solution rate scaling."""
+    source_solution_id: str
+    current_year: int
+    most_recent_event_enum: str
+    aperiodicity: float
+    forecast_timespan: int
 
-    def __init__(self, job_args):
 
-        self.use_api = job_args.get('use_api', False)
-        self._output_folder = PurePath(job_args.get('working_path'))
+
+class TimeDependentSolutionTask:
+    """The python client for time dependent rate scaling."""
+
+    def __init__(self, user_args: TimeDependentSolutionInput, system_args: SystemArgs):
+
+        self.use_api = system_args.use_api
+        self.output_folder = WORK_PATH
+        self.system_args = system_args
+        self.user_args = user_args
 
         # setup the java gateway binding
-        self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=job_args['java_gateway_port']))
-        self._time_dependent_generator = self._gateway.entry_point.getTimeDependentRatesGenerator()
-        self._output_folder = PurePath(WORK_PATH)
+        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=self.system_args.java_gateway_port))
+        self.time_dependent_generator = self.gateway.entry_point.getTimeDependentRatesGenerator()
 
-        if self.use_api:
-            headers = {"x-api-key": API_KEY}
-            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+        headers = {"x-api-key": API_KEY}
+        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+        self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
-    def run(self, task_arguments, job_arguments):
+    def run(self):
         # Run the task....
-        t0 = dt.datetime.utcnow()
+        t0 = dt.datetime.now()
 
-        environment = {}
+        file_generator = get_output_file_id(self.toshi_api, self.user_args.source_solution_id)
+        source_solution_info = download_files(self.toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+        source_solution_filepath = source_solution_info[self.user_args.source_solution_id]['filepath']
 
         if self.use_api:
             # create new task in toshi_api
-            print(task_arguments)
-            task_id = self._toshi_api.automation_task.create_task(
+            task_id = self.toshi_api.automation_task.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type=SubtaskType.TIME_DEPENDENT_SOLUTION.name,
-                    model_type=task_arguments['model_type'],
+                    model_type=self.system_args.model_type.name,
                 ),
-                arguments=task_arguments,
-                environment=environment,
+                arguments=self.user_args.model_dump(mode='json'),
+                environment={},
             )
 
             # link automation task to the parent general task
-            self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
+            self.task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
 
             # link task to the input solution
-            input_file_id = job_arguments.get('source_solution_id')
+            input_file_id = self.user_args.source_solution_id
             if input_file_id:
-                self._toshi_api.automation_task.link_task_file(task_id, input_file_id, 'READ')
+                self.toshi_api.automation_task.link_task_file(task_id, input_file_id, 'READ')
 
         else:
             task_id = str(uuid.uuid4())
 
-        # DO THE WORK
-        ta = task_arguments
+        output_file = str(self.output_folder / f"NZSHM22_TimeDependentInversionSolution-{task_id}.zip")
+        self.time_dependent_generator.setSolutionFileName(source_solution_filepath)
+        self.time_dependent_generator.setCurrentYear(self.user_args.current_year)
+        self.time_dependent_generator.setMREData(self.user_args.most_recent_event_enum)
+        self.time_dependent_generator.setAperiodicity(self.user_args.aperiodicity)
+        self.time_dependent_generator.setForecastTimespan(self.user_args.forecast_timespan)
+        self.time_dependent_generator.setOutputFileName(output_file)
 
-        t0 = dt.datetime.utcnow()
-        output_file = str(
-            PurePath(job_arguments['working_path'], f"NZSHM22_TimeDependentInversionSolution-{task_id}.zip")
-        )
-        self._time_dependent_generator.setSolutionFileName(ta['file_path']).setCurrentYear(
-            ta['current_year']
-        ).setMREData(ta['mre_enum']).setAperiodicity(ta['aperiodicity']).setForecastTimespan(
-            ta['forecast_timespan']
-        ).setOutputFileName(
-            output_file
-        )
-
-        self._time_dependent_generator.generate()
+        self.time_dependent_generator.generate()
         log.info(f'Produced file : {output_file}')
 
-        t1 = dt.datetime.utcnow()
+        t1 = dt.datetime.now()
         log.info("TimeDependent rates generation took %s secs" % (t1 - t0).total_seconds())
 
         # SAVE the results
@@ -106,42 +111,39 @@ class BuilderTask:
             # record the complteded task
             done_args = {
                 'task_id': task_id,
-                'duration': (dt.datetime.utcnow() - t0).total_seconds(),
+                'duration': (dt.datetime.now() - t0).total_seconds(),
                 'result': "SUCCESS",
                 'state': "DONE",
             }
-            self._toshi_api.automation_task.complete_task(done_args)
+            self.toshi_api.automation_task.complete_task(done_args)
 
             # add the log files
-            pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
-            self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
+            pyth_log_file = self.output_folder.joinpath(f"python_script.{self.system_args.java_gateway_port}.log")
+            self.toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
-            java_log_file = self._output_folder.joinpath(f"java_app.{job_arguments['java_gateway_port']}.log")
-            self._toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
+            java_log_file = self.output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
+            self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
 
             # get the predecessors
-            source_solution_id = job_arguments.get('source_solution_id')
-            predecessors = [
-                dict(id=source_solution_id, depth=-1),
-            ]
+            predecessors = [dict(id=self.user_args.source_solution_id, depth=-1),]
 
-            source_predecessors = self._toshi_api.get_predecessors(source_solution_id)
+            source_predecessors = self.toshi_api.get_predecessors(self.user_args.source_solution_id)
 
             if source_predecessors:
                 for predecessor in source_predecessors:
                     predecessor['depth'] += -1
                 predecessors.append(predecessor)
 
-            inversion_id = self._toshi_api.time_dependent_inversion_solution.upload_inversion_solution(
+            inversion_id = self.toshi_api.time_dependent_inversion_solution.upload_inversion_solution(
                 task_id,
                 filepath=output_file,
-                source_solution_id=source_solution_id,
+                source_solution_id=self.user_args.source_solution_id,
                 predecessors=predecessors,
-                meta=task_arguments,
+                meta=self.user_args.model_dump(mode='json'),
             )
             log.info(f"Saved time dependent inversion solution: {inversion_id}")
 
-        t1 = dt.datetime.utcnow()
+        t1 = dt.datetime.now()
         log.info("Report took %s secs" % (t1 - t0).total_seconds())
 
 
@@ -160,9 +162,15 @@ if __name__ == "__main__":
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
+    user_args = TimeDependentSolutionInput(**config['task_args'])
+    system_args = SystemArgs(**config['task_system_args'])
+
+    # Wait for some more time, scaled by taskid to avoid S3 consistency issue
+    time.sleep(system_args.task_count)
+
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(config['job_arguments']['task_id'])
 
     # print(config)
-    task = BuilderTask(config['job_arguments'])
+    task = TimeDependentSolutionTask(user_args, system_args)
     task.run(**config)

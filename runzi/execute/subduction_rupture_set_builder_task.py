@@ -56,22 +56,22 @@ class SubductionRuptureSetBuilderTask:
         # setup the java gateway binding
         gateway = JavaGateway(gateway_parameters=GatewayParameters(port=self.system_args.java_gateway_port))
         app = gateway.entry_point
-        self._builder = app.getSubductionRuptureSetBuilder()
+        self.builder = app.getSubductionRuptureSetBuilder()
 
-        self._output_folder = PurePath(WORK_PATH)
+        self.output_folder = PurePath(WORK_PATH)
 
         if self.use_api:
             headers = {"x-api-key": API_KEY}
-            self._ruptgen_api = RuptureGenerationTask(
+            self.ruptgen_api = RuptureGenerationTask(
                 API_URL, S3_URL, None, with_schema_validation=True, headers=headers
             )
-            self._general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+            self.general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+            self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
     def ruptureSetMetrics(self):
         return dict(
-            subsection_count = self._builder.getSubSections().size(),
-            rupture_count = self._builder.getRuptures().size()
+            subsection_count = self.builder.getSubSections().size(),
+            rupture_count = self.builder.getRuptures().size()
         )
 
     def run(self):
@@ -85,7 +85,7 @@ class SubductionRuptureSetBuilderTask:
         }
 
         if self.use_api:
-            task_id = self._ruptgen_api.create_task(
+            task_id = self.ruptgen_api.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type="RUPTURE_SET",
@@ -96,35 +96,35 @@ class SubductionRuptureSetBuilderTask:
             )
 
             # link task tp the parent task
-            self._task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
+            self.task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
         else:
             task_id = None
 
-        if not self._builder:
+        if not self.builder:
             raise RuntimeError("Java Gateway could not get CoulombRuptureSetBuilder")
-        print('Got RuptureSetBuilder: ', self._builder)
+        print('Got RuptureSetBuilder: ', self.builder)
 
-        self._builder.setDownDipAspectRatio(self.user_args.min_aspect_ratio, self.user_args.max_aspect_ratio, self.user_args.aspect_depth_threshold)
-        self._builder.setDownDipMinFill(self.user_args.min_fill_ratio)
-        self._builder.setDownDipPositionCoarseness(self.user_args.growth_position_epsilon)
-        self._builder.setDownDipSizeCoarseness(self.user_args.growth_size_epsilon)
-        self._builder.setScalingRelationship(self.user_args.scaling_relationship)
-        self._builder.setSlipAlongRuptureModel(self.user_args.slip_along_rupture_model)
-        self._builder.setFaultModel(self.user_args.fault_model)
+        self.builder.setDownDipAspectRatio(self.user_args.min_aspect_ratio, self.user_args.max_aspect_ratio, self.user_args.aspect_depth_threshold)
+        self.builder.setDownDipMinFill(self.user_args.min_fill_ratio)
+        self.builder.setDownDipPositionCoarseness(self.user_args.growth_position_epsilon)
+        self.builder.setDownDipSizeCoarseness(self.user_args.growth_size_epsilon)
+        self.builder.setScalingRelationship(self.user_args.scaling_relationship)
+        self.builder.setSlipAlongRuptureModel(self.user_args.slip_along_rupture_model)
+        self.builder.setFaultModel(self.user_args.fault_model)
         fault_models = [self.user_args.fault_model]
 
         if deformation_model := self.user_args.deformation_model:
-            self._builder.setDeformationModel(deformation_model)
+            self.builder.setDeformationModel(deformation_model)
 
         # name the output file
         if self.use_api:
-            outputfile = self._output_folder.joinpath(f"NZSHM22_RuptureSet-{task_id}.zip")
+            outputfile = self.output_folder.joinpath(f"NZSHM22_RuptureSet-{task_id}.zip")
         else:
-            outputfile = self._output_folder.joinpath(self._builder.getDescriptiveName() + ".zip")
+            outputfile = self.output_folder.joinpath(self.builder.getDescriptiveName() + ".zip")
         log.info("building %s started at %s" % (outputfile, dt.datetime.now().isoformat()))
 
         if not SPOOF_RUPTURESET:
-            self._builder.setNumThreads(self.system_args.java_threads).buildRuptureSet()
+            self.builder.setNumThreads(self.system_args.java_threads).buildRuptureSet()
             metrics = self.ruptureSetMetrics()
         else:
             metrics = {"subsection_count": 0, "rupture_count": 0}
@@ -134,7 +134,7 @@ class SubductionRuptureSetBuilderTask:
 
         # write the result
         if not SPOOF_RUPTURESET:
-            self._builder.writeRuptureSet(str(outputfile))
+            self.builder.writeRuptureSet(str(outputfile))
         else:
             Path(outputfile).touch()
 
@@ -145,10 +145,10 @@ class SubductionRuptureSetBuilderTask:
                 'result': "SUCCESS",
                 'state': "DONE",
             }
-            self._ruptgen_api.complete_task(done_args, metrics)
+            self.ruptgen_api.complete_task(done_args, metrics)
 
             # upload the task output
-            self._ruptgen_api.upload_rupture_set(
+            self.ruptgen_api.upload_rupture_set(
                 task_id,
                 outputfile,
                 fault_models,
@@ -157,8 +157,8 @@ class SubductionRuptureSetBuilderTask:
             )
 
             # and the log files, why not
-            java_log_file = self._output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
-            self._ruptgen_api.upload_task_file(task_id, java_log_file, 'WRITE')
+            java_log_file = self.output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
+            self.ruptgen_api.upload_task_file(task_id, java_log_file, 'WRITE')
             # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
             # self._ruptgen_api.upload_task_file(task_id, pyth_log_file, 'WRITE')
 

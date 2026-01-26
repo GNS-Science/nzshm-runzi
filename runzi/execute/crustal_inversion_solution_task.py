@@ -25,7 +25,7 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
     """
 
     def _get_runner(self) -> 'JavaObject':
-        return self._gateway.entry_point.getCrustalInversionRunner()
+        return self.gateway.entry_point.getCrustalInversionRunner()
 
     def _set_scaling_relationship(self):
         self.user_args = cast(CrustalInversionArgs, self.user_args)
@@ -34,7 +34,7 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
         # TODO: would we ever specify a scaling relationship and not want to recalc mags? Isn't that implied?
         # TODO: is it ok not to set a scaling relationship? Does that simply mean we don't relcalc the mags?
         if (scaling_relationship is not None) and scaling_recalc_mag:
-            sr = self._gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
+            sr = self.gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
             if scaling_relationship == "SIMPLE_CRUSTAL":
                 c_dip = self.user_args.task.scaling_c_val[0].dip
                 c_strike = self.user_args.task.scaling_c_val[0].strike
@@ -70,8 +70,8 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
                 paleo_probability_model,
             )
         if paleo_rates_file is not None:
-            file_generator = get_output_file_id(self._toshi_api, paleo_rates_file.archive_id)
-            paleo_file_info = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+            file_generator = get_output_file_id(self.toshi_api, paleo_rates_file.archive_id)
+            paleo_file_info = download_files(self.toshi_api, file_generator, str(WORK_PATH), overwrite=False)
             paleo_archive_file_path = paleo_file_info[paleo_rates_file.archive_id]['filepath']
             with ZipFile(paleo_archive_file_path, 'r') as archive:
                 archive.extract(paleo_rates_file.file_name, path=Path(paleo_archive_file_path).parent)
