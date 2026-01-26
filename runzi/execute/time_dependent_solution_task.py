@@ -1,4 +1,5 @@
 import argparse
+from pydantic import field_validator
 import datetime as dt
 import json
 import logging
@@ -37,9 +38,8 @@ class TimeDependentSolutionInput(ArgBase):
     source_solution_id: str
     current_year: int
     most_recent_event_enum: str
-    aperiodicity: float
+    aperiodicity: str
     forecast_timespan: int
-
 
 
 class TimeDependentSolutionTask:
@@ -118,8 +118,8 @@ class TimeDependentSolutionTask:
             self.toshi_api.automation_task.complete_task(done_args)
 
             # add the log files
-            pyth_log_file = self.output_folder.joinpath(f"python_script.{self.system_args.java_gateway_port}.log")
-            self.toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
+            # pyth_log_file = self.output_folder.joinpath(f"python_script.{self.system_args.java_gateway_port}.log")
+            # self.toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
             java_log_file = self.output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
             self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
@@ -165,12 +165,12 @@ if __name__ == "__main__":
     user_args = TimeDependentSolutionInput(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
 
+    # maybe the JVM App is a little slow to get listening
+    time.sleep(3)
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(system_args.task_count)
 
-    # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(config['job_arguments']['task_id'])
-
     # print(config)
     task = TimeDependentSolutionTask(user_args, system_args)
-    task.run(**config)
+    task.run()
+
