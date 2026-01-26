@@ -1,6 +1,9 @@
 import argparse
+from pathlib import Path
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 import datetime as dt
 import json
+from typing import Optional, Any
 import time
 import urllib
 import uuid
@@ -10,64 +13,75 @@ from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
 from solvis import InversionSolution
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF
 from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.execute.arguments import ArgBase, SystemArgs
 from runzi.automation.scaling.toshi_api.general_task import SubtaskType
 
+class ScaleSolutionInput(ArgBase):
+    """Input for scaling inversion solutions."""
 
-class BuilderTask:
-    """
-    The python client for solution rate scaling
-    """
+    scale: float
+    polygon_scale: float
+    polygon_max_mag: float
+    source_solution_id: str
 
-    def __init__(self, job_args):
 
-        self.use_api = job_args.get('use_api', False)
-        self._output_folder = PurePath(job_args.get('working_path'))
+
+class ScaleSolutionTask:
+    """The python client for solution rate scaling."""
+
+    def __init__(self, user_args: ScaleSolutionInput, system_args: SystemArgs):
+
+        self.user_args = user_args
+        self.system_args = system_args
+        self.use_api = system_args.use_api
+        self.output_folder = WORK_PATH
 
         if self.use_api:
             headers = {"x-api-key": API_KEY}
-            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+            self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+            self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
-    def run(self, task_arguments, job_arguments):
+    def run(self):
         # Run the task....
-        t0 = dt.datetime.utcnow()
+        t0 = dt.datetime.now()
 
-        environment = {}
+        file_generator = get_output_file_id(self.toshi_api, self.user_args.source_solution_id)
+        source_solution_info = download_files(self.toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+        source_solution_filepath = source_solution_info[self.user_args.source_solution_id]['filepath']
 
         if self.use_api:
             # create new task in toshi_api
-            print(task_arguments)
-            task_id = self._toshi_api.automation_task.create_task(
+            task_id = self.toshi_api.automation_task.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type=SubtaskType.SCALE_SOLUTION.name,
-                    model_type=task_arguments['model_type'],
+                    model_type=self.system_args.model_type.name,
                 ),
-                arguments=task_arguments,
-                environment=environment,
+                arguments=self.user_args.model_dump(mode='json'),
+                environment={},
             )
 
             # link automation task to the parent general task
-            self._task_relation_api.create_task_relation(job_arguments['general_task_id'], task_id)
+            self.task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
 
             # link task to the input solution
-            input_file_id = job_arguments.get('source_solution_id')
-            if input_file_id:
-                self._toshi_api.automation_task.link_task_file(task_id, input_file_id, 'READ')
+            self.toshi_api.automation_task.link_task_file(task_id, self.user_args.source_solution_id, 'READ')
 
         else:
             task_id = str(uuid.uuid4())
 
         # DO THE WORK
-        result = self.scaleRuptureRates(
-            job_arguments.get('source_solution_info').get('filepath'),
-            task_id,
-            task_arguments.get('scale'),
-            task_arguments.get('polygon_scale'),
-            task_arguments.get('polygon_max_mag'),
-        )
+        if not SPOOF:
+            result = self.scaleRuptureRates(source_solution_filepath, task_id, self.user_args.scale, self.user_args.polygon_scale, self.user_args.polygon_max_mag)
+        else:
+            output_solution_filepath = Path(self.output_folder, 'NZSHM22_ScaledInversionSolution-' + str(task_id) + '.zip')
+            output_solution_filepath.touch()
+            result = {
+                'metrics': dict(scale=self.user_args.scale),
+                'scaled_solution': str(output_solution_filepath),
+            }
 
         # SAVE the results
         if self.use_api:
@@ -75,23 +89,20 @@ class BuilderTask:
             # record the complteded task
             done_args = {
                 'task_id': task_id,
-                'duration': (dt.datetime.utcnow() - t0).total_seconds(),
+                'duration': (dt.datetime.now() - t0).total_seconds(),
                 'result': "SUCCESS",
                 'state': "DONE",
             }
-            self._toshi_api.automation_task.complete_task(done_args, result['metrics'])
+            self.toshi_api.automation_task.complete_task(done_args, result['metrics'])
 
             # add the log files
-            pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['task_id']}.log")
-            self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
+            # pyth_log_file = self.output_folder.joinpath(f"python_script.{self.system_args.task_count}.log")
+            # self.toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
             # get the predecessors
-            source_solution_id = job_arguments.get('source_solution_id')
-            predecessors = [
-                dict(id=source_solution_id, depth=-1),
-            ]
+            predecessors = [dict(id=self.user_args.source_solution_id, depth=-1),]
 
-            source_predecessors = self._toshi_api.get_predecessors(source_solution_id)
+            source_predecessors = self.toshi_api.get_predecessors(self.user_args.source_solution_id)
             print('source_predecessors', source_predecessors)
 
             if source_predecessors:
@@ -100,20 +111,20 @@ class BuilderTask:
                     predecessor['depth'] += -1
                     predecessors.append(predecessor)
 
-            inversion_id = self._toshi_api.scaled_inversion_solution.upload_inversion_solution(
+            inversion_id = self.toshi_api.scaled_inversion_solution.upload_inversion_solution(
                 task_id,
                 filepath=result['scaled_solution'],
-                source_solution_id=source_solution_id,
+                source_solution_id=self.user_args.source_solution_id,
                 predecessors=predecessors,
-                meta=task_arguments,
+                meta=user_args.model_dump(mode='json'),
                 metrics=result['metrics'],
             )
             print("created scaled inversion solution: ", inversion_id)
 
-        t1 = dt.datetime.utcnow()
+        t1 = dt.datetime.now()
         print("Report took %s secs" % (t1 - t0).total_seconds())
 
-    def scaleRuptureRates(self, in_solution_filepath, task_id, scale, polygon_scale=None, polygon_max_mag=None):
+    def scaleRuptureRates(self, in_solution_filepath: str, task_id: str, scale: float, polygon_scale: Optional[float]=None, polygon_max_mag: Optional[float]=None) -> dict[str, Any]:
 
         soln = InversionSolution().from_archive(in_solution_filepath)
 
@@ -134,7 +145,7 @@ class BuilderTask:
         scaled_soln = InversionSolution()
         scaled_soln.set_props(rates, ruptures, indices, soln.fault_sections.copy())
 
-        new_archive = PurePath(WORK_PATH, 'NZSHM22_ScaledInversionSolution-' + str(task_id) + '.zip')
+        new_archive = PurePath(self.output_folder, 'NZSHM22_ScaledInversionSolution-' + str(task_id) + '.zip')
 
         scaled_soln.to_archive(new_archive, in_solution_filepath)
 
@@ -157,9 +168,12 @@ if __name__ == "__main__":
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
+    user_args = ScaleSolutionInput(**config['task_args'])
+    system_args = SystemArgs(**config['task_system_args'])
+
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(config['job_arguments']['task_id'])
+    time.sleep(system_args.task_count)
 
     # print(config)
-    task = BuilderTask(config['job_arguments'])
-    task.run(**config)
+    task = ScaleSolutionTask(user_args, system_args)
+    task.run()

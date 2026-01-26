@@ -1,144 +1,53 @@
-#!python3
-"""This module provides the runner function to scale the rates of an opensha InversionSolutions."""
-import base64
+"""This module provides the runner class for scaling the rupture rates of inversions."""
+
+from .runner import JobRunner
+import runzi.execute.scale_solution_task as task_module
+from runzi.execute.arguments import SystemArgs, ArgSweeper, TaskLanguage
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
+
+
 import datetime as dt
 import getpass
-import logging
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Optional
 
-from pydantic import model_validator
-
-from runzi.automation.scaling.file_utils import get_output_file_ids
 from runzi.automation.scaling.local_config import API_KEY, API_URL, USE_API, WORKER_POOL_SIZE
 from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
-from runzi.execute.arguments import ArgBase
-from runzi.configuration.scale_inversion_solution import build_scale_tasks
+from runzi.execute.arguments import SystemArgs
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, SubtaskType, ToshiApi
+from runzi.runners.time_dependent_solution import get_model_type_from_all, get_solution_ids_from_id
 
 
-def build_tasks(new_gt_id, args, task_type, model_type, toshi_api):
-    scripts = []
-    for script_file in build_scale_tasks(new_gt_id, task_type, model_type, args, toshi_api):
-        print('scheduling: ', script_file)
-        scripts.append(script_file)
-    return scripts
 
 
-class ScaleSolutionsInput(ArgBase):
-    """Input for scaling inversion solutions rates."""
+class ScaleSolutionJobRunner(JobRunner):
+    """A class to run scale solution jobs."""
 
-    solution_ids: list[str]
-    scales: list[float]
-    polygon_scale: Optional[float] = None
-    polygon_max_mag: Optional[float] = None
+    def __init__(self, job_args: ArgSweeper):
+        """Initialize the ScaleSolutionJobRunner.
 
-    @model_validator(mode='after')
-    def polygon_scale_and_mag(self) -> 'ScaleSolutionsInput':
-        scale = self.polygon_scale is not None
-        mag = self.polygon_max_mag is not None
-        if scale ^ mag:
-            raise ValueError("must set both polygon_scale and polygon_max_mag or neither")
-        return self
+        Args:
+            job_args: input arguments for the jobs including swept args.
+        """
+        super().__init__(job_args, task_module)
 
 
-def run_scale_solution(job_input: ScaleSolutionsInput) -> str | None:
-    """Launch jobs to scale rupture rates of inversion solutions.
+    def custom_setup(self):
+        self.system_args.task_language = TaskLanguage.PYTHON
+        self.system_args.job_name = "Runzi-automation-scale-solution"
+        self.system_args.subtask_type = SubtaskType.SCALE_SOLUTION
+        self.system_args.max_job_time_min = 10
 
-    Args:
-        job_input: input arguments
+        # convert GT IDs to swept IDs of inversion solutions
+        solution_ids = []
+        for task_args in self.job_args.get_tasks():
+            solution_ids  += get_solution_ids_from_id(task_args.source_solution_id)
+        
+        if len(solution_ids) > 1:
+            self.job_args.prototype.source_solution_id = solution_ids[0]
+            self.job_args.swept_args['source_solution_id'] = solution_ids
 
-    Returns:
-        general task ID if using toshi API
-    """
-    source_solution_ids = job_input.solution_ids
-    scales = job_input.scales
-    task_title = job_input.title
-    task_description = job_input.description
-    polygon_scale = job_input.polygon_scale
-    polygon_max_mag = job_input.polygon_max_mag
-
-    t0 = dt.datetime.now()
-
-    logging.basicConfig(level=logging.INFO)
-
-    loglevel = logging.INFO
-    logging.getLogger('py4j.java_gateway').setLevel(loglevel)
-    logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
-    logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
-    logging.getLogger('urllib3').setLevel(loglevel)
-    logging.getLogger('botocore').setLevel(loglevel)
-    logging.getLogger('git.cmd').setLevel(loglevel)
-
-    general_task_id = None
-
-    headers = {"x-api-key": API_KEY}
-    toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
-
-    # if a GT id has been provided, unpack to get individual solution ids
-    source_solution_ids_list = []
-    for source_solution_id in source_solution_ids:
-        if 'GeneralTask' in str(base64.b64decode(source_solution_id)):
-            source_solution_ids_list += [out['id'] for out in get_output_file_ids(toshi_api, source_solution_id)]
-        else:
-            source_solution_ids_list += [source_solution_id]
-
-    model_type = get_model_type(source_solution_ids_list, toshi_api)
-
-    subtask_type = SubtaskType.SCALE_SOLUTION
-
-    args = dict(
-        scales=scales,
-        polygon_scale=polygon_scale,
-        polygon_max_mag=polygon_max_mag,
-        source_solution_ids=source_solution_ids_list,
-    )
-
-    args_list = []
-    for key, value in args.items():
-        if isinstance(value, list):
-            val = [str(item) for item in value]
-        else:
-            val = [str(value)]
-        args_list.append(dict(k=key, v=val))
-    print(args_list)
-
-    if USE_API:
-        # create new task in toshi_api
-        gt_args = (
-            CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=task_title, description=task_description)
-            .set_argument_list(args_list)
-            .set_subtask_type(subtask_type)
-            .set_model_type(model_type)
-        )
-
-        general_task_id = toshi_api.general_task.create_task(gt_args)
-
-        print("GENERAL_TASK_ID:", general_task_id)
-
-    tasks = build_tasks(general_task_id, args, subtask_type, model_type, toshi_api)
-
-    if USE_API:
-        toshi_api.general_task.update_subtask_count(general_task_id, len(tasks))
-
-    print('worker count: ', WORKER_POOL_SIZE)
-
-    schedule_tasks(tasks, WORKER_POOL_SIZE)
-
-    print("GENERAL_TASK_ID:", general_task_id)
-    print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
-
-    return general_task_id
-
-
-if __name__ == "__main__":
-    parser = ArgumentParser(
-        description="Scale rupture rates of inversion solutions. This is generally done to blend the IFM with the DSM."
-    )
-    parser.add_argument('filename', help="the input filename")
-    args = parser.parse_args()
-    with Path(args.filename).open() as input_file:
-        job_input = ScaleSolutionsInput.from_toml_file(input_file)
-    run_scale_solution(job_input)
+        # this has to be done after converting GT to inversion solution IDs
+        self.system_args.model_type = get_model_type_from_all(self.job_args)
