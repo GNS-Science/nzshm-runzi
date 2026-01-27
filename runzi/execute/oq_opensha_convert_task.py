@@ -22,7 +22,7 @@ from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
 from runzi.execute.arguments import ArgBase, SystemArgs
 
 
-class OQConvertInput(ArgBase):
+class OQConvertArgs(ArgBase):
     """Input for converting OpenSHA inversion to OpenQuake source."""
 
     source_solution_id: str
@@ -32,7 +32,7 @@ class OQConvertInput(ArgBase):
 
 class OQConvertTask:
 
-    def __init__(self, user_args: OQConvertInput, system_args: SystemArgs):
+    def __init__(self, user_args: OQConvertArgs, system_args: SystemArgs):
 
         self.user_args = user_args
         self.system_args = system_args
@@ -187,7 +187,7 @@ if __name__ == "__main__":
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
-    user_args = OQConvertInput(**config['task_args'])
+    user_args = OQConvertArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue

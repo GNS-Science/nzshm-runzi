@@ -19,7 +19,7 @@ from runzi.automation.scaling.toshi_api.general_task import SubtaskType
 from runzi.execute.arguments import ArgBase, SystemArgs
 
 
-class AverageSolutionsInput(ArgBase):
+class AverageSolutionsArgs(ArgBase):
     """Input for averaging solutions."""
 
     source_solution_ids: list[str]
@@ -88,7 +88,7 @@ def is_rupture_set(file_id: str) -> bool:
 class AverageSolutionsTask:
     """The python client for solution rate averaging."""
 
-    def __init__(self, user_args: AverageSolutionsInput, system_args: SystemArgs):
+    def __init__(self, user_args: AverageSolutionsArgs, system_args: SystemArgs):
 
         self.user_args = user_args
         self.system_args = system_args
@@ -228,7 +228,7 @@ if __name__ == "__main__":
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
-    user_args = AverageSolutionsInput(**config['task_args'])
+    user_args = AverageSolutionsArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue

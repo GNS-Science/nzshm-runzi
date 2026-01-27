@@ -5,15 +5,13 @@ from pathlib import Path
 import typer
 from rich import print as rich_print
 
-from runzi.execute.arguments import ArgSweeper
-from runzi.execute.average_solutions_task import AverageSolutionsInput
-from runzi.execute.oq_opensha_convert_task import OQConvertInput
-from runzi.execute.scale_solution_task import ScaleSolutionInput
-from runzi.execute.time_dependent_solution_task import TimeDependentSolutionInput
-from runzi.runners.average_solutions import AverageSolutionsJobRunner
-from runzi.runners.oq_convert_solution import OQConvertJobRunner
-from runzi.runners.scale_solution import ScaleSolutionJobRunner
-from runzi.runners.time_dependent_solution import TimeDependentSolutionJobRunner
+from runzi.execute import ArgSweeper, AverageSolutionsArgs, OQConvertArgs, ScaleSolutionArgs, TimeDependentSolutionArgs
+from runzi.runners import (
+    AverageSolutionsJobRunner,
+    OQConvertJobRunner,
+    ScaleSolutionJobRunner,
+    TimeDependentSolutionJobRunner,
+)
 
 app = typer.Typer()
 
@@ -22,7 +20,7 @@ app = typer.Typer()
 def avg_sol(input_filepath: Path):
     """Average multiple solutions by taking the mean rate of all ruptures."""
     rich_print("[yellow]Starting average solutions jobs.")
-    job_input = ArgSweeper.from_config_file(input_filepath, AverageSolutionsInput)
+    job_input = ArgSweeper.from_config_file(input_filepath, AverageSolutionsArgs)
     runner = AverageSolutionsJobRunner(job_input)
     gt_id = runner.run_jobs()
     rich_print(f"General Task ID: [bold green]{gt_id}")
@@ -32,7 +30,7 @@ def avg_sol(input_filepath: Path):
 def time_dependent(input_filepath: Path):
     """Create time dependent inversion solutions by modifying rupture rates."""
     rich_print("[yellow]Starting time dependent solutions jobs.")
-    job_input = ArgSweeper.from_config_file(input_filepath, TimeDependentSolutionInput)
+    job_input = ArgSweeper.from_config_file(input_filepath, TimeDependentSolutionArgs)
     runner = TimeDependentSolutionJobRunner(job_input)
     gt_id = runner.run_jobs()
     rich_print(f"General Task ID: [bold green]{gt_id}")
@@ -42,7 +40,7 @@ def time_dependent(input_filepath: Path):
 def scale(input_filepath: Path):
     """Scale rupture rates of inversion solutions."""
     rich_print("[yellow]Starting scale solutions jobs.")
-    job_input = ArgSweeper.from_config_file(input_filepath, ScaleSolutionInput)
+    job_input = ArgSweeper.from_config_file(input_filepath, ScaleSolutionArgs)
     runner = ScaleSolutionJobRunner(job_input)
     gt_id = runner.run_jobs()
     rich_print(f"General Task ID: [bold green]{gt_id}")
@@ -52,7 +50,7 @@ def scale(input_filepath: Path):
 def oq_convert(input_filepath: Path):
     """Convert OpenSHA inversion solutions to OpenQuake source input files."""
     rich_print("[yellow]Starting convert to OQ jobs.")
-    job_input = ArgSweeper.from_config_file(input_filepath, OQConvertInput)
+    job_input = ArgSweeper.from_config_file(input_filepath, OQConvertArgs)
     runner = OQConvertJobRunner(job_input)
     gt_id = runner.run_jobs()
     rich_print(f"General Task ID: [bold green]{gt_id}")

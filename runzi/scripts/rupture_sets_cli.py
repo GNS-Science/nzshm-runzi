@@ -5,11 +5,8 @@ from pathlib import Path
 import typer
 from rich import print as rich_print
 
-from runzi.execute.arguments import ArgSweeper
-from runzi.execute.coulomb_rupture_set_builder_task import CoulombRuptureSetArgs
-from runzi.execute.subduction_rupture_set_builder_task import SubductionRuptureSetArgs
-from runzi.runners.coulomb_rupture_sets import CoulombRuptureSetJobRunner
-from runzi.runners.subduction_rupture_sets import SubductionRuptureSetJobRunner
+from runzi.execute import ArgSweeper, CoulombRuptureSetArgs, SubductionRuptureSetArgs
+from runzi.runners import CoulombRuptureSetJobRunner, SubductionRuptureSetJobRunner
 
 app = typer.Typer()
 

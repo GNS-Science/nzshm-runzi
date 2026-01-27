@@ -18,7 +18,7 @@ from runzi.automation.scaling.toshi_api.general_task import SubtaskType
 from runzi.execute.arguments import ArgBase, SystemArgs
 
 
-class ScaleSolutionInput(ArgBase):
+class ScaleSolutionArgs(ArgBase):
     """Input for scaling inversion solutions."""
 
     scale: float
@@ -30,7 +30,7 @@ class ScaleSolutionInput(ArgBase):
 class ScaleSolutionTask:
     """The python client for solution rate scaling."""
 
-    def __init__(self, user_args: ScaleSolutionInput, system_args: SystemArgs):
+    def __init__(self, user_args: ScaleSolutionArgs, system_args: SystemArgs):
 
         self.user_args = user_args
         self.system_args = system_args
@@ -184,7 +184,7 @@ if __name__ == "__main__":
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
-    user_args = ScaleSolutionInput(**config['task_args'])
+    user_args = ScaleSolutionArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue

@@ -30,7 +30,7 @@ logging.getLogger('gql.transport').setLevel(logging.WARN)
 log = logging.getLogger(__name__)
 
 
-class TimeDependentSolutionInput(ArgBase):
+class TimeDependentSolutionArgs(ArgBase):
     """Input for time dependent solution rate scaling."""
 
     source_solution_id: str
@@ -43,7 +43,7 @@ class TimeDependentSolutionInput(ArgBase):
 class TimeDependentSolutionTask:
     """The python client for time dependent rate scaling."""
 
-    def __init__(self, user_args: TimeDependentSolutionInput, system_args: SystemArgs):
+    def __init__(self, user_args: TimeDependentSolutionArgs, system_args: SystemArgs):
 
         self.use_api = system_args.use_api
         self.output_folder = WORK_PATH
@@ -162,7 +162,7 @@ if __name__ == "__main__":
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
-    user_args = TimeDependentSolutionInput(**config['task_args'])
+    user_args = TimeDependentSolutionArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
 
     # maybe the JVM App is a little slow to get listening
