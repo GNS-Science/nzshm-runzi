@@ -9,46 +9,55 @@ from pathlib import Path
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation  # TODO deprecate
-from openquake.converters.ucerf.parsers.sections_geojson import get_multi_fault_source
-from openquake.hazardlib.sourcewriter import write_source_model
+
+try:
+    from openquake.converters.ucerf.parsers.sections_geojson import get_multi_fault_source
+    from openquake.hazardlib.sourcewriter import write_source_model
+except ImportError:
+    print("openquake not installed, not importing")
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
 from runzi.execute.arguments import SystemArgs
 from runzi.runners.runner_inputs import OQOpenSHAConvertArgs
+from runzi.execute.arguments import ArgBase, SystemArgs
 
+class OQConvertInput(ArgBase):
+    """Input for converting OpenSHA inversion to OpenQuake source."""
 
-class BuilderTask:
+    source_solution_id: str
+    investigation_time_years: float
+    rupture_sampling_distance_km: float
 
-    def __init__(self, user_args: OQOpenSHAConvertArgs, system_args: SystemArgs):
+class OQConvertTask:
+
+    def __init__(self, user_args: OQConvertInput, system_args: SystemArgs):
 
         self.user_args = user_args
         self.system_args = system_args
         self.use_api = system_args.use_api
-        self.source_solution_id = self.user_args.task.source_solution_id
 
-        if self.use_api:
-            headers = {"x-api-key": API_KEY}
-            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+        headers = {"x-api-key": API_KEY}
+        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+        self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
-    def _convert(self, src_folder: Path) -> Path:
+    def convert(self, src_folder: Path) -> Path:
 
         # The `tectonic_region_type` label must be consistent with what you use in the
         # logic tree for the ground-motion characterisation
         # Use "Subduction Interface" or "Active Shallow Crust"
         # tectonic_region_type = "Subduction Interface"
-        if self.user_args.task.model_type is ModelType.CRUSTAL:
+        if self.system_args.model_type is ModelType.CRUSTAL:
             tectonic_region_type = "Active Shallow Crust"
-        elif self.user_args.task.model_type is ModelType.SUBDUCTION:
+        elif self.system_args.model_type is ModelType.SUBDUCTION:
             tectonic_region_type = "Subduction Interface"
 
-        dip_sd = self.user_args.task.rupture_sampling_distance_km
+        dip_sd = self.user_args.rupture_sampling_distance_km
         strike_sd = dip_sd
-        source_id = self.user_args.task.source_solution_id.replace('=', '_')
+        source_id = self.user_args.source_solution_id.replace('=', '_')
         source_name = source_id
-        investigation_time = self.user_args.task.investigation_time_years
+        investigation_time = self.user_args.investigation_time_years
         prefix = source_id
 
         computed = get_multi_fault_source(
@@ -74,35 +83,35 @@ class BuilderTask:
 
         return output_zip
 
-    def _get_task_id(self):
-        environment = {}
+    def get_task_id(self):
+
         if self.use_api:
             # create new task in toshi_api
-            task_id = self._toshi_api.automation_task.create_task(
+            task_id = self.toshi_api.automation_task.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type=SubtaskType.SOLUTION_TO_NRML.name,
-                    model_type=user_args.task.model_type.name.upper(),
+                    model_type=self.system_args.model_type.name.upper(),
                 ),
-                arguments=self.user_args.task.model_dump(mode='json'),
-                environment=environment,
+                arguments=self.user_args.model_dump(mode='json'),
+                environment={},
             )
 
             # link task to the parent task
-            self._task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
+            self.task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
 
             # link task to the input solution
-            if self.source_solution_id:
-                self._toshi_api.automation_task.link_task_file(task_id, self.source_solution_id, 'READ')
+            if self.user_args.source_solution_id:
+                self.toshi_api.automation_task.link_task_file(task_id, self.user_args.source_solution_id, 'READ')
         else:
             task_id = str(uuid.uuid4())
         return task_id
 
-    def _get_source_solution(self) -> Path:
-        file_generator = get_output_file_id(self._toshi_api, self.source_solution_id)  # for file by file ID
-        solutions = download_files(self._toshi_api, file_generator, str(WORK_PATH), overwrite=False)
-        input_solution_info = solutions[self.user_args.task.source_solution_id]
-        src_folder = WORK_PATH / "downloads" / self.source_solution_id
+    def get_source_solution(self) -> Path:
+        file_generator = get_output_file_id(self.toshi_api, self.user_args.source_solution_id)  # for file by file ID
+        solutions = download_files(self.toshi_api, file_generator, str(WORK_PATH), overwrite=False)
+        input_solution_info = solutions[self.user_args.source_solution_id]
+        src_folder = WORK_PATH / "downloads" / self.user_args.source_solution_id
         self.solution_archive_filename = input_solution_info['filepath']
 
         # get name of zifile like `NZSHM22_InversionSolution-QXV0b21hdGlvblRhc2s6MjQ4OVMycWNI.zip`
@@ -115,13 +124,19 @@ class BuilderTask:
         # Run the task....
         t0 = dt.datetime.now()
 
-        task_id = self._get_task_id()
+        task_id = self.get_task_id()
 
         # get the input solution file
-        src_folder = self._get_source_solution()
+        src_folder = self.get_source_solution()
 
         # DOIT
-        output_zip = self._convert(src_folder)
+        if not SPOOF:
+            output_zip = self.convert(src_folder)
+        else:
+            output_zip = Path(WORK_PATH, self.solution_archive_filename.replace('.zip', '_nrml.zip'))
+            output_zip.touch()
+
+
 
         t1 = dt.datetime.now()
         print("Conversion took %s secs" % (t1 - t0).total_seconds())
@@ -130,21 +145,21 @@ class BuilderTask:
 
             # get the predecessors
             predecessors = [
-                dict(id=self.source_solution_id, depth=-1),
+                dict(id=self.user_args.source_solution_id, depth=-1),
             ]
-            source_predecessors = self._toshi_api.get_predecessors(self.source_solution_id)
+            source_predecessors = self.toshi_api.get_predecessors(self.user_args.source_solution_id)
 
             if source_predecessors:
                 for predecessor in source_predecessors:
                     predecessor['depth'] += -1
                     predecessors.append(predecessor)
 
-            nrml_id = self._toshi_api.inversion_solution_nrml.upload_inversion_solution_nrml(
+            nrml_id = self.toshi_api.inversion_solution_nrml.upload_inversion_solution_nrml(
                 task_id,
-                source_solution_id=self.source_solution_id,
+                source_solution_id=self.user_args.source_solution_id,
                 filepath=output_zip,
                 predecessors=predecessors,
-                meta=self.user_args.task.model_dump(mode='json'),
+                meta=self.user_args.model_dump(mode='json'),
                 metrics=None,
             )
 
@@ -156,7 +171,7 @@ class BuilderTask:
                 'result': "SUCCESS",
                 'state': "DONE",
             }
-            self._toshi_api.automation_task.complete_task(done_args, {})
+            self.toshi_api.automation_task.complete_task(done_args, {})
 
 
 if __name__ == "__main__":
@@ -174,10 +189,12 @@ if __name__ == "__main__":
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
-    user_args = OQOpenSHAConvertArgs(**config['task_args'])
+    user_args = OQConvertInput(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
-    task = BuilderTask(user_args, system_args)
 
-    # Wait for some time, scaled by taskid to avoid S3 consistency issue
+    # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(system_args.task_count)
+
+    # print(config)
+    task = OQConvertTask(user_args, system_args)
     task.run()

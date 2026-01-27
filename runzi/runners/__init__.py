@@ -7,7 +7,7 @@ from .diagnostic_reports import run_diagnostic_reports
 from .hazard_inputs import DisaggInput, HazardInput
 
 # from .inversion import run_inversion
-from .oq_convert_solution import run_oq_convert_solution
+# from .oq_convert_solution import run_oq_convert_solution
 from .oq_disagg import run_oq_disagg
 from .oq_hazard import run_oq_hazard
 from .runner_inputs import AverageSolutionsInput
