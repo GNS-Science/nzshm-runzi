@@ -21,8 +21,8 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.opensha_task_factory import OpenshaTaskFactory
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.execute.arguments import SystemArgs
 from runzi.execute import ruptset_diags_report_task
+from runzi.execute.arguments import SystemArgs
 from runzi.execute.ruptset_diags_report_task import RuptureSetReportArgs
 from runzi.util.aws import get_ecs_job_config
 

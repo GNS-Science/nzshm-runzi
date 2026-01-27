@@ -17,11 +17,10 @@ except ImportError:
     print("openquake not installed, not importing")
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
-from runzi.execute.arguments import SystemArgs
-from runzi.runners.runner_inputs import OQOpenSHAConvertArgs
 from runzi.execute.arguments import ArgBase, SystemArgs
+
 
 class OQConvertInput(ArgBase):
     """Input for converting OpenSHA inversion to OpenQuake source."""
@@ -29,6 +28,7 @@ class OQConvertInput(ArgBase):
     source_solution_id: str
     investigation_time_years: float
     rupture_sampling_distance_km: float
+
 
 class OQConvertTask:
 
@@ -135,8 +135,6 @@ class OQConvertTask:
         else:
             output_zip = Path(WORK_PATH, self.solution_archive_filename.replace('.zip', '_nrml.zip'))
             output_zip.touch()
-
-
 
         t1 = dt.datetime.now()
         print("Conversion took %s secs" % (t1 - t0).total_seconds())

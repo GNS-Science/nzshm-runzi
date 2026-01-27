@@ -1,9 +1,10 @@
 """This module provides the runner class for creating subduction rupture sets."""
 
-from .runner import JobRunner
 import runzi.execute.subduction_rupture_set_builder_task as task_module
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-from runzi.execute.arguments import SystemArgs, ArgSweeper, TaskLanguage
+from runzi.execute.arguments import TaskLanguage
+
+from .runner import JobRunner
 
 
 class SubductionRuptureSetJobRunner(JobRunner):

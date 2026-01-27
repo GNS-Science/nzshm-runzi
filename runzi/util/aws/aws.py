@@ -12,7 +12,6 @@ from typing import List, Optional
 
 import boto3
 from botocore.exceptions import ClientError
-from pydantic import BaseModel
 
 from runzi.automation.scaling.task_config import get_task_config
 from runzi.execute.arguments import ArgBase, SystemArgs

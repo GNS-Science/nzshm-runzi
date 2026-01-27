@@ -21,8 +21,8 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import ModelType
-from runzi.execute.arguments import SystemArgs
 from runzi.execute import crustal_inversion_solution_task, subduction_inversion_solution_task
+from runzi.execute.arguments import SystemArgs
 from runzi.runners.inversion_inputs import CrustalInversionArgs, InversionArgs, SubductionInversionArgs
 from runzi.util.aws import get_ecs_job_config
 

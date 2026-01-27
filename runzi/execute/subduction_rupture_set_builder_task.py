@@ -1,14 +1,12 @@
 import argparse
-from pathlib import Path
-from typing import Optional
-import urllib
 import datetime as dt
 import json
-import os
+import logging
 import platform
 import time
-from pathlib import PurePath
-import logging
+import urllib
+from pathlib import Path, PurePath
+from typing import Optional
 
 import git
 from dateutil.tz import tzutc
@@ -16,8 +14,8 @@ from nshm_toshi_client.general_task import GeneralTask
 from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_RUPTURESET, WORK_PATH
 
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_RUPTURESET, WORK_PATH
 from runzi.execute.arguments import ArgBase, SystemArgs
 
 log = logging.getLogger(__name__)
@@ -29,6 +27,7 @@ logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
 logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
 logging.getLogger('urllib3').setLevel(loglevel)
 logging.getLogger('git.cmd').setLevel(loglevel)
+
 
 class SubductionRuptureSetArgs(ArgBase):
     """Input for generating subduction rupture sets."""
@@ -43,6 +42,7 @@ class SubductionRuptureSetArgs(ArgBase):
     scaling_relationship: str
     slip_along_rupture_model: str
     deformation_model: Optional[str] = None
+
 
 class SubductionRuptureSetBuilderTask:
     """Class for building subduction rupture sets."""
@@ -70,8 +70,7 @@ class SubductionRuptureSetBuilderTask:
 
     def ruptureSetMetrics(self):
         return dict(
-            subsection_count = self.builder.getSubSections().size(),
-            rupture_count = self.builder.getRuptures().size()
+            subsection_count=self.builder.getSubSections().size(), rupture_count=self.builder.getRuptures().size()
         )
 
     def run(self):
@@ -104,7 +103,9 @@ class SubductionRuptureSetBuilderTask:
             raise RuntimeError("Java Gateway could not get CoulombRuptureSetBuilder")
         print('Got RuptureSetBuilder: ', self.builder)
 
-        self.builder.setDownDipAspectRatio(self.user_args.min_aspect_ratio, self.user_args.max_aspect_ratio, self.user_args.aspect_depth_threshold)
+        self.builder.setDownDipAspectRatio(
+            self.user_args.min_aspect_ratio, self.user_args.max_aspect_ratio, self.user_args.aspect_depth_threshold
+        )
         self.builder.setDownDipMinFill(self.user_args.min_fill_ratio)
         self.builder.setDownDipPositionCoarseness(self.user_args.growth_position_epsilon)
         self.builder.setDownDipSizeCoarseness(self.user_args.growth_size_epsilon)

@@ -1,7 +1,6 @@
 import datetime as dt
 from argparse import ArgumentParser
 from multiprocessing.dummy import Pool
-from pathlib import Path
 from subprocess import check_call
 from typing import Any, Callable, Generator, Literal, cast
 

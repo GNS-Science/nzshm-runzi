@@ -25,8 +25,8 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.execute.arguments import SystemArgs
 from runzi.execute import inversion_diags_report_task
+from runzi.execute.arguments import SystemArgs
 from runzi.runners.runner_inputs import InversionReportArgs
 from runzi.util.aws import get_ecs_job_config
 

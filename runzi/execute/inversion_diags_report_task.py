@@ -85,7 +85,7 @@ class BuilderTask:
         #     print("Named fault plots for: ", ta['file_id'], ta['fault_model'])
         #     print("path: ", ta['file_path'])
 
-        fault_model = self.user_args.fault_model
+        # fault_model = self.user_args.fault_model
         named_mfds_folder = Path(self.output_folder, self.solution_id, 'named_fault_mfds')
         named_mfds_folder.mkdir(parents=True, exist_ok=True)
 

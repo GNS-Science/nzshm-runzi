@@ -1,7 +1,5 @@
 from typing import Any
 
-from pydantic import BaseModel
-
 from runzi.execute.arguments import ArgBase, SystemArgs
 
 

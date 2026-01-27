@@ -18,14 +18,11 @@ import json
 import os
 from pathlib import Path, PurePath
 from types import ModuleType
-from typing import Optional, TypeVar, Protocol
+from typing import Optional, Protocol, TypeVar
 
-from pydantic import BaseModel
 from runzi.automation.scaling.python_task_factory import get_factory as get_python_factory
-
 from runzi.automation.scaling.task_config import get_task_config
-from runzi.execute.arguments import ArgBase, SystemArgs
-from runzi.execute.arguments import TaskLanguage
+from runzi.execute.arguments import ArgBase, SystemArgs, TaskLanguage
 from runzi.runners.inversion_inputs import InversionArgs
 
 from .local_config import EnvMode
@@ -34,21 +31,17 @@ OpenshaTaskFactoryType = TypeVar('OpenshaTaskFactoryType', bound='OpenshaTaskFac
 
 # import scaling.rupture_set_builder_task
 
+
 class TaskFactory(Protocol):
-    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs) -> None:
-        ...
+    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs) -> None: ...
 
-    def get_task_script(self) -> str:
-        ...
+    def get_task_script(self) -> str: ...
 
-    def get_next_port(self) -> int:
-        ...
+    def get_next_port(self) -> int: ...
 
     @classmethod
-    def create(cls, **kwargs) -> 'TaskFactory':
-        ...
+    def create(cls, **kwargs) -> 'TaskFactory': ...
 
-    
 
 class OpenshaTaskFactory:
 
@@ -205,14 +198,15 @@ export NO_PROXY=${{no_proxy}}
 #END_OF_PBS
 """
 
+
 def get_java_factory(environment_mode: EnvMode) -> type[OpenshaTaskFactory]:
-        if environment_mode is EnvMode.LOCAL:
-            return OpenshaTaskFactory
-        elif environment_mode is EnvMode.CLUSTER:
-            return OpenshaPBSTaskFactory
-        elif environment_mode is EnvMode.AWS:
-            return OpenshaAWSTaskFactory
-    
+    if environment_mode is EnvMode.LOCAL:
+        return OpenshaTaskFactory
+    elif environment_mode is EnvMode.CLUSTER:
+        return OpenshaPBSTaskFactory
+    elif environment_mode is EnvMode.AWS:
+        return OpenshaAWSTaskFactory
+
 
 def get_factory(environment_mode: EnvMode, task_language: TaskLanguage) -> type[OpenshaTaskFactory]:
     if task_language is TaskLanguage.JAVA:

@@ -6,7 +6,7 @@ import time
 import urllib
 import uuid
 from itertools import chain
-from pathlib import PurePath, Path
+from pathlib import PurePath
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
@@ -17,8 +17,6 @@ from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import SubtaskType
 from runzi.execute.arguments import ArgBase, SystemArgs
-from runzi.execute.arguments import SystemArgs
-from runzi.runners.runner_inputs import AverageSolutionsInput
 
 
 class AverageSolutionsInput(ArgBase):

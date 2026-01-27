@@ -4,10 +4,9 @@ import json
 import logging
 import platform
 import time
-from typing_extensions import Self
-from typing import Optional
 import urllib
 from pathlib import Path, PurePath
+from typing import Optional
 from zipfile import ZipFile
 
 import git
@@ -17,12 +16,12 @@ from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel, model_validator
+from typing_extensions import Self
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_RUPTURESET, WORK_PATH
-from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
+from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.execute.arguments import ArgBase, SystemArgs
-from runzi.execute.utils import generate_automation_task_args
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

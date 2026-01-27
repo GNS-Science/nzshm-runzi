@@ -5,7 +5,7 @@ import time
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import PurePath
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation

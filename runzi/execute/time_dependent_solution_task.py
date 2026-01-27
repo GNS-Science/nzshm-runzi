@@ -1,21 +1,20 @@
 import argparse
-from pydantic import field_validator
 import datetime as dt
 import json
 import logging
 import time
 import urllib
 import uuid
-from pathlib import PurePath
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
-from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import SubtaskType
+from runzi.execute.arguments import ArgBase, SystemArgs
 
 logging.basicConfig(level=logging.INFO)
 
@@ -30,11 +29,10 @@ logging.getLogger('gql.transport').setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
 
-from runzi.execute.arguments import ArgBase, SystemArgs
-from runzi.execute.arguments import SystemArgs
 
 class TimeDependentSolutionInput(ArgBase):
     """Input for time dependent solution rate scaling."""
+
     source_solution_id: str
     current_year: int
     most_recent_event_enum: str
@@ -125,7 +123,9 @@ class TimeDependentSolutionTask:
             self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
 
             # get the predecessors
-            predecessors = [dict(id=self.user_args.source_solution_id, depth=-1),]
+            predecessors = [
+                dict(id=self.user_args.source_solution_id, depth=-1),
+            ]
 
             source_predecessors = self.toshi_api.get_predecessors(self.user_args.source_solution_id)
 
@@ -173,4 +173,3 @@ if __name__ == "__main__":
     # print(config)
     task = TimeDependentSolutionTask(user_args, system_args)
     task.run()
-

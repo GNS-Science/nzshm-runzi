@@ -1,18 +1,19 @@
-from enum import Enum
 import json
+from enum import Enum
 from pathlib import Path
 from typing import Any, Generator, Optional, Sequence, TextIO
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 
 import tomlkit
 from pydantic import BaseModel
 from typing_extensions import Self
 
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 
 
 class TaskLanguage(Enum):
     PYTHON = 'python'
     JAVA = 'java'
+
 
 class SystemArgs(BaseModel):
     use_api: bool

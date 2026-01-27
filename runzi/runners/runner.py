@@ -1,19 +1,16 @@
 """This module provides the runner JobRunner class for creating running jobs."""
 
 import datetime as dt
-from types import ModuleType
 import getpass
 import logging
-from argparse import ArgumentParser
 from multiprocessing.dummy import Pool
-from pathlib import Path
 from subprocess import check_call
-from typing import TYPE_CHECKING
+from types import ModuleType
 
 from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, WORKER_POOL_SIZE
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
-from runzi.execute.arguments import SystemArgs, ArgSweeper
 from runzi.configuration.configuration import build_tasks
+from runzi.execute.arguments import ArgSweeper, SystemArgs
 
 logging.basicConfig(level=logging.INFO)
 
@@ -25,10 +22,11 @@ logging.getLogger('urllib3').setLevel(loglevel)
 logging.getLogger('botocore').setLevel(loglevel)
 logging.getLogger('git.cmd').setLevel(loglevel)
 
+
 class JobRunner:
     """A class to run jobs."""
 
-    def __init__(self, job_args: ArgSweeper, task_module: ModuleType): 
+    def __init__(self, job_args: ArgSweeper, task_module: ModuleType):
         """Initialize the JobRunner.
 
         Args:
@@ -39,13 +37,17 @@ class JobRunner:
         self.task_module = task_module
         self.system_args = SystemArgs(use_api=USE_API)
 
-
     def custom_setup(self):
         pass  # Placeholder for any custom setup needed
 
     def _build_argument_list(self) -> list[dict[str, list[str]]]:
         """Build argument list for general task."""
-        unswepped_args = {k: [str(v),] for k,v in self.job_args.prototype.get_run_args().items()}
+        unswepped_args = {
+            k: [
+                str(v),
+            ]
+            for k, v in self.job_args.prototype.get_run_args().items()
+        }
         swepted_args = {k: [str(item) for item in v] for k, v in self.job_args.swept_args.items()}
         all_args = unswepped_args | swepted_args
         return [dict(k=key, v=value) for key, value in all_args.items()]
@@ -59,10 +61,8 @@ class JobRunner:
         self.custom_setup()
         t0 = dt.datetime.now()
 
-
         # USE_API = False
         general_task_id = None
-
 
         args_list = self._build_argument_list()
 
@@ -72,7 +72,9 @@ class JobRunner:
             toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
             gt_args = (
-                CreateGeneralTaskArgs(agent_name=getpass.getuser(), title=self.job_args.title, description=self.job_args.description)
+                CreateGeneralTaskArgs(
+                    agent_name=getpass.getuser(), title=self.job_args.title, description=self.job_args.description
+                )
                 .set_argument_list(args_list)
                 .set_subtask_type(self.system_args.subtask_type)
                 .set_model_type(self.system_args.model_type)

@@ -1,22 +1,22 @@
 import argparse
-from pathlib import Path
-from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 import datetime as dt
 import json
-from typing import Optional, Any
 import time
 import urllib
 import uuid
-from pathlib import PurePath
+from pathlib import Path, PurePath
+from typing import Any, Optional
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
 from solvis import InversionSolution
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF
+from runzi.automation.scaling.file_utils import download_files, get_output_file_id
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.execute.arguments import ArgBase, SystemArgs
 from runzi.automation.scaling.toshi_api.general_task import SubtaskType
+from runzi.execute.arguments import ArgBase, SystemArgs
+
 
 class ScaleSolutionInput(ArgBase):
     """Input for scaling inversion solutions."""
@@ -25,7 +25,6 @@ class ScaleSolutionInput(ArgBase):
     polygon_scale: float
     polygon_max_mag: float
     source_solution_id: str
-
 
 
 class ScaleSolutionTask:
@@ -74,9 +73,17 @@ class ScaleSolutionTask:
 
         # DO THE WORK
         if not SPOOF:
-            result = self.scaleRuptureRates(source_solution_filepath, task_id, self.user_args.scale, self.user_args.polygon_scale, self.user_args.polygon_max_mag)
+            result = self.scaleRuptureRates(
+                source_solution_filepath,
+                task_id,
+                self.user_args.scale,
+                self.user_args.polygon_scale,
+                self.user_args.polygon_max_mag,
+            )
         else:
-            output_solution_filepath = Path(self.output_folder, 'NZSHM22_ScaledInversionSolution-' + str(task_id) + '.zip')
+            output_solution_filepath = Path(
+                self.output_folder, 'NZSHM22_ScaledInversionSolution-' + str(task_id) + '.zip'
+            )
             output_solution_filepath.touch()
             result = {
                 'metrics': dict(scale=self.user_args.scale),
@@ -100,7 +107,9 @@ class ScaleSolutionTask:
             # self.toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
             # get the predecessors
-            predecessors = [dict(id=self.user_args.source_solution_id, depth=-1),]
+            predecessors = [
+                dict(id=self.user_args.source_solution_id, depth=-1),
+            ]
 
             source_predecessors = self.toshi_api.get_predecessors(self.user_args.source_solution_id)
             print('source_predecessors', source_predecessors)
@@ -124,7 +133,14 @@ class ScaleSolutionTask:
         t1 = dt.datetime.now()
         print("Report took %s secs" % (t1 - t0).total_seconds())
 
-    def scaleRuptureRates(self, in_solution_filepath: str, task_id: str, scale: float, polygon_scale: Optional[float]=None, polygon_max_mag: Optional[float]=None) -> dict[str, Any]:
+    def scaleRuptureRates(
+        self,
+        in_solution_filepath: str,
+        task_id: str,
+        scale: float,
+        polygon_scale: Optional[float] = None,
+        polygon_max_mag: Optional[float] = None,
+    ) -> dict[str, Any]:
 
         soln = InversionSolution().from_archive(in_solution_filepath)
 

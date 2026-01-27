@@ -1,10 +1,8 @@
 import os
 import stat
-from itertools import product
 from pathlib import PurePath
-from typing import Any, Generator, Optional
-
-from typing_extensions import Sequence
+from types import ModuleType
+from typing import Any, Generator
 
 from runzi.automation.scaling.local_config import (
     API_URL,
@@ -15,24 +13,24 @@ from runzi.automation.scaling.local_config import (
     OPENSHA_ROOT,
     S3_REPORT_BUCKET,
     S3_URL,
-    USE_API,
     WORK_PATH,
     EnvMode,
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.execute.arguments import ArgSweeper, SystemArgs
-from types import ModuleType
 from runzi.util.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 
 
-def build_tasks(user_args: ArgSweeper, system_args: SystemArgs, task_module: ModuleType) -> Generator[dict[str, Any] | str, None, None]:
+def build_tasks(
+    user_args: ArgSweeper, system_args: SystemArgs, task_module: ModuleType
+) -> Generator[dict[str, Any] | str, None, None]:
     """
     build the shell scripts 1 per task, based on all the inputs
 
     """
-    factory_class = get_factory(CLUSTER_MODE, system_args.task_language)
+    factory_class = get_factory(CLUSTER_MODE, system_args.task_language)  # type: ignore
 
     task_factory = factory_class.create(
         root_path=OPENSHA_ROOT,
