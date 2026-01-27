@@ -8,13 +8,15 @@ import io
 import json
 import urllib.parse
 import zipfile
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 import boto3
 from botocore.exceptions import ClientError
 
 from runzi.automation.scaling.task_config import get_task_config
-from runzi.execute.arguments import ArgBase, SystemArgs
+
+if TYPE_CHECKING:
+    from runzi.execute.arguments import ArgBase, SystemArgs
 
 BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')
 
@@ -86,8 +88,8 @@ def decompress_config(compressed):
 
 def get_ecs_job_config(
     job_name,
-    task_args: ArgBase,
-    task_system_args: SystemArgs,
+    task_args: 'ArgBase',
+    task_system_args: 'SystemArgs',
     toshi_api_url,
     toshi_s3_url,
     toshi_report_bucket,

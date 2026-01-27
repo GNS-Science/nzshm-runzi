@@ -7,7 +7,17 @@ from multiprocessing.dummy import Pool
 from subprocess import check_call
 from types import ModuleType
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, CLUSTER_MODE, S3_URL, USE_API, WORKER_POOL_SIZE
+import boto3
+
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    CLUSTER_MODE,
+    S3_URL,
+    USE_API,
+    WORKER_POOL_SIZE,
+    EnvMode,
+)
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
 from runzi.configuration.configuration import build_tasks
 from runzi.execute.arguments import ArgSweeper, SystemArgs
@@ -84,24 +94,32 @@ class JobRunner:
         print("GENERAL_TASK_ID:", general_task_id)
         self.system_args.general_task_id = general_task_id
 
-        scripts = []
-        for script_file in build_tasks(self.job_args, self.system_args, self.task_module):
-            scripts.append(script_file)
+        scripts = [script_file for script_file in build_tasks(self.job_args, self.system_args, self.task_module)]
+        if USE_API:
+            toshi_api.general_task.update_subtask_count(general_task_id, len(scripts))
 
-        def call_script(script_name):
-            print("call_script with:", script_name)
-            if CLUSTER_MODE:
-                check_call(['qsub', script_name])
-            else:
+        if CLUSTER_MODE is EnvMode.LOCAL:
+
+            def call_script(script_name):
+                print("call_script with:", script_name)
                 check_call(['bash', script_name])
 
-        print('task count: ', len(scripts))
-        print('worker count: ', WORKER_POOL_SIZE)
-
-        pool = Pool(WORKER_POOL_SIZE)
-        pool.map(call_script, scripts)
-        pool.close()
-        pool.join()
+            print('task count: ', len(scripts))
+            print('worker count: ', WORKER_POOL_SIZE)
+            pool = Pool(WORKER_POOL_SIZE)
+            pool.map(call_script, scripts)
+            pool.close()
+            pool.join()
+        elif CLUSTER_MODE is EnvMode.AWS:
+            batch_client = boto3.client(
+                service_name='batch', region_name='us-east-1', endpoint_url='https://batch.us-east-1.amazonaws.com'
+            )
+            for script_or_config in scripts:
+                res = batch_client.submit_job(**script_or_config)
+                print(res)
+        elif CLUSTER_MODE is EnvMode.CLUSTER:
+            for script_name in scripts:
+                check_call(['qsub', script_name])
 
         print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
 

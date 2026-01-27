@@ -7,6 +7,7 @@ from .inversion import run_inversion
 from .oq_convert_solution import OQConvertJobRunner
 from .oq_disagg import run_oq_disagg
 from .oq_hazard import run_oq_hazard
+from .save_file_archive import run_save_file_archive
 from .scale_solution import ScaleSolutionJobRunner
 from .subduction_rupture_sets import SubductionRuptureSetJobRunner
 from .time_dependent_solution import TimeDependentSolutionJobRunner

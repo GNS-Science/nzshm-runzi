@@ -1,9 +1,10 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from runzi.execute.arguments import ArgBase, SystemArgs
+if TYPE_CHECKING:
+    from runzi.execute.arguments import ArgBase, SystemArgs
 
 
-def get_task_config(task_args: ArgBase, task_system_args: SystemArgs) -> dict[str, Any]:
+def get_task_config(task_args: 'ArgBase', task_system_args: 'SystemArgs') -> dict[str, Any]:
     """Package user inputs and generated system args into a dict for transport.
 
     Args:
