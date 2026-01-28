@@ -12,30 +12,27 @@ from pydantic import BaseModel
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.execute.arguments import SystemArgs
 from runzi.util.aws.s3_folder_upload import upload_to_bucket
+from runzi.execute.arguments import ArgBase, SystemArgs
 
 
-class RuptureSetReportArgs(BaseModel):
+class RupsetReportArgs(ArgBase):
     rupture_set_id: str
     build_report_level: str | None
 
 
-class BuilderTask:
-    """
-    The python client for a Diagnostics Report
-    """
+class RupsetReportTask:
+    """The python client for a Diagnostics Report."""
 
-    def __init__(self, user_args: RuptureSetReportArgs, system_args: SystemArgs):
+    def __init__(self, user_args: RupsetReportArgs, system_args: SystemArgs):
 
         self.user_args = user_args
         self.system_args = system_args
-        self.use_api = self.system_args.use_api
 
         # setup the java gateway binding
-        self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=system_args.java_gateway_port))
-        self._page_gen = self._gateway.entry_point.getReportPageGen()
-        self._output_folder = PurePath(WORK_PATH)
+        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=system_args.java_gateway_port))
+        self.page_gen = self.gateway.entry_point.getReportPageGen()
+        self.output_folder = PurePath(WORK_PATH)
 
     def run(self):
         t0 = dt.datetime.now()
@@ -49,7 +46,7 @@ class BuilderTask:
         rupture_set_info = solutions[rupture_set_id]
         rupture_set_filepath = rupture_set_info['filepath']
 
-        meta_folder = Path(self._output_folder, rupture_set_id)
+        meta_folder = Path(self.output_folder, rupture_set_id)
         meta_folder.mkdir(parents=True, exist_ok=True)
 
         # dump the job metadata
@@ -63,18 +60,21 @@ class BuilderTask:
                 indent=4,
             )
 
-        diags_folder = Path(self._output_folder, rupture_set_id, 'DiagnosticsReport')
+        diags_folder = Path(self.output_folder, rupture_set_id, 'DiagnosticsReport')
         diags_folder.mkdir(parents=True, exist_ok=True)
 
         # # build the full report
         report_title = f"Rupture Set Diagnostics: {rupture_set_id}"
 
-        self._page_gen.setRuptureSet(rupture_set_filepath).setName(report_title).setOutputPath(
+        self.page_gen.setRuptureSet(rupture_set_filepath).setName(report_title).setOutputPath(
             str(diags_folder)
         ).setPlotLevel(self.user_args.build_report_level).setFillSurfaces(True).generateRupSetPage()
 
         t1 = dt.datetime.now()
         print("Report took %s secs" % (t1 - t0).total_seconds())
+
+        if self.system_args.use_api: 
+            upload_to_bucket(user_args.rupture_set_id, S3_REPORT_BUCKET, force_upload=True)
 
 
 def get_repo_heads(rootdir, repos):
@@ -102,9 +102,9 @@ if __name__ == "__main__":
         config = json.loads(urllib.parse.unquote(args.config))
 
     # print(config)
-    user_args = RuptureSetReportArgs(**config['task_args'])
+    user_args = RupsetReportArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
-    task = BuilderTask(user_args, system_args)
+    task = RupsetReportTask(user_args, system_args)
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(5)
@@ -112,4 +112,3 @@ if __name__ == "__main__":
     time.sleep(system_args.task_count)
 
     task.run()
-    upload_to_bucket(user_args.rupture_set_id, S3_REPORT_BUCKET, force_upload=True)

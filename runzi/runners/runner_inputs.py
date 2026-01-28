@@ -11,14 +11,6 @@ from runzi.automation.scaling.toshi_api import ModelType
 from runzi.execute.arguments import ArgBase
 
 
-class InversionReportArgs(BaseModel):
-    solution_id: str
-    build_mfd_plots: bool
-    build_report_level: str | None
-    fault_model: str | None
-    general_task_id: str
-
-
 class OQOpenSHAConvertTaskArgs(BaseModel):
     """Input for OpenSHA to OpenQuake conversion."""
 

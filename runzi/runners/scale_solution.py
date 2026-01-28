@@ -3,7 +3,8 @@
 import runzi.execute.scale_solution_task as task_module
 from runzi.automation.scaling.toshi_api import SubtaskType
 from runzi.execute.arguments import ArgSweeper, TaskLanguage
-from runzi.runners.time_dependent_solution import get_model_type_from_all, get_solution_ids_from_id
+from runzi.runners.time_dependent_solution import get_model_type_from_all
+from runzi.runners.utils import convert_gt_to_swept, get_solution_ids_from_id
 
 from .runner import JobRunner
 
@@ -26,13 +27,7 @@ class ScaleSolutionJobRunner(JobRunner):
         self.system_args.max_job_time_min = 10
 
         # convert GT IDs to swept IDs of inversion solutions
-        solution_ids = []
-        for task_args in self.job_args.get_tasks():
-            solution_ids += get_solution_ids_from_id(task_args.source_solution_id)
-
-        if len(solution_ids) > 1:
-            self.job_args.prototype.source_solution_id = solution_ids[0]
-            self.job_args.swept_args['source_solution_id'] = solution_ids
+        convert_gt_to_swept(self.job_args)
 
         # this has to be done after converting GT to inversion solution IDs
         self.system_args.model_type = get_model_type_from_all(self.job_args)

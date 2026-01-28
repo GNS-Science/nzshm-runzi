@@ -1,40 +1,19 @@
 """This module provides the runner class for creating time dependent inversion solutions."""
 
-import base64
 
 import runzi.execute.time_dependent_solution_task as task_module
-from runzi.automation.scaling.file_utils import get_output_file_ids
 from runzi.automation.scaling.local_config import API_KEY, API_URL
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
 from runzi.execute.arguments import ArgSweeper, TaskLanguage
 
+from runzi.runners.utils import convert_gt_to_swept
 from .runner import JobRunner
 
-headers = {"x-api-key": API_KEY}
-toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
+from .utils import toshi_api
 
 
-def get_solution_ids_from_id(toshi_id):
-    """Convert a general task ID to a list of inversion solutions produced by that GT.
-
-    If the input id is not a GeneralTask, return the input id as a single element list.
-
-    Args:
-        toshi_id: The input ID, either a solution inversion or general task.
-
-    Returns:
-        A list of solutution ids."""
-    if 'GeneralTask' in str(base64.b64decode(toshi_id)):
-        return [out['id'] for out in get_output_file_ids(toshi_api, toshi_id)]
-    else:
-        pass
-    return [
-        toshi_id,
-    ]
-
-
-# TODO: reduntand code shared by average_solutions, but just enough difference to need a new function. Can we merge?
+# TODO: redundant code shared by average_solutions, but just enough difference to need a new function. Can we merge?
 def get_model_type_from_all(job_args: ArgSweeper) -> ModelType:
     model_type = None
     for task_args in job_args.get_tasks():
@@ -72,13 +51,8 @@ class TimeDependentSolutionJobRunner(JobRunner):
         self.system_args.max_job_time_min = 10
 
         # convert GT IDs to swept IDs of inversion solutions
-        solution_ids = []
-        for task_args in self.job_args.get_tasks():
-            solution_ids += get_solution_ids_from_id(task_args.source_solution_id)
-
-        if len(solution_ids) > 1:
-            self.job_args.prototype.source_solution_id = solution_ids[0]
-            self.job_args.swept_args['source_solution_id'] = solution_ids
+        # convert GT IDs to swept IDs of inversion solutions
+        convert_gt_to_swept(self.job_args)
 
         # this has to be done after converting GT to inversion solution IDs
         self.system_args.model_type = get_model_type_from_all(self.job_args)

@@ -21,6 +21,7 @@ from runzi.automation.scaling.local_config import (
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
 from runzi.configuration.configuration import build_tasks
 from runzi.execute.arguments import ArgSweeper, SystemArgs
+from .utils import toshi_api
 
 logging.basicConfig(level=logging.INFO)
 
@@ -77,9 +78,6 @@ class JobRunner:
         args_list = self._build_argument_list()
 
         if USE_API:
-            # create new task in toshi_api
-            headers = {"x-api-key": API_KEY}
-            toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
 
             gt_args = (
                 CreateGeneralTaskArgs(
@@ -124,3 +122,5 @@ class JobRunner:
         print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
 
         return general_task_id
+
+

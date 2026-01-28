@@ -5,3 +5,4 @@ from .oq_opensha_convert_task import OQConvertArgs
 from .scale_solution_task import ScaleSolutionArgs
 from .subduction_rupture_set_builder_task import SubductionRuptureSetArgs
 from .time_dependent_solution_task import TimeDependentSolutionArgs
+from .inversion_diags_report_task import InversionReportArgs

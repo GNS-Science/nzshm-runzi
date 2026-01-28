@@ -6,12 +6,12 @@ from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
 from runzi.execute.arguments import ArgSweeper, TaskLanguage
 
+from .utils import toshi_api
+
 from .runner import JobRunner
 
 
 def get_model_type_from_all(job_args: ArgSweeper) -> ModelType:
-    headers = {"x-api-key": API_KEY}
-    toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
     model_type = None
     for task_args in job_args.get_tasks():
         new_model_type = get_model_type(task_args.source_solution_ids, toshi_api)  # type: ignore

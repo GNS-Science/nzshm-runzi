@@ -27,7 +27,7 @@ from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.execute import inversion_diags_report_task
 from runzi.execute.arguments import SystemArgs
-from runzi.runners.runner_inputs import InversionReportArgs
+from runzi.execute.inversion_diags_report_task import InversionReportArgs
 from runzi.util.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
@@ -62,7 +62,7 @@ def build_inversion_diag_tasks(general_task_id: str) -> Generator[dict[str, Any]
             fault_model = "CUSTOM"
 
         task_args = InversionReportArgs(
-            solution_id=solution['id'],
+            source_solution_id=solution['id'],
             build_mfd_plots=BUILD_PLOTS,
             build_report_level=REPORT_LEVEL,
             fault_model=fault_model,
