@@ -7,13 +7,12 @@ from pathlib import Path, PurePath
 
 import git
 from py4j.java_gateway import GatewayParameters, JavaGateway
-from pydantic import BaseModel
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.util.aws.s3_folder_upload import upload_to_bucket
 from runzi.execute.arguments import ArgBase, SystemArgs
+from runzi.util.aws.s3_folder_upload import upload_to_bucket
 
 
 class RupsetReportArgs(ArgBase):
@@ -75,7 +74,7 @@ class RupsetReportTask:
         t1 = dt.datetime.now()
         print("Report took %s secs" % (t1 - t0).total_seconds())
 
-        if self.system_args.use_api: 
+        if self.system_args.use_api:
             upload_to_bucket(user_args.source_solution_id, S3_REPORT_BUCKET, force_upload=True)
 
 

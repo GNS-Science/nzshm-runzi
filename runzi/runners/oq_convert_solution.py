@@ -4,7 +4,7 @@ import runzi.execute.oq_opensha_convert_task as task_module
 from runzi.automation.scaling.toshi_api import SubtaskType
 from runzi.execute.arguments import ArgSweeper, TaskLanguage
 from runzi.runners.time_dependent_solution import get_model_type_from_all
-from runzi.runners.utils import convert_gt_to_swept, get_solution_ids_from_id
+from runzi.runners.utils import convert_gt_to_swept
 
 from .runner import JobRunner
 

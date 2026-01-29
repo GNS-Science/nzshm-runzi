@@ -2,13 +2,13 @@ from .average_solutions import AverageSolutionsJobRunner
 from .build_manual_index import build_manual_index
 from .coulomb_rupture_sets import CoulombRuptureSetJobRunner
 from .hazard_inputs import DisaggInput, HazardInput
-from .rupture_set_report import RupsetReportJobRunner
 from .inversion import run_inversion
+from .inversion_report import InversionReportJobRunner
 from .oq_convert_solution import OQConvertJobRunner
 from .oq_disagg import run_oq_disagg
 from .oq_hazard import run_oq_hazard
+from .rupture_set_report import RupsetReportJobRunner
 from .save_file_archive import run_save_file_archive
 from .scale_solution import ScaleSolutionJobRunner
 from .subduction_rupture_sets import SubductionRuptureSetJobRunner
 from .time_dependent_solution import TimeDependentSolutionJobRunner
-from .inversion_report import InversionReportJobRunner

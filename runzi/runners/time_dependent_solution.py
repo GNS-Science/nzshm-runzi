@@ -1,15 +1,12 @@
 """This module provides the runner class for creating time dependent inversion solutions."""
 
-
 import runzi.execute.time_dependent_solution_task as task_module
-from runzi.automation.scaling.local_config import API_KEY, API_URL
 from runzi.automation.scaling.task_utils import get_model_type
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.execute.arguments import ArgSweeper, TaskLanguage
-
 from runzi.runners.utils import convert_gt_to_swept
-from .runner import JobRunner
 
+from .runner import JobRunner
 from .utils import toshi_api
 
 

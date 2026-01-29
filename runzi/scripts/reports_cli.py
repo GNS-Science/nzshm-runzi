@@ -4,7 +4,7 @@ import typer
 from rich import print as rich_print
 from typing_extensions import Annotated
 
-from runzi.execute import InversionReportArgs, ArgSweeper, RupsetReportArgs
+from runzi.execute import ArgSweeper, InversionReportArgs, RupsetReportArgs
 from runzi.runners import InversionReportJobRunner, RupsetReportJobRunner
 
 app = typer.Typer()
@@ -16,7 +16,6 @@ def rupture_set(
 ):
     """Create diagnostic reports for rupture sets."""
     rich_print("[yellow]Starting rupture set report jobs.")
-    swept_args = {'source_solution_id': [toshi_id]}
 
     # these values are place-holders and will be set by the runner
     prototype = RupsetReportArgs(source_solution_id=toshi_id, build_report_level=None)
@@ -29,7 +28,6 @@ def rupture_set(
 def inversion(general_task_id: str):
     """Create diagnostic reports for inversion."""
     rich_print("[yellow]Starting inversion report jobs.")
-    swept_args = {'source_solution_id': [general_task_id]}
 
     # these values are place-holders and will be set by the runner
     prototype = InversionReportArgs(

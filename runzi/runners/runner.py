@@ -9,18 +9,11 @@ from types import ModuleType
 
 import boto3
 
-from runzi.automation.scaling.local_config import (
-    API_KEY,
-    API_URL,
-    CLUSTER_MODE,
-    S3_URL,
-    USE_API,
-    WORKER_POOL_SIZE,
-    EnvMode,
-)
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
+from runzi.automation.scaling.local_config import CLUSTER_MODE, USE_API, WORKER_POOL_SIZE, EnvMode
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs
 from runzi.configuration.configuration import build_tasks
 from runzi.execute.arguments import ArgSweeper, SystemArgs
+
 from .utils import toshi_api
 
 logging.basicConfig(level=logging.INFO)
@@ -122,5 +115,3 @@ class JobRunner:
         print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
 
         return general_task_id
-
-

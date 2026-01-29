@@ -7,12 +7,11 @@ from pathlib import Path, PurePath
 
 import git
 from py4j.java_gateway import GatewayParameters, JavaGateway
-from pydantic import BaseModel
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.execute.arguments import SystemArgs, ArgBase
+from runzi.execute.arguments import ArgBase, SystemArgs
 from runzi.util.aws.s3_folder_upload import upload_to_bucket
 
 
@@ -72,7 +71,7 @@ class InversionReportTask:
         if self.user_args.build_report_level:
             self.build_opensha_report()
 
-        if self.system_args.use_api: 
+        if self.system_args.use_api:
             upload_to_bucket(user_args.source_solution_id, S3_REPORT_BUCKET)
 
     def build_opensha_report(self):
@@ -155,4 +154,3 @@ if __name__ == "__main__":
 
     # TODO: build_named_fault_mfd_index() is broken, I don't think it's used anymore
     # build_named_fault_mfd_index()
-
