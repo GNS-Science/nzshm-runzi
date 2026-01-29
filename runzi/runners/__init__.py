@@ -1,8 +1,8 @@
 from .average_solutions import AverageSolutionsJobRunner
 from .build_manual_index import build_manual_index
 from .coulomb_rupture_sets import CoulombRuptureSetJobRunner
-from .diagnostic_reports import run_diagnostic_reports
 from .hazard_inputs import DisaggInput, HazardInput
+from .rupture_set_report import RupsetReportJobRunner
 from .inversion import run_inversion
 from .oq_convert_solution import OQConvertJobRunner
 from .oq_disagg import run_oq_disagg

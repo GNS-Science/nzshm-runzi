@@ -27,11 +27,13 @@ def _get_model_type(id, toshi_api):
     qry = '''
     query autotask ($id:ID!) {
         node (id: $id) {
-           ... on AutomationTask{
+           ... on ###AUTOTASK###{
                 model_type
                 }
             }
     }'''
+    autotask_type = "RuptureGenerationTask" if typename == "RuptureSet" else "AutomationTask"
+    qry = qry.replace("###AUTOTASK###", autotask_type)
     input_variables = dict(id=auto_id)
     model_type_str = toshi_api.run_query(qry, input_variables)['node']['model_type']
 

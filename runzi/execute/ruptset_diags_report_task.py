@@ -17,7 +17,9 @@ from runzi.execute.arguments import ArgBase, SystemArgs
 
 
 class RupsetReportArgs(ArgBase):
-    rupture_set_id: str
+    # This is a misnomer for convenience so that we can re-use some functions that assume this member is present.
+    # It is actually a rupture set id.
+    source_solution_id: str
     build_report_level: str | None
 
 
@@ -36,7 +38,7 @@ class RupsetReportTask:
 
     def run(self):
         t0 = dt.datetime.now()
-        rupture_set_id = self.user_args.rupture_set_id
+        rupture_set_id = self.user_args.source_solution_id
 
         # download the file
         headers = {"x-api-key": API_KEY}
@@ -74,7 +76,7 @@ class RupsetReportTask:
         print("Report took %s secs" % (t1 - t0).total_seconds())
 
         if self.system_args.use_api: 
-            upload_to_bucket(user_args.rupture_set_id, S3_REPORT_BUCKET, force_upload=True)
+            upload_to_bucket(user_args.source_solution_id, S3_REPORT_BUCKET, force_upload=True)
 
 
 def get_repo_heads(rootdir, repos):

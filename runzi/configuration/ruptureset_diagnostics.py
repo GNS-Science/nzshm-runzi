@@ -57,7 +57,7 @@ def build_rupset_diag_tasks(toshi_id: str) -> Generator[dict[str, Any] | str, No
 
     for task_count, rupture_set in enumerate(file_generator, start=1):
 
-        task_args = RupsetReportArgs(rupture_set_id=rupture_set['id'], build_report_level=REPORT_LEVEL)
+        task_args = RupsetReportArgs(source_solution_id=rupture_set['id'], build_report_level=REPORT_LEVEL)
         task_system_args = SystemArgs(java_gateway_port=task_factory.get_next_port(), task_count=task_count)
 
         if CLUSTER_MODE == EnvMode['AWS']:
