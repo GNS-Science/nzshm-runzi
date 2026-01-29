@@ -24,7 +24,7 @@ class ScaleSolutionJobRunner(JobRunner):
         self.system_args.task_language = TaskLanguage.PYTHON
         self.system_args.job_name = "Runzi-automation-scale-solution"
         self.system_args.subtask_type = SubtaskType.SCALE_SOLUTION
-        self.system_args.max_job_time_min = 10
+        self.system_args.ecs_max_job_time_min = 10
 
         # convert GT IDs to swept IDs of inversion solutions
         convert_gt_to_swept(self.job_args)

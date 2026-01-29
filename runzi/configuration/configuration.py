@@ -55,16 +55,19 @@ def build_tasks(
             job_name = f"{task_system_args.job_name}-{task_count}"
 
             yield get_ecs_job_config(
-                job_name,
-                task_args,
-                task_system_args,
+                job_name=job_name,
+                task_args=task_args,
+                task_system_args=task_system_args,
                 toshi_api_url=API_URL,
                 toshi_s3_url=S3_URL,
                 toshi_report_bucket=S3_REPORT_BUCKET,
                 task_module=task_module.__name__,
-                time_minutes=system_args.max_job_time_min,
-                memory=30720,
-                vcpu=4,
+                time_minutes=system_args.ecs_max_job_time_min,
+                memory=system_args.ecs_memory,
+                vcpu=system_args.ecs_vcpu,
+                job_definition=system_args.ecs_job_definition,
+                job_queue=system_args.ecs_job_queue,
+                extra_env=system_args.ecs_extra_env,
             )
 
         else:

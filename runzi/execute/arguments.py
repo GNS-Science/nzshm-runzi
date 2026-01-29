@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from typing_extensions import Self
 
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
+from runzi.util.aws import BatchEnvironmentSetting
 
 
 class TaskLanguage(Enum):
@@ -17,16 +18,29 @@ class TaskLanguage(Enum):
 
 class SystemArgs(BaseModel):
     use_api: bool
+
     task_language: Optional[TaskLanguage] = None
+
     subtask_type: Optional[SubtaskType] = None
     model_type: Optional[ModelType] = None
-    java_gateway_port: Optional[int] = None
     general_task_id: Optional[str] = None
     task_count: Optional[int] = None
+
     java_threads: Optional[int] = None
     jvm_heap_max: Optional[int] = None
-    max_job_time_min: Optional[int] = None
+    java_gateway_port: Optional[int] = None
+
     job_name: Optional[str] = None
+
+    ecs_max_job_time_min: Optional[int] = None
+    ecs_memory: int
+    ecs_vcpu: int
+    ecs_job_definition: str
+    ecs_job_queue: str
+    ecs_extra_env: Optional[list[BatchEnvironmentSetting]]
+
+
+
 
 
 class ArgBase(BaseModel):

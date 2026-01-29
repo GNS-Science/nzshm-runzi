@@ -24,7 +24,7 @@ class OQConvertJobRunner(JobRunner):
         self.system_args.task_language = TaskLanguage.PYTHON
         self.system_args.job_name = "Runzi-automation-convert-solution"
         self.system_args.subtask_type = SubtaskType.SOLUTION_TO_NRML
-        self.system_args.max_job_time_min = 30
+        self.system_args.ecs_max_job_time_min = 30
 
         # convert GT IDs to swept IDs of inversion solutions
         convert_gt_to_swept(self.job_args)
