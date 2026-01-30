@@ -9,6 +9,18 @@ from .runner import JobRunner
 
 class SubductionRuptureSetJobRunner(JobRunner):
     """A class to run subduction rupture set jobs."""
+    job_name = "Runzi-automation-coulomb-rupture-sets"
+    subtask_type = SubtaskType.RUPTURE_SET
+    task_language = TaskLanguage.JAVA
+
+    java_threads = 16
+    jvm_heap_max = 32
+
+    ecs_max_job_time_min = 60
+    ecs_memory = 30720
+    ecs_vcpu = 4
+    ecs_job_definition = "Fargate-runzi-opensha-JD"
+    ecs_job_queue = "BasicFargate_Q"
 
     def __init__(self, job_args):
         """Initialize the SubductionRuptureSetJobRunner.
@@ -18,11 +30,5 @@ class SubductionRuptureSetJobRunner(JobRunner):
         """
         super().__init__(job_args, task_module)
 
-    def custom_setup(self):
-        self.system_args.task_language = TaskLanguage.JAVA
-        self.system_args.java_threads = 16
-        self.system_args.ecs_max_job_time_min = 60
-        self.system_args.jvm_heap_max = 32
-        self.system_args.job_name = "Runzi-automation-coulomb-rupture-sets"
-        self.system_args.subtask_type = SubtaskType.RUPTURE_SET
-        self.system_args.model_type = ModelType.SUBDUCTION
+    def get_model_type(self) -> ModelType:
+        return ModelType.SUBDUCTION

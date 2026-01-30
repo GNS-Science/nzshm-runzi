@@ -16,6 +16,7 @@ The job is responsible for
 """
 import json
 import os
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from pathlib import Path, PurePath
 from types import ModuleType
 from typing import Optional, Protocol, TypeVar
@@ -33,7 +34,7 @@ OpenshaTaskFactoryType = TypeVar('OpenshaTaskFactoryType', bound='OpenshaTaskFac
 
 
 class TaskFactory(Protocol):
-    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs) -> None: ...
+    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs, model_type: ModelType) -> None: ...
 
     def get_task_script(self) -> str: ...
 
@@ -92,9 +93,9 @@ class OpenshaTaskFactory:
             jvm_heap_max=kwargs.get('jvm_heap_max', 10),
         )
 
-    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs):
+    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_port}.json"
-        task_config = get_task_config(task_args, task_system_args)
+        task_config = get_task_config(task_args, task_system_args, model_type)
         fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
 
     def get_task_script(self) -> str:
@@ -167,7 +168,7 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
         self._pbs_nodes = 1  # always ust one PBS node (and which one we don't know)
         self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1)  # defines maximum time the jobs is allocated by PBS
 
-    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs):
+    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_port}.json"
         if isinstance(task_args, InversionArgs):
             max_inversion_time = task_args.task.max_inversion_time[0]
@@ -175,7 +176,7 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
         if isinstance(task_system_args, SystemArgs):
             self._pbs_ppn = task_system_args.java_threads
 
-        task_config = get_task_config(task_args, task_system_args)
+        task_config = get_task_config(task_args, task_system_args, model_type)
         fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
 
     def get_task_script(self) -> str:

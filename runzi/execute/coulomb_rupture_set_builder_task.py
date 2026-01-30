@@ -1,4 +1,5 @@
 import argparse
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 import datetime as dt
 import json
 import logging
@@ -19,7 +20,7 @@ from pydantic import BaseModel, model_validator
 from typing_extensions import Self
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_RUPTURESET, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.execute.arguments import ArgBase, SystemArgs
 
@@ -96,7 +97,7 @@ class CoulombRuptureSetBuilderTask:
         app = self.gateway.entry_point
         self.builder = app.getCoulombRuptureSetBuilder()
 
-        self._output_folder = PurePath(WORK_PATH)
+        self.output_folder = PurePath(WORK_PATH)
 
         if self.use_api:
             headers = {"x-api-key": API_KEY}
@@ -199,25 +200,22 @@ class CoulombRuptureSetBuilderTask:
 
         # name the output file
         if self.use_api:
-            outputfile = self._output_folder.joinpath(f"NZSHM22_RuptureSet-{task_id}.zip")
+            outputfile = self.output_folder.joinpath(f"NZSHM22_RuptureSet-{task_id}.zip")
         else:
-            outputfile = self._output_folder.joinpath(self.builder.getDescriptiveName() + ".zip")
+            outputfile = self.output_folder.joinpath(self.builder.getDescriptiveName() + ".zip")
         log.info("building %s started at %s" % (outputfile, dt.datetime.now().isoformat()))
 
-        if not SPOOF_RUPTURESET:
+        if SPOOF:
+            metrics = {"subsection_count": 0, "rupture_count": 0}
+            outputfile = outputfile.with_suffix('.spoof')
+            Path(outputfile).touch()
+        else:
             self.builder.setNumThreads(self.system_args.java_threads).buildRuptureSet()
             metrics = self.ruptureSetMetrics()
-        else:
-            metrics = {"subsection_count": 0, "rupture_count": 0}
+            self.builder.writeRuptureSet(str(outputfile))
 
         # capture task metrics
         duration = (dt.datetime.now() - t0).total_seconds()
-
-        # write the result
-        if not SPOOF_RUPTURESET:
-            self.builder.writeRuptureSet(str(outputfile))
-        else:
-            Path(outputfile).touch()
 
         if self.use_api:
             # record the completed task
@@ -239,7 +237,7 @@ class CoulombRuptureSetBuilderTask:
             )
 
             # and the log files, why not
-            java_log_file = self._output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
+            java_log_file = self.output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
             self._ruptgen_api.upload_task_file(task_id, java_log_file, 'WRITE')
             # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
             # self._ruptgen_api.upload_task_file(task_id, pyth_log_file, 'WRITE')

@@ -1,8 +1,11 @@
 """This module provides the runner JobRunner class for creating running jobs."""
 
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
+import inspect
 import datetime as dt
 import getpass
 import logging
+from abc import ABC, abstractmethod
 from multiprocessing.dummy import Pool
 from subprocess import check_call
 from types import ModuleType
@@ -39,10 +42,17 @@ class JobRunner:
         """
         self.job_args = job_args
         self.task_module = task_module
-        self.system_args = SystemArgs(use_api=USE_API)
 
-    def custom_setup(self):
-        pass  # Placeholder for any custom setup needed
+    def set_system_args(self, general_task_id: str | None = None) -> SystemArgs:
+        attributes = inspect.getmembers(self, lambda a:not(inspect.isroutine(a)))
+        sys_args = {a[0]: a[1] for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))}
+        sys_args['use_api'] = USE_API
+        sys_args['general_task_id'] = general_task_id
+        return SystemArgs(**sys_args)
+
+    @abstractmethod
+    def get_model_type(self) -> ModelType:
+        pass
 
     def _build_argument_list(self) -> list[dict[str, list[str]]]:
         """Build argument list for general task."""
@@ -62,13 +72,14 @@ class JobRunner:
         Returns:
             general task ID if using toshi API or None.
         """
-        self.custom_setup()
+        # self.custom_setup()
         t0 = dt.datetime.now()
 
         # USE_API = False
         general_task_id = None
 
         args_list = self._build_argument_list()
+        model_type = self.get_model_type()
 
         if USE_API:
 
@@ -77,17 +88,18 @@ class JobRunner:
                     agent_name=getpass.getuser(), title=self.job_args.title, description=self.job_args.description
                 )
                 .set_argument_list(args_list)
-                .set_subtask_type(self.system_args.subtask_type)
-                .set_model_type(self.system_args.model_type)
+                .set_subtask_type(self.subtask_type)
+                .set_model_type(model_type)
             )
             general_task_id = toshi_api.general_task.create_task(gt_args)
 
         print("GENERAL_TASK_ID:", general_task_id)
-        self.system_args.general_task_id = general_task_id
+        system_args = self.set_system_args(general_task_id)
 
-        scripts = [script_file for script_file in build_tasks(self.job_args, self.system_args, self.task_module)]
+        scripts = [script_file for script_file in build_tasks(self.job_args, system_args, self.task_module, model_type)]
         if USE_API:
             toshi_api.general_task.update_subtask_count(general_task_id, len(scripts))
+        
 
         if CLUSTER_MODE is EnvMode.LOCAL:
 

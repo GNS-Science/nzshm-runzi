@@ -13,8 +13,7 @@ from solvis import InversionSolution
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, WORK_PATH
-from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.toshi_api.general_task import SubtaskType
+from runzi.automation.scaling.toshi_api import ToshiApi, SubtaskType, ModelType
 from runzi.execute.arguments import ArgBase, SystemArgs
 
 
@@ -30,10 +29,11 @@ class ScaleSolutionArgs(ArgBase):
 class ScaleSolutionTask:
     """The python client for solution rate scaling."""
 
-    def __init__(self, user_args: ScaleSolutionArgs, system_args: SystemArgs):
+    def __init__(self, user_args: ScaleSolutionArgs, system_args: SystemArgs, model_type: ModelType):
 
         self.user_args = user_args
         self.system_args = system_args
+        self.model_type = model_type
         self.use_api = system_args.use_api
         self.output_folder = WORK_PATH
 
@@ -56,7 +56,7 @@ class ScaleSolutionTask:
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type=SubtaskType.SCALE_SOLUTION.name,
-                    model_type=self.system_args.model_type.name,
+                    model_type=self.model_type.name.upper(),
                 ),
                 arguments=self.user_args.model_dump(mode='json'),
                 environment={},
@@ -72,7 +72,16 @@ class ScaleSolutionTask:
             task_id = str(uuid.uuid4())
 
         # DO THE WORK
-        if not SPOOF:
+        if SPOOF:
+            output_solution_filepath = Path(
+                self.output_folder, 'NZSHM22_ScaledInversionSolution-' + str(task_id) + '.zip.spoof'
+            )
+            output_solution_filepath.touch()
+            result = {
+                'metrics': dict(scale=self.user_args.scale),
+                'scaled_solution': str(output_solution_filepath),
+            }
+        else:
             result = self.scaleRuptureRates(
                 source_solution_filepath,
                 task_id,
@@ -80,15 +89,6 @@ class ScaleSolutionTask:
                 self.user_args.polygon_scale,
                 self.user_args.polygon_max_mag,
             )
-        else:
-            output_solution_filepath = Path(
-                self.output_folder, 'NZSHM22_ScaledInversionSolution-' + str(task_id) + '.zip'
-            )
-            output_solution_filepath.touch()
-            result = {
-                'metrics': dict(scale=self.user_args.scale),
-                'scaled_solution': str(output_solution_filepath),
-            }
 
         # SAVE the results
         if self.use_api:
@@ -186,10 +186,11 @@ if __name__ == "__main__":
 
     user_args = ScaleSolutionArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
+    model_type = ModelType(config['model_type'])
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(system_args.task_count)
 
     # print(config)
-    task = ScaleSolutionTask(user_args, system_args)
+    task = ScaleSolutionTask(user_args, system_args, model_type)
     task.run()

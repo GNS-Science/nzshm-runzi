@@ -1,6 +1,7 @@
 import json
 from enum import Enum
 from pathlib import Path
+from tkinter import NO
 from typing import Any, Generator, Optional, Sequence, TextIO
 
 import tomlkit
@@ -17,27 +18,24 @@ class TaskLanguage(Enum):
 
 
 class SystemArgs(BaseModel):
+
+    job_name: str
+    task_language: TaskLanguage
+    subtask_type: SubtaskType
+    general_task_id: Optional[str]
+    task_count: int = 0
     use_api: bool
-
-    task_language: Optional[TaskLanguage] = None
-
-    subtask_type: Optional[SubtaskType] = None
-    model_type: Optional[ModelType] = None
-    general_task_id: Optional[str] = None
-    task_count: Optional[int] = None
 
     java_threads: Optional[int] = None
     jvm_heap_max: Optional[int] = None
     java_gateway_port: Optional[int] = None
 
-    job_name: Optional[str] = None
-
-    ecs_max_job_time_min: Optional[int] = None
+    ecs_max_job_time_min: int
     ecs_memory: int
     ecs_vcpu: int
     ecs_job_definition: str
     ecs_job_queue: str
-    ecs_extra_env: Optional[list[BatchEnvironmentSetting]]
+    ecs_extra_env: Optional[list[BatchEnvironmentSetting]] = None
 
 
 

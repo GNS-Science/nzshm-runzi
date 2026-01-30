@@ -1,4 +1,7 @@
 import argparse
+
+from pathlib import Path
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 import datetime as dt
 import json
 import logging
@@ -11,7 +14,7 @@ from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import SubtaskType
 from runzi.execute.arguments import ArgBase, SystemArgs
@@ -43,12 +46,13 @@ class TimeDependentSolutionArgs(ArgBase):
 class TimeDependentSolutionTask:
     """The python client for time dependent rate scaling."""
 
-    def __init__(self, user_args: TimeDependentSolutionArgs, system_args: SystemArgs):
+    def __init__(self, user_args: TimeDependentSolutionArgs, system_args: SystemArgs, model_type: ModelType):
 
         self.use_api = system_args.use_api
         self.output_folder = WORK_PATH
         self.system_args = system_args
         self.user_args = user_args
+        self.model_type = model_type
 
         # setup the java gateway binding
         self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=self.system_args.java_gateway_port))
@@ -72,7 +76,7 @@ class TimeDependentSolutionTask:
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type=SubtaskType.TIME_DEPENDENT_SOLUTION.name,
-                    model_type=self.system_args.model_type.name,
+                    model_type=self.model_type.name,
                 ),
                 arguments=self.user_args.model_dump(mode='json'),
                 environment={},
@@ -97,8 +101,12 @@ class TimeDependentSolutionTask:
         self.time_dependent_generator.setForecastTimespan(self.user_args.forecast_timespan)
         self.time_dependent_generator.setOutputFileName(output_file)
 
-        self.time_dependent_generator.generate()
-        log.info(f'Produced file : {output_file}')
+        if SPOOF:
+            output_file = str(Path(output_file).with_suffix('.spoof'))
+            Path(output_file).touch()
+        else:
+            self.time_dependent_generator.generate()
+            log.info(f'Produced file : {output_file}')
 
         t1 = dt.datetime.now()
         log.info("TimeDependent rates generation took %s secs" % (t1 - t0).total_seconds())
@@ -164,6 +172,7 @@ if __name__ == "__main__":
 
     user_args = TimeDependentSolutionArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
+    model_type = ModelType(config['model_type'])
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(3)
@@ -171,5 +180,5 @@ if __name__ == "__main__":
     time.sleep(system_args.task_count)
 
     # print(config)
-    task = TimeDependentSolutionTask(user_args, system_args)
+    task = TimeDependentSolutionTask(user_args, system_args, model_type)
     task.run()

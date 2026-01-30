@@ -29,6 +29,18 @@ def get_model_type_from_all(job_args: ArgSweeper) -> ModelType:
 
 class TimeDependentSolutionJobRunner(JobRunner):
     """A class to run time dependent solution jobs."""
+    job_name = "Runzi-automation-time-dependent-solution"
+    task_language = TaskLanguage.JAVA
+    subtask_type = SubtaskType.TIME_DEPENDENT_SOLUTION
+
+    java_threads = 16
+    jvm_heap_max = 32
+
+    ecs_max_job_time_min = 10
+    ecs_memory = 30720
+    ecs_vcpu = 4
+    ecs_job_definition = "Fargate-runzi-opensha-JD"
+    ecs_job_queue = "BasicFargate_Q"
 
     def __init__(self, job_args: ArgSweeper):
         """Initialize the TimeDependentSolutionJobRunner.
@@ -37,19 +49,7 @@ class TimeDependentSolutionJobRunner(JobRunner):
             job_args: input arguments for the jobs including swept args.
         """
         super().__init__(job_args, task_module)
-
-    def custom_setup(self):
-        self.system_args.task_language = TaskLanguage.JAVA
-        self.system_args.java_threads = 16
-        self.system_args.ecs_max_job_time_min = 60
-        self.system_args.jvm_heap_max = 32
-        self.system_args.job_name = "Runzi-automation-time-dependent-solution"
-        self.system_args.subtask_type = SubtaskType.TIME_DEPENDENT_SOLUTION
-        self.system_args.ecs_max_job_time_min = 10
-
-        # convert GT IDs to swept IDs of inversion solutions
-        # convert GT IDs to swept IDs of inversion solutions
         convert_gt_to_swept(self.job_args)
 
-        # this has to be done after converting GT to inversion solution IDs
-        self.system_args.model_type = get_model_type_from_all(self.job_args)
+    def get_model_type(self) -> ModelType:
+        return get_model_type_from_all(self.job_args)

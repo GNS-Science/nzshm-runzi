@@ -1,4 +1,5 @@
 import os
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 import stat
 from pathlib import PurePath
 from types import ModuleType
@@ -24,7 +25,7 @@ INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tas
 
 
 def build_tasks(
-    user_args: ArgSweeper, system_args: SystemArgs, task_module: ModuleType
+    user_args: ArgSweeper, system_args: SystemArgs, task_module: ModuleType, model_type: ModelType,
 ) -> Generator[dict[str, Any] | str, None, None]:
     """
     build the shell scripts 1 per task, based on all the inputs
@@ -55,6 +56,7 @@ def build_tasks(
             job_name = f"{task_system_args.job_name}-{task_count}"
 
             yield get_ecs_job_config(
+                model_type=model_type,
                 job_name=job_name,
                 task_args=task_args,
                 task_system_args=task_system_args,
@@ -72,7 +74,7 @@ def build_tasks(
 
         else:
             # write a config
-            task_factory.write_task_config(task_args, task_system_args)
+            task_factory.write_task_config(task_args, task_system_args, model_type)
 
             script = task_factory.get_task_script()
 

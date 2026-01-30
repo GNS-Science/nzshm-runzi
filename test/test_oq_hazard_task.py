@@ -48,8 +48,8 @@ def test_run_executor(mocker, tmpdir, hazard_input_args):
     system_args = SystemArgs(general_task_id="ABC", use_api=True)
     ecr_digest = "the-digest"
     mocker.patch.object(oq_hazard_task_module, "ECR_DIGEST", ecr_digest)
-    mocker.patch.object(oq_hazard_task_module, "SPOOF_HAZARD", True)
-    mocker.patch.object(oq_hazard_task_module, "SPOOF_HAZARD", True)
+    mocker.patch.object(oq_hazard_task_module, "SPOOF", True)
+    mocker.patch.object(oq_hazard_task_module, "SPOOF", True)
     mocker.patch.object(oq_hazard_task_module, "WORK_PATH", tmpdir.mkdir("oq_hazard_task"))
     mocker.patch.object(oq_hazard_task_module, "ToshiApi", MockToshiApi)
     mocker.patch.object(oq_hazard_task_module, "TaskRelation")

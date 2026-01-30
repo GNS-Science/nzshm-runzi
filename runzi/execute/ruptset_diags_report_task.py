@@ -9,7 +9,7 @@ import git
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH, SPOOF
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.execute.arguments import ArgBase, SystemArgs
 from runzi.util.aws.s3_folder_upload import upload_to_bucket
@@ -67,15 +67,15 @@ class RupsetReportTask:
         # # build the full report
         report_title = f"Rupture Set Diagnostics: {rupture_set_id}"
 
-        self.page_gen.setRuptureSet(rupture_set_filepath).setName(report_title).setOutputPath(
-            str(diags_folder)
-        ).setPlotLevel(self.user_args.build_report_level).setFillSurfaces(True).generateRupSetPage()
+        self.page_gen.setRuptureSet(rupture_set_filepath).setName(report_title)
+        self.page_gen.setOutputPath(str(diags_folder))
+        self.page_gen.setPlotLevel(self.user_args.build_report_level)
+        self.page_gen.setFillSurfaces(True)
 
-        t1 = dt.datetime.now()
-        print("Report took %s secs" % (t1 - t0).total_seconds())
-
-        if self.system_args.use_api:
-            upload_to_bucket(user_args.source_solution_id, S3_REPORT_BUCKET, force_upload=True)
+        if not SPOOF:
+            self.page_gen.generateRupSetPage()
+            if self.system_args.use_api:
+                upload_to_bucket(user_args.source_solution_id, S3_REPORT_BUCKET, force_upload=True)
 
 
 def get_repo_heads(rootdir, repos):

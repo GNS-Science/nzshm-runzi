@@ -32,10 +32,11 @@ class OQConvertArgs(ArgBase):
 
 class OQConvertTask:
 
-    def __init__(self, user_args: OQConvertArgs, system_args: SystemArgs):
+    def __init__(self, user_args: OQConvertArgs, system_args: SystemArgs, model_type: ModelType):
 
         self.user_args = user_args
         self.system_args = system_args
+        self.model_type = model_type
         self.use_api = system_args.use_api
 
         headers = {"x-api-key": API_KEY}
@@ -48,9 +49,9 @@ class OQConvertTask:
         # logic tree for the ground-motion characterisation
         # Use "Subduction Interface" or "Active Shallow Crust"
         # tectonic_region_type = "Subduction Interface"
-        if self.system_args.model_type is ModelType.CRUSTAL:
+        if self.model_type is ModelType.CRUSTAL:
             tectonic_region_type = "Active Shallow Crust"
-        elif self.system_args.model_type is ModelType.SUBDUCTION:
+        elif self.model_type is ModelType.SUBDUCTION:
             tectonic_region_type = "Subduction Interface"
 
         dip_sd = self.user_args.rupture_sampling_distance_km
@@ -91,7 +92,7 @@ class OQConvertTask:
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type=SubtaskType.SOLUTION_TO_NRML.name,
-                    model_type=self.system_args.model_type.name.upper(),
+                    model_type=self.model_type.name.upper(),
                 ),
                 arguments=self.user_args.model_dump(mode='json'),
                 environment={},
@@ -130,11 +131,11 @@ class OQConvertTask:
         src_folder = self.get_source_solution()
 
         # DOIT
-        if not SPOOF:
-            output_zip = self.convert(src_folder)
-        else:
-            output_zip = Path(WORK_PATH, self.solution_archive_filename.replace('.zip', '_nrml.zip'))
+        if SPOOF:
+            output_zip = Path(WORK_PATH, self.solution_archive_filename.replace('.zip', '_nrml.zip.spoof'))
             output_zip.touch()
+        else:
+            output_zip = self.convert(src_folder)
 
         t1 = dt.datetime.now()
         print("Conversion took %s secs" % (t1 - t0).total_seconds())
@@ -189,10 +190,11 @@ if __name__ == "__main__":
 
     user_args = OQConvertArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
+    model_type = ModelType(config['model_type'])
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(system_args.task_count)
 
     # print(config)
-    task = OQConvertTask(user_args, system_args)
+    task = OQConvertTask(user_args, system_args, model_type)
     task.run()

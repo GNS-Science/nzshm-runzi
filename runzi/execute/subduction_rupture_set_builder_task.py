@@ -15,7 +15,7 @@ from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_RUPTURESET, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, WORK_PATH
 from runzi.execute.arguments import ArgBase, SystemArgs
 
 log = logging.getLogger(__name__)
@@ -124,20 +124,17 @@ class SubductionRuptureSetBuilderTask:
             outputfile = self.output_folder.joinpath(self.builder.getDescriptiveName() + ".zip")
         log.info("building %s started at %s" % (outputfile, dt.datetime.now().isoformat()))
 
-        if not SPOOF_RUPTURESET:
+        if SPOOF:
+            metrics = {"subsection_count": 0, "rupture_count": 0}
+            outputfile = outputfile.with_suffix('.spoof')
+            Path(outputfile).touch()
+        else:
             self.builder.setNumThreads(self.system_args.java_threads).buildRuptureSet()
             metrics = self.ruptureSetMetrics()
-        else:
-            metrics = {"subsection_count": 0, "rupture_count": 0}
+            self.builder.writeRuptureSet(str(outputfile))
 
         # capture task metrics
         duration = (dt.datetime.now() - t0).total_seconds()
-
-        # write the result
-        if not SPOOF_RUPTURESET:
-            self.builder.writeRuptureSet(str(outputfile))
-        else:
-            Path(outputfile).touch()
 
         if self.use_api:
             done_args = {

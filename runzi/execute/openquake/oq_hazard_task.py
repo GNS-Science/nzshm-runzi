@@ -27,7 +27,7 @@ from runzi.automation.scaling.local_config import (
     API_URL,
     ECR_DIGEST,
     S3_URL,
-    SPOOF_HAZARD,
+    SPOOF,
     THS_RLZ_DB,
     WORK_PATH,
 )
@@ -74,7 +74,7 @@ class BuilderTask:
         model_type = ModelType.COMPOSITE
         environment = {
             "host": platform.node(),
-            "openquake.version": "SPOOFED" if SPOOF_HAZARD else "TODO: get openquake version",
+            "openquake.version": "SPOOFED" if SPOOF else "TODO: get openquake version",
         }
 
         srm_logic_tree: SourceLogicTree = self.user_args.hazard_model.srm_logic_tree
@@ -334,7 +334,7 @@ class BuilderTask:
             # STORE HAZARD REALIZATIONS #
             #############################
             # run the store_hazard job
-            if not SPOOF_HAZARD and (not oq_result.get("no_ruptures")):
+            if not SPOOF and (not oq_result.get("no_ruptures")):
 
                 # write config to json
                 config_filepath = config_folder / "hazard_config.json"

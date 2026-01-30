@@ -6,17 +6,19 @@ import time
 import urllib
 import uuid
 from itertools import chain
-from pathlib import PurePath
+from pathlib import Path, PurePath
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
 from solvis import InversionSolution
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.automation.scaling.toshi_api.general_task import SubtaskType
 from runzi.execute.arguments import ArgBase, SystemArgs
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
+
 
 
 class AverageSolutionsArgs(ArgBase):
@@ -88,16 +90,17 @@ def is_rupture_set(file_id: str) -> bool:
 class AverageSolutionsTask:
     """The python client for solution rate averaging."""
 
-    def __init__(self, user_args: AverageSolutionsArgs, system_args: SystemArgs):
+    def __init__(self, user_args: AverageSolutionsArgs, system_args: SystemArgs, model_type: ModelType):
 
         self.user_args = user_args
         self.system_args = system_args
         self.use_api = system_args.use_api
-        self._output_folder = WORK_PATH
+        self.output_folder = WORK_PATH
+        self.model_type = model_type
 
         headers = {"x-api-key": API_KEY}
-        self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-        self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+        self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
 
     def run(self):
 
@@ -108,31 +111,31 @@ class AverageSolutionsTask:
 
         if self.use_api:
             # create new task in toshi_api
-            task_id = self._toshi_api.automation_task.create_task(
+            task_id = self.toshi_api.automation_task.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type=SubtaskType.AGGREGATE_SOLUTION.name,
-                    model_type=self.system_args.model_type.name,
+                    model_type=self.model_type.name,
                 ),
                 arguments=self.user_args.model_dump(mode='json'),
                 environment=environment,
             )
 
             # link automation task to the parent general task
-            self._task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
+            self.task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
 
         else:
             task_id = str(uuid.uuid4())
 
         # download the files
-        common_rupture_set = get_common_rupture_set(source_solution_ids, self._toshi_api)
+        common_rupture_set = get_common_rupture_set(source_solution_ids, self.toshi_api)
 
         file_generators = []
         for input_id in source_solution_ids:
-            file_generators.append(get_output_file_id(self._toshi_api, input_id))  # for file by file ID
+            file_generators.append(get_output_file_id(self.toshi_api, input_id))  # for file by file ID
 
         source_solutions = download_files(
-            self._toshi_api,
+            self.toshi_api,
             chain(*file_generators),
             str(WORK_PATH),
             overwrite=False,
@@ -140,7 +143,13 @@ class AverageSolutionsTask:
         soln_filepaths = [soln['filepath'] for soln in source_solutions.values()]
 
         # DO THE WORK
-        result = self.averageRuptureRates(soln_filepaths, task_id)
+        if SPOOF:
+            new_archive = Path(WORK_PATH, 'NZSHM22_AveragedInversionSolution-' + str(task_id) + '.zip.spoof')
+            new_archive.touch()
+            metrics = dict(num_input_solns=0)
+            result = dict(averaged_solution=new_archive, metrics=metrics)
+        else:
+            result = self.averageRuptureRates(soln_filepaths, task_id)
 
         # SAVE the results
         if self.use_api:
@@ -152,7 +161,7 @@ class AverageSolutionsTask:
                 'result': "SUCCESS",
                 'state': "DONE",
             }
-            self._toshi_api.automation_task.complete_task(done_args, result['metrics'])
+            self.toshi_api.automation_task.complete_task(done_args, result['metrics'])
 
             # add the log files
             # pyth_log_file = self._output_folder.joinpath(f"python_script.{self.system_args.task_count}.log")
@@ -162,7 +171,7 @@ class AverageSolutionsTask:
             predecessors = []
             for source_solution_id in source_solution_ids:
                 predecessors.append(dict(id=source_solution_id, depth=-1))
-                source_predecessors = self._toshi_api.get_predecessors(source_solution_id)
+                source_predecessors = self.toshi_api.get_predecessors(source_solution_id)
 
                 if source_predecessors:
                     for predecessor in source_predecessors:
@@ -171,7 +180,7 @@ class AverageSolutionsTask:
 
             meta = self.user_args.model_dump(mode='json')
             meta['source_solution_ids'] = source_solution_ids
-            inversion_id = self._toshi_api.aggregate_inversion_solution.upload_inversion_solution(
+            inversion_id = self.toshi_api.aggregate_inversion_solution.upload_inversion_solution(
                 task_id,
                 filepath=result['averaged_solution'],
                 source_solution_ids=source_solution_ids,
@@ -230,10 +239,11 @@ if __name__ == "__main__":
 
     user_args = AverageSolutionsArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
+    model_type = ModelType(config['model_type'])
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(system_args.task_count)
 
     # print(config)
-    task = AverageSolutionsTask(user_args, system_args)
+    task = AverageSolutionsTask(user_args, system_args, model_type)
     task.run()

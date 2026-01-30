@@ -27,6 +27,15 @@ def get_model_type_from_all(job_args: ArgSweeper) -> ModelType:
 
 class AverageSolutionsJobRunner(JobRunner):
     """A class to run average solutions jobs."""
+    job_name = "Runzi-automation-average-solutions"
+    task_language = TaskLanguage.PYTHON
+    subtask_type = SubtaskType.AGGREGATE_SOLUTION
+
+    ecs_max_job_time_min = 10
+    ecs_memory = 30720
+    ecs_vcpu = 4
+    ecs_job_definition = "Fargate-runzi-opensha-JD"
+    ecs_job_queue = "BasicFargate_Q"
 
     def __init__(self, job_args: ArgSweeper):
         """Initialize the AverageSolutionsJobRunner.
@@ -36,9 +45,6 @@ class AverageSolutionsJobRunner(JobRunner):
         """
         super().__init__(job_args, task_module)
 
-    def custom_setup(self):
-        self.system_args.task_language = TaskLanguage.PYTHON
-        self.system_args.job_name = "Runzi-automation-average-solutions"
-        self.system_args.subtask_type = SubtaskType.AGGREGATE_SOLUTION
-        self.system_args.model_type = get_model_type_from_all(self.job_args)
-        self.system_args.max_job_time_min = 10
+    def get_model_type(self) -> ModelType:
+        """Get the model type from all source solution ids."""
+        return get_model_type_from_all(self.job_args)

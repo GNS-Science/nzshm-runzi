@@ -10,6 +10,7 @@ The job is responsible for configuring and executing the python script
  a PBS script for the cluster environment
 """
 import json
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 import os
 from pathlib import Path, PurePath
 from types import ModuleType
@@ -50,9 +51,9 @@ class PythonTaskFactory:
     def get_next_port(self) -> int:
         return self._next_task
 
-    def write_task_config(self, task_arguments: BaseModel, task_system_args: BaseModel):
+    def write_task_config(self, task_arguments: BaseModel, task_system_args: BaseModel, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_task}.json"
-        task_config = get_task_config(task_arguments, task_system_args)
+        task_config = get_task_config(task_arguments, task_system_args, model_type)
         fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
 
     def get_task_script(self) -> str:
@@ -95,7 +96,7 @@ class PythonPBSTaskFactory(PythonTaskFactory):
         self._pbs_nodes = 1  # always ust one PBS node (and which one we don't know)
         self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1)  # defines maximum time the jobs is allocated by PBS
 
-    def write_task_config(self, task_args: BaseModel, task_system_args: BaseModel):
+    def write_task_config(self, task_args: BaseModel, task_system_args: BaseModel, model_type: ModelType):
         raise NotImplementedError("PythonPBSTaskFactory.write_task_config not implemented. Need to fix wall hours")
         # fname = self._config_path / f"config.{self._next_port}.json"
         # if isinstance(task_args, InversionArgs):

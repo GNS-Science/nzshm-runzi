@@ -12,7 +12,7 @@ from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway, JavaObject
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF_INVERSION, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 from runzi.execute.arguments import SystemArgs
 from runzi.execute.utils import generate_automation_task_args
@@ -207,7 +207,7 @@ class InversionSolutionBuilder(ABC):
         if initial_solution_id is not None:
             self.inversion_runner.setInitialSolution(initial_solution_info[initial_solution_id]['filepath'])
 
-        if not SPOOF_INVERSION:
+        if not SPOOF:
             log.info("Starting inversion of up to %s minutes" % self.user_args.task.max_inversion_time[0])
             log.info("======================================")
             self.inversion_runner.runInversion()
@@ -218,7 +218,7 @@ class InversionSolutionBuilder(ABC):
         # log.info("building %s started at %s" % (outputfile, dt.datetime.utcnow().isoformat()), end=' ')
 
         # output_file = str(PurePath(job_arguments['output_file']))
-        if not SPOOF_INVERSION:
+        if not SPOOF:
             self.inversion_runner.writeSolution(output_file)
         else:
             with open(output_file, 'w') as spoof:
@@ -230,19 +230,19 @@ class InversionSolutionBuilder(ABC):
         # capture task metrics
         duration = (dt.datetime.now() - t0).total_seconds()
 
-        metrics = {"SPOOF_INVERSION": True}
-        if not SPOOF_INVERSION:
+        metrics = {"SPOOF": True}
+        if not SPOOF:
             # fecth metrics and convert Java Map to python dict
             jmetrics = self.inversion_runner.getSolutionMetrics()
             for k in jmetrics:
                 metrics[k] = jmetrics[k]
 
         if self.user_args.general.model_type is ModelType.SUBDUCTION:
-            table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF_INVERSION else []
+            table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF else []
             mfd_table_rows = {"MFD_CURVES": table_rows_v1}
         else:
-            table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF_INVERSION else []
-            table_rows_v2 = self.inversion_runner.getTabularSolutionMfdsV2() if not SPOOF_INVERSION else []
+            table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF else []
+            table_rows_v2 = self.inversion_runner.getTabularSolutionMfdsV2() if not SPOOF else []
             mfd_table_rows = {"MFD_CURVES": table_rows_v1, "MFD_CURVES_V2": table_rows_v2}
 
         if self.system_args.use_api:
@@ -276,7 +276,7 @@ class InversionSolutionBuilder(ABC):
             log.info(f"created inversion solution: {inversion_id}")
 
             # Get the MFD tables...
-            if not SPOOF_INVERSION:
+            if not SPOOF:
                 for table_type, table_rows in mfd_table_rows.items():
                     mfd_table_id = None
 

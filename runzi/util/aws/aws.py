@@ -97,8 +97,8 @@ def get_ecs_job_config(
     time_minutes,
     memory,
     vcpu,
-    job_definition="Fargate-runzi-opensha-JD",
-    job_queue="BasicFargate_Q",
+    job_definition,
+    job_queue,
     extra_env: Optional[List[BatchEnvironmentSetting]] = None,
     use_compression=False,
 ):

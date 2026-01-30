@@ -14,7 +14,7 @@ try:
 except ImportError:
     print("openquake not installed, not importing")
 
-from runzi.automation.scaling.local_config import SPOOF_HAZARD, WORK_PATH
+from runzi.automation.scaling.local_config import SPOOF, WORK_PATH
 from runzi.util import archive
 
 log = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ def execute_openquake(
 
     oq_result: Dict[str, Any] = dict()
 
-    if SPOOF_HAZARD:
+    if SPOOF:
         print("execute_openquake skipping SPOOF=True")
         oq_result['csv_archive'] = Path(WORK_PATH, f"spoof-{task_no}.csv_archive.zip")
         oq_result['hdf5_archive'] = Path(WORK_PATH, f"spoof-{task_no}.hdf5_archive.zip")

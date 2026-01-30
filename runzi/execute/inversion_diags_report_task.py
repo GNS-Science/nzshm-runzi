@@ -9,7 +9,7 @@ import git
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH, SPOOF
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.execute.arguments import ArgBase, SystemArgs
 from runzi.util.aws.s3_folder_upload import upload_to_bucket
@@ -65,14 +65,15 @@ class InversionReportTask:
                 indent=4,
             )
 
-        if self.user_args.build_mfd_plots:
-            self.build_mfd_plots()
+        if not SPOOF:
+            if self.user_args.build_mfd_plots:
+                self.build_mfd_plots()
 
-        if self.user_args.build_report_level:
-            self.build_opensha_report()
+            if self.user_args.build_report_level:
+                self.build_opensha_report()
 
-        if self.system_args.use_api:
-            upload_to_bucket(user_args.source_solution_id, S3_REPORT_BUCKET)
+            if self.system_args.use_api:
+                upload_to_bucket(user_args.source_solution_id, S3_REPORT_BUCKET)
 
     def build_opensha_report(self):
         t0 = dt.datetime.now()
