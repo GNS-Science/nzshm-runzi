@@ -11,7 +11,7 @@ app = typer.Typer()
 
 
 @app.command()
-def rupture_set(
+def rupset(
     toshi_id: Annotated[str, typer.Argument(help="id of rupture set or general task used to create rupture sets")],
 ):
     """Create diagnostic reports for rupture sets."""

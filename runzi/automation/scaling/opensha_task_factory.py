@@ -24,7 +24,7 @@ from typing import Optional, Protocol, TypeVar
 from runzi.automation.scaling.python_task_factory import get_factory as get_python_factory
 from runzi.automation.scaling.task_config import get_task_config
 from runzi.execute.arguments import ArgBase, SystemArgs, TaskLanguage
-from runzi.runners.inversion_inputs import InversionArgs
+# from runzi.runners.inversion_inputs import InversionArgs
 
 from .local_config import EnvMode
 

@@ -51,7 +51,7 @@ class InversionArgs(ArgBase):
         b_tvz: float = 0.0  # not used if enable_tvz is False
         N_tvz: float = 0.0  # not used if enable_tvz is False
 
-    class RuptureSet(BaseException):
+    class RuptureSet(BaseModel):
         rupture_set_id: str
         tag: str
 
@@ -321,9 +321,7 @@ class InversionSolutionBuilder(ABC):
                     model_type=self.model_type.name.upper(),
                     # general_task_id=general_task_id,
                 ),
-                # TODO: should we flatten dict? See https://weka-test.gns.cri.nz/Task/QXV0b21hdGlvblRhc2s6MTAxNzc5
-                # or at least just dump user_args?
-                arguments=generate_automation_task_args(self.user_args),
+                arguments=self.user_args.model_dump(mode='json'),
                 environment=environment,
             )
 
@@ -384,7 +382,7 @@ class InversionSolutionBuilder(ABC):
             for k in jmetrics:
                 metrics[k] = jmetrics[k]
 
-        if self.user_args.general.model_type is ModelType.SUBDUCTION:
+        if self.model_type is ModelType.SUBDUCTION:
             table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF else []
             mfd_table_rows = {"MFD_CURVES": table_rows_v1}
         else:

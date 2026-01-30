@@ -1,11 +1,10 @@
 """This module provides the runner class for creating Coulomb rupture sets."""
 
-import runzi.execute.coulomb_rupture_set_builder_task as task_module
+import runzi.execute.crustal_inversion_solution_task as task_module
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.execute.arguments import ArgSweeper, TaskLanguage
 
 from .runner import JobRunner
-
 
 class CrustalInversionJobRunner(JobRunner):
     """A class to run Crustal inversion jobs."""
@@ -13,6 +12,10 @@ class CrustalInversionJobRunner(JobRunner):
     task_language = TaskLanguage.JAVA
     subtask_type = SubtaskType.INVERSION
 
+    # java_threads is only used for pbs mode, which is not supported anymore.
+    # It should be set to selector_threads * averaging_threads, but this would need to be done task by task if they
+    # are swept args. It would be possible to add some inversion specific code to the build_tasks function or find the
+    # maximum number of threads before hand or find the maximum number of threads that would be needed before hand.
     java_threads = 16
     jvm_heap_max = 32
 
@@ -29,7 +32,6 @@ class CrustalInversionJobRunner(JobRunner):
             job_args: input arguments for the jobs including swept args.
         """
         super().__init__(job_args, task_module)
-        self.job_args.sys_arg_overrides['java_threads'] = 
 
     def get_model_type(self) -> ModelType:
         """Get the model type for Crustal inversion jobs."""

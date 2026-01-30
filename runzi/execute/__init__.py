@@ -7,5 +7,5 @@ from .ruptset_diags_report_task import RupsetReportArgs
 from .scale_solution_task import ScaleSolutionArgs
 from .subduction_rupture_set_builder_task import SubductionRuptureSetArgs
 from .time_dependent_solution_task import TimeDependentSolutionArgs
-from .subduction_inversion_solution_task import SubductionInversionSolutionArgs
-from .crustal_inversion_solution_task import CrustalInversionSolutionArgs
+from .subduction_inversion_solution_task import SubductionInversionArgs
+from .crustal_inversion_solution_task import CrustalInversionArgs

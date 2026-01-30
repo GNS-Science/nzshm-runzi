@@ -26,7 +26,7 @@ class SystemArgs(BaseModel):
     task_count: int = 0
     use_api: bool
 
-    java_threads: Optional[int] = None
+    java_threads: Optional[int] = None  # only used for pbs mode, which is not supported anymore
     jvm_heap_max: Optional[int] = None
     java_gateway_port: Optional[int] = None
 
