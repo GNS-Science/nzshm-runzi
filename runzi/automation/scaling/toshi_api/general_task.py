@@ -163,7 +163,7 @@ class GeneralTask(object):
                 }
             }
         '''
-        print(qry)
+        # print(qry)
 
         # input_variables = dict(created=created, agent_name=agent_name, title=title, description=description)
         executed = self.api.run_query(qry, create_args.as_dict())
@@ -202,7 +202,7 @@ class GeneralTask(object):
 
         '''
 
-        print(qry)
+        # print(qry)
 
         # self.validate_variables(self.get_example_complete_variables(), input_variables)
         executed = self.api.run_query(qry, dict(task_id=task_id, subtask_count=subtask_count))
