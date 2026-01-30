@@ -1,11 +1,14 @@
 import datetime as dt
+from itertools import product
 import logging
 import platform
 import time
 import uuid
 from abc import ABC, abstractmethod
+from pydantic import BaseModel, model_validator
 from pathlib import PurePath
-from typing import cast
+from typing import cast, Optional, Literal, Self, Generator
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
@@ -16,7 +19,7 @@ from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOO
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 from runzi.execute.arguments import SystemArgs
 from runzi.execute.utils import generate_automation_task_args
-from runzi.runners.inversion_inputs import InversionArgs
+from runzi.execute.arguments import ArgBase, SystemArgs
 
 logging.basicConfig(level=logging.INFO)
 
@@ -30,16 +33,160 @@ logging.getLogger('git.cmd').setLevel(loglevel)
 log = logging.getLogger(__name__)
 
 
-# TODO: not super thrilled with having to [0] index every task argument. Is there a better solution?
+
+def all_or_none(params: list) -> bool:
+    """Checks that either all or none of the parameters have been set."""
+    is_none = [param is None for param in params]
+    if (not all(is_none)) and (any(is_none)):
+        return False
+    return True
+
+class InversionArgs(ArgBase):
+
+    class MFD(BaseModel):
+        b: float
+        N: float
+        tag: str
+        enable_tvz: bool = False
+        b_tvz: float = 0.0  # not used if enable_tvz is False
+        N_tvz: float = 0.0  # not used if enable_tvz is False
+
+    class RuptureSet(BaseException):
+        rupture_set_id: str
+        tag: str
+
+    rupture_set: RuptureSet
+    initial_solution_id: Optional[str] = None
+
+    max_inversion_time: float
+    completion_energy: float
+    averaging_threads: Optional[int] = None
+    averaging_interval_secs: int
+    selector_threads: int
+    selection_interval_secs: int
+    perturbation_function: str
+    cooling_schedule: Optional[str] = None
+    non_negativity_function: str
+
+    # describes a type of scaling relationship, e.g. "SIMPLE_SUBDUCTION"
+    scaling_relationship: Optional[str] = None
+    scaling_recalc_mag: Optional[bool] = None
+
+    # fault slip rates, could be FAULT_MODEL which uses rupture set, or some other model
+    deformation_model: str
+
+    # N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated
+    mfd: MFD
+
+    # if true, must also have uncertainty weighting for mfd and slip rate
+    reweight: Optional[bool] =  None
+
+    # penalize mfd residuals normalized by uncertainty which is a "made up" function of mag
+    mfd_uncertainty_weight: Optional[float] = None
+    mfd_uncertainty_power: Optional[float] = None
+    mfd_uncertainty_scalar: Optional[float] = None
+
+    # or penalize mfd residuals in absolute terms
+    mfd_equality_weight: Optional[float] = None
+    mfd_inequality_weight: Optional[float] = None
+    # magnitude at which to transition from equality to inequality constraint
+    mfd_eq_ineq_transition_mag: Optional[float] = None
+
+    # penalize absolute and relative to uncertinaty slip rate residuals
+    slip_rate_weighting_type: Optional[Literal["BOTH", "NORMALIZED", "UNNORMALIZED"]] = None
+    slip_rate_normalized_weight: Optional[float] = None
+    slip_rate_unnormalized_weight: Optional[float] = None
+
+    # or penalize by uncerainty only
+    use_slip_scaling: Optional[bool] = None
+    slip_rate_uncertainty_weight: Optional[float] = None
+    slip_uncertainty_scaling_factor: Optional[float] = None
+
+    @model_validator(mode='after')
+    def _check_reweight(self) -> Self:
+        """If re-weighting, must use uncertinaty weighted constraints"""
+        if self.reweight is not None:
+            if (self.mfd_uncertainty_weight is None) and (self.slip_rate_uncertainty_weight is None):
+                # TODO: this isn't true, reweighting overrides the weight,
+                # but this test does make sure we have the other parameters, so maybe useful?
+                raise ValueError("Re-weigting requires use of uncertainty weighted constraints for MFD and slip rate")
+        return self
+
+    @model_validator(mode='after')
+    def _check_mfd_constraint(self) -> Self:
+        """Choose either uncertainty weighted or eq/ineq constraints for MFD, not both."""
+        if (self.mfd_uncertainty_weight is not None) and (self.mfd_equality_weight is not None):
+            raise ValueError("Cannot combine uncertainty and equality/inequality MFD weights.")
+        return self
+
+    @model_validator(mode='after')
+    def _check_mfd_eq_complete(self) -> Self:
+        """If using eq/ineq MFD constraint, must specify all parameters."""
+        params = [self.mfd_equality_weight, self.mfd_inequality_weight, self.mfd_eq_ineq_transition_mag]
+        if not all_or_none(params):
+            raise ValueError(
+                "If using equality/inequality MFD constraints, must set all parameters (equality weight, "
+                "inequality weight, transition mag)"
+            )
+        return self
+
+    @model_validator(mode='after')
+    def _check_mfd_unc_complete(self) -> Self:
+        """If using uncertainty weighted MFD constraint, must specify all parameters."""
+        params = [self.mfd_uncertainty_weight, self.mfd_uncertainty_power, self.mfd_uncertainty_scalar]
+        if not all_or_none(params):
+            raise ValueError(
+                "If using uncertainty weighted MFD constraints, must set all parameters (weight, power, and scalar)"
+            )
+        return self
+
+    @model_validator(mode='after')
+    def _check_slip_constraint(self) -> Self:
+        """Choose either uncertainty weighted or 'regular' slip constraints, not both."""
+        if (self.slip_rate_normalized_weight is not None) and (self.slip_rate_uncertainty_weight is not None):
+            raise ValueError("Cannot combine uncertainty and 'regular' slip rate constraints.")
+        return self
+
+    @model_validator(mode='after')
+    def _check_slip_abs_complete(self) -> Self:
+        """If using 'regular' slip rate constraint, must specify all parameters."""
+        params = [self.slip_rate_weighting_type, self.slip_rate_normalized_weight, self.slip_rate_unnormalized_weight]
+        if not all_or_none(params):
+            raise ValueError(
+                "If using normalized/unnormalized slip rate constraints, must set all parameters (slip "
+                "weighting type, normalized weight, unnormalized weight"
+            )
+        return self
+
+    @model_validator(mode='after')
+    def _check_slip_unc_complete(self) -> Self:
+        """If using uncertainty weighted slip rate constraint, must specify all parameters."""
+        params = [self.use_slip_scaling, self.slip_rate_uncertainty_weight, self.slip_uncertainty_scaling_factor]
+        if not all_or_none(params):
+            raise ValueError(
+                "If using uncertainty weighted slip rate constraints, must set all parameters (slip "
+                "scaling boolean, weight, and scaling factor)"
+            )
+        return self
+
+    def get_tasks(self) -> Generator[Self, None, None]:
+        names = self.model_fields_set
+        values = [getattr(self, name) for name in names]
+        for task_combination in product(*values):
+            task_args = {name: [ta] for name, ta in zip(names, task_combination)}
+            yield self.model_validate(task_args)
+
+
 class InversionSolutionBuilder(ABC):
     """
     Configure the python client for a InversionTask
     """
 
-    def __init__(self, user_args: InversionArgs, system_args: SystemArgs):
+    def __init__(self, user_args: InversionArgs, system_args: SystemArgs, model_type: ModelType):
 
         self.user_args = user_args
         self.system_args = system_args
+        self.model_type = model_type
 
         # setup the java gateway binding
         self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=system_args.java_gateway_port))
@@ -72,43 +219,43 @@ class InversionSolutionBuilder(ABC):
     def _set_sa_params(self):
         cast(InversionArgs, self.user_args)
         self.inversion_runner.setInversionSeconds(
-            int(self.user_args.task.max_inversion_time[0] * 60)
+            int(self.user_args.max_inversion_time * 60)
         ).setEnergyChangeCompletionCriteria(
-            float(0), self.user_args.task.completion_energy[0], float(1)
+            float(0), self.user_args.completion_energy, float(1)
         ).setSelectionInterval(
-            self.user_args.task.selection_interval_secs[0]
+            self.user_args.selection_interval_secs
         ).setNumThreadsPerSelector(
-            self.user_args.task.selector_threads[0]
+            self.user_args.selector_threads
         ).setNonnegativityConstraintType(
-            self.user_args.task.non_negativity_function[0]
+            self.user_args.non_negativity_function
         ).setPerturbationFunction(
-            self.user_args.task.perturbation_function[0]
+            self.user_args.perturbation_function
         )
 
-        if (averaging_threads := self.user_args.task.averaging_threads[0]) is not None:
+        if (averaging_threads := self.user_args.averaging_threads) is not None:
             self.inversion_runner.setInversionAveraging(
-                averaging_threads, self.user_args.task.averaging_interval_secs[0]
+                averaging_threads, self.user_args.averaging_interval_secs
             )
 
-        if (cooling_schedule := self.user_args.task.cooling_schedule[0]) is not None:
+        if (cooling_schedule := self.user_args.cooling_schedule) is not None:
             self.inversion_runner.setCoolingSchedule(cooling_schedule)
 
     @abstractmethod
     def _set_deformation_model(self):
-        self.inversion_runner.setDeformationModel(self.user_args.task.deformation_model[0])
+        self.inversion_runner.setDeformationModel(self.user_args.deformation_model)
 
     def _set_constraint_weights(self):
         self.user_args = cast(InversionArgs, self.user_args)
-        reweight = self.user_args.task.reweight[0]
+        reweight = self.user_args.reweight
 
         if reweight:
             self.inversion_runner.setReweightTargetQuantity("MAD")
 
-        mfd_equality_weight = self.user_args.task.mfd_equality_weight[0]
-        mfd_inequality_weight = self.user_args.task.mfd_inequality_weight[0]
-        mfd_uncertainty_weight = self.user_args.task.mfd_uncertainty_weight[0]
-        mfd_uncertainty_power = self.user_args.task.mfd_uncertainty_power[0]
-        mfd_uncertainty_scalar = self.user_args.task.mfd_uncertainty_scalar[0]
+        mfd_equality_weight = self.user_args.mfd_equality_weight
+        mfd_inequality_weight = self.user_args.mfd_inequality_weight
+        mfd_uncertainty_weight = self.user_args.mfd_uncertainty_weight
+        mfd_uncertainty_power = self.user_args.mfd_uncertainty_power
+        mfd_uncertainty_scalar = self.user_args.mfd_uncertainty_scalar
 
         if mfd_uncertainty_weight is not None:
             weight = 1.0 if reweight else mfd_uncertainty_weight
@@ -118,12 +265,12 @@ class InversionSolutionBuilder(ABC):
         elif (mfd_equality_weight is not None) and (mfd_inequality_weight is not None):
             self.inversion_runner.setGutenbergRichterMFDWeights(mfd_equality_weight, mfd_inequality_weight)
 
-        slip_rate_weighting_type = self.user_args.task.slip_rate_weighting_type[0]
-        slip_rate_normalized_weight = self.user_args.task.slip_rate_normalized_weight[0]
-        slip_rate_unnormalized_weight = self.user_args.task.slip_rate_unnormalized_weight[0]
-        slip_uncertainty_scaling_factor = self.user_args.task.slip_uncertainty_scaling_factor[0]
-        slip_rate_uncertainty_weight = self.user_args.task.slip_rate_uncertainty_weight[0]
-        use_slip_scalings = self.user_args.task.use_slip_scaling[0]
+        slip_rate_weighting_type = self.user_args.slip_rate_weighting_type
+        slip_rate_normalized_weight = self.user_args.slip_rate_normalized_weight
+        slip_rate_unnormalized_weight = self.user_args.slip_rate_unnormalized_weight
+        slip_uncertainty_scaling_factor = self.user_args.slip_uncertainty_scaling_factor
+        slip_rate_uncertainty_weight = self.user_args.slip_rate_uncertainty_weight
+        use_slip_scalings = self.user_args.use_slip_scaling
 
         if slip_rate_uncertainty_weight is not None:
             weight = 1.0 if reweight else slip_rate_uncertainty_weight
@@ -148,7 +295,7 @@ class InversionSolutionBuilder(ABC):
         time.sleep(self.system_args.task_count * 0.01)
         self.inversion_runner = self._get_runner()
 
-        rupture_set_id = self.user_args.task.rupture_set[0].rupture_set_id
+        rupture_set_id = self.user_args.rupture_set.rupture_set_id
         file_generator = get_output_file_id(self.toshi_api, rupture_set_id)  # for file by file ID
         rupture_set_info = download_files(self.toshi_api, file_generator, str(WORK_PATH), overwrite=False)
 
@@ -156,7 +303,7 @@ class InversionSolutionBuilder(ABC):
 
         log.info(f"Running nzshm-opensha {API_GitVersion}")
 
-        initial_solution_id = self.user_args.task.initial_solution_id[0]
+        initial_solution_id = self.user_args.initial_solution_id
         if initial_solution_id is not None:
             file_generator = get_output_file_id(self.toshi_api, initial_solution_id)
             initial_solution_info = download_files(self.toshi_api, file_generator, str(WORK_PATH), overwrite=False)
@@ -171,12 +318,12 @@ class InversionSolutionBuilder(ABC):
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
                     task_type="INVERSION",
-                    model_type=self.user_args.general.model_type.name.upper(),
+                    model_type=self.model_type.name.upper(),
                     # general_task_id=general_task_id,
                 ),
                 # TODO: should we flatten dict? See https://weka-test.gns.cri.nz/Task/QXV0b21hdGlvblRhc2s6MTAxNzc5
-                # or at least just dump user_args.task?
-                arguments=generate_automation_task_args(self.user_args.task),
+                # or at least just dump user_args?
+                arguments=generate_automation_task_args(self.user_args),
                 environment=environment,
             )
 
@@ -208,7 +355,7 @@ class InversionSolutionBuilder(ABC):
             self.inversion_runner.setInitialSolution(initial_solution_info[initial_solution_id]['filepath'])
 
         if not SPOOF:
-            log.info("Starting inversion of up to %s minutes" % self.user_args.task.max_inversion_time[0])
+            log.info("Starting inversion of up to %s minutes" % self.user_args.max_inversion_time)
             log.info("======================================")
             self.inversion_runner.runInversion()
 
@@ -269,7 +416,7 @@ class InversionSolutionBuilder(ABC):
             inversion_id = self.toshi_api.inversion_solution.upload_inversion_solution(
                 task_id,
                 filepath=output_file,
-                meta=self.user_args.task.model_dump(),
+                meta=self.user_args.model_dump(),
                 predecessors=predecessors,
                 metrics=metrics,
             )

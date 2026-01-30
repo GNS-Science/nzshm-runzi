@@ -1,20 +1,78 @@
 import argparse
+from pydantic import BaseModel, model_validator
 import json
 import urllib.parse
+import time
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast, Optional, Self
 from zipfile import ZipFile
 
 import git
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import WORK_PATH
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.execute.arguments import SystemArgs
 from runzi.execute.inversion_solution_builder import InversionSolutionBuilder
-from runzi.runners.inversion_inputs import CrustalInversionArgs
+from runzi.execute.inversion_solution_builder import InversionArgs, all_or_none
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
+
+class CrustalInversionArgs(InversionArgs):
+    class ScalingC(BaseModel):
+        dip: float
+        strike: float
+        tag: str
+
+
+    class MagRange(BaseModel):
+        min_mag_sans: float
+        max_mag_sans: float
+        min_mag_tvz: float
+        max_mag_tvz: float
+
+
+    class SlipRateFactor(BaseModel):
+        tag: str
+        sans: float
+        tvz: float
+
+    class PaleoRatesFile(BaseModel):
+        archive_id: str
+        file_name: str
+        tag: str
+
+    spatial_seis_pdf: Optional[str] = None
+
+    scaling_c_val: Optional[ScalingC] = None
+
+    max_mag_type: str
+    mag_range: MagRange
+
+    slip_rate_factor: SlipRateFactor
+
+    paleo_rate_constraint_weight: Optional[float] = None
+    paleo_parent_rate_smoothness_constraint_weight: Optional[float] = None
+    paleo_rate_constraint: Optional[str] = None
+    paleo_probability_model: Optional[str] = None
+    paleo_rates_file: Optional[PaleoRatesFile] = None
+
+    @model_validator(mode='after')
+    def _check_paleo_constraint(self) -> Self:
+        """If using paleo constraint, must specify all parameters."""
+        params = [
+            self.paleo_rate_constraint_weight,
+            self.paleo_parent_rate_smoothness_constraint_weight,
+            self.paleo_rate_constraint,
+            self.paleo_probability_model,
+        ]
+        if not all_or_none(params):
+            raise ValueError(
+                "If using paleo constraints, must set all parameters (weight, smoothness weight, "
+                "constrant enum, probability model)"
+            )
+        return self
 
 
 class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
@@ -29,15 +87,15 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
 
     def _set_scaling_relationship(self):
         self.user_args = cast(CrustalInversionArgs, self.user_args)
-        scaling_relationship = self.user_args.task.scaling_relationship[0]
-        scaling_recalc_mag = self.user_args.task.scaling_recalc_mag[0]
+        scaling_relationship = self.user_args.scaling_relationship
+        scaling_recalc_mag = self.user_args.scaling_recalc_mag
         # TODO: would we ever specify a scaling relationship and not want to recalc mags? Isn't that implied?
         # TODO: is it ok not to set a scaling relationship? Does that simply mean we don't relcalc the mags?
         if (scaling_relationship is not None) and scaling_recalc_mag:
             sr = self.gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
             if scaling_relationship == "SIMPLE_CRUSTAL":
-                c_dip = self.user_args.task.scaling_c_val[0].dip
-                c_strike = self.user_args.task.scaling_c_val[0].strike
+                c_dip = self.user_args.scaling_c_val.dip
+                c_strike = self.user_args.scaling_c_val.strike
                 sr.setupCrustal(c_dip, c_strike)
             else:
                 sr = scaling_relationship  # setScalingRelationship can be passed a string
@@ -47,20 +105,20 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
         self.user_args = cast(CrustalInversionArgs, self.user_args)
         super()._set_deformation_model()
         self.inversion_runner.setSlipRateFactor(
-            self.user_args.task.slip_rate_factor[0].sans,
-            self.user_args.task.slip_rate_factor[0].sans,
+            self.user_args.slip_rate_factor.sans,
+            self.user_args.slip_rate_factor.sans,
         )
 
     def _set_constraint_weights(self):
         super()._set_constraint_weights()
-        reweight = self.user_args.task.reweight[0]
-        paleo_rate_constraint_weight = self.user_args.task.paleo_rate_constraint_weight[0]
+        reweight = self.user_args.reweight
+        paleo_rate_constraint_weight = self.user_args.paleo_rate_constraint_weight
         paleo_parent_rate_smoothness_constraint_weight = (
-            self.user_args.task.paleo_parent_rate_smoothness_constraint_weight[0]
+            self.user_args.paleo_parent_rate_smoothness_constraint_weight
         )
-        paleo_rate_constraint = self.user_args.task.paleo_rate_constraint[0]
-        paleo_probability_model = self.user_args.task.paleo_probability_model[0]
-        paleo_rates_file = self.user_args.task.paleo_rates_file[0]
+        paleo_rate_constraint = self.user_args.paleo_rate_constraint
+        paleo_probability_model = self.user_args.paleo_probability_model
+        paleo_rates_file = self.user_args.paleo_rates_file
         if paleo_rate_constraint_weight is not None:
             weight = 1.0 if reweight else paleo_rate_constraint_weight
             self.inversion_runner.setPaleoRateConstraints(
@@ -79,31 +137,31 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
             self.inversion_runner.setPaleoRatesFile(str(paleo_file_path))
 
     def _domain_specific_setup(self):
-        if (spatial_seis_pdf := self.user_args.task.spatial_seis_pdf[0]) is not None:
+        if (spatial_seis_pdf := self.user_args.spatial_seis_pdf) is not None:
             self.inversion_runner.setSpatialSeisPDF(spatial_seis_pdf)
 
     def _set_mfd(self):
         self.user_args = cast(CrustalInversionArgs, self.user_args)
 
-        mfd_transition_mag = self.user_args.task.mfd_eq_ineq_transition_mag[0] or 9.0
+        mfd_transition_mag = self.user_args.mfd_eq_ineq_transition_mag or 9.0
         self.inversion_runner.setGutenbergRichterMFD(
-            self.user_args.task.mfd[0].N,
-            self.user_args.task.mfd[0].N_tvz,
-            self.user_args.task.mfd[0].b,
-            self.user_args.task.mfd[0].b_tvz,
+            self.user_args.mfd.N,
+            self.user_args.mfd.N_tvz,
+            self.user_args.mfd.b,
+            self.user_args.mfd.b_tvz,
             mfd_transition_mag,
         )
 
-        if self.user_args.task.mfd[0].enable_tvz:
+        if self.user_args.mfd.enable_tvz:
             self.inversion_runner.setEnableTvzMFDs(True)
 
         self.inversion_runner.setMinMags(
-            self.user_args.task.mag_range[0].min_mag_sans, self.user_args.task.mag_range[0].min_mag_tvz
+            self.user_args.mag_range.min_mag_sans, self.user_args.mag_range.min_mag_tvz
         )
         self.inversion_runner.setMaxMags(
-            self.user_args.task.max_mag_type[0],
-            self.user_args.task.mag_range[0].max_mag_sans,
-            self.user_args.task.mag_range[0].max_mag_tvz,
+            self.user_args.max_mag_type,
+            self.user_args.mag_range.max_mag_sans,
+            self.user_args.mag_range.max_mag_tvz,
         )
 
 
@@ -116,7 +174,8 @@ def get_repo_heads(rootdir, repos):
     return result
 
 
-def main():
+
+if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("config")
@@ -124,18 +183,21 @@ def main():
 
     try:
         # LOCAL and CLUSTER this is a file
+        config_file = args.config
         f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
     except FileNotFoundError:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
+    # print(config)
     user_args = CrustalInversionArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
-    inversion_solution_builder = CrustalInversionSolutionBuilder(user_args, system_args)
+    task = CrustalInversionSolutionBuilder(user_args, system_args, ModelType.CRUSTAL)
 
-    inversion_solution_builder.run()
+    # maybe the JVM App is a little slow to get listening
+    time.sleep(3)
+    # Wait for some more time, scaled by taskid to avoid S3 consistency issue
+    time.sleep(system_args.task_count)
 
-
-if __name__ == "__main__":
-    main()
+    task.run()

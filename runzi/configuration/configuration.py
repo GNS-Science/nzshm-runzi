@@ -51,6 +51,10 @@ def build_tasks(
         task_system_args.task_count = task_count
         task_system_args.java_gateway_port = task_factory.get_next_port()
 
+        # special case for inversion
+        if task_system_args.subtask_type is SubtaskType.INVERSION:
+            task_system_args.java_threads = task_args.selector_threads * task_args.averaging_threads
+
         if CLUSTER_MODE == EnvMode['AWS']:
 
             job_name = f"{task_system_args.job_name}-{task_count}"

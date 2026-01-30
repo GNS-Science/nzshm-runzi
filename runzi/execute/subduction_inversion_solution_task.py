@@ -1,18 +1,25 @@
 import argparse
+import time
 import json
 import urllib.parse
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast, Optional
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 
 import git
 
 from runzi.execute.arguments import SystemArgs
 from runzi.execute.inversion_solution_builder import InversionSolutionBuilder
-from runzi.runners.inversion_inputs import SubductionInversionArgs
+from runzi.execute.inversion_solution_builder import InversionArgs, all_or_none
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
 
 # TODO: do I need all these casts?
+
+class SubductionInversionArgs(InversionArgs):
+    scaling_c_val: Optional[float] = None
+    mfd_min_mag: float
+
 
 
 class SubductionInversionSolutionBuilder(InversionSolutionBuilder):
@@ -27,14 +34,14 @@ class SubductionInversionSolutionBuilder(InversionSolutionBuilder):
 
     def _set_scaling_relationship(self):
         self.user_args = cast(SubductionInversionArgs, self.user_args)
-        scaling_relationship = self.user_args.task.scaling_relationship[0]
-        scaling_recalc_mag = self.user_args.task.scaling_recalc_mag[0]
+        scaling_relationship = self.user_args.scaling_relationship
+        scaling_recalc_mag = self.user_args.scaling_recalc_mag
         # TODO: would we ever specify a scaling relationship and not want to recalc mags? Isn't that implied?
         # TODO: is it ok not to set a scaling relationship? Does that simply mean we don't relcalc the mags?
         if (scaling_relationship is not None) and scaling_recalc_mag:
             sr = self.gateway.jvm.nz.cri.gns.NZSHM22.opensha.calc.SimplifiedScalingRelationship()
             if scaling_relationship == "SIMPLE_SUBDUCTION":
-                sr.setupSubduction(self.user_args.task.scaling_c_val[0])
+                sr.setupSubduction(self.user_args.scaling_c_val)
             else:
                 sr = scaling_relationship  # setScalingRelationship can be passed a string
             self.inversion_runner.setScalingRelationship(sr, scaling_recalc_mag)
@@ -44,18 +51,18 @@ class SubductionInversionSolutionBuilder(InversionSolutionBuilder):
 
     def _set_mfd(self):
         self.user_args = cast(SubductionInversionArgs, self.user_args)
-        if self.user_args.task.mfd_min_mag[0] is not None:
+        if self.user_args.mfd_min_mag is not None:
             self.inversion_runner.setGutenbergRichterMFD(
-                self.user_args.task.mfd[0].N,
-                self.user_args.task.mfd[0].b,
-                self.user_args.task.mfd_eq_ineq_transition_mag[0],
-                self.user_args.task.mfd_min_mag[0],
+                self.user_args.mfd.N,
+                self.user_args.mfd.b,
+                self.user_args.mfd_eq_ineq_transition_mag,
+                self.user_args.mfd_min_mag,
             )
         else:
             self.inversion_runner.setGutenbergRichterMFD(
-                self.user_args.task.mfd[0].N,
-                self.user_args.task.mfd[0].b,
-                self.user_args.task.mfd_eq_ineq_transition_mag[0],
+                self.user_args.mfd.N,
+                self.user_args.mfd.b,
+                self.user_args.mfd_eq_ineq_transition_mag,
             )
 
     def _domain_specific_setup(self):
@@ -71,7 +78,7 @@ def get_repo_heads(rootdir, repos):
     return result
 
 
-def main():
+if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("config")
@@ -79,18 +86,21 @@ def main():
 
     try:
         # LOCAL and CLUSTER this is a file
+        config_file = args.config
         f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
     except FileNotFoundError:
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
+    # print(config)
     user_args = SubductionInversionArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
-    inversion_solution_builder = SubductionInversionSolutionBuilder(user_args, system_args)
+    task = SubductionInversionSolutionBuilder(user_args, system_args, ModelType.SUBDUCTION)
 
-    inversion_solution_builder.run()
+    # maybe the JVM App is a little slow to get listening
+    time.sleep(3)
+    # Wait for some more time, scaled by taskid to avoid S3 consistency issue
+    time.sleep(system_args.task_count)
 
-
-if __name__ == "__main__":
-    main()
+    task.run()

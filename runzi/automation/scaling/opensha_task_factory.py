@@ -51,8 +51,8 @@ class OpenshaTaskFactory:
         root_path: Path | PurePath | str,
         working_path: Path | PurePath | str,
         python_script_module: ModuleType,
-        jre_path: Optional[Path | PurePath | str] = None,
-        app_jar_path: Optional[Path | PurePath | str] = None,
+        jre_path: Path | PurePath | str,
+        app_jar_path: Path | PurePath | str,
         task_config_path: Optional[Path | PurePath | str] = None,
         initial_gateway_port: int = 25333,
         python: str = 'python3',
@@ -64,8 +64,8 @@ class OpenshaTaskFactory:
         """
         self._next_port = initial_gateway_port
 
-        self._jre_path = jre_path or "/opt/sw/java/java-11-openjdk-amd64/bin/java"
-        self._app_jar_path = app_jar_path or "~/NSHM/opensha/nshm-nz-opensha/build/libs/nshm-nz-opensha-all.jar"
+        self._jre_path = jre_path
+        self._app_jar_path = app_jar_path
         self._config_path = Path(task_config_path or Path.cwd())
         # self._script_path = os.path.dirname(scaling.rupture_set_builder_task.__file__) #path to the actual task script
         self._python_script = os.path.abspath(python_script_module.__file__)  # type: ignore
