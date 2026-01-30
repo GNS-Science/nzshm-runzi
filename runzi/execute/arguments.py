@@ -1,14 +1,13 @@
 import json
 from enum import Enum
 from pathlib import Path
-from tkinter import NO
 from typing import Any, Generator, Optional, Sequence, TextIO
 
 import tomlkit
 from pydantic import BaseModel
 from typing_extensions import Self
 
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
+from runzi.automation.scaling.toshi_api import SubtaskType
 from runzi.util.aws import BatchEnvironmentSetting
 
 
@@ -36,9 +35,6 @@ class SystemArgs(BaseModel):
     ecs_job_definition: str
     ecs_job_queue: str
     ecs_extra_env: Optional[list[BatchEnvironmentSetting]] = None
-
-
-
 
 
 class ArgBase(BaseModel):
@@ -95,7 +91,14 @@ class ArgBase(BaseModel):
 class ArgSweeper:
     """Class to hold argument prototype and swept arguments."""
 
-    def __init__(self, prototype: ArgBase, swept_args: dict[str, Sequence[Any]], title: str, description: str, sys_arg_overrides: dict[str, Any] = None):
+    def __init__(
+        self,
+        prototype: ArgBase,
+        swept_args: dict[str, Sequence[Any]],
+        title: str,
+        description: str,
+        sys_arg_overrides: dict[str, Any] = None,
+    ):
         """Initialize a SweptArgs instance.
 
         Args:

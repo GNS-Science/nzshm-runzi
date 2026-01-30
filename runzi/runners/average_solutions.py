@@ -27,6 +27,7 @@ def get_model_type_from_all(job_args: ArgSweeper) -> ModelType:
 
 class AverageSolutionsJobRunner(JobRunner):
     """A class to run average solutions jobs."""
+
     job_name = "Runzi-automation-average-solutions"
     task_language = TaskLanguage.PYTHON
     subtask_type = SubtaskType.AGGREGATE_SOLUTION

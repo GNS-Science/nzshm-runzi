@@ -5,7 +5,7 @@ from pathlib import Path
 import typer
 from rich import print as rich_print
 
-from runzi.execute import ArgSweeper, SubductionInversionArgs, CrustalInversionArgs
+from runzi.execute import ArgSweeper, CrustalInversionArgs, SubductionInversionArgs
 from runzi.runners import CrustalInversionJobRunner, SubductionInversionJobRunner
 
 app = typer.Typer()

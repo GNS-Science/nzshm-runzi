@@ -1,22 +1,19 @@
 import argparse
-
-from pathlib import Path
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 import datetime as dt
 import json
 import logging
 import time
 import urllib
 import uuid
+from pathlib import Path
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH, SPOOF
-from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.automation.scaling.toshi_api.general_task import SubtaskType
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, WORK_PATH
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
 from runzi.execute.arguments import ArgBase, SystemArgs
 
 logging.basicConfig(level=logging.INFO)

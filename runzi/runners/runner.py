@@ -1,20 +1,18 @@
 """This module provides the runner JobRunner class for creating running jobs."""
 
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-import inspect
 import datetime as dt
 import getpass
+import inspect
 import logging
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from multiprocessing.dummy import Pool
 from subprocess import check_call
-from typing import Any
 from types import ModuleType
 
 import boto3
 
 from runzi.automation.scaling.local_config import CLUSTER_MODE, USE_API, WORKER_POOL_SIZE, EnvMode
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType
 from runzi.configuration.configuration import build_tasks
 from runzi.execute.arguments import ArgSweeper, SystemArgs
 
@@ -45,8 +43,8 @@ class JobRunner:
         self.task_module = task_module
 
     def set_system_args(self, general_task_id: str | None = None) -> SystemArgs:
-        attributes = inspect.getmembers(self, lambda a:not(inspect.isroutine(a)))
-        sys_args = {a[0]: a[1] for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))}
+        attributes = inspect.getmembers(self, lambda a: not (inspect.isroutine(a)))
+        sys_args = {a[0]: a[1] for a in attributes if not (a[0].startswith('__') and a[0].endswith('__'))}
         sys_args['use_api'] = USE_API
         sys_args['general_task_id'] = general_task_id
         for k, v in self.job_args.sys_arg_overrides.items():
@@ -102,7 +100,6 @@ class JobRunner:
         scripts = [script_file for script_file in build_tasks(self.job_args, system_args, self.task_module, model_type)]
         if USE_API:
             toshi_api.general_task.update_subtask_count(general_task_id, len(scripts))
-        
 
         if CLUSTER_MODE is EnvMode.LOCAL:
 

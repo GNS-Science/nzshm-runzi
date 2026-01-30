@@ -1,23 +1,23 @@
 import argparse
-from pydantic import BaseModel, model_validator
 import json
-import urllib.parse
 import time
+import urllib.parse
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Optional, Self
+from typing import TYPE_CHECKING, Optional, Self, cast
 from zipfile import ZipFile
 
 import git
+from pydantic import BaseModel, model_validator
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import WORK_PATH
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
+from runzi.automation.scaling.toshi_api import ModelType
 from runzi.execute.arguments import SystemArgs
-from runzi.execute.inversion_solution_builder import InversionSolutionBuilder
-from runzi.execute.inversion_solution_builder import InversionArgs, all_or_none
+from runzi.execute.inversion_solution_builder import InversionArgs, InversionSolutionBuilder, all_or_none
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
+
 
 class CrustalInversionArgs(InversionArgs):
     class ScalingC(BaseModel):
@@ -25,13 +25,11 @@ class CrustalInversionArgs(InversionArgs):
         strike: float
         tag: str
 
-
     class MagRange(BaseModel):
         min_mag_sans: float
         max_mag_sans: float
         min_mag_tvz: float
         max_mag_tvz: float
-
 
     class SlipRateFactor(BaseModel):
         tag: str
@@ -113,9 +111,7 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
         super()._set_constraint_weights()
         reweight = self.user_args.reweight
         paleo_rate_constraint_weight = self.user_args.paleo_rate_constraint_weight
-        paleo_parent_rate_smoothness_constraint_weight = (
-            self.user_args.paleo_parent_rate_smoothness_constraint_weight
-        )
+        paleo_parent_rate_smoothness_constraint_weight = self.user_args.paleo_parent_rate_smoothness_constraint_weight
         paleo_rate_constraint = self.user_args.paleo_rate_constraint
         paleo_probability_model = self.user_args.paleo_probability_model
         paleo_rates_file = self.user_args.paleo_rates_file
@@ -155,9 +151,7 @@ class CrustalInversionSolutionBuilder(InversionSolutionBuilder):
         if self.user_args.mfd.enable_tvz:
             self.inversion_runner.setEnableTvzMFDs(True)
 
-        self.inversion_runner.setMinMags(
-            self.user_args.mag_range.min_mag_sans, self.user_args.mag_range.min_mag_tvz
-        )
+        self.inversion_runner.setMinMags(self.user_args.mag_range.min_mag_sans, self.user_args.mag_range.min_mag_tvz)
         self.inversion_runner.setMaxMags(
             self.user_args.max_mag_type,
             self.user_args.mag_range.max_mag_sans,
@@ -172,7 +166,6 @@ def get_repo_heads(rootdir, repos):
         headcommit = repo.head.commit
         result[reponame] = headcommit.hexsha
     return result
-
 
 
 if __name__ == "__main__":

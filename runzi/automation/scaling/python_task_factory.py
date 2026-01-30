@@ -10,7 +10,6 @@ The job is responsible for configuring and executing the python script
  a PBS script for the cluster environment
 """
 import json
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 import os
 from pathlib import Path, PurePath
 from types import ModuleType
@@ -19,6 +18,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from runzi.automation.scaling.task_config import get_task_config
+from runzi.automation.scaling.toshi_api import ModelType
 
 from .local_config import EnvMode
 

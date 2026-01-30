@@ -6,8 +6,10 @@ from runzi.execute.arguments import ArgSweeper, TaskLanguage
 
 from .runner import JobRunner
 
+
 class SubductionInversionJobRunner(JobRunner):
     """A class to run subduction inversion jobs."""
+
     job_name = "Runzi-automation-subduction-inversion"
     task_language = TaskLanguage.JAVA
     subtask_type = SubtaskType.INVERSION

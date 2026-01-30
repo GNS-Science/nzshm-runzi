@@ -16,17 +16,20 @@ The job is responsible for
 """
 import json
 import os
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from pathlib import Path, PurePath
 from types import ModuleType
 from typing import Optional, Protocol, TypeVar
 
 from runzi.automation.scaling.python_task_factory import get_factory as get_python_factory
 from runzi.automation.scaling.task_config import get_task_config
+from runzi.automation.scaling.toshi_api import ModelType
 from runzi.execute.arguments import ArgBase, SystemArgs, TaskLanguage
-# from runzi.runners.inversion_inputs import InversionArgs
+from runzi.execute import InversionArgs
 
 from .local_config import EnvMode
+
+# from runzi.runners.inversion_inputs import InversionArgs
+
 
 OpenshaTaskFactoryType = TypeVar('OpenshaTaskFactoryType', bound='OpenshaTaskFactory')
 

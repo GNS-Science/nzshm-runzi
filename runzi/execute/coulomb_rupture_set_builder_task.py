@@ -1,5 +1,4 @@
 import argparse
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 import datetime as dt
 import json
 import logging

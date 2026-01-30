@@ -22,15 +22,7 @@ from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 
-from runzi.automation.scaling.local_config import (
-    API_KEY,
-    API_URL,
-    ECR_DIGEST,
-    S3_URL,
-    SPOOF,
-    THS_RLZ_DB,
-    WORK_PATH,
-)
+from runzi.automation.scaling.local_config import API_KEY, API_URL, ECR_DIGEST, S3_URL, SPOOF, THS_RLZ_DB, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.execute.arguments import SystemArgs

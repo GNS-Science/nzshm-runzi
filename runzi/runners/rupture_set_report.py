@@ -2,7 +2,7 @@
 
 import runzi.execute.ruptset_diags_report_task as task_module
 from runzi.automation.scaling.local_config import REPORT_LEVEL
-from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.execute.arguments import ArgSweeper, TaskLanguage
 from runzi.runners.time_dependent_solution import get_model_type_from_all
 from runzi.runners.utils import convert_gt_to_swept
@@ -12,6 +12,7 @@ from .runner import JobRunner
 
 class RupsetReportJobRunner(JobRunner):
     """A class to run rupture set report."""
+
     job_name = "Runzi-automation-rupset-report"
     task_language = TaskLanguage.JAVA
     subtask_type = SubtaskType.REPORT

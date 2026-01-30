@@ -1,5 +1,4 @@
 import argparse
-import datetime as dt
 import json
 import time
 import urllib
@@ -9,7 +8,7 @@ import git
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, WORK_PATH, SPOOF
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, SPOOF, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
 from runzi.execute.arguments import ArgBase, SystemArgs
 from runzi.util.aws.s3_folder_upload import upload_to_bucket
@@ -36,7 +35,6 @@ class RupsetReportTask:
         self.output_folder = PurePath(WORK_PATH)
 
     def run(self):
-        t0 = dt.datetime.now()
         rupture_set_id = self.user_args.source_solution_id
 
         # download the file

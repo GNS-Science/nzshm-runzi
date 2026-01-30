@@ -1,7 +1,7 @@
 """This module provides the runner class for OQ conversion of OpenSHA inversions."""
 
 import runzi.execute.oq_opensha_convert_task as task_module
-from runzi.automation.scaling.toshi_api import SubtaskType, ModelType
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.execute.arguments import ArgSweeper, TaskLanguage
 from runzi.runners.time_dependent_solution import get_model_type_from_all
 from runzi.runners.utils import convert_gt_to_swept
@@ -11,6 +11,7 @@ from .runner import JobRunner
 
 class OQConvertJobRunner(JobRunner):
     """A class to run OQ convert solution jobs."""
+
     job_name = "Runzi-automation-convert-solution"
     task_language = TaskLanguage.PYTHON
     subtask_type = SubtaskType.SOLUTION_TO_NRML
@@ -31,7 +32,6 @@ class OQConvertJobRunner(JobRunner):
 
         # convert GT IDs to swept IDs of inversion solutions
         convert_gt_to_swept(self.job_args)
-
 
     def get_model_type(self) -> ModelType:
         # this has to be done after converting GT to inversion solution IDs

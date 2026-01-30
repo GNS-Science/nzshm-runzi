@@ -9,6 +9,7 @@ from .runner import JobRunner
 
 class CoulombRuptureSetJobRunner(JobRunner):
     """A class to run Coulomb rupture set jobs."""
+
     job_name = "Runzi-automation-coulomb-rupture-sets"
     task_language = TaskLanguage.JAVA
     subtask_type = SubtaskType.RUPTURE_SET

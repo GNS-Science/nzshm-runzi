@@ -29,6 +29,7 @@ def get_model_type_from_all(job_args: ArgSweeper) -> ModelType:
 
 class TimeDependentSolutionJobRunner(JobRunner):
     """A class to run time dependent solution jobs."""
+
     job_name = "Runzi-automation-time-dependent-solution"
     task_language = TaskLanguage.JAVA
     subtask_type = SubtaskType.TIME_DEPENDENT_SOLUTION

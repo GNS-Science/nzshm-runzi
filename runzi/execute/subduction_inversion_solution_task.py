@@ -1,25 +1,24 @@
 import argparse
-import time
 import json
+import time
 import urllib.parse
-from typing import TYPE_CHECKING, cast, Optional
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
+from typing import TYPE_CHECKING, Optional, cast
 
 import git
 
+from runzi.automation.scaling.toshi_api import ModelType
 from runzi.execute.arguments import SystemArgs
-from runzi.execute.inversion_solution_builder import InversionSolutionBuilder
-from runzi.execute.inversion_solution_builder import InversionArgs, all_or_none
+from runzi.execute.inversion_solution_builder import InversionArgs, InversionSolutionBuilder
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
 
 # TODO: do I need all these casts?
 
+
 class SubductionInversionArgs(InversionArgs):
     scaling_c_val: Optional[float] = None
     mfd_min_mag: float
-
 
 
 class SubductionInversionSolutionBuilder(InversionSolutionBuilder):

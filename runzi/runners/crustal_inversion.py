@@ -6,8 +6,10 @@ from runzi.execute.arguments import ArgSweeper, TaskLanguage
 
 from .runner import JobRunner
 
+
 class CrustalInversionJobRunner(JobRunner):
     """A class to run Crustal inversion jobs."""
+
     job_name = "Runzi-automation-crustal-inversion"
     task_language = TaskLanguage.JAVA
     subtask_type = SubtaskType.INVERSION

@@ -9,6 +9,7 @@ from .runner import JobRunner
 
 class SubductionRuptureSetJobRunner(JobRunner):
     """A class to run subduction rupture set jobs."""
+
     job_name = "Runzi-automation-coulomb-rupture-sets"
     subtask_type = SubtaskType.RUPTURE_SET
     task_language = TaskLanguage.JAVA
