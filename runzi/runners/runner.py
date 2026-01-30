@@ -8,6 +8,7 @@ import logging
 from abc import ABC, abstractmethod
 from multiprocessing.dummy import Pool
 from subprocess import check_call
+from typing import Any
 from types import ModuleType
 
 import boto3
@@ -48,6 +49,8 @@ class JobRunner:
         sys_args = {a[0]: a[1] for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))}
         sys_args['use_api'] = USE_API
         sys_args['general_task_id'] = general_task_id
+        for k, v in self.job_args.sys_arg_overrides.items():
+            sys_args[k] = v
         return SystemArgs(**sys_args)
 
     @abstractmethod

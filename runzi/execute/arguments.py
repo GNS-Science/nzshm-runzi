@@ -95,7 +95,7 @@ class ArgBase(BaseModel):
 class ArgSweeper:
     """Class to hold argument prototype and swept arguments."""
 
-    def __init__(self, prototype: ArgBase, swept_args: dict[str, Sequence[Any]], title: str, description: str):
+    def __init__(self, prototype: ArgBase, swept_args: dict[str, Sequence[Any]], title: str, description: str, sys_arg_overrides: dict[str, Any] = None):
         """Initialize a SweptArgs instance.
 
         Args:
@@ -103,12 +103,14 @@ class ArgSweeper:
             swept_args: A dictionary of argument names to lists of values to be swept.
             title: The title for the job.
             description: The description for the job.
+            sys_arg_overrides: System arguments to override from the default of the JobRunner.
         """
 
         self.prototype = prototype
         self.swept_args = swept_args
         self.title = title
         self.description = description
+        self.sys_arg_overrides = sys_arg_overrides or {}
 
     # TODO: remove me?
     def get_run_args(self) -> dict[str, Any]:
@@ -145,6 +147,7 @@ class ArgSweeper:
         title = data.pop("title")
         description = data.pop("description")
         swept_args = data.pop("swept_args", {})
+        sys_arg_overrides = data.pop("sys_arg_overrides", {})
 
         if swept_args:
             for k, v in swept_args.items():
@@ -155,7 +158,7 @@ class ArgSweeper:
                 data[k] = v[0]
         prototype = config_type.model_validate(data, extra='forbid')
 
-        return cls(prototype, swept_args, title, description)
+        return cls(prototype, swept_args, title, description, sys_arg_overrides)
 
     def get_tasks(self) -> Generator[ArgBase, None, None]:
         """Generate all combinations of swept arguments as job argument objects.
