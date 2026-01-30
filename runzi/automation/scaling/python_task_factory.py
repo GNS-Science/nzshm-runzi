@@ -111,7 +111,6 @@ class PythonPBSTaskFactory(PythonTaskFactory):
         return f"""
 #PBS -l nodes={self._pbs_nodes}:ppn={self._pbs_ppn}
 #PBS -l walltime={self._pbs_wall_hours}:00:00
-#PBS -l mem={int(self._jvm_heap_max_gb)+2}gb
 
 source {self._root_path}/nzshm-runzi/bin/activate
 
@@ -129,9 +128,12 @@ export NO_PROXY=${{no_proxy}}
 
 
 def get_factory(environment_mode) -> type[PythonTaskFactory]:
-    if environment_mode == EnvMode['LOCAL']:
-        return PythonTaskFactory
-    elif environment_mode == EnvMode['CLUSTER']:
-        return PythonPBSTaskFactory
-    elif environment_mode == EnvMode['AWS']:
-        return PythonAWSTaskFactory
+    match environment_mode:
+        case EnvMode.LOCAL:
+            return PythonTaskFactory
+        case EnvMode.CLUSTER:
+            return PythonPBSTaskFactory
+        case EnvMode.AWS:
+            return PythonAWSTaskFactory
+        case _:
+            raise ValueError(f"Unknown environment_mode: {environment_mode}")

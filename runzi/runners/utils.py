@@ -28,5 +28,5 @@ def get_solution_ids_from_id(toshi_id):
 def convert_gt_to_swept(job_args: ArgSweeper):
     solution_ids = []
     for task_args in job_args.get_tasks():
-        solution_ids += get_solution_ids_from_id(task_args.source_solution_id)
+        solution_ids += get_solution_ids_from_id(task_args.source_solution_id)  # type: ignore
     job_args.swept_args['source_solution_id'] = solution_ids

@@ -14,6 +14,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 from runzi.automation.scaling.task_config import get_task_config
+from runzi.automation.scaling.toshi_api.general_task import ModelType
 
 if TYPE_CHECKING:
     from runzi.execute.arguments import ArgBase, SystemArgs
@@ -87,23 +88,24 @@ def decompress_config(compressed):
 
 
 def get_ecs_job_config(
-    job_name,
+    job_name: str,
+    model_type: 'ModelType',
     task_args: 'ArgBase',
     task_system_args: 'SystemArgs',
-    toshi_api_url,
-    toshi_s3_url,
-    toshi_report_bucket,
-    task_module,
-    time_minutes,
-    memory,
-    vcpu,
-    job_definition,
-    job_queue,
+    toshi_api_url: str,
+    toshi_s3_url: str,
+    toshi_report_bucket: str,
+    task_module: str,
+    time_minutes: int,
+    memory: int,
+    vcpu: int,
+    job_definition: str,
+    job_queue: str,
     extra_env: Optional[List[BatchEnvironmentSetting]] = None,
     use_compression=False,
 ):
 
-    task_config = get_task_config(task_args, task_system_args)
+    task_config = get_task_config(task_args, task_system_args, model_type)
     if "Fargate" in job_definition:
         assert vcpu in [0.25, 0.5, 1, 2, 4]
         assert memory in [

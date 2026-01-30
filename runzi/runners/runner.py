@@ -12,9 +12,9 @@ from types import ModuleType
 import boto3
 
 from runzi.automation.scaling.local_config import CLUSTER_MODE, USE_API, WORKER_POOL_SIZE, EnvMode
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType
+from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType
 from runzi.configuration.configuration import build_tasks
-from runzi.execute.arguments import ArgSweeper, SystemArgs
+from runzi.execute.arguments import ArgSweeper, SystemArgs, TaskLanguage
 
 from .utils import toshi_api
 
@@ -31,6 +31,10 @@ logging.getLogger('git.cmd').setLevel(loglevel)
 
 class JobRunner:
     """A class to run jobs."""
+
+    subtask_type: SubtaskType
+    task_language: TaskLanguage
+    job_name: str
 
     def __init__(self, job_args: ArgSweeper, task_module: ModuleType):
         """Initialize the JobRunner.
@@ -57,14 +61,9 @@ class JobRunner:
 
     def _build_argument_list(self) -> list[dict[str, list[str]]]:
         """Build argument list for general task."""
-        unswepped_args = {
-            k: [
-                str(v),
-            ]
-            for k, v in self.job_args.prototype.get_run_args().items()
-        }
-        swepted_args = {k: [str(item) for item in v] for k, v in self.job_args.swept_args.items()}
-        all_args = unswepped_args | swepted_args
+        unswepped_args = {k: [str(v)] for k, v in self.job_args.prototype.get_run_args().items()}
+        swept_args = {k: [str(item) for item in v] for k, v in self.job_args.swept_args.items()}
+        all_args = unswepped_args | swept_args
         return [dict(k=key, v=value) for key, value in all_args.items()]
 
     def run_jobs(self) -> str | None:
@@ -122,7 +121,7 @@ class JobRunner:
                 print(res)
         elif CLUSTER_MODE is EnvMode.CLUSTER:
             for script_name in scripts:
-                check_call(['qsub', script_name])
+                check_call(['qsub', script_name])  # type: ignore
 
         print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
 

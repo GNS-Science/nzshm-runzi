@@ -1,9 +1,12 @@
 """This module provides the runner class for scaling the rupture rates of inversions."""
 
+from typing import cast
+
 import runzi.execute.ruptset_diags_report_task as task_module
 from runzi.automation.scaling.local_config import REPORT_LEVEL
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.execute.arguments import ArgSweeper, TaskLanguage
+from runzi.execute.ruptset_diags_report_task import RupsetReportArgs
 from runzi.runners.time_dependent_solution import get_model_type_from_all
 from runzi.runners.utils import convert_gt_to_swept
 
@@ -33,6 +36,7 @@ class RupsetReportJobRunner(JobRunner):
             job_args: input arguments for the jobs including swept args.
         """
         super().__init__(job_args, task_module)
+        self.job_args.prototype = cast(RupsetReportArgs, self.job_args.prototype)
 
         # convert GT IDs to swept IDs of inversion solutions
         convert_gt_to_swept(self.job_args)

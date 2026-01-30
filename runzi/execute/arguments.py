@@ -97,7 +97,7 @@ class ArgSweeper:
         swept_args: dict[str, Sequence[Any]],
         title: str,
         description: str,
-        sys_arg_overrides: dict[str, Any] = None,
+        sys_arg_overrides: Optional[dict[str, Any]] = None,
     ):
         """Initialize a SweptArgs instance.
 

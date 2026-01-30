@@ -20,11 +20,12 @@ from pathlib import Path, PurePath
 from types import ModuleType
 from typing import Optional, Protocol, TypeVar
 
+from runzi.automation.scaling.python_task_factory import PythonTaskFactory
 from runzi.automation.scaling.python_task_factory import get_factory as get_python_factory
 from runzi.automation.scaling.task_config import get_task_config
 from runzi.automation.scaling.toshi_api import ModelType
 from runzi.execute.arguments import ArgBase, SystemArgs, TaskLanguage
-from runzi.execute import InversionArgs
+from runzi.execute.inversion_solution_builder import InversionArgs
 
 from .local_config import EnvMode
 
@@ -174,7 +175,7 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
     def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_port}.json"
         if isinstance(task_args, InversionArgs):
-            max_inversion_time = task_args.task.max_inversion_time[0]
+            max_inversion_time = task_args.max_inversion_time
             self._pbs_wall_hours = int(max_inversion_time / 60) + 1
         if isinstance(task_system_args, SystemArgs):
             self._pbs_ppn = task_system_args.java_threads
@@ -204,16 +205,22 @@ export NO_PROXY=${{no_proxy}}
 
 
 def get_java_factory(environment_mode: EnvMode) -> type[OpenshaTaskFactory]:
-    if environment_mode is EnvMode.LOCAL:
-        return OpenshaTaskFactory
-    elif environment_mode is EnvMode.CLUSTER:
-        return OpenshaPBSTaskFactory
-    elif environment_mode is EnvMode.AWS:
-        return OpenshaAWSTaskFactory
+    match environment_mode:
+        case EnvMode.LOCAL:
+            return OpenshaTaskFactory
+        case EnvMode.CLUSTER:
+            return OpenshaPBSTaskFactory
+        case EnvMode.AWS:
+            return OpenshaAWSTaskFactory
+        case _:
+            raise ValueError(f"Unknown environment_mode: {environment_mode}")
 
 
-def get_factory(environment_mode: EnvMode, task_language: TaskLanguage) -> type[OpenshaTaskFactory]:
-    if task_language is TaskLanguage.JAVA:
-        return get_java_factory(environment_mode)
-    elif task_language is TaskLanguage.PYTHON:
-        return get_python_factory(environment_mode)
+def get_factory(environment_mode: EnvMode, task_language: TaskLanguage) -> type[OpenshaTaskFactory | PythonTaskFactory]:
+    match task_language:
+        case TaskLanguage.JAVA:
+            return get_java_factory(environment_mode)
+        case TaskLanguage.PYTHON:
+            return get_python_factory(environment_mode)
+        case _:
+            raise ValueError(f"Unknown task_language: {task_language}")
