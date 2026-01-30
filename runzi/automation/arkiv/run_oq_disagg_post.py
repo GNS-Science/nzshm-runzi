@@ -52,7 +52,7 @@ class DisaggDetails(ToshiClientBase):
         }
         '''
 
-        print(qry)
+        # print(qry)
         input_variables = dict(general_task_id=general_task_id)
         executed = self.run_query(qry, input_variables)
         return executed

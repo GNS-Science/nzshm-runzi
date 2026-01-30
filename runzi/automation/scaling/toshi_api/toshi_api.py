@@ -171,7 +171,7 @@ class ToshiApi(ToshiClientBase):
           }
         }'''
 
-        print(qry)
+        # print(qry)
         input_variables = dict(id=id)
         executed = self.run_query(qry, input_variables)
         return executed['node']
@@ -192,7 +192,7 @@ class ToshiApi(ToshiClientBase):
           }
         }'''
 
-        print(qry)
+        # print(qry)
         input_variables = dict(id=id)
         executed = self.run_query(qry, input_variables)
         return executed['node']
