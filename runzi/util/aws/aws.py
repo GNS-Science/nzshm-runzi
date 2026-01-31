@@ -8,7 +8,7 @@ import io
 import json
 import urllib.parse
 import zipfile
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 import boto3
 from botocore.exceptions import ClientError
@@ -164,7 +164,7 @@ def get_ecs_job_config(
     # else:
     #     job_queue = "BigLeverOnDemandEC2-job-queue" #"getting-started-jun7" #"BiggerLeverQueue"
 
-    config = {
+    config: dict[str, Any] = {
         "jobName": job_name,
         "jobQueue": job_queue,
         "jobDefinition": job_definition,

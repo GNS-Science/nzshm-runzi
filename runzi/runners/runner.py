@@ -59,7 +59,7 @@ class JobRunner:
     def get_model_type(self) -> ModelType:
         pass
 
-    def _build_argument_list(self) -> list[dict[str, list[str]]]:
+    def _build_argument_list(self) -> list[dict[str, str | list[str]]]:
         """Build argument list for general task."""
         unswepped_args = {k: [str(v)] for k, v in self.job_args.prototype.get_run_args().items()}
         swept_args = {k: [str(item) for item in v] for k, v in self.job_args.swept_args.items()}

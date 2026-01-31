@@ -19,6 +19,7 @@ from pydantic import BaseModel
 
 from runzi.automation.scaling.task_config import get_task_config
 from runzi.automation.scaling.toshi_api import ModelType
+from runzi.execute.arguments import ArgBase, SystemArgs
 
 from .local_config import EnvMode
 
@@ -51,7 +52,7 @@ class PythonTaskFactory:
     def get_next_port(self) -> int:
         return self._next_task
 
-    def write_task_config(self, task_arguments: BaseModel, task_system_args: BaseModel, model_type: ModelType):
+    def write_task_config(self, task_arguments: ArgBase, task_system_args: SystemArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_task}.json"
         task_config = get_task_config(task_arguments, task_system_args, model_type)
         fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
@@ -84,7 +85,7 @@ class PythonPBSTaskFactory(PythonTaskFactory):
 
     def __init__(
         self,
-        root_path: Path | PurePath | str,
+        # root_path: Path | PurePath | str,
         working_path: Path | PurePath | str,
         python_script_module: ModuleType,
         **kwargs,
@@ -107,12 +108,13 @@ class PythonPBSTaskFactory(PythonTaskFactory):
         # task_config = get_task_config(task_args, task_system_args)
         # fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
 
+    # TODO: what is the correct path to activate the venv?
     def get_task_script(self) -> str:
         return f"""
 #PBS -l nodes={self._pbs_nodes}:ppn={self._pbs_ppn}
 #PBS -l walltime={self._pbs_wall_hours}:00:00
 
-source {self._root_path}/nzshm-runzi/bin/activate
+source {self._working_path}/nzshm-runzi/bin/activate
 
 export http_proxy=http://beavan:8899/
 export https_proxy=${{http_proxy}}
