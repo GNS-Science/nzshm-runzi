@@ -6,7 +6,7 @@ from nzshm_model import get_model_version
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 
-import runzi.execute.openquake.oq_hazard_task
+import runzi.execute.oq_hazard_task
 from runzi.automation.scaling.local_config import (
     API_URL,
     CLUSTER_MODE,
@@ -53,7 +53,7 @@ def build_task(task_hazard_args: HazardInput, task_system_args: SystemArgs):
                 toshi_api_url=API_URL,
                 toshi_s3_url=S3_URL,
                 toshi_report_bucket=S3_REPORT_BUCKET,
-                task_module=runzi.execute.openquake.oq_hazard_task.__name__,
+                task_module=runzi.execute.oq_hazard_task.__name__,
                 time_minutes=int(HAZARD_MAX_TIME),
                 memory=EC2_CONFIG["mem"],
                 vcpu=EC2_CONFIG["cpu"],
@@ -71,7 +71,7 @@ def build_task(task_hazard_args: HazardInput, task_system_args: SystemArgs):
                 toshi_api_url=API_URL,
                 toshi_s3_url=S3_URL,
                 toshi_report_bucket=S3_REPORT_BUCKET,
-                task_module=runzi.execute.openquake.oq_hazard_task.__name__,
+                task_module=runzi.execute.oq_hazard_task.__name__,
                 time_minutes=int(HAZARD_MAX_TIME),
                 memory=30720,
                 vcpu=4,
