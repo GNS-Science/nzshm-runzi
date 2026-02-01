@@ -1,8 +1,8 @@
-from runzi.execute.arguments import ArgBase, ArgSweeper
+from runzi.execute.arguments import  ArgSweeper
 from pydantic import BaseModel
 from math import prod
 
-class SimpleArgs(ArgBase):
+class SimpleArgs(BaseModel):
 
     class ComplexThing(BaseModel):
         a: int

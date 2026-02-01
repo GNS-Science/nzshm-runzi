@@ -19,9 +19,9 @@ from pydantic import BaseModel, model_validator
 from typing_extensions import Self
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, USE_API, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.execute.arguments import ArgBase, SystemArgs
+from runzi.execute.arguments import SystemArgs, TaskLanguage
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -49,7 +49,20 @@ def get_fault_model_file(fault_model_file_id) -> Path:
     return Path(fault_model_archive_file_path).parent / fault_model_file
 
 
-class CoulombRuptureSetArgs(ArgBase):
+default_system_args = SystemArgs(
+    task_language=TaskLanguage.JAVA,
+    use_api=USE_API,
+    java_threads=16,
+    jvm_heap_max=32,
+    ecs_max_job_time_min=60,
+    ecs_memory=30720,
+    ecs_vcpu=4,
+    ecs_job_definition="Fargate-runzi-opensha-JD",
+    ecs_job_queue="BasicFargate_Q",
+)
+
+
+class CoulombRuptureSetArgs(BaseModel):
     """Input for generating Coulomb rupture sets."""
 
     class DepthScaling(BaseModel):

@@ -8,7 +8,6 @@ from typing import Any, Optional
 from pydantic import BaseModel, field_validator
 
 from runzi.automation.scaling.toshi_api import ModelType
-from runzi.execute.arguments import ArgBase
 
 
 class OQOpenSHAConvertTaskArgs(BaseModel):
@@ -33,14 +32,14 @@ class OQOpenSHAConvertTaskArgs(BaseModel):
                 raise ValueError("model_type input is not valid")
 
 
-class OQOpenSHAConvertArgs(ArgBase):
+class OQOpenSHAConvertArgs(BaseModel):
     task: OQOpenSHAConvertTaskArgs
 
     def get_run_args(self) -> dict:
         return self.task.model_dump(mode='json')
 
 
-class AverageSolutionsInput(ArgBase):
+class AverageSolutionsInput(BaseModel):
     """Input for averaging solutions."""
 
     solution_groups: list[list[str]]

@@ -2,9 +2,8 @@
 
 import datetime as dt
 import getpass
-import inspect
 import logging
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from multiprocessing.dummy import Pool
 from subprocess import check_call
 from types import ModuleType
@@ -14,7 +13,7 @@ import boto3
 from runzi.automation.scaling.local_config import CLUSTER_MODE, USE_API, WORKER_POOL_SIZE, EnvMode
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType
 from runzi.configuration.configuration import build_tasks
-from runzi.execute.arguments import ArgSweeper, SystemArgs, TaskLanguage
+from runzi.execute.arguments import ArgSweeper, SystemArgs
 
 from .utils import toshi_api
 
@@ -29,31 +28,30 @@ logging.getLogger('botocore').setLevel(loglevel)
 logging.getLogger('git.cmd').setLevel(loglevel)
 
 
-class JobRunner:
+class JobRunner(ABC):
     """A class to run jobs."""
 
     subtask_type: SubtaskType
-    task_language: TaskLanguage
     job_name: str
 
-    def __init__(self, job_args: ArgSweeper, task_module: ModuleType):
+    def __init__(self, argument_sweeper: ArgSweeper, task_module: ModuleType):
         """Initialize the JobRunner.
 
         Args:
-            job_args: input arguments for the jobs including swept args.
+            argument_sweeper: input arguments for the jobs including swept args.
             task_module: the task module to run.
         """
-        self.job_args = job_args
+        self.argument_sweeper = argument_sweeper
         self.task_module = task_module
+        self.default_sys_args: SystemArgs = task_module.default_system_args
 
     def set_system_args(self, general_task_id: str | None = None) -> SystemArgs:
-        attributes = inspect.getmembers(self, lambda a: not (inspect.isroutine(a)))
-        sys_args = {a[0]: a[1] for a in attributes if not (a[0].startswith('__') and a[0].endswith('__'))}
-        sys_args['use_api'] = USE_API
-        sys_args['general_task_id'] = general_task_id
-        for k, v in self.job_args.sys_arg_overrides.items():
-            sys_args[k] = v
-        return SystemArgs(**sys_args)
+        # make a copy here only to make it clear that we have modified it
+        system_args = self.default_sys_args.model_copy(deep=True)
+        system_args.general_task_id = general_task_id
+        for name, value in self.argument_sweeper.sys_arg_overrides.items():
+            setattr(self.default_sys_args, name, value)
+        return system_args
 
     @abstractmethod
     def get_model_type(self) -> ModelType:
@@ -61,8 +59,8 @@ class JobRunner:
 
     def _build_argument_list(self) -> list[dict[str, str | list[str]]]:
         """Build argument list for general task."""
-        unswepped_args = {k: [str(v)] for k, v in self.job_args.prototype.get_run_args().items()}
-        swept_args = {k: [str(item) for item in v] for k, v in self.job_args.swept_args.items()}
+        unswepped_args = {k: [str(v)] for k, v in self.argument_sweeper.prototype_args.model_dump().items()}
+        swept_args = {k: [str(item) for item in v] for k, v in self.argument_sweeper.swept_args.items()}
         all_args = unswepped_args | swept_args
         return [dict(k=key, v=value) for key, value in all_args.items()]
 
@@ -85,7 +83,9 @@ class JobRunner:
 
             gt_args = (
                 CreateGeneralTaskArgs(
-                    agent_name=getpass.getuser(), title=self.job_args.title, description=self.job_args.description
+                    agent_name=getpass.getuser(),
+                    title=self.argument_sweeper.title,
+                    description=self.argument_sweeper.description,
                 )
                 .set_argument_list(args_list)
                 .set_subtask_type(self.subtask_type)
@@ -96,7 +96,12 @@ class JobRunner:
         print("GENERAL_TASK_ID:", general_task_id)
         system_args = self.set_system_args(general_task_id)
 
-        scripts = [script_file for script_file in build_tasks(self.job_args, system_args, self.task_module, model_type)]
+        scripts = [
+            script_file
+            for script_file in build_tasks(
+                self.argument_sweeper, system_args, self.task_module, model_type, self.job_name
+            )
+        ]
         if USE_API:
             toshi_api.general_task.update_subtask_count(general_task_id, len(scripts))
 

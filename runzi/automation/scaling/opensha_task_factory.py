@@ -20,11 +20,13 @@ from pathlib import Path, PurePath
 from types import ModuleType
 from typing import Optional, Protocol, TypeVar
 
+from pydantic import BaseModel
+
 from runzi.automation.scaling.python_task_factory import PythonTaskFactory
 from runzi.automation.scaling.python_task_factory import get_factory as get_python_factory
 from runzi.automation.scaling.task_config import get_task_config
 from runzi.automation.scaling.toshi_api import ModelType
-from runzi.execute.arguments import ArgBase, SystemArgs, TaskLanguage
+from runzi.execute.arguments import SystemArgs, TaskLanguage
 from runzi.execute.inversion_solution_builder import InversionArgs
 
 from .local_config import EnvMode
@@ -38,7 +40,7 @@ OpenshaTaskFactoryType = TypeVar('OpenshaTaskFactoryType', bound='OpenshaTaskFac
 
 
 class TaskFactory(Protocol):
-    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs, model_type: ModelType) -> None: ...
+    def write_task_config(self, task_args: BaseModel, task_system_args: SystemArgs, model_type: ModelType) -> None: ...
 
     def get_task_script(self) -> str: ...
 
@@ -97,7 +99,7 @@ class OpenshaTaskFactory:
             jvm_heap_max=kwargs.get('jvm_heap_max', 10),
         )
 
-    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs, model_type: ModelType):
+    def write_task_config(self, task_args: BaseModel, task_system_args: SystemArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_port}.json"
         task_config = get_task_config(task_args, task_system_args, model_type)
         fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
@@ -172,7 +174,7 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
         self._pbs_nodes = 1  # always ust one PBS node (and which one we don't know)
         self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1)  # defines maximum time the jobs is allocated by PBS
 
-    def write_task_config(self, task_args: ArgBase, task_system_args: SystemArgs, model_type: ModelType):
+    def write_task_config(self, task_args: BaseModel, task_system_args: SystemArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_port}.json"
         if isinstance(task_args, InversionArgs):
             max_inversion_time = task_args.max_inversion_time

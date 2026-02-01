@@ -6,15 +6,28 @@ from pathlib import Path, PurePath
 
 import git
 from py4j.java_gateway import GatewayParameters, JavaGateway
+from pydantic import BaseModel
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, SPOOF, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, SPOOF, USE_API, WORK_PATH
 from runzi.automation.scaling.toshi_api import ToshiApi
-from runzi.execute.arguments import ArgBase, SystemArgs
+from runzi.execute.arguments import SystemArgs, TaskLanguage
 from runzi.util.aws.s3_folder_upload import upload_to_bucket
 
+default_system_args = SystemArgs(
+    task_language=TaskLanguage.JAVA,
+    use_api=USE_API,
+    java_threads=16,
+    jvm_heap_max=32,
+    ecs_max_job_time_min=60,
+    ecs_memory=30720,
+    ecs_vcpu=4,
+    ecs_job_definition="Fargate-runzi-opensha-JD",
+    ecs_job_queue="BasicFargate_Q",
+)
 
-class RupsetReportArgs(ArgBase):
+
+class RupsetReportArgs(BaseModel):
     # This is a misnomer for convenience so that we can re-use some functions that assume this member is present.
     # It is actually a rupture set id.
     source_solution_id: str

@@ -16,13 +16,25 @@ try:
 except ImportError:
     print("openquake not installed, not importing")
 
+from pydantic import BaseModel
+
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, USE_API, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
-from runzi.execute.arguments import ArgBase, SystemArgs
+from runzi.execute.arguments import SystemArgs, TaskLanguage
+
+default_system_args = SystemArgs(
+    task_language=TaskLanguage.PYTHON,
+    use_api=USE_API,
+    ecs_max_job_time_min=30,
+    ecs_memory=30720,
+    ecs_vcpu=4,
+    ecs_job_definition="Fargate-runzi-opensha-JD",
+    ecs_job_queue="BasicFargate_Q",
+)
 
 
-class OQConvertArgs(ArgBase):
+class OQConvertArgs(BaseModel):
     """Input for converting OpenSHA inversion to OpenQuake source."""
 
     source_solution_id: str

@@ -19,7 +19,7 @@ def rupset(
 
     # these values are place-holders and will be set by the runner
     prototype = RupsetReportArgs(source_solution_id=toshi_id, build_report_level=None)
-    job_input = ArgSweeper(prototype=prototype, swept_args={}, title="", description="")
+    job_input = ArgSweeper(prototype_args=prototype, swept_args={}, title="", description="")
     runner = RupsetReportJobRunner(job_input)
     runner.run_jobs()
 
@@ -36,7 +36,7 @@ def inversion(general_task_id: str):
         build_report_level=None,
         hack_fault_model=None,
     )
-    job_input = ArgSweeper(prototype=prototype, swept_args={}, title="", description="")
+    job_input = ArgSweeper(prototype_args=prototype, swept_args={}, title="", description="")
     runner = InversionReportJobRunner(job_input)
     runner.run_jobs()
 

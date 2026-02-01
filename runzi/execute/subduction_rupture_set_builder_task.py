@@ -14,9 +14,10 @@ from nshm_toshi_client.general_task import GeneralTask
 from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
+from pydantic import BaseModel
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, WORK_PATH
-from runzi.execute.arguments import ArgBase, SystemArgs
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, USE_API, WORK_PATH
+from runzi.execute.arguments import SystemArgs, TaskLanguage
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -28,8 +29,20 @@ logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
 logging.getLogger('urllib3').setLevel(loglevel)
 logging.getLogger('git.cmd').setLevel(loglevel)
 
+default_system_args = SystemArgs(
+    task_language=TaskLanguage.JAVA,
+    use_api=USE_API,
+    java_threads=16,
+    jvm_heap_max=32,
+    ecs_max_job_time_min=60,
+    ecs_memory=30720,
+    ecs_vcpu=4,
+    ecs_job_definition="Fargate-runzi-opensha-JD",
+    ecs_job_queue="BasicFargate_Q",
+)
 
-class SubductionRuptureSetArgs(ArgBase):
+
+class SubductionRuptureSetArgs(BaseModel):
     """Input for generating subduction rupture sets."""
 
     fault_model: str

@@ -17,7 +17,9 @@ from runzi.automation.scaling.task_config import get_task_config
 from runzi.automation.scaling.toshi_api.general_task import ModelType
 
 if TYPE_CHECKING:
-    from runzi.execute.arguments import ArgBase, SystemArgs
+    from pydantic import BaseModel
+
+    from runzi.execute.arguments import SystemArgs
 
 BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')
 
@@ -90,7 +92,7 @@ def decompress_config(compressed):
 def get_ecs_job_config(
     job_name: str,
     model_type: 'ModelType',
-    task_args: 'ArgBase',
+    task_args: 'BaseModel',
     task_system_args: 'SystemArgs',
     toshi_api_url: str,
     toshi_s3_url: str,

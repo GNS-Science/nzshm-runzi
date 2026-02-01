@@ -3,9 +3,9 @@
 import runzi.execute.average_solutions_task as task_module
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-from runzi.execute.arguments import ArgSweeper, TaskLanguage
+from runzi.execute.arguments import ArgSweeper
 
-from .runner import JobRunner
+from .job_runner import JobRunner
 from .utils import toshi_api
 
 
@@ -29,14 +29,7 @@ class AverageSolutionsJobRunner(JobRunner):
     """A class to run average solutions jobs."""
 
     job_name = "Runzi-automation-average-solutions"
-    task_language = TaskLanguage.PYTHON
     subtask_type = SubtaskType.AGGREGATE_SOLUTION
-
-    ecs_max_job_time_min = 10
-    ecs_memory = 30720
-    ecs_vcpu = 4
-    ecs_job_definition = "Fargate-runzi-opensha-JD"
-    ecs_job_queue = "BasicFargate_Q"
 
     def __init__(self, job_args: ArgSweeper):
         """Initialize the AverageSolutionsJobRunner.
@@ -48,4 +41,4 @@ class AverageSolutionsJobRunner(JobRunner):
 
     def get_model_type(self) -> ModelType:
         """Get the model type from all source solution ids."""
-        return get_model_type_from_all(self.job_args)
+        return get_model_type_from_all(self.argument_sweeper)

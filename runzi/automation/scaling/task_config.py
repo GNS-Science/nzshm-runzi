@@ -1,11 +1,13 @@
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from pydantic import BaseModel
+
     from runzi.automation.scaling.toshi_api import ModelType
-    from runzi.execute.arguments import ArgBase, SystemArgs
+    from runzi.execute.arguments import SystemArgs
 
 
-def get_task_config(task_args: 'ArgBase', task_system_args: 'SystemArgs', model_type: 'ModelType') -> dict[str, Any]:
+def get_task_config(task_args: 'BaseModel', task_system_args: 'SystemArgs', model_type: 'ModelType') -> dict[str, Any]:
     """Package user inputs and generated system args into a dict for transport.
 
     Args:

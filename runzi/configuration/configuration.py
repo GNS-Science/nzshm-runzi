@@ -29,6 +29,7 @@ def build_tasks(
     system_args: SystemArgs,
     task_module: ModuleType,
     model_type: ModelType,
+    job_name: str,
 ) -> Generator[dict[str, Any] | str, None, None]:
     """
     build the shell scripts 1 per task, based on all the inputs
@@ -56,7 +57,7 @@ def build_tasks(
 
         if CLUSTER_MODE == EnvMode['AWS']:
 
-            job_name = f"{task_system_args.job_name}-{task_count}"
+            job_name = f"{job_name}-{task_count}"
 
             yield get_ecs_job_config(
                 model_type=model_type,

@@ -19,7 +19,7 @@ from pydantic import BaseModel
 
 from runzi.automation.scaling.task_config import get_task_config
 from runzi.automation.scaling.toshi_api import ModelType
-from runzi.execute.arguments import ArgBase, SystemArgs
+from runzi.execute.arguments import SystemArgs
 
 from .local_config import EnvMode
 
@@ -52,7 +52,7 @@ class PythonTaskFactory:
     def get_next_port(self) -> int:
         return self._next_task
 
-    def write_task_config(self, task_arguments: ArgBase, task_system_args: SystemArgs, model_type: ModelType):
+    def write_task_config(self, task_arguments: BaseModel, task_system_args: SystemArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_task}.json"
         task_config = get_task_config(task_arguments, task_system_args, model_type)
         fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')

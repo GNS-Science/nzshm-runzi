@@ -10,13 +10,29 @@ import git
 from pydantic import BaseModel, model_validator
 
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
-from runzi.automation.scaling.local_config import WORK_PATH
+from runzi.automation.scaling.local_config import USE_API, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType
-from runzi.execute.arguments import SystemArgs
+from runzi.execute.arguments import SystemArgs, TaskLanguage
 from runzi.execute.inversion_solution_builder import InversionArgs, InversionSolutionBuilder, all_or_none
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
+
+default_system_args = SystemArgs(
+    task_language=TaskLanguage.JAVA,
+    use_api=USE_API,
+    # java_threads is only used for pbs mode, which is not supported anymore.
+    # It should be set to selector_threads * averaging_threads, but this would need to be done task by task if they
+    # are swept args. It would be possible to add some inversion specific code to the build_tasks function or find the
+    # maximum number of threads before hand or find the maximum number of threads that would be needed before hand.
+    java_threads=16,
+    jvm_heap_max=32,
+    ecs_max_job_time_min=60,
+    ecs_memory=30720,
+    ecs_vcpu=4,
+    ecs_job_definition="Fargate-runzi-opensha-JD",
+    ecs_job_queue="BasicFargate_Q",
+)
 
 
 class CrustalInversionArgs(InversionArgs):
