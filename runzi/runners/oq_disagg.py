@@ -10,7 +10,7 @@ from runzi.automation.scaling.schedule_tasks import schedule_tasks
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.configuration.openquake.oq_disagg import build_disagg_tasks
 
-from .hazard_inputs import DisaggInput
+from ..execute.hazard_inputs import DisaggInput
 
 loglevel = logging.INFO
 logging.basicConfig(level=logging.INFO)

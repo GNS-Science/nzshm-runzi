@@ -4,7 +4,7 @@ from test.helpers import does_not_raise
 import pytest
 from pydantic import ValidationError
 
-from runzi.runners.hazard_inputs import DisaggInput, HazardInput
+from runzi.execute.hazard_inputs import DisaggInput, HazardInput
 
 
 def test_from_toml():

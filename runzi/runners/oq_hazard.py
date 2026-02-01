@@ -22,7 +22,7 @@ from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType,
 from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
 from runzi.execute.arguments import SystemArgs
 
-from .hazard_inputs import HazardInput
+from ..execute.hazard_inputs import HazardInput
 
 loglevel = logging.INFO
 logging.basicConfig(level=logging.INFO)
