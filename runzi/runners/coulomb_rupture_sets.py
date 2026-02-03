@@ -2,7 +2,7 @@
 
 import runzi.execute.coulomb_rupture_set_builder_task as task_module
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-from runzi.execute.arguments import ArgSweeper
+from runzi.execute import ArgSweeper
 
 from .job_runner import JobRunner
 

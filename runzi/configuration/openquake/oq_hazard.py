@@ -19,7 +19,7 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.python_task_factory import get_factory
 from runzi.execute.arguments import SystemArgs
-from runzi.runners import HazardInput
+from runzi.runners import OQHazardArgs
 from runzi.util.aws import BatchEnvironmentSetting, get_ecs_job_config
 
 from .util import EC2_CONFIGS, ComputePlatform
@@ -34,7 +34,7 @@ factory_task = runzi.execute.openquake.oq_hazard_task
 task_factory = factory_class(WORK_PATH, factory_task, task_config_path=WORK_PATH)
 
 
-def build_task(task_hazard_args: HazardInput, task_system_args: SystemArgs):
+def build_task(task_hazard_args: OQHazardArgs, task_system_args: SystemArgs):
 
     extra_env = [
         BatchEnvironmentSetting(name="NZSHM22_RUNZI_ECR_DIGEST", value=ECR_DIGEST),
@@ -96,7 +96,7 @@ def build_task(task_hazard_args: HazardInput, task_system_args: SystemArgs):
         return str(script_file_path)
 
 
-def build_hazard_tasks(hazard_args: HazardInput, system_args: SystemArgs):
+def build_hazard_tasks(hazard_args: OQHazardArgs, system_args: SystemArgs):
 
     if model_version := hazard_args.hazard_model.nshm_model_version:
         model = get_model_version(model_version)

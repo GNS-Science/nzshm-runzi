@@ -61,7 +61,7 @@ class ArgSweeper:
         self.sys_arg_overrides = sys_arg_overrides or {}
 
     @classmethod
-    def from_config_file(cls, config_file: TextIO | Path | str, config_type: type[BaseModel]) -> Self:
+    def from_config_file(cls, config_file: TextIO | Path | str, args_class: type[BaseModel]) -> Self:
         """Create a prototype job argument object and a dict of arguments to be swept.
 
         Config files are json format and can optionally contain a "swept_args" object that specifies the names and
@@ -71,7 +71,7 @@ class ArgSweeper:
 
         Args:
             config_file: File-like object or path to configuration file.
-            config_type: The type of the configuration object.
+            args_class: The type (class) of the configuration/arguments object.
 
         Returns:
             A tuple of the prototype config object and a dictionary of arguments to be swept.
@@ -95,7 +95,10 @@ class ArgSweeper:
                 if not all(isinstance(item, type(v[0])) for item in v):
                     raise ValueError(f"All values for swept argument '{k}' must be of the same type")
                 data[k] = v[0]
-        prototype = config_type.model_validate(data, extra='forbid')
+        # we include the base_path context so that any arg_class that needs to resolve absolute paths can (e.g., used by HazardArgs)
+        prototype = args_class.model_validate(
+            data, extra='forbid', context={"base_path": Path(config_file).parent.resolve()}
+        )
 
         return cls(prototype, swept_args, title, description, sys_arg_overrides)
 

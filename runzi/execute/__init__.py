@@ -1,8 +1,9 @@
-from .arguments import ArgSweeper
+from .arguments import ArgSweeper, SystemArgs
 from .average_solutions_task import AverageSolutionsArgs
 from .coulomb_rupture_set_builder_task import CoulombRuptureSetArgs
 from .crustal_inversion_solution_task import CrustalInversionArgs
 from .inversion_diags_report_task import InversionReportArgs
+from .oq_hazard_task import OQHazardArgs
 from .oq_opensha_convert_task import OQConvertArgs
 from .ruptset_diags_report_task import RupsetReportArgs
 from .scale_solution_task import ScaleSolutionArgs

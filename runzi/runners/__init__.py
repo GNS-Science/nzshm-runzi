@@ -2,7 +2,6 @@ from .average_solutions import AverageSolutionsJobRunner
 from .build_manual_index import build_manual_index
 from .coulomb_rupture_sets import CoulombRuptureSetJobRunner
 from .crustal_inversion import CrustalInversionJobRunner
-from ..execute.hazard_inputs import DisaggInput, HazardInput
 from .inversion_report import InversionReportJobRunner
 from .oq_convert_solution import OQConvertJobRunner
 from .oq_disagg import run_oq_disagg

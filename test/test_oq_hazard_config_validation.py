@@ -4,30 +4,30 @@ from test.helpers import does_not_raise
 import pytest
 from pydantic import ValidationError
 
-from runzi.execute.hazard_inputs import DisaggInput, HazardInput
+from runzi.execute.hazard_args import OQDisaggArgs, OQHazardArgs
 
 
 def test_from_toml():
     ref = resources.files('test.fixtures.oq_hazard') / 'hazard.toml'
     with resources.as_file(ref) as input_path:
-        assert HazardInput.from_toml(input_path)
+        assert OQHazardArgs.from_toml(input_path)
 
 
 # default fixture should be a valid config
 def test_config_validation(hazard_input_dict):
-    HazardInput.model_validate(hazard_input_dict)
+    OQHazardArgs.model_validate(hazard_input_dict)
 
 
 def test_config_valid_model_version(hazard_input_dict):
     hazard_input_dict["hazard_model"]["nshm_model_version"] = "NOT A VERSION"
     with pytest.raises(ValidationError):
-        HazardInput.model_validate(hazard_input_dict)
+        OQHazardArgs.model_validate(hazard_input_dict)
 
 
 # can specify logic trees using relative path from config file
 def test_config_validation_lt_relpath(hazard_input_dict):
     hazard_input_dict["hazard_model"]["gmcm_logic_tree"] = "gmcm_small.json"
-    HazardInput.model_validate(hazard_input_dict)
+    OQHazardArgs.model_validate(hazard_input_dict)
 
 
 # can specify logic trees using absolute path from config file
@@ -35,14 +35,14 @@ def test_config_validation_lt_abspath(hazard_input_dict):
     ref = resources.files('test.fixtures.oq_hazard') / 'gmcm_small.json'
     with resources.as_file(ref) as gmcm_path:
         hazard_input_dict["hazard_model"]["gmcm_logic_tree"] = str(gmcm_path.absolute())
-    HazardInput.model_validate(hazard_input_dict)
+    OQHazardArgs.model_validate(hazard_input_dict)
 
 
 # but the path must exist
 def test_config_validation_lt_nopath(hazard_input_dict):
     hazard_input_dict["hazard_model"]["gmcm_logic_tree"] = "gmcm_not_here.json"
     with pytest.raises(ValidationError):
-        HazardInput.model_validate(hazard_input_dict)
+        OQHazardArgs.model_validate(hazard_input_dict)
 
 
 # if a model version is not specified, 2 LTs and a hazard config are needed
@@ -50,7 +50,7 @@ def test_config_validation_lt_missing(hazard_input_dict):
     hazard_input_dict["hazard_model"]["gmcm_logic_tree"] = "gmcm_small.json"
     del hazard_input_dict["hazard_model"]["nshm_model_version"]
     with pytest.raises(ValidationError):
-        HazardInput.model_validate(hazard_input_dict)
+        OQHazardArgs.model_validate(hazard_input_dict)
 
 
 # if a model version is not specified, 2 LTs and a hazard config are needed
@@ -59,42 +59,42 @@ def test_config_validation_lt_all(hazard_input_dict):
     hazard_input_dict["hazard_model"]["srm_logic_tree"] = "srm_small.json"
     hazard_input_dict["hazard_model"]["hazard_config"] = "hazard_config.json"
     del hazard_input_dict["hazard_model"]["nshm_model_version"]
-    HazardInput.model_validate(hazard_input_dict)
+    OQHazardArgs.model_validate(hazard_input_dict)
 
 
 # can specify locations with a file
 def test_config_validation_location_file(hazard_input_dict):
     del hazard_input_dict["site_params"]["locations"]
     hazard_input_dict["site_params"]["locations_file"] = "sites.csv"
-    HazardInput.model_validate(hazard_input_dict)
+    OQHazardArgs.model_validate(hazard_input_dict)
 
 
 # but not both a file and a list
 def test_config_validation_location_listandfile(hazard_input_dict):
     hazard_input_dict["site_params"]["locations_file"] = "sites.csv"
     with pytest.raises(ValidationError):
-        HazardInput.model_validate(hazard_input_dict)
+        OQHazardArgs.model_validate(hazard_input_dict)
 
 
 # must specify one of locations and locations_file
 def test_config_validation_location_or_listandfile(hazard_input_dict):
     del hazard_input_dict["site_params"]["locations"]
     with pytest.raises(ValidationError):
-        HazardInput.model_validate(hazard_input_dict)
+        OQHazardArgs.model_validate(hazard_input_dict)
 
 
 # if a uniform vs30 is not provided, the locations file must provide it
 def test_config_validation_vs30_missing(hazard_input_dict):
     del hazard_input_dict["site_params"]["vs30s"]
     with pytest.raises(ValidationError):
-        HazardInput.model_validate(hazard_input_dict)
+        OQHazardArgs.model_validate(hazard_input_dict)
 
 
 def test_config_vs30(hazard_input_dict):
     del hazard_input_dict["site_params"]["locations"]
     hazard_input_dict["site_params"]["locations_file"] = "sites_vs30.csv"
     with pytest.raises(ValidationError):
-        HazardInput.model_validate(hazard_input_dict)
+        OQHazardArgs.model_validate(hazard_input_dict)
 
 
 # the vs30s are site specific and in the locations file
@@ -102,7 +102,7 @@ def test_config_validation_1(hazard_input_dict):
     del hazard_input_dict["site_params"]["locations"]
     del hazard_input_dict["site_params"]["vs30s"]
     hazard_input_dict["site_params"]["locations_file"] = "sites_vs30.csv"
-    HazardInput.model_validate(hazard_input_dict)
+    OQHazardArgs.model_validate(hazard_input_dict)
 
 
 table_param_value = [
@@ -116,7 +116,7 @@ table_param_value = [
 @pytest.mark.parametrize("table,param,value", table_param_value)
 def test_coerce_to_list(hazard_input_dict, table, param, value):
     hazard_input_dict[table][param] = value
-    HazardInput.model_validate(hazard_input_dict)
+    OQHazardArgs.model_validate(hazard_input_dict)
 
 
 table_param_value_disagg = [
@@ -129,11 +129,11 @@ table_param_value_disagg = [
 @pytest.mark.parametrize("table,param,value", table_param_value_disagg)
 def test_coerce_to_list_disagg(disagg_input_dict, table, param, value):
     disagg_input_dict[table][param] = value
-    DisaggInput.model_validate(disagg_input_dict)
+    OQDisaggArgs.model_validate(disagg_input_dict)
 
 
 def test_disagg_config_validation(disagg_input_dict):
-    DisaggInput.model_validate(disagg_input_dict)
+    OQDisaggArgs.model_validate(disagg_input_dict)
 
 
 nvb = [
@@ -150,7 +150,7 @@ def test_disagg_bins(disagg_input_dict, name, value, bin_edges):
     disagg_input_dict["disagg"][name] = value
     disagg_input_dict["disagg"]["disagg_bin_edges"] = bin_edges
     with pytest.raises(ValidationError):
-        DisaggInput.model_validate(disagg_input_dict)
+        OQDisaggArgs.model_validate(disagg_input_dict)
 
 
 "TRT Mag Dist Mag_Dist TRT_Mag_Dist_Eps"
@@ -183,11 +183,11 @@ def test_disagg_types(disagg_input_dict, disagg_outputs, name, value, expectatio
     disagg_input_dict["disagg"][name] = value
     disagg_input_dict["disagg"]["disagg_outputs"] = disagg_outputs
     with expectation:
-        DisaggInput.model_validate(disagg_input_dict)
+        OQDisaggArgs.model_validate(disagg_input_dict)
 
 
 # the aggs must be present in AggregationEnum
 def test_disagg_incorrect_agg(disagg_input_dict):
     disagg_input_dict["hazard_curve"]["aggs"] = ["PGA", "XYZ"]
     with pytest.raises(ValidationError):
-        DisaggInput.model_validate(disagg_input_dict)
+        OQDisaggArgs.model_validate(disagg_input_dict)

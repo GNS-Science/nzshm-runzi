@@ -9,6 +9,7 @@ import logging
 import platform
 import tempfile
 import time
+import urllib
 from pathlib import Path
 from typing import Any, Dict
 
@@ -27,9 +28,9 @@ from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.execute.arguments import SystemArgs
 from runzi.execute.execute_openquake import execute_openquake
-from runzi.runners import DisaggInput, HazardInput
-from runzi.execute.hazard_inputs import HazardInputBase
 from runzi.util.aws import decompress_config
+
+from .hazard_args import OQHazardArgs
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -50,8 +51,8 @@ except ModuleNotFoundError:
     log.info("not importing from toshi_hazard_store.scripts.ths_import due to missing dependencies")
 
 
-class BuilderTask:
-    def __init__(self, user_args: HazardInput | DisaggInput, system_args: SystemArgs):
+class OQHazardTask:
+    def __init__(self, user_args: OQHazardArgs, system_args: SystemArgs):
         self.use_api = system_args.use_api
         self.user_args = user_args
         self.system_args = system_args
@@ -83,7 +84,7 @@ class BuilderTask:
             ),
             arguments=self.user_args.model_dump(mode='json', exclude={'hazard_model'}),
             environment=environment,
-            task_type=self.user_args.task_type,
+            task_type=HazardTaskType.HAZARD,
         )
 
         # link OpenquakeHazardTask to the parent GT
@@ -153,11 +154,8 @@ class BuilderTask:
 
     def set_site_parameters(self):
         """Set site locations and vs30s for the NshmModel"""
-        if self.user_args.site_params.vs30s:
-            # TODO: this is the same shit swept arg pattern used elsewhere that we will fix, but may
-            # be harder for hazard jobs
-            vs30 = self.user_args.site_params.vs30s[0]
-            self.model.hazard_config.set_uniform_site_params(vs30)
+        if self.user_args.site_params.vs30:
+            self.model.hazard_config.set_uniform_site_params(self.user_args.site_params.vs30)
 
         # if task_arguments["site_params"].get("locations"):
         if self.user_args.site_params.locations:
@@ -193,76 +191,32 @@ class BuilderTask:
         else:
             self.model.hazard_config.set_sites(locations, vs30=vs30s, backarc=backarc_flags)
 
-    def set_disagg_matrix_parameters(self, task_arguments: Dict[str, Any]):
-        """Set disagg matrix coordinates and point on hazard curve to disaggregate
-
-        Args:
-            task_arguments: a dict of task arguments
-        """
-        self.model.hazard_config.set_iml_disagg(
-            imt=task_arguments["hazard_curve"]["imt"], level=task_arguments["disagg"]["target_level"]
-        )
-        self.model.hazard_config.set_parameter("general", "calculation_mode", "disaggregation")
-        self.model.hazard_config.set_parameter(
-            "disaggregation", "disagg_outputs", " ".join(task_arguments["disagg"]["disagg_outputs"])
-        )
-        if mag_bin_width := task_arguments["disagg"]["mag_bin_width"]:
-            self.model.hazard_config.set_parameter("disaggregation", "mag_bin_width", mag_bin_width)
-        if distance_bin_width := task_arguments["disagg"]["distance_bin_width"]:
-            self.model.hazard_config.set_parameter("disaggregation", "distance_bin_width", distance_bin_width)
-        if coordinate_bin_width := task_arguments["disagg"]["coordinate_bin_width"]:
-            self.model.hazard_config.set_parameter("disaggregation", "coordinate_bin_width", coordinate_bin_width)
-        if num_epsilon_bins := task_arguments["disagg"]["num_epsilon_bins"]:
-            self.model.hazard_config.set_parameter("disaggregation", "num_epsilon_bins", num_epsilon_bins)
-        if disagg_bin_edges := task_arguments["disagg"]["disagg_bin_edges"]:
-            self.model.hazard_config.set_parameter("disaggregation", "disagg_bin_edges", disagg_bin_edges)
-
-    @staticmethod
-    def get_disagg_description(task_arguments: Dict[str, Any]):
-        """get the description string for a disaggregation
-
-        Args:
-            task_arguments: a dict of task arguments
-        """
-        return (
-            f"Disaggregation for site: {task_arguments['site_params']['locations'][0]}, "
-            f"vs30: {task_arguments['site_params']['vs30']}, "
-            f"IMT: {task_arguments['hazard_curve']['imt']}, "
-            f"agg: {task_arguments['hazard_curve']['agg']}, "
-            f"{task_arguments['disagg']['poe']} in {task_arguments['disagg']['inv_time']} years"
-        )
-
-    # TODO: we need to consider the best way to pass args to toshiAPI and make the args such as logic
-    # trees and hazard config readable and (possibly) searchable.
-    @staticmethod
-    def _clean_task_args(task_arguments: Dict[str, Any]) -> Dict[str, str]:
-        """This is a somewhat clunky way to clean the arguments so they can be passed to the toshAPI"""
-
-        def flatten_dict(data, parent_key='', separator="-"):
-            flat_dict = {}
-            for k, v in data.items():
-                key = parent_key + separator + k if parent_key else k
-                if isinstance(v, dict):
-                    flat_dict.update(flatten_dict(v, key))
-                else:
-                    flat_dict[key] = v
-            return flat_dict
-
-        def clean_string(input_str):
-            return input_str.replace('"', "``").replace("\n", "-")
-
-        ta_clean = copy.deepcopy(task_arguments)
-        ta_clean["hazard_model"]["srm_logic_tree"] = json.dumps(ta_clean["hazard_model"]["srm_logic_tree"])
-        ta_clean["hazard_model"]["gmcm_logic_tree"] = json.dumps(ta_clean["hazard_model"]["gmcm_logic_tree"])
-        ta_clean["hazard_model"]["hazard_config"] = json.dumps(ta_clean["hazard_model"]["hazard_config"])
-        return flatten_dict(ta_clean)
-
     def run(self):
         t0 = dt.datetime.now(dt.timezone.utc)
 
-        source_logic_tree = self.user_args.hazard_model.srm_logic_tree
-        gmcm_logic_tree = self.user_args.hazard_model.gmcm_logic_tree
-        hazard_config = self.user_args.hazard_model.hazard_config
+        if self.user_args.hazard_model.srm_logic_tree is None:
+            raise ValueError("SRM logic tree or path to file not provided")
+        else:
+            if isinstance(self.user_args.hazard_model.srm_logic_tree, Path):
+                source_logic_tree = SourceLogicTree.from_json(self.user_args.hazard_model.srm_logic_tree)
+            else:
+                source_logic_tree = self.user_args.hazard_model.srm_logic_tree
+
+        if self.user_args.hazard_model.gmcm_logic_tree is None:
+            raise ValueError("GMCM logic tree or path to file not provided")
+        else:
+            if isinstance(self.user_args.hazard_model.gmcm_logic_tree, Path):
+                gmcm_logic_tree = GMCMLogicTree.from_json(self.user_args.hazard_model.gmcm_logic_tree)
+            else:
+                gmcm_logic_tree = self.user_args.hazard_model.gmcm_logic_tree
+
+        if self.user_args.hazard_model.hazard_config is None:
+            raise ValueError("GMCM logic tree or path to file not provided")
+        else:
+            if isinstance(self.user_args.hazard_model.hazard_config, Path):
+                hazard_config = OpenquakeConfig.from_json(self.user_args.hazard_model.hazard_config)
+            else:
+                hazard_config = self.user_args.hazard_model.hazard_config
 
         ################
         # API SETUP
@@ -274,18 +228,18 @@ class BuilderTask:
         #################################
         # SETUP openquake CONFIG FOLDER
         #################################
-        work_folder = Path(WORK_PATH)
+        work_folder = WORK_PATH
         task_no = self.system_args.task_count
         config_folder = work_folder / f"config_{task_no}"
 
         self.model = NshmModel(
             version="",
-            title=self.user_args.general.title,
+            title=f"hazard model for task: {task_no}",
             source_logic_tree=source_logic_tree,
             gmcm_logic_tree=gmcm_logic_tree,
             hazard_config=hazard_config,
         )
-        self.model.hazard_config.set_description(self.user_args.general.description)
+        self.model.hazard_config.set_description(f"hazard model for task: {task_no}")
 
         # set sites and site parameters
         self.set_site_parameters()
@@ -309,7 +263,7 @@ class BuilderTask:
             job_file,
             self.system_args.task_count,
             automation_task_id,
-            self.user_args.task_type,
+            HazardTaskType.HAZARD,
         )
 
         ######################
@@ -347,36 +301,27 @@ class BuilderTask:
         log.info("Task took %s secs" % (t1 - t0).total_seconds())
 
 
-# _ __ ___   __ _(_)_ __
-#  | '_ ` _ \ / _` | | '_ \
-#  | | | | | | (_| | | | | |
-#  |_| |_| |_|\__,_|_|_| |_|
-#
 if __name__ == "__main__":
-    """Fancy ascii text comes from https://patorjk.com/software/taag/#p=display&v=0&f=Standard&t=main."""
+
     parser = argparse.ArgumentParser()
     parser.add_argument("config")
     args = parser.parse_args()
 
     try:
         # LOCAL and CLUSTER this is a file
-        f = open(args.config, "r", encoding="utf-8")
+        config_file = args.config
+        f = open(args.config, 'r', encoding='utf-8')
         config = json.load(f)
-    except Exception:
-        # for AWS this must now be a compressed JSON string
-        config = json.loads(decompress_config(args.config))
+    except FileNotFoundError:
+        # for AWS this must be a quoted JSON string
+        config = json.loads(urllib.parse.unquote(args.config))
 
-    user_args: HazardInputBase
-    if HazardTaskType(config['task_args']['task_type']) is HazardTaskType.HAZARD:
-        user_args = HazardInput(**config['task_args'])
-    elif HazardTaskType(config['task_args']['task_type']) is HazardTaskType.DISAGG:
-        user_args = DisaggInput(**config['task_args'])
-    else:
-        raise ValueError("task type must be HAZARD or DISAGG")
-
+    # print(config)
+    user_args = OQHazardArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
+    task = OQHazardTask(user_args, system_args)
 
-    sleep_multiplier = 2.0
-    time.sleep(system_args.task_count * sleep_multiplier)
-    task = BuilderTask(user_args, system_args)
+    # Wait for some more time, scaled by taskid to avoid S3 consistency issue
+    time.sleep(system_args.task_count)
+
     task.run()

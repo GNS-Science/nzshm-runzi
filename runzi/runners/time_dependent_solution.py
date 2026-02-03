@@ -3,7 +3,7 @@
 import runzi.execute.time_dependent_solution_task as task_module
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-from runzi.execute.arguments import ArgSweeper
+from runzi.execute import ArgSweeper
 from runzi.runners.utils import convert_gt_to_swept
 
 from .job_runner import JobRunner

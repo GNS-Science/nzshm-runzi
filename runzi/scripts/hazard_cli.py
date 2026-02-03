@@ -5,7 +5,7 @@ from pathlib import Path
 import typer
 from rich import print as rich_print
 
-from runzi.runners import DisaggInput, HazardInput, run_oq_disagg, run_oq_hazard
+from runzi.runners import OQDisaggArgs, OQHazardArgs, run_oq_disagg, run_oq_hazard
 
 app = typer.Typer()
 
@@ -14,7 +14,7 @@ app = typer.Typer()
 def oq_hazard(input_filepath: Path):
     """Calculate hazard realizations using the OpenQuake engine."""
     rich_print("[yellow]Starting hazard jobs.")
-    job_input = HazardInput.from_toml(input_filepath)
+    job_input = OQHazardArgs.from_toml(input_filepath)
     gt_id = run_oq_hazard(job_input)
     rich_print(f"General Task ID: [bold green]{gt_id}")
 
@@ -23,7 +23,7 @@ def oq_hazard(input_filepath: Path):
 def oq_disagg(input_filepath: Path):
     """Calculate hazard disaggregation realizations using the OpenQuake engine."""
     rich_print("[yellow]Starting disaggregation jobs.")
-    job_input = DisaggInput.from_toml(input_filepath)
+    job_input = OQDisaggArgs.from_toml(input_filepath)
     gt_ids = run_oq_disagg(job_input)
     rich_print(f"General Task IDs: [bold green]{gt_ids}")
 

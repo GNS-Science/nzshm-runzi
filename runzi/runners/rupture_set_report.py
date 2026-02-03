@@ -5,7 +5,7 @@ from typing import cast
 import runzi.execute.ruptset_diags_report_task as task_module
 from runzi.automation.scaling.local_config import REPORT_LEVEL
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-from runzi.execute.arguments import ArgSweeper
+from runzi.execute import ArgSweeper
 from runzi.execute.ruptset_diags_report_task import RupsetReportArgs
 from runzi.runners.time_dependent_solution import get_model_type_from_all
 from runzi.runners.utils import convert_gt_to_swept

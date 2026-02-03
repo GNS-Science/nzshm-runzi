@@ -60,29 +60,40 @@ def coerce_to_list(value: Any) -> list[Any]:
     return value
 
 
-class General(BaseModel):
-    title: str
-    description: str = ''
-    compatible_calc_id: Annotated[str, AfterValidator(is_compat_calc_id)]
-
-
 class HazardModel(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     nshm_model_version: Annotated[Optional[str], AfterValidator(is_model_version)] = None
 
-    srm_logic_tree: Optional[FilePath | SourceLogicTree] = None
-    gmcm_logic_tree: Optional[FilePath | GMCMLogicTree] = None
-    hazard_config: Optional[FilePath | OpenquakeConfig] = None
+    srm_logic_tree: Optional[SourceLogicTree | Path] = None
+    gmcm_logic_tree: Optional[GMCMLogicTree | Path] = None
+    hazard_config: Optional[OpenquakeConfig | Path] = None
 
     @model_validator(mode='after')
     def check_logic_trees(self) -> Self:
         if not self.nshm_model_version and not (self.srm_logic_tree and self.gmcm_logic_tree and self.hazard_config):
             raise ValueError(
                 """if nshm_model_version not specified, must provide all of
-                gmcm_logic_tree, srm_logic_tree, and hazard_config file paths"""
+                gmcm_logic_tree, srm_logic_tree, and hazard_config."""
             )
         return self
+
+    #TODO: convert to annotated aren re-use on site    
+    @field_validator('srm_logic_tree', 'gmcm_logic_tree', 'hazard_config', mode='after')
+    @classmethod
+    def abs_path(cls, value: OpenquakeConfig | Path | None, info: ValidationInfo) -> OpenquakeConfig | Path | None:
+        """If any of the fields are paths, resolve the absolute path and check that it exists."""
+        if isinstance(value, Path):
+            file_path = value
+            if not file_path.is_absolute():
+                if isinstance(info.context, dict):
+                    base_path = info.context.get("base_path")
+                    if base_path is not None:
+                        file_path = (Path(base_path) / file_path).resolve()
+            if not file_path.exists():
+                raise ValueError(f"file {value} does not exist")
+            return file_path
+        return value
 
     # OpenquakeConfig is not a dataclass so we have to tell pydantic how to serialize it
     @field_serializer('hazard_config', mode='plain')
@@ -93,6 +104,7 @@ class HazardModel(BaseModel):
 
     # OpenquakeConfig is not a dataclass so we have to tell pydantic how to validate it
     @field_validator('hazard_config', mode='before')
+    @classmethod
     def validate_hazard_config(cls, value: Any) -> Any:
         if isinstance(value, dict):
             return OpenquakeConfig.from_dict(value)
@@ -100,15 +112,15 @@ class HazardModel(BaseModel):
 
 
 class HazardCurve(BaseModel):
-    imts: Annotated[list[str], BeforeValidator(coerce_to_list)]
-    imtls: Annotated[list[float], BeforeValidator(coerce_to_list)]
+    imts: list[str]
+    imtls: list[float]
 
 
 class HazardSite(BaseModel):
-    # TODO: this is another swept argument used as a scalar in the task. Not sure how to fix here
-    vs30s: Annotated[Optional[list[PositiveInt]], BeforeValidator(coerce_to_list)] = None
-    locations: Annotated[Optional[list[str]], BeforeValidator(coerce_to_list)] = None
-    locations_file: Optional[FilePath] = None
+    # TODO: this is another swept argument used as a scalar in the task. Not sure how to fix h
+    vs30: Optional[PositiveInt] = None
+    locations: Optional[list[str]] = None
+    locations_file: Optional[Path] = None
     locations_file_id: Optional[str] = None
 
     @staticmethod
@@ -127,91 +139,26 @@ class HazardSite(BaseModel):
             raise ValueError("must specify one of locations or locations_file")
 
         file_has_vs30 = self.locations_file and self.has_vs30(self.locations_file)
-        if file_has_vs30 and self.vs30s:
+        if file_has_vs30 and self.vs30:
             raise ValueError("cannot specify both uniform and site-specific vs30")
-        elif not file_has_vs30 and not self.vs30s:
+        elif not file_has_vs30 and not self.vs30:
             raise ValueError("locations file must have vs30 column if uniform vs30 not given")
 
         return self
 
 
-class DisaggCurve(BaseModel):
-    hazard_model_id: Annotated[str, AfterValidator(is_model_version)]
-    aggs: Annotated[list[AggregationEnum], BeforeValidator(coerce_to_list)]
-    imts: Annotated[list[str], BeforeValidator(coerce_to_list)]
+class OQHazardArgs(BaseModel):
+    """Input for calculating hazard curves."""
 
-
-class DisaggProb(BaseModel):
-    inv_time: int
-    poes: Annotated[list[float], BeforeValidator(coerce_to_list)]
-    disagg_outputs: Annotated[list[str], BeforeValidator(coerce_to_list)]
-    mag_bin_width: Optional[float] = None
-    distance_bin_width: Optional[float] = None
-    coordinate_bin_width: Optional[float] = None
-    num_epsilon_bins: Optional[int] = None
-    disagg_bin_edges: Dict[str, list[float]] = Field(default_factory=dict)
-
-    @model_validator(mode='after')
-    def validate_bins(self) -> Self:
-        for key in self.disagg_bin_edges.keys():
-            match key:
-                case "mag":
-                    if self.mag_bin_width:
-                        raise ValueError("cannot specify mag_bin_width and mag bin edges")
-                case "dist":
-                    if self.distance_bin_width:
-                        raise ValueError("cannot specify distance_bin_width and dist bin edges")
-                case "lon":
-                    if self.coordinate_bin_width:
-                        raise ValueError("cannot specify coordinate_bin_width and lon bin edges")
-                case "lat":
-                    if self.coordinate_bin_width:
-                        raise ValueError("cannot specify coordinate_bin_width and lat bin edges")
-                case "eps":
-                    if self.num_epsilon_bins:
-                        raise ValueError("cannot specify num_epsilon_bins and eps bin edges")
-                case undef:
-                    raise ValueError("invalid bin edge category {}".format(undef))
-
-        return self
-
-    @model_validator(mode='after')
-    def valdiate_types(self) -> Self:
-        for output_type in set("_".join(self.disagg_outputs).split("_")):
-            match output_type:
-                case "Mag":
-                    if not ("mag" in self.disagg_bin_edges or self.mag_bin_width):
-                        raise ValueError("magnitude disaggregation requires mag_bin_width or bin edges")
-                case "Dist":
-                    if not ("dist" in self.disagg_bin_edges or self.distance_bin_width):
-                        raise ValueError("distance disaggregation requires distance_bin_width or bin edges")
-                case "Lon":
-                    if not ("lon" in self.disagg_bin_edges or self.coordinate_bin_width):
-                        raise ValueError("longitude disaggregation requries coordiate_bin_width or lon bin edges")
-                case "Lat":
-                    if not ("lat" in self.disagg_bin_edges or self.coordinate_bin_width):
-                        raise ValueError("latitude disaggregation requries coordiate_bin_width or lat bin edges")
-                case "TRT":
-                    pass
-                case "Eps":
-                    if not ("eps" in self.disagg_bin_edges or self.num_epsilon_bins):
-                        raise ValueError("epsilon disaggregation requries num_epsilon_bins or bin edges")
-                case undef:
-                    raise ValueError("unrecognized disaggregation type {}".format(undef))
-
-        return self
-
-
-class DisaggOutput(BaseModel):
-    gt_filename: str
-
-
-class HazardInputBase(BaseModel):
-    task_type: HazardTaskType
+    compatible_calc_id: Annotated[str, AfterValidator(is_compat_calc_id)]
+    hazard_curve: HazardCurve
     filepath: FilePath
-    general: General
     hazard_model: HazardModel
     site_params: HazardSite
+
+
+# Holding space for methods I may need later. Not sure where they go yet
+class FooBar(BaseModel):
 
     @classmethod
     def from_toml(cls, toml_filepath: Path | str) -> Self:
@@ -249,19 +196,3 @@ class HazardInputBase(BaseModel):
             if data.get("locations_file"):
                 data["locations_file"] = resolve_path(data["locations_file"], info.data["filepath"])
         return data
-
-
-class HazardInput(HazardInputBase):
-    """Input for calculating hazard curves."""
-
-    task_type: HazardTaskType = Field(default=HazardTaskType.HAZARD, frozen=True)
-    hazard_curve: HazardCurve
-
-
-class DisaggInput(HazardInputBase):
-    """Input for calculating disaggregations."""
-
-    task_type: HazardTaskType = Field(default=HazardTaskType.DISAGG, frozen=True)
-    disagg: DisaggProb
-    output: DisaggOutput
-    hazard_curve: DisaggCurve

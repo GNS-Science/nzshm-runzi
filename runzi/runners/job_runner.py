@@ -13,7 +13,7 @@ import boto3
 from runzi.automation.scaling.local_config import CLUSTER_MODE, USE_API, WORKER_POOL_SIZE, EnvMode
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType
 from runzi.configuration.configuration import build_tasks
-from runzi.execute.arguments import ArgSweeper, SystemArgs
+from runzi.execute import ArgSweeper, SystemArgs
 
 from .utils import toshi_api
 

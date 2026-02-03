@@ -6,7 +6,7 @@ from nzshm_model.psha_adapter.openquake import OpenquakeConfig
 
 import runzi.configuration.openquake.oq_hazard as coh
 from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
-from runzi.runners import HazardInput
+from runzi.runners import OQHazardArgs
 from runzi.execute.arguments import SystemArgs
 
 
@@ -50,7 +50,7 @@ def test_build_hazard_tasks_overwrite_model(mocker, hazard_input_dict):
     hazard_input_dict["hazard_model"]["gmcm_logic_tree"] = str(root_path / "gmcm_small.json")
     hazard_input_dict["hazard_model"]["srm_logic_tree"] = str(root_path / "srm_small.json")
     hazard_input_dict["hazard_model"]["hazard_config"] = str(root_path / "hazard_config.json")
-    hazard_args = HazardInput(**hazard_input_dict)
+    hazard_args = OQHazardArgs(**hazard_input_dict)
     system_args = SystemArgs(general_task_id="ABC")
 
     mocked_build_task = mocker.patch.object(coh, "build_task")

@@ -1,111 +1,120 @@
-#!python3
-"""
-This script produces tasks in either AWS, PBS or LOCAL that run OpenquakeHazard
+"""This module provides the runner class for running OQ hazard calculations."""
 
-"""
-import datetime as dt
-import getpass
-import json
-import logging
+from pathlib import Path
+from typing import Self, TextIO, cast
 
-from runzi.automation.scaling.local_config import (
-    API_KEY,
-    API_URL,
-    CLUSTER_MODE,
-    S3_URL,
-    USE_API,
-    WORKER_POOL_SIZE,
-    EnvMode,
-)
-from runzi.automation.scaling.schedule_tasks import schedule_tasks
-from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType, ToshiApi
-from runzi.configuration.openquake.oq_hazard import build_hazard_tasks
-from runzi.execute.arguments import SystemArgs
+from nzshm_model import NshmModel, get_model_version
+from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
+from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
+from pydantic import BaseModel
 
-from ..execute.hazard_inputs import HazardInput
+import runzi.execute.oq_hazard_task as task_module
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, USE_API
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
+from runzi.execute import ArgSweeper, OQHazardArgs
+from runzi.execute.hazard_args import HazardModel
 
-loglevel = logging.INFO
-logging.basicConfig(level=logging.INFO)
-logging.getLogger("py4j.java_gateway").setLevel(loglevel)
-logging.getLogger("nshm_toshi_client.toshi_client_base").setLevel(loglevel)
-logging.getLogger("nshm_toshi_client.toshi_file").setLevel(loglevel)
-logging.getLogger("urllib3").setLevel(loglevel)
-logging.getLogger("botocore").setLevel(loglevel)
-logging.getLogger("git.cmd").setLevel(loglevel)
-logging.getLogger("gql.transport").setLevel(logging.WARN)
+from .job_runner import JobRunner
 
-log = logging.getLogger(__name__)
+headers = {"x-api-key": API_KEY}
+toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+
+def _upload_file(file_path: Path) -> str:
+    file_id, post_url = toshi_api.file.create_file(str(file_path))
+    toshi_api.file.upload_content(post_url, file_path)
+    return file_id
 
 
-def build_tasks(user_args: HazardInput, system_args: SystemArgs):
-    scripts = []
-    for script_file in build_hazard_tasks(user_args, system_args):
-        print("scheduling: ", script_file)
-        scripts.append(script_file)
+class OQHazardJobRunner(JobRunner):
+    """A class to run Crustal inversion jobs.
 
-    return scripts
+    Assumes that logic trees, hazard_config, and locations are not swept args.
+    """
 
+    subtask_type = SubtaskType.HAZARD
+    job_name = "Runzi-automation-oq-hazard"
 
-def run_oq_hazard(user_args: HazardInput) -> str | None:
-    # cluster mode cannot be AWS if API is disabled
-    if CLUSTER_MODE is EnvMode.AWS and not USE_API:
-        raise Exception("Toshi API must be enabled when cluster mode is AWS")
+    def __init__(self, argument_sweeper: ArgSweeper):
+        """Initialize the OQHazardJobRunner.
 
-    t0 = dt.datetime.now(dt.timezone.utc)
+        Args:
+            job_args: input arguments for the jobs including swept args.
+        """
+        super().__init__(argument_sweeper, task_module)
+        self.srm_logic_tree_path: Path | None = None
+        self.gmcm_logic_tree_path: Path | None = None
+        self.hazard_config_path: Path | None = None
 
-    # some objects in the config (Path type) are not json serializable so we dump to json using the pydantic method
-    # which handles these types and load back to json to clean it up so it can be passed to the toshi API
-    args_dict = json.loads(user_args.model_dump_json())
+        self.argument_sweeper.prototype_args = cast(OQHazardArgs, self.argument_sweeper.prototype_args)
 
-    task_type = SubtaskType.OPENQUAKE_HAZARD
-    model_type = ModelType.COMPOSITE
-    if USE_API:
-        headers = {"x-api-key": API_KEY}
-        toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+        # if using the toshiAPI, upload the locations file
+        if locations_file_path := self.argument_sweeper.prototype_args.site_params.locations_file:
+            file_id = _upload_file(locations_file_path) 
+            self.argument_sweeper.prototype_args.site_params.locations_file_id = file_id
 
-        # upload files
-        file_paths = [
-            (user_args.site_params.locations_file, "site_params", "locations_file_id"),
-            (user_args.hazard_model.gmcm_logic_tree, "hazard_model", "gmcm_logic_tree_id"),
-            (user_args.hazard_model.srm_logic_tree, "hazard_model", "srm_logic_tree_id"),
-            (user_args.hazard_model.hazard_config, "hazard_model", "hazard_config_id"),
-        ]
-        for file_path, group, property in file_paths:
-            if file_path:
-                file_id, post_url = toshi_api.file.create_file(file_path)
-                toshi_api.file.upload_content(post_url, file_path)
-                args_dict[group][property] = file_id
+        # if using an NSHM model version, get the logic trees and hazard config
+        if model_version := self.argument_sweeper.prototype_args.hazard_model.nshm_model_version:
+            model = get_model_version(model_version)
+            srm_logic_tree = model.source_logic_tree
+            gmcm_logic_tree = model.gmm_logic_tree
+            hazard_config = model.hazard_config
 
-        # create new task in toshi_api
-        args_list = []
-        for key, value in args_dict.items():
-            val = value
-            if not isinstance(val, str):
-                val = json.dumps(val)
-            args_list.append(dict(k=key, v=val))
+        # over-write default values converting any filepaths to the objects themselves
+        # if using toshiAPI, upload the files for posterity
+        if srm_logic_tree_ovr := self.argument_sweeper.prototype_args.hazard_model.srm_logic_tree:
+            if isinstance(srm_logic_tree_ovr, Path):
+                srm_logic_tree = SourceLogicTree.from_json(srm_logic_tree_ovr)
+                self.srm_logic_tree_path = srm_logic_tree_ovr
+            else:
+                srm_logic_tree = srm_logic_tree_ovr
 
-        gt_args = (
-            CreateGeneralTaskArgs(
-                agent_name=getpass.getuser(),
-                title=user_args.general.title,
-                description=user_args.general.description,
+        if gmcm_logic_tree_ovr := self.argument_sweeper.prototype_args.hazard_model.gmcm_logic_tree:
+            if isinstance(gmcm_logic_tree_ovr, Path):
+                gmcm_logic_tree = GMCMLogicTree.from_json(gmcm_logic_tree_ovr)
+                self.gmcm_logic_tree_path = gmcm_logic_tree_ovr
+            else:
+                gmcm_logic_tree = gmcm_logic_tree_ovr
+
+        if hazard_config_ovr := self.argument_sweeper.prototype_args.hazard_model.hazard_config:
+            if isinstance(hazard_config_ovr, Path):
+                hazard_config = OpenquakeConfig.from_json(hazard_config_ovr)
+                self.hazard_config_path = hazard_config_ovr
+            else:
+                hazard_config = hazard_config_ovr
+
+        self.argument_sweeper.prototype_args.hazard_model.srm_logic_tree = srm_logic_tree
+        self.argument_sweeper.prototype_args.hazard_model.gmcm_logic_tree = gmcm_logic_tree
+        self.argument_sweeper.prototype_args.hazard_model.hazard_config = hazard_config
+
+        # convert the SRM logic tree into swept arguments
+        models = []
+        for branch in self.argument_sweeper.prototype_args.hazard_model.srm_logic_tree:
+            branch.weight = 1.0
+            slt = SourceLogicTree.from_branches([branch])
+            model = HazardModel(
+                nshm_model_version=None,
+                srm_logic_tree=slt,
+                gmcm_logic_tree=gmcm_logic_tree,
+                hazard_config=hazard_config,
             )
-            .set_argument_list(args_list)
-            .set_subtask_type(task_type)
-            .set_model_type(model_type)
-        )
-        general_task_id = toshi_api.general_task.create_task(gt_args)
-    else:
-        general_task_id = None
-    system_args = SystemArgs(general_task_id=general_task_id, use_api=USE_API)
+            models.append(model)
+        self.argument_sweeper.swept_args['hazard_model'] = models
 
-    tasks = build_tasks(user_args, system_args)
+    def get_model_type(self) -> ModelType:
+        """Get the model type for OQ hazard jobs."""
+        return ModelType.COMPOSITE
 
-    print("worker count: ", WORKER_POOL_SIZE)
-    print(f"tasks to schedule: {len(tasks)}")
-    schedule_tasks(tasks, WORKER_POOL_SIZE)
+    def _build_argument_list(self) -> list[dict[str, str | list[str]]]:
+        args_list = super()._build_argument_list()
+        if USE_API:
+            if self.srm_logic_tree_path:
+                file_id = _upload_file(self.srm_logic_tree_path) 
+                args_list.append(dict(k="srm_logic_tree_id",v=[file_id]))
+            if self.gmcm_logic_tree_path:
+                file_id = _upload_file(self.gmcm_logic_tree_path) 
+                args_list.append(dict(k="gmcm_logic_tree_id",v=[file_id]))
+            if self.hazard_config_path:
+                file_id = _upload_file(self.hazard_config_path) 
+                args_list.append(dict(k="hazard_config_id",v=[file_id]))
+        return args_list
 
-    print("GENERAL_TASK_ID:", general_task_id)
-    print("Done! in %s secs" % (dt.datetime.now(dt.timezone.utc) - t0).total_seconds())
-
-    return general_task_id

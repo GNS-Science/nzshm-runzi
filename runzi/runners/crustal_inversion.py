@@ -1,8 +1,8 @@
-"""This module provides the runner class for creating Coulomb rupture sets."""
+"""This module provides the runner class for running crustal inversions."""
 
 import runzi.execute.crustal_inversion_solution_task as task_module
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-from runzi.execute.arguments import ArgSweeper
+from runzi.execute import ArgSweeper
 
 from .job_runner import JobRunner
 
