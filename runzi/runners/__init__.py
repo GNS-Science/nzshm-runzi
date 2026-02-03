@@ -4,8 +4,7 @@ from .coulomb_rupture_sets import CoulombRuptureSetJobRunner
 from .crustal_inversion import CrustalInversionJobRunner
 from .inversion_report import InversionReportJobRunner
 from .oq_convert_solution import OQConvertJobRunner
-from .oq_disagg import run_oq_disagg
-from .oq_hazard import run_oq_hazard
+from .oq_hazard import OQHazardJobRunner
 from .rupture_set_report import RupsetReportJobRunner
 from .save_file_archive import run_save_file_archive
 from .scale_solution import ScaleSolutionJobRunner

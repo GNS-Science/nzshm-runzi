@@ -1,7 +1,6 @@
 """Openquake Hazard Task."""
 
 import argparse
-import copy
 import csv
 import datetime as dt
 import json
@@ -11,7 +10,6 @@ import tempfile
 import time
 import urllib
 from pathlib import Path
-from typing import Any, Dict
 
 from dateutil.tz import tzutc
 from nshm_toshi_client import ToshiFile
@@ -23,14 +21,13 @@ from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, ECR_DIGEST, S3_URL, SPOOF, THS_RLZ_DB, WORK_PATH
+from runzi.automation.scaling.local_config import API_KEY, API_URL, ECR_DIGEST, S3_URL, SPOOF, THS_RLZ_DB, WORK_PATH, USE_API
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
-from runzi.execute.arguments import SystemArgs
+from runzi.execute.arguments import SystemArgs, TaskLanguage
 from runzi.execute.execute_openquake import execute_openquake
-from runzi.util.aws import decompress_config
 
-from .hazard_args import OQHazardArgs
+from runzi.execute.hazard_args import OQHazardArgs
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -50,6 +47,15 @@ try:
 except ModuleNotFoundError:
     log.info("not importing from toshi_hazard_store.scripts.ths_import due to missing dependencies")
 
+default_system_args = SystemArgs(
+    task_language=TaskLanguage.PYTHON,
+    use_api=USE_API,
+    ecs_max_job_time_min=30,
+    ecs_memory=30000,
+    ecs_vcpu=8,
+    ecs_job_definition="BigLever_32GB_8VCPU_v2_JD",
+    ecs_job_queue="BigLever_32GB_8VCPU_v2_JQ",
+)
 
 class OQHazardTask:
     def __init__(self, user_args: OQHazardArgs, system_args: SystemArgs):
@@ -70,9 +76,9 @@ class OQHazardTask:
             "openquake.version": "SPOOFED" if SPOOF else "TODO: get openquake version",
         }
 
-        srm_logic_tree: SourceLogicTree = self.user_args.hazard_model.srm_logic_tree
-        gmcm_logic_tree: GMCMLogicTree = self.user_args.hazard_model.gmcm_logic_tree
-        openquake_config: OpenquakeConfig = self.user_args.hazard_model.hazard_config
+        srm_logic_tree: SourceLogicTree = self.user_args.srm_logic_tree
+        gmcm_logic_tree: GMCMLogicTree = self.user_args.gmcm_logic_tree
+        openquake_config: OpenquakeConfig = self.user_args.hazard_config
 
         automation_task_id = self._toshi_api.openquake_hazard_task.create_task(
             dict(
@@ -81,8 +87,12 @@ class OQHazardTask:
                 srm_logic_tree=json.dumps(srm_logic_tree.to_dict()),
                 gmcm_logic_tree=json.dumps(gmcm_logic_tree.to_dict()),
                 openquake_config=json.dumps(openquake_config.to_dict()),
+                # srm_logic_tree='{}',
+                # gmcm_logic_tree='{}',
+                # openquake_config='{}',
             ),
             arguments=self.user_args.model_dump(mode='json', exclude={'hazard_model'}),
+            # arguments={"a": 1},
             environment=environment,
             task_type=HazardTaskType.HAZARD,
         )
@@ -154,15 +164,15 @@ class OQHazardTask:
 
     def set_site_parameters(self):
         """Set site locations and vs30s for the NshmModel"""
-        if self.user_args.site_params.vs30:
-            self.model.hazard_config.set_uniform_site_params(self.user_args.site_params.vs30)
+        if self.user_args.vs30:
+            self.model.hazard_config.set_uniform_site_params(self.user_args.vs30)
 
         # if task_arguments["site_params"].get("locations"):
-        if self.user_args.site_params.locations:
-            locations = get_locations(self.user_args.site_params.locations)
+        if self.user_args.locations:
+            locations = get_locations(self.user_args.locations)
         else:
             with tempfile.TemporaryDirectory() as temp_dir:
-                if file_id := self.user_args.site_params.locations_file_id:
+                if file_id := self.user_args.locations_file_id:
                     headers = {"x-api-key": API_KEY}
                     file_api = ToshiFile(
                         API_URL,
@@ -174,7 +184,7 @@ class OQHazardTask:
                     file_api.download_file(file_id, target_dir=temp_dir, target_name="sites.csv")
                     locations_file = Path(temp_dir) / "sites.csv"
                 else:
-                    locations_file = self.user_args.site_params.locations_file
+                    locations_file = self.user_args.locations_file
                 locations = get_locations([locations_file])
                 with locations_file.open() as lf:
                     reader = csv.reader(lf)
@@ -194,29 +204,29 @@ class OQHazardTask:
     def run(self):
         t0 = dt.datetime.now(dt.timezone.utc)
 
-        if self.user_args.hazard_model.srm_logic_tree is None:
+        if self.user_args.srm_logic_tree is None:
             raise ValueError("SRM logic tree or path to file not provided")
         else:
-            if isinstance(self.user_args.hazard_model.srm_logic_tree, Path):
-                source_logic_tree = SourceLogicTree.from_json(self.user_args.hazard_model.srm_logic_tree)
+            if isinstance(self.user_args.srm_logic_tree, Path):
+                source_logic_tree = SourceLogicTree.from_json(self.user_args.srm_logic_tree)
             else:
-                source_logic_tree = self.user_args.hazard_model.srm_logic_tree
+                source_logic_tree = self.user_args.srm_logic_tree
 
-        if self.user_args.hazard_model.gmcm_logic_tree is None:
+        if self.user_args.gmcm_logic_tree is None:
             raise ValueError("GMCM logic tree or path to file not provided")
         else:
-            if isinstance(self.user_args.hazard_model.gmcm_logic_tree, Path):
-                gmcm_logic_tree = GMCMLogicTree.from_json(self.user_args.hazard_model.gmcm_logic_tree)
+            if isinstance(self.user_args.gmcm_logic_tree, Path):
+                gmcm_logic_tree = GMCMLogicTree.from_json(self.user_args.gmcm_logic_tree)
             else:
-                gmcm_logic_tree = self.user_args.hazard_model.gmcm_logic_tree
+                gmcm_logic_tree = self.user_args.gmcm_logic_tree
 
-        if self.user_args.hazard_model.hazard_config is None:
+        if self.user_args.hazard_config is None:
             raise ValueError("GMCM logic tree or path to file not provided")
         else:
-            if isinstance(self.user_args.hazard_model.hazard_config, Path):
-                hazard_config = OpenquakeConfig.from_json(self.user_args.hazard_model.hazard_config)
+            if isinstance(self.user_args.hazard_config, Path):
+                hazard_config = OpenquakeConfig.from_json(self.user_args.hazard_config)
             else:
-                hazard_config = self.user_args.hazard_model.hazard_config
+                hazard_config = self.user_args.hazard_config
 
         ################
         # API SETUP
@@ -244,14 +254,7 @@ class OQHazardTask:
         # set sites and site parameters
         self.set_site_parameters()
 
-        # set description, hazard curve, and disaggregation matrix parameters
-        # need user args to include task type
-        if self.user_args.task_type is HazardTaskType.HAZARD:
-            self.model.hazard_config.set_iml(self.user_args.hazard_curve.imts, self.user_args.hazard_curve.imtls)
-        elif self.user_args.task_type is HazardTaskType.DISAGG:
-            pass
-            # self.set_disagg_matrix_parameters(task_arguments)
-            # description = self.get_disagg_description(task_arguments)
+        self.model.hazard_config.set_iml(self.user_args.imts, self.user_args.imtls)
 
         cache_folder = config_folder / "downloads"
         job_file = self.model.psha_adapter(OpenquakeModelPshaAdapter).write_config(cache_folder, config_folder)
@@ -291,7 +294,7 @@ class OQHazardTask:
                 store_hazard(
                     str(oq_result["hdf5_filepath"]),
                     config_filepath,
-                    self.user_args.general.compatible_calc_id,
+                    self.user_args.compatible_calc_id,
                     solution_id,
                     ECR_DIGEST,
                     THS_RLZ_DB,

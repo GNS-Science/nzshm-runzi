@@ -1,7 +1,7 @@
 import json
 from enum import Enum
 from pathlib import Path
-from typing import Any, Generator, Optional, Sequence, TextIO
+from typing import Any, Generator, Optional, Sequence
 
 from pydantic import BaseModel
 from typing_extensions import Self
@@ -61,7 +61,7 @@ class ArgSweeper:
         self.sys_arg_overrides = sys_arg_overrides or {}
 
     @classmethod
-    def from_config_file(cls, config_file: TextIO | Path | str, args_class: type[BaseModel]) -> Self:
+    def from_config_file(cls, config_file: Path | str, args_class: type[BaseModel]) -> Self:
         """Create a prototype job argument object and a dict of arguments to be swept.
 
         Config files are json format and can optionally contain a "swept_args" object that specifies the names and
@@ -77,11 +77,7 @@ class ArgSweeper:
             A tuple of the prototype config object and a dictionary of arguments to be swept.
         """
 
-        if isinstance(config_file, (Path, str)):
-            json_str = Path(config_file).read_text()
-        else:
-            json_str = config_file.read()
-
+        json_str = Path(config_file).read_text()
         data = json.loads(json_str)
         title = data.pop("title")
         description = data.pop("description")
@@ -95,7 +91,8 @@ class ArgSweeper:
                 if not all(isinstance(item, type(v[0])) for item in v):
                     raise ValueError(f"All values for swept argument '{k}' must be of the same type")
                 data[k] = v[0]
-        # we include the base_path context so that any arg_class that needs to resolve absolute paths can (e.g., used by HazardArgs)
+        # we include the base_path context so that any arg_class that needs to
+        # resolve absolute paths can (e.g., used by HazardArgs)
         prototype = args_class.model_validate(
             data, extra='forbid', context={"base_path": Path(config_file).parent.resolve()}
         )

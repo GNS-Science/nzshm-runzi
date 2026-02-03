@@ -27,6 +27,7 @@ class OpenquakeHazardSolution(object):
                       produced_by: $produced_by
                       predecessors: $predecessors
                       task_args: $task_args_id
+                      task_type: HAZARD
 
                       ##META##
                   }
