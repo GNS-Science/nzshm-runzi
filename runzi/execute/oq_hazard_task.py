@@ -21,12 +21,20 @@ from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, ECR_DIGEST, S3_URL, SPOOF, THS_RLZ_DB, WORK_PATH, USE_API
+from runzi.automation.scaling.local_config import (
+    API_KEY,
+    API_URL,
+    ECR_DIGEST,
+    S3_URL,
+    SPOOF,
+    THS_RLZ_DB,
+    USE_API,
+    WORK_PATH,
+)
 from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.execute.arguments import SystemArgs, TaskLanguage
 from runzi.execute.execute_openquake import execute_openquake
-
 from runzi.execute.hazard_args import OQHazardArgs
 
 logging.basicConfig(level=logging.DEBUG)
@@ -56,6 +64,7 @@ default_system_args = SystemArgs(
     ecs_job_definition="BigLever_32GB_8VCPU_v2_JD",
     ecs_job_queue="BigLever_32GB_8VCPU_v2_JQ",
 )
+
 
 class OQHazardTask:
     def __init__(self, user_args: OQHazardArgs, system_args: SystemArgs):
@@ -91,7 +100,9 @@ class OQHazardTask:
                 # gmcm_logic_tree='{}',
                 # openquake_config='{}',
             ),
-            arguments=self.user_args.model_dump(mode='json', exclude={'hazard_model'}),
+            arguments=self.user_args.model_dump(
+                mode='json', exclude={'hazard_model', 'srm_logic_tree', 'gmcm_logic_tree', 'hazard_config'}
+            ),
             # arguments={"a": 1},
             environment=environment,
             task_type=HazardTaskType.HAZARD,
@@ -143,7 +154,9 @@ class OQHazardTask:
                 produced_by=automation_task_id,
                 predecessors=predecessors,
                 task_args_id=task_args_id,
-                meta=self.user_args.model_dump(mode='json', exclude={'hazard_model'}),
+                meta=self.user_args.model_dump(
+                    mode='json', exclude={'hazard_model', 'srm_logic_tree', 'gmcm_logic_tree', 'hazard_config'}
+                ),
             )
             metrics = dict()
 
