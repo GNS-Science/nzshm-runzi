@@ -28,6 +28,7 @@ dependencies = [
     "typer (>=0.17.4,<0.18.0)",
     "solvis (>=1.2.0,<2.0.0)",
     "nshm-toshi-client (>=1.1.0,<2.0.0)",
+    "nzshm-hazlab (>=0.1.1,<0.2.0)",
 ]
 
 

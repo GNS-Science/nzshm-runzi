@@ -16,6 +16,9 @@ from nshm_toshi_client import ToshiFile
 from nshm_toshi_client.task_relation import TaskRelation
 from nzshm_common.geometry.geometry import backarc_polygon, within_polygon
 from nzshm_common.location.location import get_locations
+from nzshm_hazlab.base_functions import calculate_hazard_at_poe, convert_poe
+from nzshm_hazlab.data.data_loaders import THSHazardLoader
+from nzshm_hazlab.data.hazard_curves import HazardCurves
 from nzshm_model import NshmModel
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
@@ -35,7 +38,7 @@ from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.execute.arguments import SystemArgs, TaskLanguage
 from runzi.execute.execute_openquake import execute_openquake
-from runzi.execute.hazard_args import OQHazardArgs
+from runzi.execute.hazard_args import OQDisaggArgs
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -66,8 +69,24 @@ default_system_args = SystemArgs(
 )
 
 
-class OQHazardTask:
-    def __init__(self, user_args: OQHazardArgs, system_args: SystemArgs):
+def get_target_level(
+    hazard_model_id: str,
+    location: str,
+    vs30: int,
+    imt: str,
+    agg: str,
+    poe: float,
+    inv_time: float,
+) -> float:
+    loader = THSHazardLoader()
+    hazard_curves = HazardCurves(loader=loader)
+    imtl, apoe = hazard_curves.get_hazard_curve(hazard_model_id, imt, location, vs30, agg)
+    poe = convert_poe(poe, inv_time_in=inv_time, inv_time_out=1.0)
+    return calculate_hazard_at_poe(poe, imtl, apoe)
+
+
+class OQDisaggTask:
+    def __init__(self, user_args: OQDisaggArgs, system_args: SystemArgs):
         self.use_api = system_args.use_api
         self.user_args = user_args
         self.system_args = system_args
@@ -76,6 +95,34 @@ class OQHazardTask:
             headers = {"x-api-key": API_KEY}
             self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
             self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+
+    def set_disaggregation_params(self):
+        self.model.hazard_config.set_parameter("general", "calculation_mode", "disaggregation")
+        self.model.hazard_config.set_parameter(
+            "disaggregation", "disagg_outputs", " ".join(self.user_args.disagg_types)
+        )
+        if mag_bin_width := self.user_args.mag_bin_width:
+            self.model.hazard_config.set_parameter("disaggregation", "mag_bin_width", mag_bin_width)
+        if distance_bin_width := self.user_args.distance_bin_width:
+            self.model.hazard_config.set_parameter("disaggregation", "distance_bin_width", distance_bin_width)
+        if coordinate_bin_width := self.user_args.coordinate_bin_width:
+            self.model.hazard_config.set_parameter("disaggregation", "coordinate_bin_width", coordinate_bin_width)
+        if num_epsilon_bins := self.user_args.num_epsilon_bins:
+            self.model.hazard_config.set_parameter("disaggregation", "num_epsilon_bins", num_epsilon_bins)
+        if disagg_bin_edges := self.user_args.disagg_bin_edges:
+            self.model.hazard_config.set_parameter("disaggregation", "disagg_bin_edges", disagg_bin_edges)
+
+        location = get_locations(self.user_args.locations)[0]
+        target_imtl = get_target_level(
+            self.user_args.hazard_model_id,
+            location,
+            self.user_args.vs30,
+            self.user_args.imt,
+            self.user_args.agg,
+            self.user_args.poe,
+            self.user_args.investigation_time,
+        )
+        self.model.hazard_config.set_iml_disagg(imt=self.user_args.imt, level=target_imtl)
 
     def _setup_automation_task(self) -> str:
 
@@ -261,11 +308,8 @@ class OQHazardTask:
         )
         self.model.hazard_config.set_description(f"hazard model for task: {task_no}")
 
-        # set sites and site parameters
+        self.set_disaggregation_params()
         self.set_site_parameters()
-
-        self.model.hazard_config.set_iml(self.user_args.imts, self.user_args.imtls)
-
         cache_folder = config_folder / "downloads"
         job_file = self.model.psha_adapter(OpenquakeModelPshaAdapter).write_config(cache_folder, config_folder)
 
@@ -330,9 +374,9 @@ if __name__ == "__main__":
         config = json.loads(urllib.parse.unquote(args.config))
 
     # print(config)
-    user_args = OQHazardArgs(**config['task_args'])
+    user_args = OQDisaggArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
-    task = OQHazardTask(user_args, system_args)
+    task = OQDisaggTask(user_args, system_args)
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(system_args.task_count)
