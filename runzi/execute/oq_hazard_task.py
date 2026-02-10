@@ -252,14 +252,15 @@ class OQHazardTask:
         task_no = self.system_args.task_count
         config_folder = work_folder / f"config_{task_no}"
 
+        description = f"hazard model for task: {task_no}"
         self.model = NshmModel(
             version="",
-            title=f"hazard model for task: {task_no}",
+            title=description,
             source_logic_tree=source_logic_tree,
             gmcm_logic_tree=gmcm_logic_tree,
             hazard_config=hazard_config,
         )
-        self.model.hazard_config.set_description(f"hazard model for task: {task_no}")
+        self.model.hazard_config.set_description(description)
 
         # set sites and site parameters
         self.set_site_parameters()

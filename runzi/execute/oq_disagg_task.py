@@ -221,42 +221,10 @@ class OQDisaggTask:
 
     def set_site_parameters(self):
         """Set site locations and vs30s for the NshmModel"""
-        if self.user_args.vs30:
-            self.model.hazard_config.set_uniform_site_params(self.user_args.vs30)
-
-        # if task_arguments["site_params"].get("locations"):
-        if self.user_args.locations:
-            locations = get_locations(self.user_args.locations)
-        else:
-            with tempfile.TemporaryDirectory() as temp_dir:
-                if file_id := self.user_args.locations_file_id:
-                    headers = {"x-api-key": API_KEY}
-                    file_api = ToshiFile(
-                        API_URL,
-                        None,
-                        None,
-                        with_schema_validation=True,
-                        headers=headers,
-                    )
-                    file_api.download_file(file_id, target_dir=temp_dir, target_name="sites.csv")
-                    locations_file = Path(temp_dir) / "sites.csv"
-                else:
-                    locations_file = self.user_args.locations_file
-                locations = get_locations([locations_file])
-                with locations_file.open() as lf:
-                    reader = csv.reader(lf)
-                    header = next(reader)
-                    if "vs30" in header:
-                        ind = header.index("vs30")
-                        vs30s = []
-                        for row in reader:
-                            vs30s.append(int(row[ind]))
-
+        locations = get_locations(self.user_args.locations)
+        self.model.hazard_config.set_uniform_site_params(self.user_args.vs30)
         backarc_flags = map(int, within_polygon(locations, backarc_polygon()))
-        if any(self.model.hazard_config.get_uniform_site_params()):
-            self.model.hazard_config.set_sites(locations, backarc=backarc_flags)
-        else:
-            self.model.hazard_config.set_sites(locations, vs30=vs30s, backarc=backarc_flags)
+        self.model.hazard_config.set_sites(locations, backarc=backarc_flags)
 
     def run(self):
         t0 = dt.datetime.now(dt.timezone.utc)
@@ -299,14 +267,15 @@ class OQDisaggTask:
         task_no = self.system_args.task_count
         config_folder = work_folder / f"config_{task_no}"
 
+        description = f"disaggregation task: {task_no}"
         self.model = NshmModel(
             version="",
-            title=f"hazard model for task: {task_no}",
+            title=description,
             source_logic_tree=source_logic_tree,
             gmcm_logic_tree=gmcm_logic_tree,
             hazard_config=hazard_config,
         )
-        self.model.hazard_config.set_description(f"hazard model for task: {task_no}")
+        self.model.hazard_config.set_description(description)
 
         self.set_disaggregation_params()
         self.set_site_parameters()
