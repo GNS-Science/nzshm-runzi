@@ -1,3 +1,4 @@
+import copy
 import json
 from enum import Enum
 from pathlib import Path
@@ -114,4 +115,5 @@ class ArgSweeper:
         prototype_data = self.prototype_args.model_dump()
         for values in product(*self.swept_args.values()):
             update_data = dict(zip(self.swept_args.keys(), values))
-            yield self.prototype_args.model_validate(prototype_data | update_data)
+            prototype_data_copy = copy.deepcopy(prototype_data)
+            yield self.prototype_args.model_validate(prototype_data_copy | update_data)
