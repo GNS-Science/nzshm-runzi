@@ -5,6 +5,7 @@ from .crustal_inversion import CrustalInversionJobRunner
 from .inversion_report import InversionReportJobRunner
 from .oq_convert_solution import OQConvertJobRunner
 from .oq_hazard import OQHazardJobRunner
+from .oq_disagg import OQDisaggJobRunner
 from .rupture_set_report import RupsetReportJobRunner
 from .save_file_archive import run_save_file_archive
 from .scale_solution import ScaleSolutionJobRunner

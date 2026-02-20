@@ -1,18 +1,16 @@
 """Openquake Hazard Task."""
 
 import argparse
-import csv
 import datetime as dt
 import json
 import logging
 import platform
-import tempfile
 import time
 import urllib
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from dateutil.tz import tzutc
-from nshm_toshi_client import ToshiFile
 from nshm_toshi_client.task_relation import TaskRelation
 from nzshm_common.geometry.geometry import backarc_polygon, within_polygon
 from nzshm_common.location.location import get_locations
@@ -39,6 +37,9 @@ from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task i
 from runzi.execute.arguments import SystemArgs, TaskLanguage
 from runzi.execute.execute_openquake import execute_openquake
 from runzi.execute.hazard_args import OQDisaggArgs
+
+if TYPE_CHECKING:
+    from toshi_hazard_store.model import AggregationEnum
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -74,13 +75,13 @@ def get_target_level(
     location: str,
     vs30: int,
     imt: str,
-    agg: str,
+    agg: 'AggregationEnum',
     poe: float,
     inv_time: float,
 ) -> float:
     loader = THSHazardLoader()
     hazard_curves = HazardCurves(loader=loader)
-    imtl, apoe = hazard_curves.get_hazard_curve(hazard_model_id, imt, location, vs30, agg)
+    imtl, apoe = hazard_curves.get_hazard_curve(hazard_model_id, imt, location, vs30, agg.value)
     poe = convert_poe(poe, inv_time_in=inv_time, inv_time_out=1.0)
     return calculate_hazard_at_poe(poe, imtl, apoe)
 
@@ -169,10 +170,10 @@ class OQDisaggTask:
         duration,
     ):
         """Record results in API."""
-
-        # make a json file from the ta dict so we can save it.
         json_filepath = Path(WORK_PATH, "task_args.json")
-        json_filepath.write_text(self.user_args.model_dump_json(indent=2))
+        # TODO: uncomment once nzshm-common has fixed the CodedLocation / pydantic problem
+        # json_filepath.write_text(self.user_args.model_dump_json(exclude='site', indent=2))
+        json_filepath.write_text(json.dumps({"nothing": "here"}))
 
         # save the json
         task_args_id, post_url = self._toshi_api.file.create_file(json_filepath)
@@ -221,10 +222,11 @@ class OQDisaggTask:
 
     def set_site_parameters(self):
         """Set site locations and vs30s for the NshmModel"""
-        locations = get_locations(self.user_args.locations)
-        self.model.hazard_config.set_uniform_site_params(self.user_args.vs30)
-        backarc_flags = map(int, within_polygon(locations, backarc_polygon()))
-        self.model.hazard_config.set_sites(locations, backarc=backarc_flags)
+        location = self.user_args.site.location
+        vs30 = self.user_args.site.vs30
+        self.model.hazard_config.set_uniform_site_params(vs30)
+        backarc_flags = map(int, within_polygon([location], backarc_polygon()))
+        self.model.hazard_config.set_sites([location], backarc=backarc_flags)
 
     def run(self):
         t0 = dt.datetime.now(dt.timezone.utc)

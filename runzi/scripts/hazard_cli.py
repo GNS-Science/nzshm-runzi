@@ -5,8 +5,8 @@ from pathlib import Path
 import typer
 from rich import print as rich_print
 
-from runzi.execute import ArgSweeper, OQHazardArgs
-from runzi.runners import OQHazardJobRunner
+from runzi.execute import ArgSweeper, OQHazardArgs, OQDisaggArgs
+from runzi.runners import OQHazardJobRunner, OQDisaggJobRunner
 
 app = typer.Typer()
 
@@ -25,7 +25,10 @@ def oq_hazard(input_filepath: Path):
 def oq_disagg(input_filepath: Path):
     """Calculate hazard disaggregation realizations using the OpenQuake engine."""
     rich_print("[yellow]Starting disaggregation jobs.")
-    raise NotImplementedError("disaggregations are not implimented")
+    job_input = ArgSweeper.from_config_file(input_filepath, OQDisaggArgs)
+    runner = OQDisaggJobRunner(job_input)
+    gt_id = runner.run_jobs()
+    rich_print(f"General Task ID: [bold green]{gt_id}")
 
 
 if __name__ == "__main__":

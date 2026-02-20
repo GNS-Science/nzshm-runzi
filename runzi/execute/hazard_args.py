@@ -3,6 +3,7 @@
 from pathlib import Path
 from typing import Annotated, Any, Optional
 
+from nzshm_common import CodedLocation
 from nzshm_model import all_model_versions
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
@@ -54,17 +55,17 @@ class OQArgs(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)  # this allows OpenquakeConfig to be included in the schema
 
     # define the hazard model (LTs). (for disagg this must be the same as the target curve).
-    compatible_calc_id: Annotated[str, AfterValidator(_is_compat_calc_id)]  # X
-    nshm_model_version: Optional[str] = None  # X
-    srm_logic_tree: Optional[SourceLogicTree | Path] = None  # X
-    gmcm_logic_tree: Optional[GMCMLogicTree | Path] = None  # X
-    hazard_config: Optional[OpenquakeConfig | Path] = None  # X
+    compatible_calc_id: Annotated[str, AfterValidator(_is_compat_calc_id)]
+    nshm_model_version: Optional[str] = None
+    srm_logic_tree: Optional[SourceLogicTree | Path] = None
+    gmcm_logic_tree: Optional[GMCMLogicTree | Path] = None
+    hazard_config: Optional[OpenquakeConfig | Path] = None
 
     # the site
-    vs30: Optional[PositiveInt] = None  # X
-    locations: Optional[list[str]] = None  # X
-    locations_file: Optional[Path] = None  # X
-    locations_file_id: Optional[str] = None  # X
+    vs30: Optional[PositiveInt] = None
+    locations: Optional[list[str]] = None
+    locations_file: Optional[Path] = None
+    locations_file_id: Optional[str] = None
 
     @model_validator(mode='after')
     def check_logic_trees(self) -> Self:
@@ -124,6 +125,15 @@ class OQArgs(BaseModel):
 
 class OQDisaggArgs(OQArgs):
     """Input for calculating disaggregations."""
+
+    # We use the site member to specify a unique vs30 and location. This makes it possible to sweep over all site
+    # conditions specifed by the location, vs30, etc. members that are in OQArgs. This is only used by the task, not
+    # meant to be set by the user
+    class Site(BaseModel):
+        location: CodedLocation
+        vs30: PositiveInt
+
+    site: Optional[Site] = None
 
     # the hazard curve "target," i.e. the hazard curve at which to get the PoE that we will use for the disaggregation
     hazard_model_id: str

@@ -15,7 +15,7 @@ from dateutil.tz import tzutc
 from nshm_toshi_client import ToshiFile
 from nshm_toshi_client.task_relation import TaskRelation
 from nzshm_common.geometry.geometry import backarc_polygon, within_polygon
-from nzshm_common.location.location import get_locations
+from nzshm_common.location import CodedLocation, get_locations
 from nzshm_model import NshmModel
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
@@ -64,6 +64,38 @@ default_system_args = SystemArgs(
     ecs_job_definition="BigLever_32GB_8VCPU_v2_JD",
     ecs_job_queue="BigLever_32GB_8VCPU_v2_JQ",
 )
+
+
+def get_locations_from_file(
+    locations_file: Path | None, locations_file_id: str | None
+) -> tuple[list[CodedLocation], list[int]]:
+    if (locations_file_id is None) and (locations_file is None):
+        raise ValueError("locations_file must not be None if locations_file_id is None")
+    vs30s: list[int] = []
+    with tempfile.TemporaryDirectory() as temp_dir:
+        if locations_file_id:
+            headers = {"x-api-key": API_KEY}
+            file_api = ToshiFile(
+                API_URL,
+                None,
+                None,
+                with_schema_validation=True,
+                headers=headers,
+            )
+            file_api.download_file(locations_file_id, target_dir=temp_dir, target_name="sites.csv")
+            locations_file = Path(temp_dir) / "sites.csv"
+        else:
+            assert locations_file
+            locations_file = locations_file
+        locations = get_locations([locations_file])
+        with locations_file.open() as lf:
+            reader = csv.reader(lf)
+            header = next(reader)
+            if "vs30" in header:
+                ind = header.index("vs30")
+                for row in reader:
+                    vs30s.append(int(row[ind]))
+    return locations, vs30s
 
 
 class OQHazardTask:
@@ -123,7 +155,6 @@ class OQHazardTask:
     ):
         """Record results in API."""
 
-        # make a json file from the ta dict so we can save it.
         json_filepath = Path(WORK_PATH, "task_args.json")
         json_filepath.write_text(self.user_args.model_dump_json(indent=2))
 
@@ -174,42 +205,19 @@ class OQHazardTask:
 
     def set_site_parameters(self):
         """Set site locations and vs30s for the NshmModel"""
-        if self.user_args.vs30:
-            self.model.hazard_config.set_uniform_site_params(self.user_args.vs30)
-
-        # if task_arguments["site_params"].get("locations"):
         if self.user_args.locations:
             locations = get_locations(self.user_args.locations)
+            vs30s = []
         else:
-            with tempfile.TemporaryDirectory() as temp_dir:
-                if file_id := self.user_args.locations_file_id:
-                    headers = {"x-api-key": API_KEY}
-                    file_api = ToshiFile(
-                        API_URL,
-                        None,
-                        None,
-                        with_schema_validation=True,
-                        headers=headers,
-                    )
-                    file_api.download_file(file_id, target_dir=temp_dir, target_name="sites.csv")
-                    locations_file = Path(temp_dir) / "sites.csv"
-                else:
-                    locations_file = self.user_args.locations_file
-                locations = get_locations([locations_file])
-                with locations_file.open() as lf:
-                    reader = csv.reader(lf)
-                    header = next(reader)
-                    if "vs30" in header:
-                        ind = header.index("vs30")
-                        vs30s = []
-                        for row in reader:
-                            vs30s.append(int(row[ind]))
+            locations, vs30s = get_locations_from_file(self.user_args.locations_file, self.user_args.locations_file_id)
 
         backarc_flags = map(int, within_polygon(locations, backarc_polygon()))
-        if any(self.model.hazard_config.get_uniform_site_params()):
-            self.model.hazard_config.set_sites(locations, backarc=backarc_flags)
-        else:
+        if vs30s:
             self.model.hazard_config.set_sites(locations, vs30=vs30s, backarc=backarc_flags)
+        else:
+            assert self.user_args.vs30
+            self.model.hazard_config.set_uniform_site_params(self.user_args.vs30)
+            self.model.hazard_config.set_sites(locations, backarc=backarc_flags)
 
     def run(self):
         t0 = dt.datetime.now(dt.timezone.utc)

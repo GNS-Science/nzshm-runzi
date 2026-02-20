@@ -1,6 +1,7 @@
 """This module provides the runner JobRunner class for creating running jobs."""
 
 import datetime as dt
+import json
 import getpass
 import logging
 from abc import ABC, abstractmethod
