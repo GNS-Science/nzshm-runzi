@@ -6,7 +6,7 @@ import typer
 from rich import print as rich_print
 
 from runzi.arguments import ArgSweeper
-from runzi.tasks.oq_hazard import OQHazardJobRunner, OQDisaggJobRunner, OQHazardArgs, OQDisaggArgs
+from runzi.tasks.oq_hazard import OQDisaggArgs, OQDisaggJobRunner, OQHazardArgs, OQHazardJobRunner
 
 app = typer.Typer()
 

@@ -8,12 +8,11 @@ from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 
 import runzi.tasks.oq_hazard.oq_hazard_task as task_module
+from runzi.arguments import ArgSweeper
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, USE_API
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
-from runzi.arguments import ArgSweeper
-from runzi.tasks.oq_hazard.hazard_args import OQHazardArgs
-
 from runzi.job_runner import JobRunner
+from runzi.tasks.oq_hazard.hazard_args import OQHazardArgs
 
 headers = {"x-api-key": API_KEY}
 toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)

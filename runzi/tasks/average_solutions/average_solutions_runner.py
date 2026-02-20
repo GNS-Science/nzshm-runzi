@@ -1,10 +1,9 @@
 """This module provides the runner class for averaging the rupture rates from multiple inversions."""
 
 import runzi.tasks.average_solutions.average_solutions_task as task_module
+from runzi.arguments import ArgSweeper
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-from runzi.arguments import ArgSweeper
-
 from runzi.job_runner import JobRunner
 from runzi.tasks.toshi_utils import toshi_api
 

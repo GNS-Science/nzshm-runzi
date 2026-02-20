@@ -16,8 +16,8 @@ from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, USE_API, WORK_PATH
 from runzi.arguments import SystemArgs, TaskLanguage
+from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, SPOOF, USE_API, WORK_PATH
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

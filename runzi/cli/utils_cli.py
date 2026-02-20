@@ -6,7 +6,7 @@ import typer
 from rich import print as rich_print
 from typing_extensions import Annotated
 
-from runzi.tasks.utils import build_manual_index, run_save_file_archive, VALID_ROW
+from runzi.tasks.utils import VALID_ROW, build_manual_index, run_save_file_archive
 
 app = typer.Typer()
 

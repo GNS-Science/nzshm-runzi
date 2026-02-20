@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Optional, cast
 
 import git
 
+from runzi.arguments import SystemArgs, TaskLanguage
 from runzi.automation.scaling.local_config import USE_API
 from runzi.automation.scaling.toshi_api import ModelType
-from runzi.arguments import SystemArgs, TaskLanguage
 from runzi.tasks.inversion.inversion_solution_builder import InversionArgs, InversionSolutionBuilder
 
 if TYPE_CHECKING:

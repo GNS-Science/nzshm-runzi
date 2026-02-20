@@ -3,11 +3,11 @@
 import runzi.tasks.time_dependent_solution.time_dependent_solution_task as task_module
 from runzi.automation.scaling.task_utils import get_model_type
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-from runzi.execute import ArgSweeper
+from runzi.arguments import ArgSweeper
 from runzi.tasks.toshi_utils import convert_gt_to_swept
 
-from ...job_runner import JobRunner
-from ..toshi_utils import toshi_api
+from runzi.job_runner import JobRunner
+from runzi.tasks.toshi_utils import toshi_api
 
 
 # TODO: redundant code shared by average_solutions, but just enough difference to need a new function. Can we merge?

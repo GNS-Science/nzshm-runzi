@@ -1,7 +1,6 @@
 """This module provides the runner JobRunner class for creating running jobs."""
 
 import datetime as dt
-import json
 import getpass
 import logging
 from abc import ABC, abstractmethod
@@ -11,10 +10,10 @@ from types import ModuleType
 
 import boto3
 
+from runzi.arguments import ArgSweeper, SystemArgs
 from runzi.automation.scaling.local_config import CLUSTER_MODE, USE_API, WORKER_POOL_SIZE, EnvMode
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType
 from runzi.configuration import build_tasks
-from runzi.execute import ArgSweeper, SystemArgs
 
 from .tasks.toshi_utils import toshi_api
 

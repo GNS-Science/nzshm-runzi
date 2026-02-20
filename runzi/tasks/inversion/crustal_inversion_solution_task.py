@@ -9,10 +9,10 @@ from zipfile import ZipFile
 import git
 from pydantic import BaseModel, model_validator
 
+from runzi.arguments import SystemArgs, TaskLanguage
 from runzi.automation.scaling.file_utils import download_files, get_output_file_id
 from runzi.automation.scaling.local_config import USE_API, WORK_PATH
 from runzi.automation.scaling.toshi_api import ModelType
-from runzi.arguments import SystemArgs, TaskLanguage
 from runzi.tasks.inversion.inversion_solution_builder import InversionArgs, InversionSolutionBuilder, all_or_none
 
 if TYPE_CHECKING:

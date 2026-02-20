@@ -6,7 +6,12 @@ import typer
 from rich import print as rich_print
 
 from runzi.arguments import ArgSweeper
-from runzi.tasks.inversion import CrustalInversionArgs, SubductionInversionArgs, CrustalInversionJobRunner, SubductionInversionJobRunner
+from runzi.tasks.inversion import (
+    CrustalInversionArgs,
+    CrustalInversionJobRunner,
+    SubductionInversionArgs,
+    SubductionInversionJobRunner,
+)
 
 app = typer.Typer()
 

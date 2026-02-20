@@ -2,11 +2,11 @@
 
 import runzi.tasks.oq_opensha_convert.oq_opensha_convert_task as task_module
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-from runzi.execute import ArgSweeper
+from runzi.arguments import ArgSweeper
 from runzi.tasks.time_dependent_solution.time_dependent_solution_runner import get_model_type_from_all
 from runzi.tasks.toshi_utils import convert_gt_to_swept
 
-from ...job_runner import JobRunner
+from runzi.job_runner import JobRunner
 
 
 class OQConvertJobRunner(JobRunner):

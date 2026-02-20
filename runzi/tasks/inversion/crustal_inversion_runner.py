@@ -2,9 +2,9 @@
 
 import runzi.tasks.inversion.crustal_inversion_solution_task as task_module
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
-from runzi.execute import ArgSweeper
+from runzi.arguments import ArgSweeper
 
-from ...job_runner import JobRunner
+from runzi.job_runner import JobRunner
 
 
 class CrustalInversionJobRunner(JobRunner):
