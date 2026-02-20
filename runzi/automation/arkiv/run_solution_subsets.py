@@ -23,7 +23,7 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import CreateGeneralTaskArgs, ToshiApi
-from runzi.execute import inversion_sub_solution_task
+from runzi.tasks.inversion import inversion_sub_solution_task
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 # JAVA_THREADS = 4

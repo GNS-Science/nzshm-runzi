@@ -1,4 +1,4 @@
-from runzi.execute.arguments import  ArgSweeper
+from runzi.arguments import  ArgSweeper
 from pydantic import BaseModel
 from math import prod
 

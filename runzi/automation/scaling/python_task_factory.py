@@ -19,7 +19,7 @@ from pydantic import BaseModel
 
 from runzi.automation.scaling.task_config import get_task_config
 from runzi.automation.scaling.toshi_api import ModelType
-from runzi.execute.arguments import SystemArgs
+from runzi.arguments import SystemArgs
 
 from .local_config import EnvMode
 

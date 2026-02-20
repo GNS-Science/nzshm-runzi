@@ -6,8 +6,8 @@ import tomlkit
 from pydantic import ValidationError
 
 from runzi.automation.scaling.toshi_api.general_task import ModelType
-from runzi.execute.subduction_rupture_set_builder_task import SubductionRuptureSetArgs
-from runzi.runners import ScaleSolutionsInput, TimeDependentSolutionInput
+from runzi.tasks.subduction_rupture_sets.subduction_rupture_set_builder_task import SubductionRuptureSetArgs
+from runzi.tasks import ScaleSolutionsInput, TimeDependentSolutionInput
 from runzi.runners.inversion_inputs import CoulombRuptureSetsInput
 from runzi.runners.runner_inputs import AverageSolutionsInput
 

@@ -1,9 +1,9 @@
 import pytest
 
-import runzi.runners.oq_hazard as run_oq_hazard_module
+import runzi.tasks.oq_hazard.oq_hazard_runner as run_oq_hazard_module
 from runzi.automation.scaling.local_config import EnvMode
-from runzi.runners import OQHazardArgs
-from runzi.runners.oq_hazard import run_oq_hazard
+from runzi.tasks import OQHazardArgs
+from runzi.tasks.oq_hazard.oq_hazard_runner import run_oq_hazard
 
 FILE_ID = "ABCD"
 

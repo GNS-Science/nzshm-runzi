@@ -19,7 +19,7 @@ from runzi.automation.scaling.toshi_api.general_task import ModelType
 if TYPE_CHECKING:
     from pydantic import BaseModel
 
-    from runzi.execute.arguments import SystemArgs
+    from runzi.arguments import SystemArgs
 
 BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')
 
@@ -187,7 +187,6 @@ def get_ecs_job_config(
                 {"name": "NZSHM22_TOSHI_S3_URL", "value": toshi_s3_url},
                 {"name": "NZSHM22_TOSHI_API_URL", "value": toshi_api_url},
                 {"name": "NZSHM22_S3_REPORT_BUCKET", "value": toshi_report_bucket},
-                {"name": "PYTHON_PREP_MODULE", "value": 'runzi.execute.prepare_inputs'},
                 {"name": "PYTHON_TASK_MODULE", "value": task_module},
             ],
         },

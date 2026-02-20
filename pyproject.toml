@@ -39,7 +39,7 @@ packages = [
 
 
 [tool.poetry.scripts]
-runzi = 'runzi.scripts.runzi_cli:app'
+runzi = 'runzi.cli.runzi_cli:app'
 
 
 [tool.poetry.group.dev.dependencies]

@@ -26,8 +26,8 @@ from runzi.automation.scaling.python_task_factory import PythonTaskFactory
 from runzi.automation.scaling.python_task_factory import get_factory as get_python_factory
 from runzi.automation.scaling.task_config import get_task_config
 from runzi.automation.scaling.toshi_api import ModelType
-from runzi.execute.arguments import SystemArgs, TaskLanguage
-from runzi.execute.inversion_solution_builder import InversionArgs
+from runzi.arguments import SystemArgs, TaskLanguage
+from runzi.tasks.inversion.inversion_solution_builder import InversionArgs
 
 from .local_config import EnvMode
 

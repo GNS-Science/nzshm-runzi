@@ -29,7 +29,7 @@ from scaling.local_config import (
 )
 from scaling.opensha_task_factory import OpenshaTaskFactory
 
-import runzi.execute.coulomb_rupture_set_builder_task
+import runzi.tasks.coulomb_rupture_sets.coulomb_rupture_set_builder_task
 from runzi.runners.runner_inputs import AzimuthalRuptureSetsInput
 
 

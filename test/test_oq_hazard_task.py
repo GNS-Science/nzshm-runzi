@@ -8,7 +8,7 @@ from nzshm_model.psha_adapter.openquake import OpenquakeConfig
 import runzi.execute.openquake.oq_hazard_task as oq_hazard_task_module
 from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.execute.openquake.oq_hazard_task import BuilderTask
-from runzi.execute.arguments import SystemArgs
+from runzi.arguments import SystemArgs
 
 FILE_ID = "ABCD"
 

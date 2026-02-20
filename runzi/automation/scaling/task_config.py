@@ -4,7 +4,7 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
 
     from runzi.automation.scaling.toshi_api import ModelType
-    from runzi.execute.arguments import SystemArgs
+    from runzi.arguments import SystemArgs
 
 
 def get_task_config(task_args: 'BaseModel', task_system_args: 'SystemArgs', model_type: 'ModelType') -> dict[str, Any]:
