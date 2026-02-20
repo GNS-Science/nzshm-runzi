@@ -1,0 +1,39 @@
+{
+"task_args" : {
+    "logic_tree_permutations" : [ 
+        {
+            "CR": {
+                "CR_N8.0_b1.115_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Nw==",
+                "CR_N2.3_b0.807_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3OQ==",
+                "CR_N3.7_b0.929_C4.1_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE4Mw=="
+                },
+            "HK": {
+                "HTC_b1.112_N22.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2NA==",					
+                "HTC_b0.97_N11.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE2Ng==",					
+                "HTC_b1.3_N49.4_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3MQ==",					
+                "HTL_b1.112_N22.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3MA==",					
+                "HTL_b0.97_N11.6_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Mw==",					
+                "HTL_b1.3_N49.4_C4_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Mg=="			
+            },
+            "BG": {
+                "floor_addtot346ave": "FILL IN THE BLANK"
+            }, 
+            "PY": {
+                "P_b0.75_N3.4_C3.9_s1": "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjEwMjE3Ng=="
+            }
+        }
+
+
+    ]
+}
+}
+
+
+            
+
+
+
+
+
+
+

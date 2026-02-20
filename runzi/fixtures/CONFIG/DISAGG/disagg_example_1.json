@@ -1,0 +1,704 @@
+[
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk5Ng==",
+            "RmlsZToxMTEyMjY=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE0MQ==",
+            "RmlsZToxMTE5MTQ="
+        ],
+        "inv_time": 50,
+        "imt": "PGA",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 0.4202086010470926,
+        "location": "-43.530~172.630",
+        "gsims": {
+            "Subduction Interface": "AbrahamsonGulerce2020SInter_GLO",
+            "Subduction Intraslab": "Atkinson2022SSlab_Upper",
+            "Active Shallow Crust": "ChiouYoungs2014"
+        },
+        "dist": 1.3547052336582155e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgw:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkw:9"
+        ],
+        "target_level": 0.42020724634185896,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgw",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkw"
+        ],
+        "site_code": "CHC",
+        "site_name": "Christchurch"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAwMQ==",
+            "RmlsZToxMTEyMzc=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA1NQ==",
+            "RmlsZToxMTEyMjA=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEyNA==",
+            "RmlsZToxMTE5MTk="
+        ],
+        "inv_time": 50,
+        "imt": "SA(0.5)",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 0.7426872260620873,
+        "location": "-43.530~172.630",
+        "gsims": {
+            "Subduction Interface": "KuehnEtAl2020SInter_NZL",
+            "Subduction Intraslab": "ParkerEtAl2020SSlab",
+            "Active Shallow Crust": "CampbellBozorgnia2014"
+        },
+        "dist": 3.930945396302121e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg1:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:5",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTk0:8"
+        ],
+        "target_level": 0.742683295116691,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTk0"
+        ],
+        "site_code": "CHC",
+        "site_name": "Christchurch"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAwMQ==",
+            "RmlsZToxMTEyMzc=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEyOQ==",
+            "RmlsZToxMTE5MTg="
+        ],
+        "inv_time": 50,
+        "imt": "SA(1.5)",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 0.2616468205022133,
+        "location": "-43.530~172.630",
+        "gsims": {
+            "Subduction Interface": "Atkinson2022SInter_Central",
+            "Subduction Intraslab": "ParkerEtAl2020SSlab",
+            "Active Shallow Crust": "CampbellBozorgnia2014"
+        },
+        "dist": 7.552289271184343e-07,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:5",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkz:8"
+        ],
+        "target_level": 0.26164606527328615,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkz"
+        ],
+        "site_code": "CHC",
+        "site_name": "Christchurch"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAxNg==",
+            "RmlsZToxMTEyMzQ=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2NA==",
+            "RmlsZToxMTEyMTc=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEyOA==",
+            "RmlsZToxMTE5MTY="
+        ],
+        "inv_time": 50,
+        "imt": "PGA",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 0.7894923032733979,
+        "location": "-43.530~172.630",
+        "gsims": {
+            "Subduction Interface": "AbrahamsonGulerce2020SInter_NZL",
+            "Subduction Intraslab": "Atkinson2022SSlab_Central",
+            "Active Shallow Crust": "Atkinson2022Crust_Upper"
+        },
+        "dist": 1.1245666630133044e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc0:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgz:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg5:3"
+        ],
+        "target_level": 0.7894934278400609,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgz",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg5"
+        ],
+        "site_code": "CHC",
+        "site_name": "Christchurch"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA1NQ==",
+            "RmlsZToxMTEyMjA=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk5Ng==",
+            "RmlsZToxMTEyMjY=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE1Mg==",
+            "RmlsZToxMTE5MTc="
+        ],
+        "inv_time": 50,
+        "imt": "SA(0.5)",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 1.5050379616581324,
+        "location": "-43.530~172.630",
+        "gsims": {
+            "Subduction Interface": "Atkinson2022SInter_Upper",
+            "Subduction Intraslab": "AbrahamsonGulerce2020SSlab_GLO",
+            "Active Shallow Crust": "Stafford2022_Central"
+        },
+        "dist": 5.3600114486851425e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg1:0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgw:0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA3MDAx:1"
+        ],
+        "target_level": 1.5050326016466837,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgw",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA3MDAx"
+        ],
+        "site_code": "CHC",
+        "site_name": "Christchurch"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk5Mg==",
+            "RmlsZToxMTEyMjQ=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2NA==",
+            "RmlsZToxMTEyMTc=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEzOQ==",
+            "RmlsZToxMTE5MTE="
+        ],
+        "inv_time": 50,
+        "imt": "SA(1.5)",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 0.5634624045241825,
+        "location": "-43.530~172.630",
+        "gsims": {
+            "Subduction Intraslab": "ParkerEtAl2020SSlab",
+            "Subduction Interface": "KuehnEtAl2020SInter_GLO",
+            "Active Shallow Crust": "ChiouYoungs2014"
+        },
+        "dist": 7.46431464637709e-07,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:5",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgy:7",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgz:7",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTky:9"
+        ],
+        "target_level": 0.5634631509556471,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgy",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgz",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTky"
+        ],
+        "site_code": "CHC",
+        "site_name": "Christchurch"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk5OQ==",
+            "RmlsZToxMTEyMzU=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEyNQ==",
+            "RmlsZToxMTE5MTc="
+        ],
+        "inv_time": 50,
+        "imt": "PGA",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 0.6778049513226958,
+        "location": "-42.400~173.680",
+        "gsims": {
+            "Subduction Interface": "Atkinson2022SInter_Central",
+            "Subduction Intraslab": "ParkerEtAl2020SSlab",
+            "Active Shallow Crust": "Bradley2013"
+        },
+        "dist": 1.9883404078768763e-07,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc4:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:5",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkx:10"
+        ],
+        "target_level": 0.6778051501567366,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkx"
+        ],
+        "site_code": "KBZ",
+        "site_name": "Kaikoura"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAxNw==",
+            "RmlsZToxMTEyMjk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEzOQ==",
+            "RmlsZToxMTE5MTE="
+        ],
+        "inv_time": 50,
+        "imt": "SA(0.5)",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 1.3137513572628479,
+        "location": "-42.400~173.680",
+        "gsims": {
+            "Subduction Interface": "Atkinson2022SInter_Central",
+            "Subduction Intraslab": "ParkerEtAl2020SSlab",
+            "Active Shallow Crust": "Bradley2013"
+        },
+        "dist": 3.862181417346733e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc2:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:5",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTky:10"
+        ],
+        "target_level": 1.3137552194442652,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTky"
+        ],
+        "site_code": "KBZ",
+        "site_name": "Kaikoura"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAxNg==",
+            "RmlsZToxMTEyMzQ=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEzOQ==",
+            "RmlsZToxMTE5MTE="
+        ],
+        "inv_time": 50,
+        "imt": "SA(1.5)",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 0.4985605036132326,
+        "location": "-42.400~173.680",
+        "gsims": {
+            "Subduction Interface": "AbrahamsonGulerce2020SInter_GLO",
+            "Subduction Intraslab": "AbrahamsonGulerce2020SSlab_NZL",
+            "Active Shallow Crust": "Bradley2013"
+        },
+        "dist": 2.2296820415546037e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc0:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTky:10"
+        ],
+        "target_level": 0.4985627332952742,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTky"
+        ],
+        "site_code": "KBZ",
+        "site_name": "Kaikoura"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk5Ng==",
+            "RmlsZToxMTEyMjY=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE3Mg==",
+            "RmlsZToxMTE5MTE="
+        ],
+        "inv_time": 50,
+        "imt": "PGA",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 1.3398621418857422,
+        "location": "-42.400~173.680",
+        "gsims": {
+            "Subduction Interface": "ParkerEtAl2020SInter",
+            "Subduction Intraslab": "Atkinson2022SSlab_Lower",
+            "Active Shallow Crust": "BooreEtAl2014"
+        },
+        "dist": 1.5043634360445424e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:5",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgw:5",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTk2:7"
+        ],
+        "target_level": 1.339860637522306,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgw",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTk2"
+        ],
+        "site_code": "KBZ",
+        "site_name": "Kaikoura"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk5Ng==",
+            "RmlsZToxMTEyMjY=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE1Mg==",
+            "RmlsZToxMTE5MTc="
+        ],
+        "inv_time": 50,
+        "imt": "SA(0.5)",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 2.7800215961898584,
+        "location": "-42.400~173.680",
+        "gsims": {
+            "Subduction Interface": "ParkerEtAl2020SInter",
+            "Subduction Intraslab": "AbrahamsonGulerce2020SSlab_NZL",
+            "Active Shallow Crust": "Stafford2022_Central"
+        },
+        "dist": 9.548226135525084e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:5",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgw:5",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA3MDAx:1"
+        ],
+        "target_level": 2.780012047963723,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgw",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA3MDAx"
+        ],
+        "site_code": "KBZ",
+        "site_name": "Kaikoura"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAwMg==",
+            "RmlsZToxMTEyMzI=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE0OQ==",
+            "RmlsZToxMTE5MTY="
+        ],
+        "inv_time": 50,
+        "imt": "SA(1.5)",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 1.1410804489290598,
+        "location": "-42.400~173.680",
+        "gsims": {
+            "Subduction Interface": "Atkinson2022SInter_Central",
+            "Subduction Intraslab": "Atkinson2022SSlab_Lower",
+            "Active Shallow Crust": "Atkinson2022Crust_Upper"
+        },
+        "dist": 7.013762131080625e-07,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc5:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA3MDAw:3"
+        ],
+        "target_level": 1.141081150305273,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc5",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA3MDAw"
+        ],
+        "site_code": "KBZ",
+        "site_name": "Kaikoura"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAwMQ==",
+            "RmlsZToxMTEyMzc=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE0MQ==",
+            "RmlsZToxMTE5MTQ="
+        ],
+        "inv_time": 50,
+        "imt": "PGA",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 0.8156180052590165,
+        "location": "-41.300~174.780",
+        "gsims": {
+            "Subduction Interface": "Atkinson2022SInter_Central",
+            "Subduction Intraslab": "AbrahamsonGulerce2020SSlab_NZL",
+            "Active Shallow Crust": "BooreEtAl2014"
+        },
+        "dist": 7.280653783081625e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkw:7"
+        ],
+        "target_level": 0.8156107246052334,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkw"
+        ],
+        "site_code": "WLG",
+        "site_name": "Wellington"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAwMQ==",
+            "RmlsZToxMTEyMzc=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEyMw==",
+            "RmlsZToxMTE5MTU="
+        ],
+        "inv_time": 50,
+        "imt": "SA(0.5)",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 1.6034881370708884,
+        "location": "-41.300~174.780",
+        "gsims": {
+            "Subduction Interface": "Atkinson2022SInter_Central",
+            "Subduction Intraslab": "AbrahamsonGulerce2020SSlab_NZL",
+            "Active Shallow Crust": "Stafford2022_Central"
+        },
+        "dist": 2.1567965069468897e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTk4:1"
+        ],
+        "target_level": 1.6034902938673954,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTk4"
+        ],
+        "site_code": "WLG",
+        "site_name": "Wellington"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk5Mg==",
+            "RmlsZToxMTEyMjQ=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE1Mg==",
+            "RmlsZToxMTE5MTc="
+        ],
+        "inv_time": 50,
+        "imt": "SA(1.5)",
+        "agg": "mean",
+        "poe": 0.1,
+        "level": 0.6139566286928464,
+        "location": "-41.300~174.780",
+        "gsims": {
+            "Subduction Interface": "Atkinson2022SInter_Upper",
+            "Subduction Intraslab": "AbrahamsonGulerce2020SSlab_GLO",
+            "Active Shallow Crust": "Atkinson2022Crust_Lower"
+        },
+        "dist": 5.874029699648453e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgy:0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA3MDAx:5"
+        ],
+        "target_level": 0.6139507546631467,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgy",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA3MDAx"
+        ],
+        "site_code": "WLG",
+        "site_name": "Wellington"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAwMg==",
+            "RmlsZToxMTEyMzI=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE0MQ==",
+            "RmlsZToxMTE5MTQ="
+        ],
+        "inv_time": 50,
+        "imt": "PGA",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 1.5852146772259608,
+        "location": "-41.300~174.780",
+        "gsims": {
+            "Subduction Interface": "KuehnEtAl2020SInter_NZL",
+            "Subduction Intraslab": "KuehnEtAl2020SSlab_NZL",
+            "Active Shallow Crust": "Stafford2022_Central"
+        },
+        "dist": 8.75417166446013e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc5:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:6",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkw:1"
+        ],
+        "target_level": 1.5852234313976252,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc5",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkw"
+        ],
+        "site_code": "WLG",
+        "site_name": "Wellington"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMDk5Ng==",
+            "RmlsZToxMTEyMjY=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTEyNQ==",
+            "RmlsZToxMTE5MTc="
+        ],
+        "inv_time": 50,
+        "imt": "SA(0.5)",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 3.243099707308913,
+        "location": "-41.300~174.780",
+        "gsims": {
+            "Subduction Interface": "AbrahamsonGulerce2020SInter_GLO",
+            "Subduction Intraslab": "KuehnEtAl2020SSlab_GLO",
+            "Active Shallow Crust": "Atkinson2022Crust_Central"
+        },
+        "dist": 1.703336923553067e-05,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgw:4",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:7",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkx:4"
+        ],
+        "target_level": 3.2430826739396776,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTgw",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTkx"
+        ],
+        "site_code": "WLG",
+        "site_name": "Wellington"
+    },
+    {
+        "vs30": 400,
+        "source_ids": [
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTAwMQ==",
+            "RmlsZToxMTEyMzc=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTA2Mw==",
+            "RmlsZToxMTEyMTM=",
+            "RmlsZToxMTEyMzk=",
+            "SW52ZXJzaW9uU29sdXRpb25Ocm1sOjExMTE3MQ==",
+            "RmlsZToxMTE5MTQ="
+        ],
+        "inv_time": 50,
+        "imt": "SA(1.5)",
+        "agg": "mean",
+        "poe": 0.02,
+        "level": 1.3237367393818738,
+        "location": "-41.300~174.780",
+        "gsims": {
+            "Subduction Interface": "AbrahamsonGulerce2020SInter_NZL",
+            "Subduction Intraslab": "Atkinson2022SSlab_Central",
+            "Active Shallow Crust": "Stafford2022_Upper"
+        },
+        "dist": 4.609017588030895e-06,
+        "nearest_rlz": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0:3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2:1",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg4:0"
+        ],
+        "target_level": 1.3237321303642857,
+        "hazard_ids": [
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTc3",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg0",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg2",
+            "T3BlbnF1YWtlSGF6YXJkU29sdXRpb246MTA2OTg4"
+        ],
+        "site_code": "WLG",
+        "site_name": "Wellington"
+    }
+]
