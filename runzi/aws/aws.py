@@ -13,8 +13,8 @@ from typing import TYPE_CHECKING, Any, List, Optional
 import boto3
 from botocore.exceptions import ClientError
 
-from runzi.automation.scaling.task_config import get_task_config
-from runzi.automation.scaling.toshi_api.general_task import ModelType
+from runzi.automation.task_config import get_task_config
+from runzi.automation.toshi_api.general_task import ModelType
 
 if TYPE_CHECKING:
     from pydantic import BaseModel

@@ -12,8 +12,8 @@ from datetime import datetime as dt
 
 import pytz
 
-from runzi.automation.scaling.local_config import WORK_PATH
-from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.automation.local_config import WORK_PATH
+from runzi.automation.toshi_api import ToshiApi
 
 
 class GeneralTaskBuilder:

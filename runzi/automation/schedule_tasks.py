@@ -10,7 +10,7 @@ from typing import Any, Optional
 
 import boto3
 
-from runzi.automation.scaling.local_config import CLUSTER_MODE, WORKER_POOL_SIZE, EnvMode
+from runzi.automation.local_config import CLUSTER_MODE, WORKER_POOL_SIZE, EnvMode
 
 
 def schedule_tasks(scripts: Sequence[Any], worker_pool_size: Optional[int] = None):

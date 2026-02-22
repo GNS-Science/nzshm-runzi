@@ -7,14 +7,14 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
-from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
+from runzi.automation.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 
 try:
     from openquake.commonlib.datastore import get_datadir
 except ImportError:
     print("openquake not installed, not importing")
 
-from runzi.automation.scaling.local_config import SPOOF, WORK_PATH
+from runzi.automation.local_config import SPOOF, WORK_PATH
 from runzi.utils import archive
 
 log = logging.getLogger(__name__)

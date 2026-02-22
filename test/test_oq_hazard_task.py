@@ -6,7 +6,7 @@ from nzshm_model.logic_tree import SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeConfig
 
 import runzi.arguments.openquake.oq_hazard_task as oq_hazard_task_module
-from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
+from runzi.automation.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.arguments.openquake.oq_hazard_task import BuilderTask
 from runzi.arguments import SystemArgs
 

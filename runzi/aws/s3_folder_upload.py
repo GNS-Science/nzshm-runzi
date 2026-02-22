@@ -10,7 +10,7 @@ import boto3
 import boto3.session
 from botocore.errorfactory import ClientError
 
-from runzi.automation.scaling.local_config import S3_UPLOAD_WORKERS, WORK_PATH
+from runzi.automation.local_config import S3_UPLOAD_WORKERS, WORK_PATH
 
 logging.basicConfig(level="INFO")
 S3_REPORT_BUCKET_ROOT = 'opensha/DATA'

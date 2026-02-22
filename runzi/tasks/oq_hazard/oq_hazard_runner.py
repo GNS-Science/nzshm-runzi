@@ -9,8 +9,8 @@ from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 
 import runzi.tasks.oq_hazard.oq_hazard_task as task_module
 from runzi.arguments import ArgSweeper
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, USE_API
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
+from runzi.automation.local_config import API_KEY, API_URL, S3_URL, USE_API
+from runzi.automation.toshi_api import ModelType, SubtaskType, ToshiApi
 from runzi.job_runner import JobRunner
 from runzi.tasks.oq_hazard.hazard_args import OQHazardArgs
 

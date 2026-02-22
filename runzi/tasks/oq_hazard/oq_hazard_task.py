@@ -22,18 +22,9 @@ from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 
 from runzi.arguments import SystemArgs, TaskLanguage
-from runzi.automation.scaling.local_config import (
-    API_KEY,
-    API_URL,
-    ECR_DIGEST,
-    S3_URL,
-    SPOOF,
-    THS_RLZ_DB,
-    USE_API,
-    WORK_PATH,
-)
-from runzi.automation.scaling.toshi_api import ModelType, ToshiApi
-from runzi.automation.scaling.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
+from runzi.automation.local_config import API_KEY, API_URL, ECR_DIGEST, S3_URL, SPOOF, THS_RLZ_DB, USE_API, WORK_PATH
+from runzi.automation.toshi_api import ModelType, ToshiApi
+from runzi.automation.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.tasks.oq_hazard.execute_openquake import execute_openquake
 from runzi.tasks.oq_hazard.hazard_args import OQHazardArgs
 

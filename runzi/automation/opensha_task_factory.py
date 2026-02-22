@@ -23,10 +23,10 @@ from typing import Optional, Protocol, TypeVar
 from pydantic import BaseModel
 
 from runzi.arguments import SystemArgs, TaskLanguage
-from runzi.automation.scaling.python_task_factory import PythonTaskFactory
-from runzi.automation.scaling.python_task_factory import get_factory as get_python_factory
-from runzi.automation.scaling.task_config import get_task_config
-from runzi.automation.scaling.toshi_api import ModelType
+from runzi.automation.python_task_factory import PythonTaskFactory
+from runzi.automation.python_task_factory import get_factory as get_python_factory
+from runzi.automation.task_config import get_task_config
+from runzi.automation.toshi_api import ModelType
 
 from .local_config import EnvMode
 

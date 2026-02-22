@@ -11,8 +11,8 @@ from nshm_toshi_client.task_relation import TaskRelation
 from solvis import InversionSolution, circle_polygon
 from solvis.filter import FilterRuptureIds
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
-from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.automation.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
+from runzi.automation.toshi_api import ToshiApi
 
 locations = dict(
     Wellington=["Wellington", -41.276825, 174.777969],

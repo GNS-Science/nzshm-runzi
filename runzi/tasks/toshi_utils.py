@@ -1,9 +1,9 @@
 import base64
 
 from runzi.arguments import ArgSweeper
-from runzi.automation.scaling.file_utils import get_output_file_ids
-from runzi.automation.scaling.local_config import API_KEY, API_URL
-from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.automation.file_utils import get_output_file_ids
+from runzi.automation.local_config import API_KEY, API_URL
+from runzi.automation.toshi_api import ToshiApi
 
 headers = {"x-api-key": API_KEY}
 toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)

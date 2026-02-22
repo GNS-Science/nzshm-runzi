@@ -18,8 +18,8 @@ from typing import Optional
 from pydantic import BaseModel
 
 from runzi.arguments import SystemArgs
-from runzi.automation.scaling.task_config import get_task_config
-from runzi.automation.scaling.toshi_api import ModelType
+from runzi.automation.task_config import get_task_config
+from runzi.automation.toshi_api import ModelType
 
 from .local_config import EnvMode
 

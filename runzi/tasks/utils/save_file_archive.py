@@ -15,8 +15,8 @@ import csv
 import logging
 from pathlib import Path
 
-from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
-from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.automation.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
+from runzi.automation.toshi_api import ToshiApi
 from runzi.utils import archive
 
 log = logging.getLogger(__name__)

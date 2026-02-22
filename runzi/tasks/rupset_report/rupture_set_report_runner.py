@@ -4,8 +4,8 @@ from typing import cast
 
 import runzi.tasks.rupset_report.ruptset_diags_report_task as task_module
 from runzi.arguments import ArgSweeper
-from runzi.automation.scaling.local_config import REPORT_LEVEL
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
+from runzi.automation.local_config import REPORT_LEVEL
+from runzi.automation.toshi_api import ModelType, SubtaskType
 from runzi.job_runner import JobRunner
 from runzi.tasks.rupset_report.ruptset_diags_report_task import RupsetReportArgs
 from runzi.tasks.time_dependent_solution.time_dependent_solution_runner import get_model_type_from_all

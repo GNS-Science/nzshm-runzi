@@ -4,8 +4,8 @@ from typing import cast
 
 import runzi.tasks.inversion_report.inversion_diags_report_task as task_module
 from runzi.arguments import ArgSweeper
-from runzi.automation.scaling.local_config import BUILD_PLOTS, HACK_FAULT_MODEL, REPORT_LEVEL
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
+from runzi.automation.local_config import BUILD_PLOTS, HACK_FAULT_MODEL, REPORT_LEVEL
+from runzi.automation.toshi_api import ModelType, SubtaskType
 from runzi.job_runner import JobRunner
 from runzi.tasks.inversion_report.inversion_diags_report_task import InversionReportArgs
 from runzi.tasks.time_dependent_solution.time_dependent_solution_runner import get_model_type_from_all

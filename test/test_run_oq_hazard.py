@@ -1,7 +1,7 @@
 import pytest
 
 import runzi.tasks.oq_hazard.oq_hazard_runner as run_oq_hazard_module
-from runzi.automation.scaling.local_config import EnvMode
+from runzi.automation.local_config import EnvMode
 from runzi.tasks import OQHazardArgs
 from runzi.tasks.oq_hazard.oq_hazard_runner import run_oq_hazard
 
