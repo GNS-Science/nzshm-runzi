@@ -82,7 +82,7 @@ def decompress_config(compressed):
     base64_bytes = compressed.encode('ascii')
     message_bytes = base64.b64decode(base64_bytes)
 
-    ## Decompression
+    # Decompression
     zfout = zipfile.ZipFile(io.BytesIO(message_bytes))
     msg_out = io.BytesIO(zfout.read('0'))
     msg_out.seek(0)

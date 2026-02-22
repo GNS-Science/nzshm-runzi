@@ -99,7 +99,7 @@ class RuptureSetBuilderTask:
 
         # Run the task....
         ta = task_arguments
-        ## for crustal
+        # for crustal
         self._builder.setMaxFaultSections(int(ta["max_sections"])).setMaxJumpDistance(
             float(ta["max_jump_distance"])
         ).setPermutationStrategy(ta["connection_strategy"]).setMaxSubSectionLength(
