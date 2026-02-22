@@ -9,7 +9,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from runzi.util.aws import get_secret
+from runzi.aws import get_secret
 
 # fill environment variables from .env file if not yet set
 load_dotenv()

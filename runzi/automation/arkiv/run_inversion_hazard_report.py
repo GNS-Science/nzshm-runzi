@@ -9,9 +9,6 @@ from subprocess import check_call
 import boto3
 
 import runzi.automation.scaling.inversion_hazard_report_task
-from runzi.automation.scaling.opensha_task_factory import get_factory
-from runzi.util.aws import get_ecs_job_config
-
 from runzi.automation.scaling.file_utils import download_files, get_output_file_ids
 
 # Set up your local config, from environment variables, with some sone defaults
@@ -29,7 +26,9 @@ from runzi.automation.scaling.local_config import (  # JAVA_THREADS,; JVM_HEAP_M
     WORK_PATH,
     EnvMode,
 )
+from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import ToshiApi
+from runzi.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533
 

@@ -4,6 +4,7 @@ from pathlib import PurePath
 from types import ModuleType
 from typing import Any, Generator
 
+from runzi.arguments import ArgSweeper, SystemArgs
 from runzi.automation.scaling.local_config import (
     API_URL,
     CLUSTER_MODE,
@@ -18,8 +19,7 @@ from runzi.automation.scaling.local_config import (
 )
 from runzi.automation.scaling.opensha_task_factory import get_factory
 from runzi.automation.scaling.toshi_api import ModelType
-from runzi.arguments import ArgSweeper, SystemArgs
-from runzi.util.aws import get_ecs_job_config
+from runzi.aws import get_ecs_job_config
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
 

@@ -27,7 +27,6 @@ from runzi.automation.scaling.python_task_factory import PythonTaskFactory
 from runzi.automation.scaling.python_task_factory import get_factory as get_python_factory
 from runzi.automation.scaling.task_config import get_task_config
 from runzi.automation.scaling.toshi_api import ModelType
-from runzi.tasks.inversion.inversion_solution_builder import InversionArgs
 
 from .local_config import EnvMode
 
@@ -176,11 +175,8 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
 
     def write_task_config(self, task_args: BaseModel, task_system_args: SystemArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_port}.json"
-        if isinstance(task_args, InversionArgs):
-            max_inversion_time = task_args.max_inversion_time
-            self._pbs_wall_hours = int(max_inversion_time / 60) + 1
-        if isinstance(task_system_args, SystemArgs):
-            self._pbs_ppn = task_system_args.java_threads
+        self._pbs_wall_hours = int(task_system_args.ecs_max_job_time_min / 60) + 1
+        self._pbs_ppn = task_system_args.java_threads
 
         task_config = get_task_config(task_args, task_system_args, model_type)
         fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')

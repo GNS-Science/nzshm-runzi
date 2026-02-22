@@ -7,7 +7,7 @@ from typing import Any, Generator, Optional, Sequence
 from pydantic import BaseModel
 from typing_extensions import Self
 
-from runzi.util.aws import BatchEnvironmentSetting
+from runzi.aws import BatchEnvironmentSetting
 
 
 class TaskLanguage(Enum):

@@ -12,10 +12,9 @@ import runzi.tasks.oq_hazard.oq_disagg_task as task_module
 from runzi.arguments import ArgSweeper
 from runzi.automation.scaling.local_config import API_KEY, API_URL, S3_URL, USE_API
 from runzi.automation.scaling.toshi_api import ModelType, SubtaskType, ToshiApi
+from runzi.job_runner import JobRunner
 from runzi.tasks.oq_hazard.hazard_args import OQDisaggArgs
 from runzi.tasks.oq_hazard.oq_hazard_task import get_locations_from_file
-
-from runzi.job_runner import JobRunner
 
 headers = {"x-api-key": API_KEY}
 toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)

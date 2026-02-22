@@ -15,7 +15,7 @@ except ImportError:
     print("openquake not installed, not importing")
 
 from runzi.automation.scaling.local_config import SPOOF, WORK_PATH
-from runzi.util import archive
+from runzi.utils import archive
 
 log = logging.getLogger(__name__)
 

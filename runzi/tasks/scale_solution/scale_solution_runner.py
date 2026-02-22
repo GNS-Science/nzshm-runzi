@@ -1,12 +1,11 @@
 """This module provides the runner class for scaling the rupture rates of inversions."""
 
 import runzi.tasks.scale_solution.scale_solution_task as task_module
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.arguments import ArgSweeper
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
+from runzi.job_runner import JobRunner
 from runzi.tasks.time_dependent_solution.time_dependent_solution_runner import get_model_type_from_all
 from runzi.tasks.toshi_utils import convert_gt_to_swept
-
-from runzi.job_runner import JobRunner
 
 
 class ScaleSolutionJobRunner(JobRunner):

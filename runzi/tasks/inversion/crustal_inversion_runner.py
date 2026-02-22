@@ -1,9 +1,8 @@
 """This module provides the runner class for running crustal inversions."""
 
 import runzi.tasks.inversion.crustal_inversion_solution_task as task_module
-from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.arguments import ArgSweeper
-
+from runzi.automation.scaling.toshi_api import ModelType, SubtaskType
 from runzi.job_runner import JobRunner
 
 
