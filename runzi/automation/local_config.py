@@ -45,15 +45,11 @@ else:
     API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
 
 
-# How many threads to give each worker, setting this higher than # of virtual cores is pointless.
-JAVA_THREADS = os.getenv('NZSHM22_SCRIPT_JAVA_THREADS', 4)  # each
-
 # How many jobs to run in parallel - keep thread/memory resources in mind
 WORKER_POOL_SIZE = int(os.getenv('NZSHM22_SCRIPT_WORKER_POOL_SIZE', 1))
 
 # Memory settings, be careful - don't exceed what you have avail, or you'll see swapping!
 JVM_HEAP_START = int(os.getenv('NZSHM22_SCRIPT_JVM_HEAP_START', 4))  # Startup JAVA Memory (per worker)
-JVM_HEAP_MAX = int(os.getenv('NZSHM22_SCRIPT_JVM_HEAP_MAX', 10))  # Maximum JAVA Memory (per worker)
 
 
 # LOCAL SYSTEM SETTINGS
