@@ -15,6 +15,7 @@ nav:
     - Docker: usage/docker/docker.md
     - Inversion, Docker, and AWS: usage/docker/AWS_docker_containers_setup.md
   - Installation: installation.md
+  - Architecture: architecture/architecture.md
   - Development and Contributing:
     - contributing.md
     - Testing: testing.md
