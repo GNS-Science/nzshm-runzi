@@ -67,6 +67,8 @@ doc = [
     "mkdocs-include-markdown-plugin",
     "mkdocstrings",
     "mkdocstrings-python",
+    "griffe (>=2.0.0,<3.0.0)",
+    "griffe-pydantic (>=1.3.1,<2.0.0)",
 ]
 
 

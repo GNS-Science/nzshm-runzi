@@ -11,7 +11,8 @@ nav:
   - Usage:
     - CLI: usage/cli.md
     - Environment Variables: usage/environment_variables.md
-    - Hazard: usage/hazard.md
+    - Input Files:
+      - Coulomb Rupture Sets: usage/input/coulomb_rupture_sets.md
     - Docker: usage/docker/docker.md
     - Inversion, Docker, and AWS: usage/docker/AWS_docker_containers_setup.md
   - Installation: installation.md
@@ -89,9 +90,10 @@ plugins:
             show_category_heading: true
             members_order: source
             inherited_members: false
+            extensions:
+              - griffe_pydantic:
+                  schema: true
 
-          extensions:
-          - pydantic: {schema: true}
 
 extra:
   social:
