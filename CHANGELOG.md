@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.0] 2026-02-23
+
+## Changed
+ - Modernization of python dev standards (pyproject.toml, type hints, etc.)
+ - Refactor job configuration and execution
+
+## Added
+ - Sideload paleoseismic recurrence interval
+ - Sideload custom fault models
+ - Sideload named faults
+
+## Removed
+ - python3.9 support
+
 ## [0.1.0] 2025-*
 
 ## Added
