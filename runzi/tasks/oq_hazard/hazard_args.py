@@ -56,7 +56,7 @@ class OQArgs(BaseModel):
 
     # define the hazard model (LTs). (for disagg this must be the same as the target curve).
     compatible_calc_id: Annotated[str, AfterValidator(_is_compat_calc_id)]
-    nshm_model_version: Optional[str] = None
+    nshm_model_version: Annotated[Optional[str],  AfterValidator(_is_model_version)] = None
     srm_logic_tree: Optional[SourceLogicTree | Path] = None
     gmcm_logic_tree: Optional[GMCMLogicTree | Path] = None
     hazard_config: Optional[OpenquakeConfig | Path] = None

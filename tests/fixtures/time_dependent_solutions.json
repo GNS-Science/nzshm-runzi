@@ -1,0 +1,17 @@
+{
+    "title": "Time dependent crustal inversions",
+    "description": "Test time dependent calculation",
+
+    "current_year": 2026,
+    "most_recent_event_enum": "CFM_1_1",
+    "aperiodicity": "NZSHM22",
+    "forecast_timespan": 100,
+
+    "swept_args": {
+        "source_solution_id": [
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTQ1",
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTQ4",
+            "R2VuZXJhbFRhc2s6MTAxMjI1"
+        ]
+    }
+}
