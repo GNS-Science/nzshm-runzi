@@ -16,11 +16,13 @@ def hazard_input_data():
     with resources.as_file(ref) as input_path:
         return json.loads(input_path.read_text())
 
+
 @pytest.fixture(scope='function')
 def disagg_input_data():
     ref = resources.files('tests.fixtures') / 'disagg_job.json'
     with resources.as_file(ref) as input_path:
         return json.loads(input_path.read_text())
+
 
 def test_from_json():
     ref = resources.files('tests.fixtures') / 'hazard_job.json'

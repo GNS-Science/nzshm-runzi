@@ -5,13 +5,13 @@ from nzshm_model import NshmModel, get_model_version
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeConfig
 
-from runzi.arguments import ArgSweeper, SystemArgs
+from runzi.arguments import ArgSweeper
 from runzi.tasks.oq_hazard import OQHazardArgs, OQHazardJobRunner
 
 
 def test_build_hazard_tasks():
     """Test that hazard models are correctly handled.
-    
+
     - The SRM logic tree is split into one branch for each task.
     - The GMCM logic tree is specified by the model version.
     """

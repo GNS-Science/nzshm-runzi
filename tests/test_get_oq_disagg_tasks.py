@@ -2,9 +2,8 @@ import json
 from pathlib import Path
 
 from nzshm_common.location import get_locations
-from nzshm_model import NshmModel, get_model_version
-from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
-from nzshm_model.psha_adapter.openquake import OpenquakeConfig
+from nzshm_model import get_model_version
+from nzshm_model.logic_tree import SourceLogicTree
 
 from runzi.arguments import ArgSweeper
 from runzi.tasks.oq_hazard import OQDisaggArgs, OQDisaggJobRunner
@@ -12,7 +11,7 @@ from runzi.tasks.oq_hazard import OQDisaggArgs, OQDisaggJobRunner
 
 def test_build_disagg_tasks():
     """Test that hazard models are correctly handled.
-    
+
     - The SRM logic tree is split into one branch for each task.
     - The sites are split into one for each task.
     - The GMCM logic tree is specified by the model version.
