@@ -70,10 +70,8 @@ class OQArgs(BaseModel):
     @model_validator(mode='after')
     def check_logic_trees(self) -> Self:
         if not self.nshm_model_version and not (self.srm_logic_tree and self.gmcm_logic_tree and self.hazard_config):
-            raise ValueError(
-                """if nshm_model_version not specified, must provide all of
-                gmcm_logic_tree, srm_logic_tree, and hazard_config."""
-            )
+            raise ValueError("""if nshm_model_version not specified, must provide all of
+                gmcm_logic_tree, srm_logic_tree, and hazard_config.""")
         return self
 
     @field_validator('srm_logic_tree', 'gmcm_logic_tree', 'hazard_config', 'locations_file', mode='after')

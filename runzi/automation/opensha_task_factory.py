@@ -14,6 +14,7 @@ The job is responsible for
  The job is either a bash script (for local machine) or
  a PBS script for the cluster environment
 """
+
 import json
 import os
 from pathlib import Path, PurePath
