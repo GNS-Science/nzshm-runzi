@@ -2117,23 +2117,22 @@ files = [
 
 [[package]]
 name = "mkdocstrings"
-version = "0.30.1"
+version = "1.0.3"
 description = "Automatic documentation from sources, for MkDocs."
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["doc"]
 files = [
-    {file = "mkdocstrings-0.30.1-py3-none-any.whl", hash = "sha256:41bd71f284ca4d44a668816193e4025c950b002252081e387433656ae9a70a82"},
-    {file = "mkdocstrings-0.30.1.tar.gz", hash = "sha256:84a007aae9b707fb0aebfc9da23db4b26fc9ab562eb56e335e9ec480cb19744f"},
+    {file = "mkdocstrings-1.0.3-py3-none-any.whl", hash = "sha256:0d66d18430c2201dc7fe85134277382baaa15e6b30979f3f3bdbabd6dbdb6046"},
+    {file = "mkdocstrings-1.0.3.tar.gz", hash = "sha256:ab670f55040722b49bb45865b2e93b824450fb4aef638b00d7acb493a9020434"},
 ]
 
 [package.dependencies]
-Jinja2 = ">=2.11.1"
+Jinja2 = ">=3.1"
 Markdown = ">=3.6"
 MarkupSafe = ">=1.1"
 mkdocs = ">=1.6"
 mkdocs-autorefs = ">=1.4"
-mkdocstrings-python = {version = ">=1.16.2", optional = true, markers = "extra == \"python\""}
 pymdown-extensions = ">=6.3"
 
 [package.extras]
@@ -3747,23 +3746,23 @@ dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests
 
 [[package]]
 name = "pytest-cov"
-version = "6.3.0"
+version = "7.0.0"
 description = "Pytest plugin for measuring coverage."
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "pytest_cov-6.3.0-py3-none-any.whl", hash = "sha256:440db28156d2468cafc0415b4f8e50856a0d11faefa38f30906048fe490f1749"},
-    {file = "pytest_cov-6.3.0.tar.gz", hash = "sha256:35c580e7800f87ce892e687461166e1ac2bcb8fb9e13aea79032518d6e503ff2"},
+    {file = "pytest_cov-7.0.0-py3-none-any.whl", hash = "sha256:3b8e9558b16cc1479da72058bdecf8073661c7f57f7d3c5f22a1c23507f2d861"},
+    {file = "pytest_cov-7.0.0.tar.gz", hash = "sha256:33c97eda2e049a0c5298e91f519302a1334c26ac65c1a483d6206fd458361af1"},
 ]
 
 [package.dependencies]
-coverage = {version = ">=7.5", extras = ["toml"]}
+coverage = {version = ">=7.10.6", extras = ["toml"]}
 pluggy = ">=1.2"
-pytest = ">=6.2.5"
+pytest = ">=7"
 
 [package.extras]
-testing = ["fields", "hunter", "process-tests", "pytest-xdist", "virtualenv"]
+testing = ["process-tests", "pytest-xdist", "virtualenv"]
 
 [[package]]
 name = "pytest-mock"
@@ -4708,18 +4707,6 @@ files = [
 urllib3 = ">=2"
 
 [[package]]
-name = "types-toml"
-version = "0.10.8.20240310"
-description = "Typing stubs for toml"
-optional = false
-python-versions = ">=3.8"
-groups = ["dev"]
-files = [
-    {file = "types-toml-0.10.8.20240310.tar.gz", hash = "sha256:3d41501302972436a6b8b239c850b26689657e25281b48ff0ec06345b8830331"},
-    {file = "types_toml-0.10.8.20240310-py3-none-any.whl", hash = "sha256:627b47775d25fa29977d9c70dc0cbab3f314f32c8d8d0c012f2ef5de7aaec05d"},
-]
-
-[[package]]
 name = "typing-extensions"
 version = "4.15.0"
 description = "Backported and Experimental Type Hints for Python 3.9+"
@@ -5118,4 +5105,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.12"
-content-hash = "d7f95f9ea97c2383410a3f111cb426a1b2f5f9707784861254dbbb05f3320fa2"
+content-hash = "572ce619b244a0b5f2bfd365621a6e0ed1753e60b578dfeccd467df105539ec3"

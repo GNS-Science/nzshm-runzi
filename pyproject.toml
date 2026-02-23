@@ -1,5 +1,5 @@
 [project]
-name = "nzshm-runzi"
+name = "runzi"
 version = "0.2.0"
 readme = "README.md"
 authors = [
@@ -10,6 +10,10 @@ authors = [
 description = "scripting and cli for the NSHM"
 license = "GPL-3.0-only"
 requires-python = ">=3.11,<3.12"
+packages = [
+    { include = "runzi" },
+    { include = "tests", format = "sdist" },
+]
 dependencies = [
     "gitpython (>=3.1.46)",
     "py4j (==0.10.9.1)",
@@ -31,41 +35,39 @@ dependencies = [
 ]
 
 
-[tool.poetry]
-packages = [
-    {include = "runzi"},
-    { include = "tests", format = "sdist" },
-]
 
 
-[tool.poetry.scripts]
+[project.scripts]
 runzi = 'runzi.cli.runzi_cli:app'
 
 
-[tool.poetry.group.dev.dependencies]
-pytest = ">=8.3.4"
-flake8 = ">=7.1.1"
-black = ">=25.1.0"
-isort = ">=6.0.0"
-bump2version = ">=1.0.1,<2.0"
-tox = ">=4.24.1,<5.0"
-mypy = ">=1.14.1,<2.0"
-pytest-cov = ">=6.0.0,<7.0"
-types-requests = ">=2.32.0.20241016,<3.0"
-types-pytz = ">=2025.1.0.20250204,<2026"
-types-python-dateutil = ">=2.9.0.20241206,<3.0"
-types-toml = ">=0.10.8.20240310"
-pytest-mock = ">=3.14.0,<4.0"
-vulture = ">=2.14,<3.0"
-safety = "^3.7.0"
-pip-audit = "^2.10.0"
+[dependency-groups]
+dev = [
+    "pytest",
+    "flake8",
+    "black",
+    "isort",
+    "bump2version",
+    "tox",
+    "mypy",
+    "pytest-cov",
+    "types-requests",
+    "types-pytz",
+    "types-python-dateutil",
+    "pytest-mock",
+    "vulture",
+    "safety",
+    "pip-audit",
+]
 
 
-[tool.poetry.group.doc.dependencies]
-mkdocs = ">=1.6.1,<2.0"
-mkdocs-material = ">=9.5.50,<10.0"
-mkdocs-include-markdown-plugin = ">=7.1.2,<8.0"
-mkdocstrings = {extras = ["python"], version = "^0.30.0"}
+doc = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocs-include-markdown-plugin",
+    "mkdocstrings",
+    "mkdocstrings-python",
+]
 
 
 
