@@ -1,5 +1,5 @@
 [project]
-name = "nzshm-runzi"
+name = "runzi"
 version = "0.2.0"
 readme = "README.md"
 authors = [
@@ -79,13 +79,11 @@ use_parentheses = true
 ensure_newline_before_comments = true
 line_length = 120
 skip_gitignore = true
-# you can skip files as below
-#skip_glob = docs/conf.py
 
 [tool.black]
 line-length = 120
 skip-string-normalization = true
-target-version = ['py312', 'py311', 'py310']
+target-version = ['py311']
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -105,11 +103,6 @@ exclude = '''
 
 [tool.mypy]
 ignore_missing_imports = true
-exclude = [
-    'runzi/CONFIG',
-    'runzi/automation/arkiv',
-    'runzi/automation/openquake/run_oq_disagg.py',
-]
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
