@@ -14,8 +14,6 @@ from runzi.tasks.inversion.inversion_solution_builder import InversionArgs, Inve
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
 
-# TODO: do I need all these casts?
-
 default_system_args = SystemArgs(
     task_language=TaskLanguage.JAVA,
     use_api=USE_API,

@@ -53,8 +53,6 @@ JVM_HEAP_START = int(os.getenv('NZSHM22_SCRIPT_JVM_HEAP_START', 4))  # Startup J
 
 
 # LOCAL SYSTEM SETTINGS
-# TODO: modernize getting path env vars
-# TODO: use path or purepath?
 OPENSHA_ROOT = Path(os.getenv('NZSHM22_OPENSHA_ROOT', "~/DEV/GNS/opensha-modular"))
 OPENSHA_JRE = Path(os.getenv('NZSHM22_OPENSHA_JRE', "/usr/lib/jvm/java-11-openjdk-amd64/bin/java"))
 FATJAR = Path(os.getenv('NZSHM22_FATJAR', OPENSHA_ROOT))
