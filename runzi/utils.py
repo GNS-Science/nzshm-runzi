@@ -3,10 +3,14 @@ from pathlib import Path, PurePath
 
 
 def archive(source_path, output_zip):
-    '''
-    zip contents of source path and return the full archive path.
+    """Zip contents of source path and return the full archive path.
+
     handles both single file and a folder
-    '''
+
+    Args:
+        source_path: the location of the files to be archived
+        output_zip: the path to the zipfile
+    """
     with zipfile.ZipFile(output_zip, 'w', compression=zipfile.ZIP_DEFLATED) as zip:
         if Path(source_path).is_file():
             zip.write(source_path, PurePath(source_path).name)
