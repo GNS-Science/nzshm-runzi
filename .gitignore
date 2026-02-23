@@ -127,3 +127,7 @@ runzi/cli/config/saved_configs/
 
 # ariadne-codegen
 graphql_client/
+
+# audit
+audit.txt
+.safety-project.ini 
