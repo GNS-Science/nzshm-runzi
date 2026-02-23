@@ -23,7 +23,7 @@ $ runzi [OPTIONS] COMMAND [ARGS]...
 
 ## `inversion`
 
-inversion
+runzi inversion
 
 **Usage**:
 
@@ -213,18 +213,15 @@ Convert OpenSHA inversion solutions to OpenQuake source input files.
 **Usage**:
 
 ```console
-$ runzi ipp oq-convert [OPTIONS] TITLE DESCRIPTION IDS...
+$ runzi ipp oq-convert [OPTIONS] INPUT_FILEPATH
 ```
 
 **Arguments**:
 
-* `TITLE`: [required]
-* `DESCRIPTION`: [required]
-* `IDS...`: Whitespace seperated list of IDs of objects to convert. Can be individual InversionSolutions or GeneralTask.  [required]
+* `INPUT_FILEPATH`: [required]
 
 **Options**:
 
-* `--num-workers INTEGER`
 * `--help`: Show this message and exit.
 
 ## `rupset`
@@ -243,17 +240,17 @@ $ runzi rupset [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `coulomb-rupset`: Create Coulomb (crustal) rupture sets.
-* `sub-rupset`: Create subduction rupture sets.
+* `coulomb`: Create Coulomb (crustal) rupture sets.
+* `subduction`: Create subduction rupture sets.
 
-### `rupset coulomb-rupset`
+### `rupset coulomb`
 
 Create Coulomb (crustal) rupture sets.
 
 **Usage**:
 
 ```console
-$ runzi rupset coulomb-rupset [OPTIONS] INPUT_FILEPATH
+$ runzi rupset coulomb [OPTIONS] INPUT_FILEPATH
 ```
 
 **Arguments**:
@@ -264,14 +261,14 @@ $ runzi rupset coulomb-rupset [OPTIONS] INPUT_FILEPATH
 
 * `--help`: Show this message and exit.
 
-### `rupset sub-rupset`
+### `rupset subduction`
 
 Create subduction rupture sets.
 
 **Usage**:
 
 ```console
-$ runzi rupset sub-rupset [OPTIONS] INPUT_FILEPATH
+$ runzi rupset subduction [OPTIONS] INPUT_FILEPATH
 ```
 
 **Arguments**:
@@ -298,23 +295,22 @@ $ runzi reports [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `rupture-set`: Create diagnostic reports for rupture sets.
+* `rupset`: Create diagnostic reports for rupture sets.
 * `inversion`: Create diagnostic reports for inversion.
 
-### `reports rupture-set`
+### `reports rupset`
 
 Create diagnostic reports for rupture sets.
 
 **Usage**:
 
 ```console
-$ runzi reports rupture-set [OPTIONS] FILE_OR_TASK_ID NUM_WORKERS
+$ runzi reports rupset [OPTIONS] TOSHI_ID
 ```
 
 **Arguments**:
 
-* `FILE_OR_TASK_ID`: [required]
-* `NUM_WORKERS`: [required]
+* `TOSHI_ID`: id of rupture set or general task used to create rupture sets  [required]
 
 **Options**:
 
