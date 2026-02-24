@@ -1,4 +1,4 @@
-See the [base class](inversion.md) for a discription of allowed parameter combinations.
+See the [base class](inversion.md) for inherited parameters and a description of allowed parameter combinations.
 
 ::: runzi.tasks.inversion.crustal_inversion_solution_task.CrustalInversionArgs
     options:

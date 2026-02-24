@@ -32,6 +32,7 @@ default_system_args = SystemArgs(
 
 
 class SubductionInversionArgs(InversionArgs):
+    """Subduction inversion arguments."""
     scaling_c_val: Optional[float] = None
     mfd_min_mag: float
 

@@ -52,20 +52,42 @@ def _is_compat_calc_id(compat_calc_id: str) -> str:
 
 
 class OQArgs(BaseModel):
+    """Base class for OpenQuake task arguments.
+    
+    Validators:
+        - If nshm_model_version not given, must provide srm_logic_tree, gmcm_logic_tree, and hazard_config.
+        - All files must exist either relative to input file or as absolute path.
+    """
     model_config = ConfigDict(arbitrary_types_allowed=True)  # this allows OpenquakeConfig to be included in the schema
 
     # define the hazard model (LTs). (for disagg this must be the same as the target curve).
     compatible_calc_id: Annotated[str, AfterValidator(_is_compat_calc_id)]
+    """Identifies hazard run with similar software and settigs such that results can be compared."""
+
     nshm_model_version: Annotated[Optional[str], AfterValidator(_is_model_version)] = None
+    """An official released NSHM model. Includes logic trees and calculation configuration (i.e. OQ settings)."""
+
     srm_logic_tree: Optional[SourceLogicTree | Path] = None
+    """Seismicity rate model logic tree."""
+
     gmcm_logic_tree: Optional[GMCMLogicTree | Path] = None
+    """Ground motion model logic tree."""
+
     hazard_config: Optional[OpenquakeConfig | Path] = None
+    """OpenQuake settings."""
 
     # the site
     vs30: Optional[PositiveInt] = None
+    """Uniform site vs30."""
+
     locations: Optional[list[str]] = None
+    """Location strings as used by nzshm-common."""
+
     locations_file: Optional[Path] = None
+    """A file with lon, lat locations, and optinoally vs30."""
+
     locations_file_id: Optional[str] = None
+    """A toshi ID of a file with lon, lat locations, and optinoally vs30."""
 
     @model_validator(mode='after')
     def check_logic_trees(self) -> Self:
@@ -122,31 +144,60 @@ class OQArgs(BaseModel):
 
 
 class OQDisaggArgs(OQArgs):
-    """Input for calculating disaggregations."""
+    """Input for calculating disaggregations.
+    
+    Validators:
+        - Cannot combine bin width or number of bins with bin edges.
+        - Must provide bin width, number, or edges for every dimension in disagg_types.
+    """
 
     # We use the site member to specify a unique vs30 and location. This makes it possible to sweep over all site
     # conditions specifed by the location, vs30, etc. members that are in OQArgs. This is only used by the task, not
     # meant to be set by the user
     class Site(BaseModel):
+        """A location, vs30 pair. Not a user object."""
         location: CodedLocation
         vs30: PositiveInt
 
     site: Optional[Site] = None
+    """Used by runzi to create a unique task for each location, vs30 pair, not to be set by user."""
 
-    # the hazard curve "target," i.e. the hazard curve at which to get the PoE that we will use for the disaggregation
     hazard_model_id: str
+    """The hazard curve 'target,' i.e. the hazard curve at which to get the PoE that we will use
+    for the disaggregation.
+    """
+
     agg: AggregationEnum
+    """The aggregate of the hazard curve 'target,' i.e. the hazard curve at which to get the PoE
+    that we will use for the disaggregation.
+    """
+
     imt: str
+    """The IMT of the hazard curve 'target,' i.e. the hazard curve at which to get the PoE that we
+    will use for the disaggregation.
+    """
+
     investigation_time: int
+    """The investigation time (years) of the hazard curve 'target,' i.e. the hazard curve at which
+    to get the PoE that we will use for the disaggregation.
+    """
+
     poe: float
+    """The probability of exceedance for the investigation_time for the hazard curve 'target,' i.e.
+    the hazard curve at which to get the PoE that we will use for the disaggregation.
+    """
 
     # defines the disaggregation to calculate (what types, bins, etc.)
     disagg_types: list[str]
+    """Dimensions along which to calculate disaggregation. e.g. 'Mag', 'Dist', 'TRT_Mag_Dist_Eps'"""
     mag_bin_width: Optional[float] = None
     distance_bin_width: Optional[float] = None
     coordinate_bin_width: Optional[float] = None
     num_epsilon_bins: Optional[int] = None
     disagg_bin_edges: dict[str, list[float]] = Field(default_factory=dict, descrption="foobar")
+    """Dict of disaggregation bin edges. Keys are dimentions (e.g. 'dist'), values are
+    the edges (e.g. [0, 5.0, 10.0, ]).
+    """
 
     @model_validator(mode='after')
     def validate_bins(self) -> Self:

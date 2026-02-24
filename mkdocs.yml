@@ -15,9 +15,10 @@ nav:
       - Input Arguments And Files: usage/input/index.md
       - Average Solutions: usage/input/average_solutions.md
       - Coulomb Rupture Sets: usage/input/coulomb_rupture_sets.md
-      - Crustal Inversion: usage/input/crustal_inversion.md
       - Inversion: usage/input/inversion.md
+      - Crustal Inversion: usage/input/crustal_inversion.md
       - Inversion Report: usage/input/inversion_report.md
+      - OQ Args: usage/input/oq_args.md
       - OQ Disaggregation: usage/input/oq_disagg.md
       - OQ Hazard: usage/input/oq_hazard.md
       - OQ OpenSHA Convert: usage/input/oq_opensha_convert.md
@@ -108,7 +109,7 @@ plugins:
               # - griffe_pydantic:
               #     schema: false
                 - griffe_fieldz:
-                    include_inherited: true
+                    include_inherited: false
                     include_private: false
                     strip_annotated: false
 
