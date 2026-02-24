@@ -1,0 +1,17 @@
+{
+    "title": "Average Hikurangi-Kermadec Subduction Rupture Sets",
+    "description": "Test Averaging H-K subduction rupture sets building",
+
+    "swept_args": {
+        "source_solution_ids": [
+            [
+                "SW52ZXJzaW9uU29sdXRpb246MTAyMDMx",
+                "SW52ZXJzaW9uU29sdXRpb246MTAyMDI1"
+            ],
+            [
+                "SW52ZXJzaW9uU29sdXRpb246MTAyMDI3",
+                "SW52ZXJzaW9uU29sdXRpb246MTAyMDI5"
+            ]
+        ]
+    }
+}

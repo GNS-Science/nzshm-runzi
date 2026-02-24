@@ -194,7 +194,7 @@ class OQDisaggArgs(OQArgs):
     distance_bin_width: Optional[float] = None
     coordinate_bin_width: Optional[float] = None
     num_epsilon_bins: Optional[int] = None
-    disagg_bin_edges: dict[str, list[float]] = Field(default_factory=dict, descrption="foobar")
+    disagg_bin_edges: dict[str, list[float]] = Field(default_factory=dict)
     """Dict of disaggregation bin edges. Keys are dimentions (e.g. 'dist'), values are
     the edges (e.g. [0, 5.0, 10.0, ]).
     """

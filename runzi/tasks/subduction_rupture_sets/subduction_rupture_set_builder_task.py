@@ -43,17 +43,27 @@ default_system_args = SystemArgs(
 
 
 class SubductionRuptureSetArgs(BaseModel):
-    """Input for generating subduction rupture sets."""
+    """Input for generating subduction rupture sets.
+    
+    For details on the parameters see
+    https://github.com/GNS-Science/nzshm-opensha/blob/main/doc/NZSHM22-subduction-rupture-generation.md
+    """
 
     fault_model: str
     min_aspect_ratio: float
     max_aspect_ratio: float
     aspect_depth_threshold: int
+    """The depth (in sub-section tiles) below which the `max_aspect_ratio` will not be enforced."""
+
     min_fill_ratio: float
-    growth_position_epsilon: float
-    growth_size_epsilon: float
+    """Prevents empty cells in subduction ruptures."""
+
     scaling_relationship: str
     slip_along_rupture_model: str
+    ("""The slip function for the rupture."""
+    """See https://github.com/opensha/opensha/blob/master/src/main/java/scratch/UCERF3/enumTreeBranches"""
+    """/SlipAlongRuptureModels.java""")
+
     deformation_model: Optional[str] = None
 
 
@@ -120,8 +130,6 @@ class SubductionRuptureSetBuilderTask:
             self.user_args.min_aspect_ratio, self.user_args.max_aspect_ratio, self.user_args.aspect_depth_threshold
         )
         self.builder.setDownDipMinFill(self.user_args.min_fill_ratio)
-        self.builder.setDownDipPositionCoarseness(self.user_args.growth_position_epsilon)
-        self.builder.setDownDipSizeCoarseness(self.user_args.growth_size_epsilon)
         self.builder.setScalingRelationship(self.user_args.scaling_relationship)
         self.builder.setSlipAlongRuptureModel(self.user_args.slip_along_rupture_model)
         self.builder.setFaultModel(self.user_args.fault_model)

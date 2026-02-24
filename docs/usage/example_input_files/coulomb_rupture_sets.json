@@ -1,0 +1,32 @@
+{
+    "title": "Prefered, Min, and Max dips Rupture set",
+    "description": "Rupture sets with range of possible dip values",
+
+    "max_sections": 2000,
+    "max_jump_distance": 15,
+    "adaptive_min_distance": 6,
+    "thinning_factor": 0,
+    "min_sub_sects_per_parent": 2,
+    "min_sub_sections": 2,
+    "scaling_relationship": "SIMPLE_CRUSTAL",
+
+    "depth_scaling": 
+        {
+            "sans":  0.8,
+            "tvz":  0.667
+        }
+    ,
+
+    "swept_args": {
+        "fault_model_file": [
+            {"tag": "max dip", "archive_id": "RmlsZToxMDIyNjA="},
+            {"tag": "min dip", "archive_id": "RmlsZToxMDIyNjE="},
+            {"tag": "preferred dip", "archive_id": "RmlsZToxMDIyNjI="}
+        ]
+    },
+
+    "sys_arg_overrides": {
+        "ecs_vcpu": 24
+    }
+
+}

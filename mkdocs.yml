@@ -28,13 +28,21 @@ nav:
       - Subduction Rupture Sets: usage/input/subduction_rupture_sets.md
       - System Args: usage/input/system_args.md
       - Time Dependent Solution: usage/input/time_dependent_solution.md
-    - Docker: usage/docker/docker.md
+    - Example Input Files: generated.md
+    - Docker:
+      - Docker: usage/docker/index.md
+      - Base Build: usage/docker/docker_setup_oq_base.md
+      - Editable Build: usage/docker/docker_setup_oq_editable.md
+      - Offical Build: usage/docker/docker_setup_oq_official.md
     - Inversion, Docker, and AWS: usage/docker/AWS_docker_containers_setup.md
+  - Process:
+    - Building the SRM: process/build_srm_for_oq.md
   - Installation: installation.md
   - Architecture: architecture/architecture.md
   - Development and Contributing:
     - contributing.md
     - Testing: testing.md
+    - Development Patterns: development.md
   - Changelog: changelog.md
 
 theme:
@@ -89,6 +97,9 @@ plugins:
   - include-markdown
   - search:
       lang: en
+  - gen-files:
+      scripts:
+        - gen_docs/generate_example_file_list.py
   - mkdocstrings:
       default_handler: python
       handlers:

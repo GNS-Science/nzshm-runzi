@@ -11,6 +11,9 @@ The `sys_arg_overrides` field is used to over-write the default system arguments
 # Validators
 Some input classes have validators to ensure that only valid inputs or valid combinations of imputs are allowed. These will be listed with each argument class under `Validators`.
 
+# General Task IDs
+Some task types have a `source_solution_id` parameter. At the time of spawning the jobs, these can be toshi GeneralTask IDs. In this case, runzi will find the produced inversion solutions (or rupture sets) from the GeneralTask and automatically generate swept arguments of the resultant solutions (or rupture sets).
+
 # Example
 For Coulomb rupture set generation the input file might look like this.
 

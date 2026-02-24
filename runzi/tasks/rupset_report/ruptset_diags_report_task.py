@@ -31,6 +31,8 @@ class RupsetReportArgs(BaseModel):
     # This is a misnomer for convenience so that we can re-use some functions that assume this member is present.
     # It is actually a rupture set id.
     source_solution_id: str
+    """The rupture set ID. It is named `source_solution_id` for programming conveninece, but is the rupture set."""
+
     build_report_level: str | None
 
 

@@ -32,8 +32,16 @@ class ScaleSolutionArgs(BaseModel):
     """Input for scaling inversion solutions."""
 
     scale: float
+    """The scale to apply to rupture rates, e.g. 1.4 will scale all rates to 140%."""
+
     polygon_scale: float
+    """The addtional scaling to apply to merge the IFM with the DSM (typically 0.8). Applied to all
+    ruptures up to M<`polygon_max_mag`.
+    """
+
     polygon_max_mag: float
+    """The maximum magnitude to apply `polygon_scale`."""
+
     source_solution_id: str
 
 

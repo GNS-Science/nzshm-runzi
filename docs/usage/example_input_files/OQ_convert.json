@@ -1,0 +1,8 @@
+{
+    "title": "OQ Convert",
+    "description": "Test convert OpenSHA to OQ",
+
+    "investigation_time_years": 1.0,
+    "rupture_sampling_distance_km": 0.5,
+    "source_solution_id": "R2VuZXJhbFRhc2s6MTAxOTEw"
+}
