@@ -146,7 +146,7 @@ class OQDisaggArgs(OQArgs):
     distance_bin_width: Optional[float] = None
     coordinate_bin_width: Optional[float] = None
     num_epsilon_bins: Optional[int] = None
-    disagg_bin_edges: dict[str, list[float]] = Field(default_factory=dict)
+    disagg_bin_edges: dict[str, list[float]] = Field(default_factory=dict, descrption="foobar")
 
     @model_validator(mode='after')
     def validate_bins(self) -> Self:

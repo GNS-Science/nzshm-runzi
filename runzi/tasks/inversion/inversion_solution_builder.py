@@ -100,7 +100,7 @@ class InversionArgs(BaseModel):
     slip_uncertainty_scaling_factor: Optional[float] = None
 
     @model_validator(mode='after')
-    def _check_reweight(self) -> Self:
+    def check_reweight(self) -> Self:
         """If re-weighting, must use uncertinaty weighted constraints"""
         if self.reweight is not None:
             if (self.mfd_uncertainty_weight is None) and (self.slip_rate_uncertainty_weight is None):

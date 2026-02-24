@@ -15,7 +15,7 @@ from nshm_toshi_client.general_task import GeneralTask
 from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, ConfigDict, Field
 from typing_extensions import Self
 
 from runzi.arguments import SystemArgs, TaskLanguage
@@ -63,7 +63,10 @@ default_system_args = SystemArgs(
 
 
 class CoulombRuptureSetArgs(BaseModel):
-    """Input for generating Coulomb rupture sets."""
+    """Input for generating Coulomb rupture sets.
+
+    Must provide either a fault_model or fault_model_file, but not both.
+    """
 
     class DepthScaling(BaseModel):
         tvz: float
@@ -74,7 +77,11 @@ class CoulombRuptureSetArgs(BaseModel):
         archive_id: str
 
     max_sections: int
-    max_jump_distance: float
+    """
+    and another
+    """
+
+    max_jump_distance: float = Field(description="foobar")
     adaptive_min_distance: float
     thinning_factor: float
     min_sub_sects_per_parent: int
@@ -86,7 +93,7 @@ class CoulombRuptureSetArgs(BaseModel):
     named_faults_file: Optional[FaultModelFile] = None
 
     @model_validator(mode='after')
-    def _check_fault_model(self) -> Self:
+    def check_fault_model(self) -> Self:
         """Must specify either fault_model or fault_model_file"""
         has_fault_model = bool(self.fault_model)
         has_fault_model_file = bool(self.fault_model_file)
@@ -99,6 +106,13 @@ class CoulombRuptureSetBuilderTask:
     """Class for building Coulomb rupture sets."""
 
     def __init__(self, user_args: CoulombRuptureSetArgs, system_args: SystemArgs):
+        """im a doc string
+        
+        Args:
+            user_args: a thing
+            system_args: another thing
+        """
+
 
         self.user_args = user_args
         self.system_args = system_args
@@ -126,6 +140,7 @@ class CoulombRuptureSetBuilderTask:
         return metrics
 
     def run(self):
+        """A docstring"""
 
         t0 = dt.datetime.now()
 

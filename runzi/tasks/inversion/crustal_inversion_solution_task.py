@@ -73,7 +73,7 @@ class CrustalInversionArgs(InversionArgs):
     paleo_rates_file: Optional[PaleoRatesFile] = None
 
     @model_validator(mode='after')
-    def _check_paleo_constraint(self) -> Self:
+    def check_paleo_constraint(self) -> Self:
         """If using paleo constraint, must specify all parameters."""
         params = [
             self.paleo_rate_constraint_weight,
