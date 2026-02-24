@@ -1,5 +1,7 @@
 The primary way of interacting with runzi is via the command line interface (CLI). The top level command is `runzi`. Similar operations are grouped under sub commands (e.g. `hazard`, `inversion`, etc.). Under each sub command are the operations that runzi can perform. Use the <nobr>`--help`</nobr> flag to get more information on available commands, arguments, and options.
 
+Most job types require an [input file](input/index.md) to define arguments.
+
 **Usage**:
 
 ```console

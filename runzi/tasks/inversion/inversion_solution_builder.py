@@ -39,14 +39,28 @@ def all_or_none(params: list) -> bool:
 
 
 class InversionArgs(BaseModel):
+    """Inversion Arguments.
+
+    Validators:
+        - If using re-weighting, must also use uncertainty weighted constraints.
+        - Must use either uncertainty weighted or eq/ineq constraints for MFD, not both.
+        - If using eq/ineq MFD constraint, must specify all relevant parameters.
+        - If using uncertainty weighted MFD constraint, must specify all parameters.
+        - Cannot use uncertainty weighted and 'regular' slip constraints, not both.
+        - If using 'regular' slip rate constraint, must specify all relevent parameters.
+        - If using uncertainty weighted slip rate constraint, must specify all parameters.
+    """
 
     class MFD(BaseModel):
         b: float
         N: float
         tag: str
         enable_tvz: bool = False
-        b_tvz: float = 0.0  # not used if enable_tvz is False
-        N_tvz: float = 0.0  # not used if enable_tvz is False
+        b_tvz: float = 0.0
+        """Not used if enable_tvz is False."""
+
+        N_tvz: float = 0.0
+        """Not used if enable_tvz is False."""
 
     class RuptureSet(BaseModel):
         rupture_set_id: str
@@ -56,7 +70,11 @@ class InversionArgs(BaseModel):
     initial_solution_id: Optional[str] = None
 
     max_inversion_time: float
+    """Maximum time to run inversion in minutes."""
+
     completion_energy: float
+    """Completion energy criterion. Ignored if 0."""
+
     averaging_threads: Optional[int] = None
     averaging_interval_secs: int
     selector_threads: int
@@ -65,39 +83,54 @@ class InversionArgs(BaseModel):
     cooling_schedule: Optional[str] = None
     non_negativity_function: str
 
-    # describes a type of scaling relationship, e.g. "SIMPLE_SUBDUCTION"
     scaling_relationship: Optional[str] = None
+    """Type of scaling relationship, e.g. 'SIMPLE_SUBDUCTION'."""
+
     scaling_recalc_mag: Optional[bool] = None
+    """Recaculate magnitudes using scaling relationship if True."""
 
-    # fault slip rates, could be FAULT_MODEL which uses rupture set, or some other model
     deformation_model: str
+    """The fault slip rates, could be FAULT_MODEL which uses rupture set, or some other model."""
 
-    # N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated
     mfd: MFD
+    """N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated."""
 
-    # if true, must also have uncertainty weighting for mfd and slip rate
     reweight: Optional[bool] = None
+    """If True, must also have uncertainty weighting for mfd and slip rate."""
 
-    # penalize mfd residuals normalized by uncertainty which is a "made up" function of mag
     mfd_uncertainty_weight: Optional[float] = None
+    """Used to when penalizing MFD residuals normalized by uncertainty."""
+
     mfd_uncertainty_power: Optional[float] = None
+    """Used to when penalizing MFD residuals normalized by uncertainty."""
+
     mfd_uncertainty_scalar: Optional[float] = None
+    """Used to when penalizing MFD residuals normalized by uncertainty."""
 
-    # or penalize mfd residuals in absolute terms
     mfd_equality_weight: Optional[float] = None
+    """Used to penalize MFD residuals in absolute terms (no normalization)."""
+
     mfd_inequality_weight: Optional[float] = None
-    # magnitude at which to transition from equality to inequality constraint
     mfd_eq_ineq_transition_mag: Optional[float] = None
+    """Magnitude at which to transition from equality to inequality constraint."""
 
-    # penalize absolute and relative to uncertinaty slip rate residuals
     slip_rate_weighting_type: Optional[Literal["BOTH", "NORMALIZED", "UNNORMALIZED"]] = None
-    slip_rate_normalized_weight: Optional[float] = None
-    slip_rate_unnormalized_weight: Optional[float] = None
+    """Penalize absolute and relative to uncertinaty slip rate residuals."""
 
-    # or penalize by uncerainty only
+    slip_rate_normalized_weight: Optional[float] = None
+    """Penalize absolute and relative to uncertinaty slip rate residuals."""
+
+    slip_rate_unnormalized_weight: Optional[float] = None
+    """Penalize absolute and relative to uncertinaty slip rate residuals."""
+
     use_slip_scaling: Optional[bool] = None
+    """Penalize slip rate by uncerainty only."""
+
     slip_rate_uncertainty_weight: Optional[float] = None
+    """Penalize slip rate by uncerainty only."""
+
     slip_uncertainty_scaling_factor: Optional[float] = None
+    """Penalize slip rate by uncerainty only."""
 
     @model_validator(mode='after')
     def check_reweight(self) -> Self:
@@ -110,14 +143,14 @@ class InversionArgs(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def _check_mfd_constraint(self) -> Self:
+    def check_mfd_constraint(self) -> Self:
         """Choose either uncertainty weighted or eq/ineq constraints for MFD, not both."""
         if (self.mfd_uncertainty_weight is not None) and (self.mfd_equality_weight is not None):
             raise ValueError("Cannot combine uncertainty and equality/inequality MFD weights.")
         return self
 
     @model_validator(mode='after')
-    def _check_mfd_eq_complete(self) -> Self:
+    def check_mfd_eq_complete(self) -> Self:
         """If using eq/ineq MFD constraint, must specify all parameters."""
         params = [self.mfd_equality_weight, self.mfd_inequality_weight, self.mfd_eq_ineq_transition_mag]
         if not all_or_none(params):
@@ -128,7 +161,7 @@ class InversionArgs(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def _check_mfd_unc_complete(self) -> Self:
+    def check_mfd_unc_complete(self) -> Self:
         """If using uncertainty weighted MFD constraint, must specify all parameters."""
         params = [self.mfd_uncertainty_weight, self.mfd_uncertainty_power, self.mfd_uncertainty_scalar]
         if not all_or_none(params):
@@ -138,14 +171,14 @@ class InversionArgs(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def _check_slip_constraint(self) -> Self:
+    def check_slip_constraint(self) -> Self:
         """Choose either uncertainty weighted or 'regular' slip constraints, not both."""
         if (self.slip_rate_normalized_weight is not None) and (self.slip_rate_uncertainty_weight is not None):
             raise ValueError("Cannot combine uncertainty and 'regular' slip rate constraints.")
         return self
 
     @model_validator(mode='after')
-    def _check_slip_abs_complete(self) -> Self:
+    def check_slip_abs_complete(self) -> Self:
         """If using 'regular' slip rate constraint, must specify all parameters."""
         params = [self.slip_rate_weighting_type, self.slip_rate_normalized_weight, self.slip_rate_unnormalized_weight]
         if not all_or_none(params):
@@ -156,7 +189,7 @@ class InversionArgs(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def _check_slip_unc_complete(self) -> Self:
+    def check_slip_unc_complete(self) -> Self:
         """If using uncertainty weighted slip rate constraint, must specify all parameters."""
         params = [self.use_slip_scaling, self.slip_rate_uncertainty_weight, self.slip_uncertainty_scaling_factor]
         if not all_or_none(params):

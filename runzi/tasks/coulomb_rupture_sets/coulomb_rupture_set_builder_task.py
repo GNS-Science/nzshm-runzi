@@ -65,7 +65,8 @@ default_system_args = SystemArgs(
 class CoulombRuptureSetArgs(BaseModel):
     """Input for generating Coulomb rupture sets.
 
-    Must provide either a fault_model or fault_model_file, but not both.
+    Validators:
+        - Must provide either a fault_model or fault_model_file, but not both.
     """
 
     class DepthScaling(BaseModel):
@@ -77,20 +78,21 @@ class CoulombRuptureSetArgs(BaseModel):
         archive_id: str
 
     max_sections: int
-    """
-    and another
-    """
-
-    max_jump_distance: float = Field(description="foobar")
+    max_jump_distance: float
     adaptive_min_distance: float
     thinning_factor: float
     min_sub_sects_per_parent: int
     min_sub_sections: int
     scaling_relationship: str
     depth_scaling: Optional[DepthScaling] = None
+    """The amount by which to scale the depths of the faults."""
+
     fault_model: Optional[str] = None
     fault_model_file: Optional[FaultModelFile] = None
+    """Side-loaded fault model files must be found via toshi API."""
+
     named_faults_file: Optional[FaultModelFile] = None
+    """If side-loading the fault model, you can provide the named faults to group them for reporting."""
 
     @model_validator(mode='after')
     def check_fault_model(self) -> Self:

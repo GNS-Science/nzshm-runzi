@@ -1,5 +1,4 @@
-# Introduction
-
+# Input Arguments and Files
 The input arguments for every task type is defined by a `pydantic` `BaseModel` class. The definitions of these classes can be found in the sections below. The input files are `json` representations of one of these input argument objects with a few exceptions:
 - `title` and `description` fields must also be provided
 - A special `swept_args` field.
@@ -7,7 +6,10 @@ The input arguments for every task type is defined by a `pydantic` `BaseModel` c
 
 `swept_args` are arguments that the user wishes to iterate over. If multiple arguments are swept, runzi will run all combinations of the swept arguments. Any arguments in `swept_args` must not be present elsewhere in the input file.
 
-The `sys_arg_overrides` field is used to over-write the default system arguments for that particular job type. See the [SystemArgs](system_args.md) documentation for a list of available system arguments.
+The `sys_arg_overrides` field is used to over-write the default system arguments for that particular job type. See the [SystemArgs](system_args.md) documentation for a list of available system arguments. Default system arguments for each job type can be found on the respective page.
+
+# Validators
+Some input classes have validators to ensure that only valid inputs or valid combinations of imputs are allowed. These will be listed with each argument class under `Validators`.
 
 # Example
 For Coulomb rupture set generation the input file might look like this.
