@@ -66,5 +66,5 @@ ENV NZSHM22_THS_RLZ_DB=/THS
 
 WORKDIR /home/openquake
 
-CMD ["python3 /app/nzshm-runzi/runzi/cli/cli.py"]
+CMD ["runzi"]
 ENTRYPOINT ["/bin/bash", "-c"]

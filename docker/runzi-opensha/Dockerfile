@@ -6,6 +6,7 @@ RUN apk add --no-cache curl tar bash procps \
 	python3-dev
 
 ARG FATJAR_TAG
+ARG RUNZI_BRANCH
 
 WORKDIR /app/nzshm-opensha/build/libs
 ADD https://nzshm-opensha-public-jars.s3.ap-southeast-2.amazonaws.com/nzshm-opensha-all-${FATJAR_TAG}.jar .
@@ -19,9 +20,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 
 WORKDIR /app/nzshm-runzi
 RUN git fetch
-RUN git checkout 9b35f9d
-
-RUN pip3 install -r requirements.txt
+RUN git switch $RUNZI_BRANCH
 RUN pip3 install -e .
 
 ENV NZSHM22_TOSHI_API_ENABLED=1
@@ -35,5 +34,5 @@ ENV NZSHM22_BUILD_PLOTS=TRUE
 ENV PYTHON_PREP_MODULE=SET_AT_RUNTIME
 ENV PYTHON_TASK_MODULE=SET_AT_RUNTIME
 
-CMD ["python3 /app/nzshm-runzi/runzi/cli/cli.py"]
+CMD ["runzi"]
 ENTRYPOINT ["/bin/bash", "-c"]

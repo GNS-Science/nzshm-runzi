@@ -61,7 +61,10 @@ make sure Dockerfile has correct runzi branch
 ```
 #EG
 export FATJAR_TAG=main_AUG04
-docker build . --build-arg FATJAR_TAG=${FATJAR_TAG} --no-cache
+export RUNZI_BRANCH=desired runzi git branch, e.g. "main"
+docker build  --no-cache . \
+   --build-arg FATJAR_TAG=${FATJAR_TAG} \
+   --build-arg RUNZI_BRANCH=${RUNZI_BRANCH}
 ```
 
 ### Tag new docker image
