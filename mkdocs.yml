@@ -12,7 +12,7 @@ nav:
     - CLI: usage/cli.md
     - Environment Variables: usage/environment_variables.md
     - Input Arguments:
-      - Input Arguments And Files: usage/input/index.md
+      - usage/input/index.md
       - Average Solutions: usage/input/average_solutions.md
       - Coulomb Rupture Sets: usage/input/coulomb_rupture_sets.md
       - Inversion: usage/input/inversion.md
@@ -30,7 +30,7 @@ nav:
       - Time Dependent Solution: usage/input/time_dependent_solution.md
     - Example Input Files: generated.md
     - Docker:
-      - Docker: usage/docker/index.md
+      - usage/docker/index.md
       - Base Build: usage/docker/docker_setup_oq_base.md
       - Editable Build: usage/docker/docker_setup_oq_editable.md
       - Offical Build: usage/docker/docker_setup_oq_official.md

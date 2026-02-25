@@ -3,8 +3,8 @@
 ## [0.2.0] 2026-02-23
 
 ## Changed
+ - Complete refactor of job configuration and execution
  - Modernization of python dev standards (pyproject.toml, type hints, etc.)
- - Refactor job configuration and execution
 
 ## Added
  - Sideload paleoseismic recurrence interval
