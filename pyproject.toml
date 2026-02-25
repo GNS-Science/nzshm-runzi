@@ -58,6 +58,7 @@ dev = [
     "vulture",
     "safety",
     "pip-audit",
+    "chardet (<6)",
 ]
 
 
