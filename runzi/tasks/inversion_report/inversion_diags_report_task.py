@@ -30,6 +30,7 @@ default_system_args = SystemArgs(
 
 class InversionReportArgs(BaseModel):
     """Inversion report arguments."""
+
     source_solution_id: str
     build_mfd_plots: bool
     build_report_level: str | None

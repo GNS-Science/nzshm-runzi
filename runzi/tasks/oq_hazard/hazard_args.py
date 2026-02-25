@@ -53,11 +53,12 @@ def _is_compat_calc_id(compat_calc_id: str) -> str:
 
 class OQArgs(BaseModel):
     """Base class for OpenQuake task arguments.
-    
+
     Validators:
         - If nshm_model_version not given, must provide srm_logic_tree, gmcm_logic_tree, and hazard_config.
         - All files must exist either relative to input file or as absolute path.
     """
+
     model_config = ConfigDict(arbitrary_types_allowed=True)  # this allows OpenquakeConfig to be included in the schema
 
     # define the hazard model (LTs). (for disagg this must be the same as the target curve).
@@ -145,7 +146,7 @@ class OQArgs(BaseModel):
 
 class OQDisaggArgs(OQArgs):
     """Input for calculating disaggregations.
-    
+
     Validators:
         - Cannot combine bin width or number of bins with bin edges.
         - Must provide bin width, number, or edges for every dimension in disagg_types.
@@ -156,6 +157,7 @@ class OQDisaggArgs(OQArgs):
     # meant to be set by the user
     class Site(BaseModel):
         """A location, vs30 pair. Not a user object."""
+
         location: CodedLocation
         vs30: PositiveInt
 

@@ -36,7 +36,6 @@ class AverageSolutionsArgs(BaseModel):
     """the toshi IDs of the solutions to average together."""
 
 
-
 def get_common_rupture_set(source_solution_ids: list[str], toshi_api: ToshiApi) -> str:
 
     rupture_set_id = ''

@@ -37,10 +37,11 @@ default_system_args = SystemArgs(
 
 class CrustalInversionArgs(InversionArgs):
     """Crustal inversion arguments.
-    
+
     Validators:
         -  If using paleo constraint, must specify all parameters.
     """
+
     class ScalingC(BaseModel):
         dip: float
         strike: float

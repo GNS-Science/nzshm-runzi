@@ -44,7 +44,7 @@ default_system_args = SystemArgs(
 
 class SubductionRuptureSetArgs(BaseModel):
     """Input for generating subduction rupture sets.
-    
+
     For details on the parameters see
     https://github.com/GNS-Science/nzshm-opensha/blob/main/doc/NZSHM22-subduction-rupture-generation.md
     """
@@ -60,9 +60,11 @@ class SubductionRuptureSetArgs(BaseModel):
 
     scaling_relationship: str
     slip_along_rupture_model: str
-    ("""The slip function for the rupture."""
-    """See https://github.com/opensha/opensha/blob/master/src/main/java/scratch/UCERF3/enumTreeBranches"""
-    """/SlipAlongRuptureModels.java""")
+    (
+        """The slip function for the rupture."""
+        """See https://github.com/opensha/opensha/blob/master/src/main/java/scratch/UCERF3/enumTreeBranches"""
+        """/SlipAlongRuptureModels.java"""
+    )
 
     deformation_model: Optional[str] = None
 

@@ -15,7 +15,7 @@ from nshm_toshi_client.general_task import GeneralTask
 from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
-from pydantic import BaseModel, model_validator, ConfigDict, Field
+from pydantic import BaseModel, model_validator
 from typing_extensions import Self
 
 from runzi.arguments import SystemArgs, TaskLanguage
@@ -109,12 +109,11 @@ class CoulombRuptureSetBuilderTask:
 
     def __init__(self, user_args: CoulombRuptureSetArgs, system_args: SystemArgs):
         """im a doc string
-        
+
         Args:
             user_args: a thing
             system_args: another thing
         """
-
 
         self.user_args = user_args
         self.system_args = system_args
