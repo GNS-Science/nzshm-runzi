@@ -60,19 +60,19 @@ make sure Dockerfile has correct runzi branch
 
 ```
 #EG
-export FATJAR_TAG=main_AUG04
-export RUNZI_BRANCH=desired runzi git branch, e.g. "main"
-docker build  --no-cache . \
+export RUNZI_GITREF=8ccbb80
+export FATJAR_TAG=bf70d35
+export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_opensha-${FATJAR_TAG}
+docker build  --no-cache \
+   -t 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG} \
    --build-arg FATJAR_TAG=${FATJAR_TAG} \
-   --build-arg RUNZI_BRANCH=${RUNZI_BRANCH}
+   --build-arg RUNZI_GITREF=${RUNZI_GITREF} \
+   .
 ```
 
 ### Tag new docker image
 
 ```
-export RUNZI_GITREF=9b35f9d
-export IMAGE_ID=72e7e3d688ac #from docker build
-export CONTAINER_TAG=runzi-${RUNZI_GITREF}_nz_opensha-${FATJAR_TAG}
 
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
 ```
@@ -119,13 +119,15 @@ run the docker container...
  - use LOCAL to run on local docker host
  - use AWS to run on AWS Batch
 
-```
 
-# -v $HOME/DEV/GNS/AWS_S3_DATA/WORKING:/WORKING \
-export NZSHM22_SCRIPT_CLUSTER_MODE=AWS
-docker run -it --rm --env-file environ \
--v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
+export NZSHM22_SCRIPT_CLUSTER_MODE=AWS
+461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
+--env-file environ 
+```
+docker run -it --rm --entrypoint "/bin/bash" \
+-v /data/NSHM/DEV/APP/nzshm-runzi/INPUT_FILES:/app/nzshm-runzi/INPUT_FILES \
+-v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -e AWS_PROFILE=toshi_batch_devops \
 -e NZSHM22_TOSHI_S3_URL \
 -e NZSHM22_TOSHI_API_URL \
@@ -135,7 +137,7 @@ docker run -it --rm --env-file environ \
 -e NZSHM22_REPORT_LEVEL=FULL \
 -e NZSHM22_TOSHI_API_KEY \
 -e NZSHM22_FATJAR=/app/nzshm-opensha/build/libs/nzshm-opensha-all-${FATJAR_TAG}.jar \
-461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
+de8fcc1d8cda
 ```
 
 ### Batch setup

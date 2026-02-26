@@ -401,12 +401,7 @@ class InversionSolutionBuilder(ABC):
         # capture task metrics
         duration = (dt.datetime.now() - t0).total_seconds()
 
-        metrics = {"SPOOF": True}
-        if not SPOOF:
-            # fecth metrics and convert Java Map to python dict
-            jmetrics = self.inversion_runner.getSolutionMetrics()
-            for k in jmetrics:
-                metrics[k] = jmetrics[k]
+        metrics = {"message": "getSolutionMetrics has been removed from OpenSHA"}
 
         if self.model_type is ModelType.SUBDUCTION:
             table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF else []

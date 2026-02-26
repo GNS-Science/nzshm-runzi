@@ -32,7 +32,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 LOG_INFO = logging.INFO
 logging.getLogger("py4j.java_gateway").setLevel(LOG_INFO)
-logging.getLogger("nshm_toshi_client.toshi_client_base").setLevel(logging.DEBUG)
+logging.getLogger("nshm_toshi_client.toshi_client_base").setLevel(LOG_INFO)
 logging.getLogger("nshm_toshi_client.toshi_file").setLevel(LOG_INFO)
 logging.getLogger("urllib3").setLevel(LOG_INFO)
 logging.getLogger("botocore").setLevel(LOG_INFO)
@@ -42,7 +42,7 @@ logging.getLogger("gql.transport").setLevel(logging.WARN)
 log = logging.getLogger(__name__)
 
 try:
-    from toshi_hazard_store.scripts.ths_import import store_hazard
+    from toshi_hazard_store.scripts.ths_rlz_import import store_hazard
 except ModuleNotFoundError:
     log.info("not importing from toshi_hazard_store.scripts.ths_import due to missing dependencies")
 

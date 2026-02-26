@@ -7,6 +7,10 @@ from rich import print as rich_print
 
 from runzi.arguments import ArgSweeper
 from runzi.tasks.oq_hazard import OQDisaggArgs, OQDisaggJobRunner, OQHazardArgs, OQHazardJobRunner
+import gql
+
+import logging
+logging.getLogger("gql").setLevel(logging.INFO)
 
 app = typer.Typer()
 

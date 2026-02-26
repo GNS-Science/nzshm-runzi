@@ -27,7 +27,7 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 RUN git fetch
 RUN git switch $RUNZI_BRANCH
-RUN pip3 install -e .
+RUN pip3 install .
 
 
 # Install Marcos Converter
@@ -36,9 +36,9 @@ RUN pip3 install -e .
 # AND for now we're mapping in the code like so `docker run  -it --rm -v $(pwd)/../../../ucerf:/app/ucerf`
 # AND then running pip install -e . in the ucerf folder to test
 # https://stackoverflow.com/questions/31528384/conditional-copy-add-in-dockerfile
-ADD ucerf3-update[s] /app/ucerf
-WORKDIR /app/ucerf
-RUN pip3 install -e .
+# ADD ucerf3-update[s] /app/ucerf
+# WORKDIR /app/ucerf
+# RUN pip3 install -e .
 
 
 # default settings for toshi-hazard-store
