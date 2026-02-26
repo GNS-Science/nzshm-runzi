@@ -126,7 +126,7 @@ export NZSHM22_SCRIPT_CLUSTER_MODE=AWS
 --env-file environ 
 ```
 docker run -it --rm --entrypoint "/bin/bash" \
--v /data/NSHM/DEV/APP/nzshm-runzi/INPUT_FILES:/app/nzshm-runzi/INPUT_FILES \
+-v /data/NSHM/DEV/APP/nzshm-runzi/INPUT_FILES:/WORKING/INPUT_FILES \
 -v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -e AWS_PROFILE=toshi_batch_devops \
 -e NZSHM22_TOSHI_S3_URL \

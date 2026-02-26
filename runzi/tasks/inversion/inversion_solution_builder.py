@@ -403,12 +403,15 @@ class InversionSolutionBuilder(ABC):
 
         metrics = {"message": "getSolutionMetrics has been removed from OpenSHA"}
 
+        # TODO: put these back in when/if function is re-introduced to opensha
         if self.model_type is ModelType.SUBDUCTION:
-            table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF else []
+            # table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF else []
+            table_rows_v1 = []
             mfd_table_rows = {"MFD_CURVES": table_rows_v1}
         else:
-            table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF else []
-            table_rows_v2 = self.inversion_runner.getTabularSolutionMfdsV2() if not SPOOF else []
+            # table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF else []
+            # table_rows_v2 = self.inversion_runner.getTabularSolutionMfdsV2() if not SPOOF else []
+            table_rows_v1 = table_rows_v2 = []
             mfd_table_rows = {"MFD_CURVES": table_rows_v1, "MFD_CURVES_V2": table_rows_v2}
 
         if self.system_args.use_api:
