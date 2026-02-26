@@ -56,10 +56,12 @@ def build_tasks(
         task_system_args.java_gateway_port = task_factory.get_next_port()
 
         if CLUSTER_MODE == EnvMode['AWS']:
+            container_task = task_factory.get_container_task()
 
             job_name = f"{job_name}-{task_count}"
 
             yield get_ecs_job_config(
+                container_task=container_task,
                 model_type=model_type,
                 job_name=job_name,
                 task_args=task_args,

@@ -126,7 +126,7 @@ export NZSHM22_SCRIPT_CLUSTER_MODE=AWS
 --env-file environ 
 ```
 docker run -it --rm --entrypoint "/bin/bash" \
--v /data/NSHM/DEV/APP/nzshm-runzi/INPUT_FILES:/WORKING/INPUT_FILES \
+-v /data/NSHM/DEV/APP/nzshm-runzi/INPUT_FILES:/INPUT_FILES \
 -v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -e AWS_PROFILE=toshi_batch_devops \
 -e NZSHM22_TOSHI_S3_URL \
@@ -137,7 +137,7 @@ docker run -it --rm --entrypoint "/bin/bash" \
 -e NZSHM22_REPORT_LEVEL=FULL \
 -e NZSHM22_TOSHI_API_KEY \
 -e NZSHM22_FATJAR=/app/nzshm-opensha/build/libs/nzshm-opensha-all-${FATJAR_TAG}.jar \
-de8fcc1d8cda
+146cfb00db9c
 ```
 
 ### Batch setup

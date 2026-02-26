@@ -1,4 +1,4 @@
-ARG PYTHON_VERSION=required
+ARG PYTHON_VERSION
 FROM python:${PYTHON_VERSION}-slim-bookworm
 
 ARG PYTHON_VERSION
@@ -34,8 +34,10 @@ RUN export PY_NO_DOT=$(echo $PYTHON_VERSION | tr -d '.') && \
 
 # Install runzi
 WORKDIR /app
-COPY script/container_task.sh .
-RUN chmod +x container_task.sh
+COPY script/java_container_task.sh .
+COPY script/python_container_task.sh .
+RUN chmod +x java_container_task.sh
+RUN chmod +x python_container_task.sh
 RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 RUN git fetch

@@ -42,6 +42,8 @@ OpenshaTaskFactoryType = TypeVar('OpenshaTaskFactoryType', bound='OpenshaTaskFac
 class TaskFactory(Protocol):
     def write_task_config(self, task_args: BaseModel, task_system_args: SystemArgs, model_type: ModelType) -> None: ...
 
+    def get_container_task(self) -> str: ...
+
     def get_task_script(self) -> str: ...
 
     def get_next_port(self) -> int: ...
@@ -99,6 +101,9 @@ class OpenshaTaskFactory:
             jvm_heap_max=kwargs.get('jvm_heap_max', 10),
         )
 
+    def get_container_task(self) -> str:
+        return ""
+
     def write_task_config(self, task_args: BaseModel, task_system_args: SystemArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_port}.json"
         task_config = get_task_config(task_args, task_system_args, model_type)
@@ -138,6 +143,9 @@ class OpenshaAWSTaskFactory(OpenshaTaskFactory):
     def __init__(self, root_path, working_path, python_script_module, **kwargs):
         super().__init__(root_path, working_path, python_script_module, **kwargs)
 
+    def get_container_task(self) -> str:
+        return "java_container_task.sh"
+
 
 #     def get_task_script(self):
 
@@ -173,6 +181,9 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
         self._pbs_ppn = kwargs.get('pbs_ppn', 16)  # define hows many processors the PBS job should 'see'
         self._pbs_nodes = 1  # always ust one PBS node (and which one we don't know)
         self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1)  # defines maximum time the jobs is allocated by PBS
+
+    def get_container_task(self) -> str:
+        return ""
 
     def write_task_config(self, task_args: BaseModel, task_system_args: SystemArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_port}.json"

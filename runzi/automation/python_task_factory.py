@@ -50,6 +50,9 @@ class PythonTaskFactory:
             python=kwargs.get('python', 'python3'),
         )
 
+    def get_container_task(self) -> str:
+        return ""
+
     def get_next_port(self) -> int:
         return self._next_task
 
@@ -81,6 +84,9 @@ class PythonAWSTaskFactory(PythonTaskFactory):
     def __init__(self, working_path: Path | PurePath | str, python_script_module: ModuleType, **kwargs):
         super().__init__(working_path, python_script_module, **kwargs)
 
+    def get_container_task(self) -> str:
+        return "python_container_task.sh"
+
 
 class PythonPBSTaskFactory(PythonTaskFactory):
 
@@ -97,6 +103,9 @@ class PythonPBSTaskFactory(PythonTaskFactory):
         self._pbs_ppn = kwargs.get('pbs_ppn', 16)  # define hows many processors the PBS job should 'see'
         self._pbs_nodes = 1  # always ust one PBS node (and which one we don't know)
         self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1)  # defines maximum time the jobs is allocated by PBS
+
+    def get_container_task(self) -> str:
+        return ""
 
     def write_task_config(self, task_args: BaseModel, task_system_args: BaseModel, model_type: ModelType):
         raise NotImplementedError("PythonPBSTaskFactory.write_task_config not implemented. Need to fix wall hours")
