@@ -1,6 +1,6 @@
 """Command line functions for calculationg hazard realizations."""
 
-import logging
+# import logging
 from pathlib import Path
 
 # import gql

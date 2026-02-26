@@ -8,12 +8,14 @@ from runzi.arguments import ArgSweeper, SystemArgs
 from runzi.automation.local_config import (
     API_URL,
     CLUSTER_MODE,
+    ECR_DIGEST,
     FATJAR,
     JVM_HEAP_START,
     OPENSHA_JRE,
     OPENSHA_ROOT,
     S3_REPORT_BUCKET,
     S3_URL,
+    THS_RLZ_DB,
     WORK_PATH,
     EnvMode,
 )
@@ -69,6 +71,8 @@ def build_tasks(
                 toshi_api_url=API_URL,
                 toshi_s3_url=S3_URL,
                 toshi_report_bucket=S3_REPORT_BUCKET,
+                ths_rlz_db=THS_RLZ_DB,
+                ecr_digest=ECR_DIGEST,
                 task_module=task_module.__name__,
                 time_minutes=system_args.ecs_max_job_time_min,
                 memory=system_args.ecs_memory,
