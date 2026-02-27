@@ -1,6 +1,6 @@
 import copy
 from datetime import datetime as dt
-
+from typing import Any
 from nshm_toshi_client.toshi_client_base import ToshiClientBase
 from nshm_toshi_client.toshi_file import ToshiFile
 from nshm_toshi_client.toshi_task_file import ToshiTaskFile
@@ -154,7 +154,7 @@ class ToshiApi(ToshiClientBase):
         executed = self.run_query(qry, input_variables)
         return executed['node']
 
-    def get_file_detail(self, id):
+    def get_file_detail(self, id: str) -> dict[str, Any]:
         qry = '''
         query file ($id:ID!) {
                 node(id: $id) {
@@ -171,7 +171,7 @@ class ToshiApi(ToshiClientBase):
           }
         }'''
 
-        # print(qry)
+        print(qry)
         input_variables = dict(id=id)
         executed = self.run_query(qry, input_variables)
         return executed['node']

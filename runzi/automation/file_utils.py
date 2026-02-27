@@ -6,8 +6,12 @@ helpers for upstream file retrieval
 
 import os
 from pathlib import Path, PurePath
+from typing import TYPE_CHECKING, Generator, Any, Iterable
 
 import requests
+
+if TYPE_CHECKING:
+    from runzi.automation.toshi_api import ModelType, ToshiApi
 
 
 def get_output_file_ids(general_task_api, upstream_task_id, file_extension='zip'):
@@ -58,7 +62,7 @@ def get_output_file_ids(general_task_api, upstream_task_id, file_extension='zip'
                 # return
 
 
-def get_output_file_id(file_api, single_file_id):
+def get_output_file_id(file_api: 'ToshiApi', single_file_id: str) -> Generator[dict[str, Any], None, None]:
 
     api_result = file_api.get_file_detail(single_file_id)
     fault_model = ""
@@ -100,7 +104,7 @@ def get_file_meta(file_api, single_file_id):
         return None
 
 
-def get_download_info(file_api, file_infos):
+def get_download_info(file_api: 'ToshiApi', file_infos: Iterable[dict[str, Any]]) -> Generator[dict, None, None]:
     """
     [{'id': 'RmlsZToyOS4wRUVjV0E=',
     'file_name':
@@ -117,7 +121,13 @@ def get_download_info(file_api, file_infos):
 
 
 def download_files(
-    file_api, file_generator, dest_folder, id_suffix=False, overwrite=False, skip_existing=False, skip_download=False
+    file_api: 'ToshiApi',
+    file_generator: Iterable[dict[str, Any]],
+    dest_folder: str,
+    id_suffix: bool = False,
+    overwrite: bool = False,
+    skip_existing: bool = False,
+    skip_download: bool = False,
 ) -> dict[str, dict]:
     """
     file_generator = get_output_file_ids(general_api, upstream_task_id) # for files by upstream task ID)
