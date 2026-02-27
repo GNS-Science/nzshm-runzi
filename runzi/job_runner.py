@@ -50,7 +50,7 @@ class JobRunner(ABC):
         system_args = self.default_sys_args.model_copy(deep=True)
         system_args.general_task_id = general_task_id
         for name, value in self.argument_sweeper.sys_arg_overrides.items():
-            setattr(self.default_sys_args, name, value)
+            setattr(system_args, name, value)
         return system_args
 
     @abstractmethod

@@ -1,7 +1,5 @@
-import argparse
 import json
 import time
-import urllib
 from pathlib import Path, PurePath
 
 import git
@@ -13,6 +11,7 @@ from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import API_KEY, API_URL, S3_REPORT_BUCKET, S3_URL, SPOOF, USE_API, WORK_PATH
 from runzi.automation.toshi_api import ToshiApi
 from runzi.aws.s3_folder_upload import upload_to_bucket
+from runzi.tasks.get_config import get_config
 
 default_system_args = SystemArgs(
     task_language=TaskLanguage.JAVA,
@@ -102,18 +101,7 @@ def get_repo_heads(rootdir, repos):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("config")
-    args = parser.parse_args()
-
-    try:
-        # LOCAL and CLUSTER this is a file
-        config_file = args.config
-        f = open(args.config, 'r', encoding='utf-8')
-        config = json.load(f)
-    except FileNotFoundError:
-        # for AWS this must be a quoted JSON string
-        config = json.loads(urllib.parse.unquote(args.config))
+    config = get_config()
 
     # print(config)
     user_args = RupsetReportArgs(**config['task_args'])

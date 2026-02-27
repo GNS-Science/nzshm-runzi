@@ -1,8 +1,5 @@
-import argparse
 import datetime as dt
-import json
 import time
-import urllib
 import uuid
 from pathlib import PurePath
 
@@ -13,6 +10,7 @@ from solvis.filter import FilterRuptureIds
 
 from runzi.automation.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
 from runzi.automation.toshi_api import ToshiApi
+from runzi.tasks.get_config import get_config
 
 locations = dict(
     Wellington=["Wellington", -41.276825, 174.777969],
@@ -148,18 +146,7 @@ class BuilderTask:
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("config")
-    args = parser.parse_args()
-
-    try:
-        # LOCAL and CLUSTER this is a file
-        config_file = args.config
-        f = open(args.config, 'r', encoding='utf-8')
-        config = json.load(f)
-    except FileNotFoundError:
-        # for AWS this must be a quoted JSON string
-        config = json.loads(urllib.parse.unquote(args.config))
+    config = get_config()
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(config['job_arguments']['task_id'])

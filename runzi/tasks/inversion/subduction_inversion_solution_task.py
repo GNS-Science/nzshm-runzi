@@ -1,7 +1,4 @@
-import argparse
-import json
 import time
-import urllib.parse
 from typing import TYPE_CHECKING, Optional, cast
 
 import git
@@ -9,6 +6,7 @@ import git
 from runzi.arguments import SystemArgs, TaskLanguage
 from runzi.automation.local_config import USE_API
 from runzi.automation.toshi_api import ModelType
+from runzi.tasks.get_config import get_config
 from runzi.tasks.inversion.inversion_solution_builder import InversionArgs, InversionSolutionBuilder
 
 if TYPE_CHECKING:
@@ -96,18 +94,7 @@ def get_repo_heads(rootdir, repos):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("config")
-    args = parser.parse_args()
-
-    try:
-        # LOCAL and CLUSTER this is a file
-        config_file = args.config
-        f = open(args.config, 'r', encoding='utf-8')
-        config = json.load(f)
-    except FileNotFoundError:
-        # for AWS this must be a quoted JSON string
-        config = json.loads(urllib.parse.unquote(args.config))
+    config = get_config()
 
     # print(config)
     user_args = SubductionInversionArgs(**config['task_args'])

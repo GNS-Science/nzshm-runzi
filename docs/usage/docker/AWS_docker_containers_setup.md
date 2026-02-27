@@ -74,7 +74,7 @@ docker build  --no-cache \
 
 ```
 
-docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
+docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:${CONTAINER_TAG}
 ```
 
 ### get credential, push image into AWS ECR
@@ -82,14 +82,14 @@ docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runz
 ```
 
 $(aws ecr get-login --no-include-email --region us-east-1)
-docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
+docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:${CONTAINER_TAG}
 
 ```
 
 ### for AWS cli v2
 ```
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 461564345538.dkr.ecr.us-east-1.amazonaws.com
-docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
+docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:${CONTAINER_TAG}
 
 ```
 
@@ -122,7 +122,7 @@ run the docker container...
 
 -v $(pwd)/../../runzi/cli/config/saved_configs:/app/nzshm-runzi/runzi/cli/config/saved_configs \
 export NZSHM22_SCRIPT_CLUSTER_MODE=AWS
-461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-opensha:${CONTAINER_TAG}
+461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:${CONTAINER_TAG}
 --env-file environ 
 ```
 docker run -it --rm --entrypoint "/bin/bash" \

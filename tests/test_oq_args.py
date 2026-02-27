@@ -24,7 +24,7 @@ def disagg_input_data():
         return json.loads(input_path.read_text())
 
 
-def test_from_json():
+def test_from_json(monkeypatch):
     ref = resources.files('tests.fixtures') / 'hazard_job.json'
     with resources.as_file(ref) as input_path:
         assert OQHazardArgs.model_validate_json(input_path.read_text())

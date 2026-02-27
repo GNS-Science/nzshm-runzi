@@ -1,9 +1,6 @@
-import argparse
 import base64
 import datetime as dt
-import json
 import time
-import urllib
 import uuid
 from itertools import chain
 from pathlib import Path, PurePath
@@ -17,6 +14,7 @@ from runzi.arguments import SystemArgs, TaskLanguage
 from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import API_KEY, API_URL, S3_URL, SPOOF, USE_API, WORK_PATH
 from runzi.automation.toshi_api import ModelType, SubtaskType, ToshiApi
+from runzi.tasks.get_config import get_config
 
 default_system_args = SystemArgs(
     task_language=TaskLanguage.PYTHON,
@@ -233,18 +231,7 @@ class AverageSolutionsTask:
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("config")
-    args = parser.parse_args()
-
-    try:
-        # LOCAL and CLUSTER this is a file
-        config_file = args.config
-        f = open(args.config, 'r', encoding='utf-8')
-        config = json.load(f)
-    except FileNotFoundError:
-        # for AWS this must be a quoted JSON string
-        config = json.loads(urllib.parse.unquote(args.config))
+    config = get_config()
 
     user_args = AverageSolutionsArgs(**config['task_args'])
     system_args = SystemArgs(**config['task_system_args'])
