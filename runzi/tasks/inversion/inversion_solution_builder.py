@@ -345,6 +345,7 @@ class InversionSolutionBuilder(ABC):
 
             general_task_id = self.system_args.general_task_id
             # create new task in toshi_api
+            time.sleep(10)
             task_id = self.toshi_api.automation_task.create_task(
                 dict(
                     created=dt.datetime.now(tzutc()).isoformat(),
@@ -362,9 +363,11 @@ class InversionSolutionBuilder(ABC):
 
             # link task to the input datafiles
             if rupture_set_id:
+                time.sleep(10)
                 self.toshi_api.automation_task.link_task_file(task_id, rupture_set_id, 'READ')
 
             if initial_solution_id is not None:
+                time.sleep(10)
                 self.toshi_api.automation_task.link_task_file(task_id, initial_solution_id, 'READ')
 
         else:
@@ -427,11 +430,13 @@ class InversionSolutionBuilder(ABC):
                 'result': "SUCCESS",
                 'state': "DONE",
             }
+            time.sleep(10)
             self.toshi_api.automation_task.complete_task(done_args, metrics)
 
             # and the log files, why not
             java_log_file = self.output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
             # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
+            time.sleep(10)
             self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
             # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
@@ -440,6 +445,7 @@ class InversionSolutionBuilder(ABC):
                 dict(id=rupture_set_id, depth=-1),
             ]
 
+            time.sleep(10)
             inversion_id = self.toshi_api.inversion_solution.upload_inversion_solution(
                 task_id,
                 filepath=output_file,
@@ -458,6 +464,7 @@ class InversionSolutionBuilder(ABC):
                     for row in table_rows:
                         mfd_table_data.append([x for x in row])
 
+                    time.sleep(10)
                     result = self.toshi_api.table.create_table(
                         mfd_table_data,
                         column_headers=["series", "series_name", "X", "Y"],
@@ -468,6 +475,7 @@ class InversionSolutionBuilder(ABC):
                         dimensions=None,
                     )
                     mfd_table_id = result['id']
+                    time.sleep(10)
                     result = self.toshi_api.inversion_solution.append_hazard_table(
                         inversion_id,
                         mfd_table_id,
