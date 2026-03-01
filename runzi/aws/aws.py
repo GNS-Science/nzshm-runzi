@@ -98,8 +98,8 @@ def get_ecs_job_config(
     toshi_api_url: str,
     toshi_s3_url: str,
     toshi_report_bucket: str,
-    ths_rlz_db: str | None,
-    ecr_digest: str | None,
+    ths_rlz_db: str,
+    ecr_digest: str,
     task_module: str,
     time_minutes: int,
     memory: int,
@@ -110,6 +110,8 @@ def get_ecs_job_config(
     use_compression=False,
 ):
 
+    ths_rlz_db = ths_rlz_db | "/WORKING/THS_RLZ"
+    ecr_digest = ecr_digest | "sha256:NOT_SET"
     task_config = get_task_config(task_args, task_system_args, model_type)
     if "Fargate" in job_definition:
         assert vcpu in [0.25, 0.5, 1, 2, 4]
