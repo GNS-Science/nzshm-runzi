@@ -223,7 +223,8 @@ class InversionSolutionBuilder(ABC):
         # repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
         # self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
         self.output_folder = WORK_PATH
-
+        print(f"{API_KEY=}")
+        log.critical(f"{API_KEY=}")
         headers = {"x-api-key": API_KEY}
         self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
         self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
