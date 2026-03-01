@@ -110,8 +110,8 @@ def get_ecs_job_config(
     use_compression=False,
 ):
 
-    ths_rlz_db = ths_rlz_db | "/WORKING/THS_RLZ"
-    ecr_digest = ecr_digest | "sha256:NOT_SET"
+    ths_rlz_db = ths_rlz_db or "/WORKING/THS_RLZ"
+    ecr_digest = ecr_digest or "sha256:NOT_SET"
     task_config = get_task_config(task_args, task_system_args, model_type)
     if "Fargate" in job_definition:
         assert vcpu in [0.25, 0.5, 1, 2, 4]
