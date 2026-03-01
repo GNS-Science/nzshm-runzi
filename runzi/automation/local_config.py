@@ -37,12 +37,14 @@ CLUSTER_MODE = EnvMode[
 ]  # Wase True/False now EnvMode: LOCAL, CLUSTER, AWS
 
 # Get API key from AWS secrets manager
-if CLUSTER_MODE is not EnvMode.LOCAL and USE_API and 'TEST' in API_URL.upper():
-    API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_TEST", "us-east-1").get("NZSHM22_TOSHI_API_KEY_TEST")
-elif CLUSTER_MODE is not EnvMode.LOCAL and USE_API and 'PROD' in API_URL.upper():
-    API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_PROD", "us-east-1").get("NZSHM22_TOSHI_API_KEY_PROD")
-else:
-    API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
+API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
+if not API_KEY:
+    if 'TEST' in API_URL.upper():
+        API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_TEST", "us-east-1").get("NZSHM22_TOSHI_API_KEY_TEST")
+    elif 'PROD' in API_URL.upper():
+        API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_PROD", "us-east-1").get("NZSHM22_TOSHI_API_KEY_PROD")
+if USE_API and (not API_KEY):
+    raise ValueError("No API key supplied. API key required if Toshi API enabled.")
 
 
 # How many jobs to run in parallel - keep thread/memory resources in mind
