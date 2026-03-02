@@ -4,6 +4,8 @@
 
 ## Changed
  - Complete refactor of job configuration and execution
+   - Pydantic models for verification of input data
+   - Simpler pattern for extending to new task types
  - Modernization of python dev standards (pyproject.toml, type hints, etc.)
 
 ## Added
