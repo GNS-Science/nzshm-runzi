@@ -131,3 +131,6 @@ graphql_client/
 # audit
 audit.txt
 .safety-project.ini 
+
+# llm-logging-convention
+.llm/.session
