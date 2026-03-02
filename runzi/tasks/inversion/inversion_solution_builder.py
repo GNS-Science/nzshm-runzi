@@ -223,8 +223,6 @@ class InversionSolutionBuilder(ABC):
         # repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
         # self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
         self.output_folder = WORK_PATH
-        print(f"{API_KEY=}")
-        log.critical(f"{API_KEY=}")
         headers = {"x-api-key": API_KEY}
         self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
         self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
@@ -325,7 +323,6 @@ class InversionSolutionBuilder(ABC):
         rupture_set_id = self.user_args.rupture_set.rupture_set_id
         file_generator = get_output_file_id(self.toshi_api, rupture_set_id)  # for file by file ID
         rupture_set_info = download_files(self.toshi_api, file_generator, str(WORK_PATH), overwrite=False)
-
 
         API_GitVersion = self.gateway.entry_point.getGitVersion()
 

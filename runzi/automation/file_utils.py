@@ -6,12 +6,12 @@ helpers for upstream file retrieval
 
 import os
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, Generator, Any, Iterable
+from typing import TYPE_CHECKING, Any, Generator, Iterable
 
 import requests
 
 if TYPE_CHECKING:
-    from runzi.automation.toshi_api import ModelType, ToshiApi
+    from runzi.automation.toshi_api import ToshiApi
 
 
 def get_output_file_ids(general_task_api, upstream_task_id, file_extension='zip'):

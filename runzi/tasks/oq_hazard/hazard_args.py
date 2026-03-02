@@ -18,12 +18,9 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from toshi_hazard_store.config import STORAGE_FOLDER
 from toshi_hazard_store.model import AggregationEnum
-
-try:
-    from toshi_hazard_store.oq_import.toshi_api_subtask import chc_manager
-except ImportError:
-    print("openquake not installed, not importing toshi-hazard-store chc_manager")
+from toshi_hazard_store.model.hazard_models_manager import CompatibleHazardCalculationManager
 from typing_extensions import Self
 
 
@@ -42,6 +39,7 @@ def _has_vs30(filepath: Path):
 
 
 def _is_compat_calc_id(compat_calc_id: str) -> str:
+    chc_manager = CompatibleHazardCalculationManager(Path(STORAGE_FOLDER))
     try:
         if not chc_manager.load(compat_calc_id):
             raise ValueError(f"Compatible Hazard Calculation with unique ID {compat_calc_id} does not exist.")
