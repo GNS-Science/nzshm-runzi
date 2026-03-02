@@ -198,7 +198,7 @@ def get_ecs_job_config(
             ],
         },
         "propagateTags": True,
-        "timeout": {"attemptDurationSeconds": (time_minutes * 60) + 1800},
+        "timeout": {"attemptDurationSeconds": (time_minutes * 60) + (5 * 60)},
     }
 
     if extra_env:
