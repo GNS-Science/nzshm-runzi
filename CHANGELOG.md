@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.0] 2026-02-23
+## [0.9.0] 2026-03-03
 
 ## Changed
  - Complete refactor of job configuration and execution
