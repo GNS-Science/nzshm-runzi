@@ -1,14 +1,14 @@
-# nzshm-runzi
+# runzi
 
 
-[![pypi](https://img.shields.io/pypi/v/nzshm-runzi.svg)](https://pypi.org/project/nzshm-runzi/)
-[![python](https://img.shields.io/pypi/pyversions/nzshm-runzi.svg)](https://pypi.org/project/nzshm-runzi/)
+[![pypi](https://img.shields.io/pypi/v/runzi.svg)](https://pypi.org/project/runzi/)
+[![python](https://img.shields.io/pypi/pyversions/runzi.svg)](https://pypi.org/project/runzi/)
 [![Build Status](https://github.com/GNS-Science/nzshm-runzi/actions/workflows/dev.yml/badge.svg)](https://github.com/GNS-Science/nzshm-runzi/actions/workflows/dev.yml)
 [![codecov](https://codecov.io/gh/GNS-Science/nzshm-runzi/branch/main/graphs/badge.svg)](https://codecov.io/github/GNS-Science/nzshm-runzi)
 
 * Documentation: <https://GNS-Science.github.io/nzshm-runzi>
 * GitHub: <https://github.com/GNS-Science/nzshm-runzi>
-* PyPI: <https://pypi.org/project/nzshm-runzi/>
+* PyPI: <https://pypi.org/project/runzi/>
 * Free software: GPL-3.0-only
 
 Python application for running, scheduling, collecting inputs &amp; outputs of NZSHM jobs on workstations, AWS cloud, and HPC cluster
