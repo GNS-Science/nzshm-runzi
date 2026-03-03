@@ -1,0 +1,1 @@
+Run `pytest` from the repo root.
