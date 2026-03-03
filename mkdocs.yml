@@ -11,13 +11,38 @@ nav:
   - Usage:
     - CLI: usage/cli.md
     - Environment Variables: usage/environment_variables.md
-    - Hazard: usage/hazard.md
-    - Docker: usage/docker/docker.md
+    - Input Arguments:
+      - usage/input/index.md
+      - Average Solutions: usage/input/average_solutions.md
+      - Coulomb Rupture Sets: usage/input/coulomb_rupture_sets.md
+      - Inversion: usage/input/inversion.md
+      - Crustal Inversion: usage/input/crustal_inversion.md
+      - Inversion Report: usage/input/inversion_report.md
+      - OQ Args: usage/input/oq_args.md
+      - OQ Disaggregation: usage/input/oq_disagg.md
+      - OQ Hazard: usage/input/oq_hazard.md
+      - OQ OpenSHA Convert: usage/input/oq_opensha_convert.md
+      - Rupture Set Report: usage/input/rupset_report.md
+      - Scale Solution: usage/input/scale_solution.md
+      - Subduction Inversion: usage/input/subduction_inversion.md
+      - Subduction Rupture Sets: usage/input/subduction_rupture_sets.md
+      - System Args: usage/input/system_args.md
+      - Time Dependent Solution: usage/input/time_dependent_solution.md
+    - Example Input Files: generated.md
+    - Docker:
+      - usage/docker/index.md
+      - Base Build: usage/docker/docker_setup_oq_base.md
+      - Editable Build: usage/docker/docker_setup_oq_editable.md
+      - Offical Build: usage/docker/docker_setup_oq_official.md
     - Inversion, Docker, and AWS: usage/docker/AWS_docker_containers_setup.md
+  - Process:
+    - Building the SRM: process/build_srm_for_oq.md
   - Installation: installation.md
+  - Architecture: architecture/architecture.md
   - Development and Contributing:
     - contributing.md
     - Testing: testing.md
+    - Development Patterns: development.md
   - Changelog: changelog.md
 
 theme:
@@ -58,15 +83,23 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - toc:
-      baselevel: 2
+      toc_depth: 2
       permalink: true
       slugify: !!python/object/apply:pymdownx.slugs.slugify {kwds: {case: lower}}
   - tables
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
 
 plugins:
   - include-markdown
   - search:
       lang: en
+  - gen-files:
+      scripts:
+        - gen_docs/generate_example_file_list.py
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -83,9 +116,14 @@ plugins:
             show_category_heading: true
             members_order: source
             inherited_members: false
+            extensions:
+              # - griffe_pydantic:
+              #     schema: false
+                - griffe_fieldz:
+                    include_inherited: false
+                    include_private: false
+                    strip_annotated: false
 
-          extensions:
-          - pydantic: {schema: true}
 
 extra:
   social:

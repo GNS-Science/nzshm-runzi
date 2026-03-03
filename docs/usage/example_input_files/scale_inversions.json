@@ -1,0 +1,15 @@
+{
+    "title": "Scale Inversion Solutions",
+    "description": "Test scaling rates",
+
+    "polygon_scale": 0.8,
+    "polygon_max_mag": 8,
+
+    "swept_args": {
+        "source_solution_id": [
+            "SW52ZXJzaW9uU29sdXRpb246MTAxMTQ4",
+            "R2VuZXJhbFRhc2s6MTAxMjI1"
+        ],
+        "scale": [0.1, 0.9]
+    }
+}

@@ -1,0 +1,60 @@
+{
+    "title": "Crustal Inversion named faults",
+    "description": "run crustal inversions with named faults as RS module",
+
+    "rupture_set": 
+        {"tag": "a rupture set", "rupture_set_id": "RmlsZToxMDAwNjk="}
+    ,
+    "max_inversion_time": 1.0,
+    "completion_energy": 0.0,
+    "averaging_threads": 4,
+    "averaging_interval_secs": 10,
+    "selector_threads": 4,
+    "selection_interval_secs": 1,
+    "perturbation_function": "EXPONENTIAL_SCALE",
+    "non_negativity_function": "TRY_ZERO_RATES_OFTEN",
+    "cooling_schedule":	"FAST_SA",
+
+    "scaling_relationship": "SIMPLE_CRUSTAL",
+    "scaling_recalc_mag": true,
+
+    "deformation_model": "FAULT_MODEL",
+
+    "mfd": 
+        {
+            "tag": "b = 0.959, N = 3.4",
+            "b": 0.959,
+            "N": 3.4,
+            "enable_tvz": false,
+            "b_tvz": 1.0,
+            "N_tvz": 5.0
+        }
+    ,
+
+    "reweight": true,
+
+    "mfd_uncertainty_power": 0.25,
+    "mfd_uncertainty_scalar": 0.1,
+    "mfd_uncertainty_weight": 1.0,
+
+    "slip_uncertainty_scaling_factor": 0,
+    "use_slip_scaling":	false,
+    "slip_rate_uncertainty_weight": 1.0,
+
+
+    "spatial_seis_pdf": "FLOOR_ADDOPTIEEPASCOMB_CRU",
+    "scaling_c_val": 
+        {"tag": "4.2", "dip": 4.2, "strike": 4.2}
+    ,
+
+    "max_mag_type": "MANIPULATE_MFD",
+    "mag_range": {"min_mag_sans": 6.8, "min_mag_tvz": 6.8, "max_mag_sans": 10.0, "max_mag_tvz": 10.0},
+
+    "slip_rate_factor": {"tag": "Sans 0.9 TVZ 0.7", "sans":0.9, "tvz":0.7},
+
+    "paleo_rate_constraint_weight": 1e3,
+    "paleo_parent_rate_smoothness_constraint_weight": 100000.0,
+    "paleo_rate_constraint": "PALEO_RI_GEOLOGIC_MAY24",
+    "paleo_probability_model": "NZSHM22_C_42"
+
+}

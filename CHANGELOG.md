@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.9.0] 2026-03-03
+
+## Changed
+ - Complete refactor of job configuration and execution
+   - Pydantic models for verification of input data
+   - Simpler pattern for extending to new task types
+   - JSON config files are now validated before submission
+   - CLI restructured into subcommands
+ - Modernization of python dev standards (pyproject.toml, type hints, etc.)
+
+## Added
+ - Sideload paleoseismic recurrence interval
+ - Sideload custom fault models
+ - Sideload named faults
+
+## Removed
+ - python3.9 support
+
 ## [0.1.0] 2025-*
 
 ## Added

@@ -27,7 +27,18 @@ RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 RUN git fetch
 RUN git switch $RUNZI_BRANCH
-RUN pip3 install -e .
+RUN pip3 install .
+
+
+# Install Marcos Converter
+# git@gitlab.openquake.org:hazard/converters/ucerf.git
+# we'll use ADD for now as the repo is not public
+# AND for now we're mapping in the code like so `docker run  -it --rm -v $(pwd)/../../../ucerf:/app/ucerf`
+# AND then running pip install -e . in the ucerf folder to test
+# https://stackoverflow.com/questions/31528384/conditional-copy-add-in-dockerfile
+# ADD ucerf3-update[s] /app/ucerf
+# WORKDIR /app/ucerf
+# RUN pip3 install -e .
 
 
 # default settings for toshi-hazard-store
@@ -46,15 +57,6 @@ RUN chown openquake /THS
 ENV NZSHM22_THS_RLZ_DB=/THS
 
 
-# Install Marcos Converter
-# git@gitlab.openquake.org:hazard/converters/ucerf.git
-# we'll use ADD for now as the repo is not public
-# AND for now we're mapping in the code like so `docker run  -it --rm -v $(pwd)/../../../ucerf:/app/ucerf`
-# AND then running pip install -e . in the ucerf folder to test
-# https://stackoverflow.com/questions/31528384/conditional-copy-add-in-dockerfile
-ADD ucerf3-update[s] /app/ucerf
-WORKDIR /app/ucerf
-RUN if [[ -f pyproject.toml || -f setup.py ]]; then pip install -e .; fi
 
 USER openquake
 
@@ -64,5 +66,5 @@ ENV NZSHM22_THS_RLZ_DB=/THS
 
 WORKDIR /home/openquake
 
-CMD ["python3 /app/nzshm-runzi/runzi/cli/cli.py"]
+CMD ["runzi"]
 ENTRYPOINT ["/bin/bash", "-c"]

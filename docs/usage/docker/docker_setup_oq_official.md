@@ -5,7 +5,7 @@ This will build an "official" image that is tagged with a git-ref and OQ version
 [follow base build](./docker_setup_oq_base.md)
 
 ## retag the base docker image for AWS Elastic Container Service
-```
+```console
 export IMAGE_ID=<id of newly created docker image>
 docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
 ```
@@ -13,16 +13,16 @@ docker tag ${IMAGE_ID} 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runz
 
 ## get credential, push image into AWS ECR
 
-```
+```console
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 461564345538.dkr.ecr.us-east-1.amazonaws.com
 docker push 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
 ```
 
 ## Get the container hash digest 
-```
+```console
 docker inspect --format='{{index .RepoDigests 0}}' 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:${CONTAINER_TAG}
 ```
-```
+```console
 export NZSHM22_RUNZI_ECR_DIGEST=<"sha256:XXX">
 ```
 
@@ -31,18 +31,18 @@ If running on AWS EC2, update AWS Job Definition with `${CONTAINER_TAG}` on the 
 
 ## Set environment variables
 Set the locations of the runzi input files
-```
+```console
 export INPUT_FILES_DIR=<path to input files>
 ```
 
 Set the `NZSHM22_THS_RLZ_DB` to the location of the toshi-hazard-store realization dataset. This can be an S3 bucket or a local path. If running in the cloud, this must be an S3 bucket. For local datasets, the directory and all directories and files below it must allow all users to write to them (i.e. `chmod -R 777 <DATASET DIR>`).
 
-```
+```console
 export NZSHM22_THS_RLZ_DB=<realization dataset path or S3 URI>
 ```
 
 Set your `AWS_PROFILE` if one other than your default is needed.
-```
+```console
 export AWS_PROFILE=<your AWS profile name>
 ```
 
@@ -53,7 +53,7 @@ Set `NZSHM22_SCRIPT_CLUSTER_MODE` to one of `LOCAL`, `AWS`, or `CLUSTER` (`CLUST
 ### Local
 
 #### If using a local realization dataset
-```
+```console
 docker run -it --rm --env-file environ \
 --entrypoint "/bin/bash" \
 -v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
@@ -69,7 +69,7 @@ docker run -it --rm --env-file environ \
 ```
 
 #### If using an S3 realization dataset
-```
+```console
 docker run -it --rm --env-file environ \
 --entrypoint "/bin/bash" \
 -v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
