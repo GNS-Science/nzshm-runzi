@@ -5,6 +5,7 @@ ARG PYTHON_VERSION
 ARG FATJAR_TAG
 ARG RUNZI_GITREF
 ARG OQ_VERSION
+ARG INSTALL_CONVERTER="N"
 
 RUN test -n "$PYTHON_VERSION" || (echo "PYTHON_VERSION is required" && exit 1)
 RUN test -n "$FATJAR_TAG" || (echo "FATJAR_TAG is required" && exit 1)
@@ -15,6 +16,8 @@ RUN pip install --upgrade pip
 RUN apt update
 RUN apt install -y git curl
 
+WORKDIR /app
+COPY ucerf* /app/ucerf
 
 # Install java
 RUN curl -sSL -o /tmp/jdk.tar.gz \
@@ -32,10 +35,18 @@ RUN curl -sSL -o nzshm-opensha-all-${FATJAR_TAG}.jar \
 RUN export PY_NO_DOT=$(echo $PYTHON_VERSION | tr -d '.') && \
   pip install -r https://raw.githubusercontent.com/gem/oq-engine/refs/tags/v${OQ_VERSION}/requirements-py${PY_NO_DOT}-linux64.txt openquake.engine==${OQ_VERSION}
 
-# Install runzi
+# Optionally install UCERF converter
 WORKDIR /app
-COPY script/java_container_task.sh .
-COPY script/python_container_task.sh .
+COPY ucerf* /app/ucerf
+# RUN test "$INSTALL_CONVERTER" = "Y" && cd /app/ucerf && pip install .
+RUN if [ "$INSTALL_CONVERTER" = "Y" ] ; then \
+    cd /app/ucerf && pip install . ; \
+    fi
+
+WORKDIR /app
+# Install runzi
+COPY java_container_task.sh .
+COPY python_container_task.sh .
 RUN chmod +x java_container_task.sh
 RUN chmod +x python_container_task.sh
 RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
