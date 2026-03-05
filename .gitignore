@@ -1,6 +1,6 @@
 **.jar
 .vscode/**
-docker/runzi-openquake/examples/**
+docker/ucerf
 tmp/**
 shell/**
 bin/**
