@@ -1,51 +1,42 @@
-#!/usr/bin/env python3
-"""
-Script to build runzi-opensha Docker image, push to AWS ECR, and update Batch job definition.
+"""Deploy docker image to AWS ECR and update Batch job definition."""
 
-Usage:
-    python scripts/deploy_docker.py \
-        --fatjar-tag bf70d35 \
-        --runzi-gitref main \
-        --oq-version 3.23.4
-
-Or with environment variables:
-    FATJAR_TAG=bf70d35 RUNZI_GITREF=main OQ_VERSION=3.23.4 python scripts/deploy_docker.py
-"""
-
-import argparse
-import base64
 import os
 import re
 import subprocess
-import sys
 from pathlib import Path
 
 import boto3
+import typer
 from dotenv import load_dotenv
+from rich import print as rich_print
+
+load_dotenv()
 
 DEFAULTS = {
-    "python_version": "3.11",
-    "oq_version": "3.23.4",
-    "region": "us-east-1",
-    "aws_account_id": "461564345538",
-    "ecr_repo": "nzshm22/runzi",
-    "job_definition": "runzi_32GB_8VCPU_JD",
-    "dockerfile": "docker/Dockerfile",
+    "python_version": os.environ.get("PYTHON_VERSION", "3.11"),
+    "oq_version": os.environ.get("OQ_VERSION", "3.23.4"),
+    "region": os.environ.get("AWS_REGION", "us-east-1"),
+    "aws_account_id": os.environ.get("AWS_ACCOUNT_ID", "461564345538"),
+    "ecr_repo": os.environ.get("ECR_REPO", "nzshm22/runzi"),
+    "job_definition": os.environ.get("JOB_DEFINITION", "runzi_32GB_8VCPU_JD"),
+    "dockerfile": os.environ.get("DOCKERFILE", "docker/Dockerfile"),
 }
 
+app = typer.Typer()
 
-def get_git_hash(gitref: str) -> str:
+
+def get_git_hash(gitref: str, cwd: Path | None = None) -> str:
     """Resolve gitref to a full commit hash."""
+    if cwd is None:
+        cwd = Path.cwd()
     result = subprocess.run(
         ["git", "rev-parse", gitref],
         capture_output=True,
         text=True,
-        cwd=Path(__file__).parent.parent,
+        cwd=cwd,
     )
     if result.returncode != 0:
-        raise RuntimeError(
-            f"Failed to resolve gitref '{gitref}': {result.stderr.strip()}"
-        )
+        raise RuntimeError(f"Failed to resolve gitref '{gitref}': {result.stderr.strip()}")
     return result.stdout.strip()[:7]
 
 
@@ -56,9 +47,12 @@ def build_docker_image(
     runzi_gitref: str,
     oq_version: str,
     install_converter: bool = False,
+    cwd: Path | None = None,
 ) -> str:
     """Build Docker image and return the full git hash used."""
-    git_hash = get_git_hash(runzi_gitref)
+    if cwd is None:
+        cwd = Path.cwd()
+    git_hash = get_git_hash(runzi_gitref, cwd)
 
     dockerfile_path = Path(dockerfile)
     dockerfile_dir = dockerfile_path.parent.resolve()
@@ -88,7 +82,7 @@ def build_docker_image(
         ]
     )
 
-    print(f"Building Docker image...")
+    print("Building Docker image...")
     print(f"  Dockerfile: {dockerfile}")
     print(f"  Build context: {dockerfile_dir}")
     print(f"  PYTHON_VERSION: {python_version}")
@@ -126,9 +120,7 @@ def tag_and_push_image(
     """Tag and push image to ECR. Returns the new image URI."""
     registry = f"{aws_account_id}.dkr.ecr.{region}.amazonaws.com"
 
-    version_tag = (
-        f"runzi-{git_hash}_py{python_version}_opensha-{fatjar_tag}_oq-{oq_version}"
-    )
+    version_tag = f"runzi-{git_hash}_py{python_version}_opensha-{fatjar_tag}_oq-{oq_version}"
     image_uri = f"{registry}/{ecr_repo}:{version_tag}"
     latest_uri = f"{registry}/{ecr_repo}:latest"
 
@@ -136,7 +128,7 @@ def tag_and_push_image(
     subprocess.run(["docker", "tag", "runzi-build:latest", image_uri], check=True)
     subprocess.run(["docker", "tag", "runzi-build:latest", latest_uri], check=True)
 
-    print(f"Pushing to ECR...")
+    print("Pushing to ECR...")
     subprocess.run(["docker", "push", image_uri], check=True)
     subprocess.run(["docker", "push", latest_uri], check=True)
 
@@ -200,159 +192,132 @@ def update_job_definition(
     return new_arn
 
 
-def main():
-    load_dotenv()
-
-    parser = argparse.ArgumentParser(
-        description="Build runzi-opensha Docker image, push to ECR, update Batch job definition"
-    )
-    parser.add_argument(
-        "--python-version",
-        default=os.environ.get("PYTHON_VERSION", DEFAULTS["python_version"]),
-        help=f"Python version (default: {DEFAULTS['python_version']})",
-    )
-    parser.add_argument(
-        "--fatjar-tag",
+@app.command()
+def build_and_deploy_container(
+    fatjar_tag: str = typer.Option(
         default=os.environ.get("FATJAR_TAG"),
-        required="FATJAR_TAG" not in os.environ,
+        prompt=True if not os.environ.get("FATJAR_TAG") else False,
         help="OpenSHA fatjar tag",
-    )
-    parser.add_argument(
-        "--runzi-gitref",
+    ),
+    runzi_gitref: str = typer.Option(
         default=os.environ.get("RUNZI_GITREF"),
-        required="RUNZI_GITREF" not in os.environ,
+        prompt=True if not os.environ.get("RUNZI_GITREF") else False,
         help="Git branch, tag, or commit to build",
-    )
-    parser.add_argument(
-        "--oq-version",
+    ),
+    python_version: str = typer.Option(
+        default=os.environ.get("PYTHON_VERSION", DEFAULTS["python_version"]),
+        help="Python version",
+    ),
+    oq_version: str = typer.Option(
         default=os.environ.get("OQ_VERSION", DEFAULTS["oq_version"]),
-        required="OQ_VERSION" not in os.environ,
-        help=f"OpenQuake version (default: {DEFAULTS['oq_version']})",
-    )
-    parser.add_argument(
-        "--install-converter",
-        action="store_true",
-        help="Set to install UCERF converter",
-    )
-    parser.add_argument(
-        "--region",
+        help="OpenQuake version",
+    ),
+    install_converter: bool = typer.Option(default=False, help="Set to install UCERF converter"),
+    region: str = typer.Option(
         default=os.environ.get("AWS_REGION", DEFAULTS["region"]),
-        help=f"AWS region (default: {DEFAULTS['region']})",
-    )
-    parser.add_argument(
-        "--aws-account-id",
+        help="AWS region",
+    ),
+    aws_account_id: str = typer.Option(
         default=os.environ.get("AWS_ACCOUNT_ID", DEFAULTS["aws_account_id"]),
-        help=f"AWS account ID for ECR (default: {DEFAULTS['aws_account_id']})",
-    )
-    parser.add_argument(
-        "--ecr-repo",
+        help="AWS account ID",
+    ),
+    ecr_repo: str = typer.Option(
         default=os.environ.get("ECR_REPO", DEFAULTS["ecr_repo"]),
-        help=f"ECR repository name (default: {DEFAULTS['ecr_repo']})",
-    )
-    parser.add_argument(
-        "--job-definition",
+        help="ECR repository",
+    ),
+    job_definition: str = typer.Option(
         default=os.environ.get("JOB_DEFINITION", DEFAULTS["job_definition"]),
-        help=f"Batch job definition to update (default: {DEFAULTS['job_definition']})",
-    )
-    parser.add_argument(
-        "--dockerfile",
-        default=DEFAULTS["dockerfile"],
-        help=f"Path to Dockerfile (default: {DEFAULTS['dockerfile']})",
-    )
-    parser.add_argument(
-        "--skip-build",
-        action="store_true",
-        help="Skip Docker build (use existing runzi-build:latest image)",
-    )
-    parser.add_argument(
-        "--skip-push",
-        action="store_true",
-        help="Skip ECR push (for testing)",
-    )
-    parser.add_argument(
-        "--skip-job-update",
-        action="store_true",
-        help="Skip job definition update",
-    )
+        help="Batch job definition",
+    ),
+    dockerfile: str = typer.Option(
+        default=os.environ.get("DOCKERFILE", DEFAULTS["dockerfile"]),
+        help="Path to Dockerfile",
+    ),
+    skip_build: bool = typer.Option(default=False, help="Skip Docker build"),
+    skip_push: bool = typer.Option(default=False, help="Skip ECR push"),
+    skip_job_update: bool = typer.Option(default=False, help="Skip job definition update"),
+):
+    """Build runzi-opensha Docker image, push to ECR, update Batch job definition."""
+    if skip_push:
+        skip_job_update = True
 
-    args = parser.parse_args()
-
-    if args.skip_push:
-        args.skip_job_update = True
-
-    print("=" * 60)
-    print("runzi-opensha Docker Deployment")
-    print("=" * 60)
+    rich_print("[bold]runzi-opensha Docker Deployment[/bold]")
     print()
     print("Arguments:")
-
-    for arg, value in vars(args).items():
-        print(f"  {arg}: {value}")
+    print(f"  python_version: {python_version}")
+    print(f"  fatjar_tag: {fatjar_tag}")
+    print(f"  runzi_gitref: {runzi_gitref}")
+    print(f"  oq_version: {oq_version}")
+    print(f"  install_converter: {install_converter}")
+    print(f"  region: {region}")
+    print(f"  aws_account_id: {aws_account_id}")
+    print(f"  ecr_repo: {ecr_repo}")
+    print(f"  job_definition: {job_definition}")
+    print(f"  dockerfile: {dockerfile}")
+    print(f"  skip_build: {skip_build}")
+    print(f"  skip_push: {skip_push}")
+    print(f"  skip_job_update: {skip_job_update}")
     print()
 
-    dockerfile = Path(args.dockerfile)
-    if not dockerfile.is_absolute():
-        dockerfile = Path(__file__).parent.parent / dockerfile
+    dockerfile_path = Path(dockerfile)
+    if not dockerfile_path.is_absolute():
+        dockerfile_path = Path.cwd() / dockerfile_path
 
-    if not dockerfile.exists():
-        print(f"Error: Dockerfile not found: {dockerfile}")
-        sys.exit(1)
+    if not dockerfile_path.exists():
+        rich_print(f"[red]Error: Dockerfile not found: {dockerfile_path}[/red]")
+        raise typer.Exit(1)
 
     try:
-        if args.skip_build:
+        if skip_build:
             print("Skipping build (using existing runzi-build:latest)")
-            git_hash = get_git_hash(args.runzi_gitref)
+            git_hash = get_git_hash(runzi_gitref)
         else:
             git_hash = build_docker_image(
-                str(dockerfile),
-                args.python_version,
-                args.fatjar_tag,
-                args.runzi_gitref,
-                args.oq_version,
-                args.install_converter,
+                str(dockerfile_path),
+                python_version,
+                fatjar_tag,
+                runzi_gitref,
+                oq_version,
+                install_converter,
             )
 
-        ecr_login(args.region, args.aws_account_id)
+        ecr_login(region, aws_account_id)
 
-        if not args.skip_push:
+        if not skip_push:
             image_uri = tag_and_push_image(
-                args.ecr_repo,
-                args.aws_account_id,
-                args.region,
+                ecr_repo,
+                aws_account_id,
+                region,
                 git_hash,
-                args.python_version,
-                args.fatjar_tag,
-                args.oq_version,
+                python_version,
+                fatjar_tag,
+                oq_version,
             )
         else:
             image_uri = "<skipped>"
 
-        if not args.skip_job_update:
+        if not skip_job_update:
             new_job_def_arn = update_job_definition(
-                args.job_definition,
+                job_definition,
                 image_uri,
-                args.region,
+                region,
             )
 
         print()
-        print("=" * 60)
-        print("Deployment complete!")
-        print("=" * 60)
+        rich_print("[bold green]Deployment complete![/bold green]")
         print(f"Image URI: {image_uri}")
-        if not args.skip_job_update:
+        if not skip_job_update:
             print(f"Job Definition: {new_job_def_arn}")
             version_match = re.search(r":(\d+)$", new_job_def_arn)
             if version_match:
                 revision = version_match.group(1)
-                print(
-                    f"Submit job with: --job-definition {args.job_definition}:{revision}"
-                )
+                print(f"Submit job with: --job-definition {job_definition}:{revision}")
         print()
 
     except Exception as e:
-        print(f"Error: {e}")
-        sys.exit(1)
+        rich_print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(1)
 
 
 if __name__ == "__main__":
-    main()
+    app()
