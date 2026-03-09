@@ -176,7 +176,7 @@ def get_ecs_job_config(
         "jobQueue": job_queue,
         "jobDefinition": job_definition,
         "containerOverrides": {
-            "command": ["-s", f"/app/{container_task}"],
+            "command": ["-s", f"/usr/local/bin/{container_task}"],
             "resourceRequirements": [{"value": str(memory), "type": "MEMORY"}, {"value": str(vcpu), "type": "VCPU"}],
             "environment": [
                 {
