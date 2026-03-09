@@ -2,7 +2,7 @@
 
 The `build_and_deploy_container` script builds a runzi Docker image capable of running OpenSHA and OpenQuake, pushes it to AWS ECR, and updates the AWS Batch job definition.
 
-The build optionally includes the UCERF conversion package (created by GEM, https://gitlab.openquake.org/hazard/converters/ucerf) which converts OpenSHA inversion solutions to OpenQuake source inputs. You must have a copy of the package in the directory `docker/ucerf`.
+The build optionally includes the UCERF conversion package, [created by GEM](https://gitlab.openquake.org/hazard/converters/ucerf) which converts OpenSHA inversion solutions to OpenQuake source inputs. You must have a copy of the package in the directory `docker/ucerf`.
 
 ## Overview
 
@@ -12,11 +12,9 @@ This script is used to:
 - Push the image to the AWS Elastic Container Registry (ECR)
 - Update an AWS Batch job definition to use the new image
 
-This is typically used when deploying new versions of the runzi application to AWS Batch.
-
 ## Usage
 
-The script can be run via the runzi CLI:
+The script is run via the runzi CLI:
 
 ```console
 $ runzi utils deploy-docker [OPTIONS]
@@ -147,6 +145,5 @@ runzi utils deploy-docker \
 After a successful deployment, the script outputs:
 
 - Image URI (e.g., `461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:runzi-abc1234_py3.11_opensha-bf70d35_oq-3.23.4`)
-- Docker digest
+- Docker digest (e.g., `sha256:5128732f7135120e3d80240587130c122382d5af88226fa87304eec3ea410ef7`)
 - New job definition ARN
-- Command to submit a job with the new revision

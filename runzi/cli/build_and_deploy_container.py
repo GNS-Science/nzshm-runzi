@@ -144,7 +144,7 @@ def tag_and_push_image(
         text=True,
         check=True,
     )
-    image_digest = result.stdout.strip().split("@")[1]
+    image_digest = result.stdout.strip().split("@")[1].replace("]","")
 
     return image_uri, image_digest
 
