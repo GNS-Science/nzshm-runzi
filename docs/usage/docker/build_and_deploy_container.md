@@ -90,7 +90,7 @@ JOB_DEFINITION=runzi_32GB_8VCPU_JD
 Deploy a new image with all defaults:
 
 ```bash
-python scripts/deploy_docker.py --fatjar-tag bf70d35 --runzi-gitref main
+runzi utils deploy-docker --fatjar-tag bf70d35 --runzi-gitref main
 ```
 
 Or with environment variables:
@@ -98,7 +98,7 @@ Or with environment variables:
 ```bash
 export FATJAR_TAG=bf70d35
 export RUNZI_GITREF=main
-python scripts/deploy_docker.py
+runzi utils deploy-docker
 ```
 
 ### Test Build Only
@@ -106,7 +106,7 @@ python scripts/deploy_docker.py
 Build the image without pushing (useful for testing):
 
 ```bash
-python scripts/deploy_docker.py --fatjar-tag bf70d35 --runzi-gitref main --skip-push
+runzi utils deploy-docker --fatjar-tag bf70d35 --runzi-gitref main --skip-push
 ```
 
 ### Specific Versions
@@ -114,7 +114,7 @@ python scripts/deploy_docker.py --fatjar-tag bf70d35 --runzi-gitref main --skip-
 Deploy with specific OpenQuake and Python versions:
 
 ```bash
-python scripts/deploy_docker.py \
+runzi utils deploy-docker \
     --fatjar-tag bf70d35 \
     --runzi-gitref main \
     --oq-version 3.24.0 \
@@ -126,7 +126,7 @@ python scripts/deploy_docker.py \
 Include the UCERF converter in the image:
 
 ```bash
-python scripts/deploy_docker.py \
+runzi utils deploy-docker \
     --fatjar-tag bf70d35 \
     --runzi-gitref main \
     --install-converter
