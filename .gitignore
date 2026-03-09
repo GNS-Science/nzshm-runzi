@@ -5,6 +5,7 @@ tmp/**
 shell/**
 bin/**
 INPUT_FILES
+.env*
 
 # macOS
 .DS_Store
