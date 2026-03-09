@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.1] 2026-03-10
+
+## Changed
+ - Improved docker build with UCERF converter option
+ - Documentation for building and running docker image
+
+## Added
+ - Script for building and deploying docker image
+ 
+## Removed
+ - OpenQuake example input files
+
 ## [0.9.0] 2026-03-03
 
 ## Changed

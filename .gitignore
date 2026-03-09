@@ -1,10 +1,11 @@
 **.jar
 .vscode/**
-docker/runzi-openquake/examples/**
+docker/ucerf
 tmp/**
 shell/**
 bin/**
 INPUT_FILES
+.env*
 
 # macOS
 .DS_Store
