@@ -1,7 +1,6 @@
 """Deploy docker image to AWS ECR and update Batch job definition."""
 
 import os
-import re
 import subprocess
 from pathlib import Path
 
