@@ -59,29 +59,16 @@ def build_docker_image(
     dockerfile_dir = dockerfile_path.parent.resolve()
 
     build_cmd = [
-        "docker",
-        "build",
-        "--no-cache",
-        "-f",
-        str(dockerfile_path.name),
-        "--build-arg",
-        f"PYTHON_VERSION={python_version}",
-        "--build-arg",
-        f"FATJAR_TAG={fatjar_tag}",
-        "--build-arg",
-        f"RUNZI_GITREF={git_hash}",
-        "--build-arg",
-        f"OQ_VERSION={oq_version}",
+        "docker", "build", "--no-cache",
+        "-f", str(dockerfile_path.name),
+        "--build-arg", f"PYTHON_VERSION={python_version}",
+        "--build-arg", f"FATJAR_TAG={fatjar_tag}",
+        "--build-arg", f"RUNZI_GITREF={git_hash}",
+        "--build-arg", f"OQ_VERSION={oq_version}",
     ]
     if install_converter:
         build_cmd.extend(["--build-arg", "INSTALL_CONVERTER=Y"])
-    build_cmd.extend(
-        [
-            "-t",
-            "runzi-build:latest",
-            ".",
-        ]
-    )
+    build_cmd.extend(["-t", "runzi-build:latest", "."])
 
     print("Building Docker image...")
     print(f"  Dockerfile: {dockerfile}")
@@ -143,7 +130,7 @@ def tag_and_push_image(
         text=True,
         check=True,
     )
-    image_digest = result.stdout.strip().split("@")[1].replace("]","")
+    image_digest = result.stdout.strip().split("@")[1].replace("]", "")
 
     return image_uri, image_digest
 
