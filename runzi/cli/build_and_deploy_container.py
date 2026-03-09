@@ -35,9 +35,7 @@ def get_git_hash(gitref: str, cwd: Path | None = None) -> str:
         cwd=cwd,
     )
     if result.returncode != 0:
-        raise RuntimeError(
-            f"Failed to resolve gitref '{gitref}': {result.stderr.strip()}"
-        )
+        raise RuntimeError(f"Failed to resolve gitref '{gitref}': {result.stderr.strip()}")
     return result.stdout.strip()[:7]
 
 
@@ -59,12 +57,19 @@ def build_docker_image(
     dockerfile_dir = dockerfile_path.parent.resolve()
 
     build_cmd = [
-        "docker", "build", "--no-cache",
-        "-f", str(dockerfile_path.name),
-        "--build-arg", f"PYTHON_VERSION={python_version}",
-        "--build-arg", f"FATJAR_TAG={fatjar_tag}",
-        "--build-arg", f"RUNZI_GITREF={git_hash}",
-        "--build-arg", f"OQ_VERSION={oq_version}",
+        "docker",
+        "build",
+        "--no-cache",
+        "-f",
+        str(dockerfile_path.name),
+        "--build-arg",
+        f"PYTHON_VERSION={python_version}",
+        "--build-arg",
+        f"FATJAR_TAG={fatjar_tag}",
+        "--build-arg",
+        f"RUNZI_GITREF={git_hash}",
+        "--build-arg",
+        f"OQ_VERSION={oq_version}",
     ]
     if install_converter:
         build_cmd.extend(["--build-arg", "INSTALL_CONVERTER=Y"])
@@ -108,9 +113,7 @@ def tag_and_push_image(
     """Tag and push image to ECR. Returns the new image URI."""
     registry = f"{aws_account_id}.dkr.ecr.{region}.amazonaws.com"
 
-    version_tag = (
-        f"runzi-{git_hash}_py{python_version}_opensha-{fatjar_tag}_oq-{oq_version}"
-    )
+    version_tag = f"runzi-{git_hash}_py{python_version}_opensha-{fatjar_tag}_oq-{oq_version}"
     image_uri = f"{registry}/{ecr_repo}:{version_tag}"
     latest_uri = f"{registry}/{ecr_repo}:latest"
 
@@ -201,9 +204,7 @@ def build_and_deploy_container(
         default=os.environ.get("OQ_VERSION", DEFAULTS["oq_version"]),
         help="OpenQuake version",
     ),
-    install_converter: bool = typer.Option(
-        default=False, help="Set to install UCERF converter"
-    ),
+    install_converter: bool = typer.Option(default=False, help="Set to install UCERF converter"),
     region: str = typer.Option(
         default=os.environ.get("AWS_REGION", DEFAULTS["region"]),
         help="AWS region",
@@ -226,9 +227,7 @@ def build_and_deploy_container(
     ),
     skip_build: bool = typer.Option(default=False, help="Skip Docker build"),
     skip_push: bool = typer.Option(default=False, help="Skip ECR push"),
-    skip_job_update: bool = typer.Option(
-        default=False, help="Skip job definition update"
-    ),
+    skip_job_update: bool = typer.Option(default=False, help="Skip job definition update"),
 ):
     """Build runzi-opensha Docker image, push to ECR, update Batch job definition."""
     if skip_push:
