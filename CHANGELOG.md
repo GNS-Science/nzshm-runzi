@@ -5,6 +5,7 @@
 ## Changed
  - Improved docker build with UCERF converter option
  - Documentation for building and running docker image
+ - Reduced size of docker image
 
 ## Added
  - Script for building and deploying docker image
