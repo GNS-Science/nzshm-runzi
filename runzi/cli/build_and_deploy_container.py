@@ -36,7 +36,9 @@ def get_git_hash(gitref: str, cwd: Path | None = None) -> str:
         cwd=cwd,
     )
     if result.returncode != 0:
-        raise RuntimeError(f"Failed to resolve gitref '{gitref}': {result.stderr.strip()}")
+        raise RuntimeError(
+            f"Failed to resolve gitref '{gitref}': {result.stderr.strip()}"
+        )
     return result.stdout.strip()[:7]
 
 
@@ -116,11 +118,13 @@ def tag_and_push_image(
     python_version: str,
     fatjar_tag: str,
     oq_version: str,
-) -> str:
+) -> tuple[str, str]:
     """Tag and push image to ECR. Returns the new image URI."""
     registry = f"{aws_account_id}.dkr.ecr.{region}.amazonaws.com"
 
-    version_tag = f"runzi-{git_hash}_py{python_version}_opensha-{fatjar_tag}_oq-{oq_version}"
+    version_tag = (
+        f"runzi-{git_hash}_py{python_version}_opensha-{fatjar_tag}_oq-{oq_version}"
+    )
     image_uri = f"{registry}/{ecr_repo}:{version_tag}"
     latest_uri = f"{registry}/{ecr_repo}:latest"
 
@@ -140,10 +144,9 @@ def tag_and_push_image(
         text=True,
         check=True,
     )
-    digest = result.stdout.strip()
-    print(f"Digest: {digest}")
+    image_digest = result.stdout.strip().split("@")[1]
 
-    return image_uri
+    return image_uri, image_digest
 
 
 def update_job_definition(
@@ -212,7 +215,9 @@ def build_and_deploy_container(
         default=os.environ.get("OQ_VERSION", DEFAULTS["oq_version"]),
         help="OpenQuake version",
     ),
-    install_converter: bool = typer.Option(default=False, help="Set to install UCERF converter"),
+    install_converter: bool = typer.Option(
+        default=False, help="Set to install UCERF converter"
+    ),
     region: str = typer.Option(
         default=os.environ.get("AWS_REGION", DEFAULTS["region"]),
         help="AWS region",
@@ -235,7 +240,9 @@ def build_and_deploy_container(
     ),
     skip_build: bool = typer.Option(default=False, help="Skip Docker build"),
     skip_push: bool = typer.Option(default=False, help="Skip ECR push"),
-    skip_job_update: bool = typer.Option(default=False, help="Skip job definition update"),
+    skip_job_update: bool = typer.Option(
+        default=False, help="Skip job definition update"
+    ),
 ):
     """Build runzi-opensha Docker image, push to ECR, update Batch job definition."""
     if skip_push:
@@ -284,7 +291,7 @@ def build_and_deploy_container(
         ecr_login(region, aws_account_id)
 
         if not skip_push:
-            image_uri = tag_and_push_image(
+            image_uri, image_digest = tag_and_push_image(
                 ecr_repo,
                 aws_account_id,
                 region,
@@ -294,7 +301,7 @@ def build_and_deploy_container(
                 oq_version,
             )
         else:
-            image_uri = "<skipped>"
+            image_uri, image_digest = "<skipped>", "sha256:skipped"
 
         if not skip_job_update:
             new_job_def_arn = update_job_definition(
@@ -304,14 +311,17 @@ def build_and_deploy_container(
             )
 
         print()
-        rich_print("[bold green]Deployment complete![/bold green]")
+        stages = [
+            ("Build", not skip_build),
+            ("Push image to ECR", not skip_push),
+            ("Update job definition", not skip_job_update),
+        ]
+        completed = [name for name, done in stages if done]
+        rich_print(f"[bold green]Completed {', '.join(completed)}![/bold green]")
         print(f"Image URI: {image_uri}")
+        print(f"Image digest: {image_digest}")
         if not skip_job_update:
             print(f"Job Definition: {new_job_def_arn}")
-            version_match = re.search(r":(\d+)$", new_job_def_arn)
-            if version_match:
-                revision = version_match.group(1)
-                print(f"Submit job with: --job-definition {job_definition}:{revision}")
         print()
 
     except Exception as e:

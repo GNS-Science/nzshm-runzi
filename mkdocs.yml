@@ -30,10 +30,8 @@ nav:
       - Time Dependent Solution: usage/input/time_dependent_solution.md
     - Example Input Files: generated.md
     - Docker:
-      - usage/docker/index.md
-      - Base Build: usage/docker/docker_setup_oq_base.md
-      - Editable Build: usage/docker/docker_setup_oq_editable.md
-      - Offical Build: usage/docker/docker_setup_oq_official.md
+      - Build and Deploy Container: usage/docker/build_and_deploy_container.md
+      - Running the Container Locally: usage/docker/run_locally.md
     - Inversion, Docker, and AWS: usage/docker/AWS_docker_containers_setup.md
   - Process:
     - Building the SRM: process/build_srm_for_oq.md

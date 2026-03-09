@@ -55,6 +55,10 @@ RUN git fetch
 RUN git checkout ${RUNZI_GITREF}
 RUN pip install .
 
+# create the toshi-hazard-store dataset directory for use 
+WORKDIR /THS
+ENV NZSHM22_THS_RLZ_DB=/THS
+
 # Create working directory and set env vars
 WORKDIR /WORKING
 RUN mkdir -p /WORKING
