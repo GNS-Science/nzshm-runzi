@@ -6,7 +6,6 @@ import logging
 from abc import ABC, abstractmethod
 from multiprocessing.dummy import Pool
 from subprocess import check_call
-from types import ModuleType
 
 import boto3
 
@@ -14,18 +13,19 @@ from runzi.arguments import ArgSweeper, SystemArgs
 from runzi.automation.local_config import CLUSTER_MODE, USE_API, WORKER_POOL_SIZE, EnvMode
 from runzi.automation.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType
 from runzi.build_tasks import build_tasks
+from runzi.protocols import ModuleWithDefaultSysArgs
 
 from .tasks.toshi_utils import toshi_api
 
 logging.basicConfig(level=logging.INFO)
 
 loglevel = logging.INFO
-logging.getLogger('py4j.java_gateway').setLevel(loglevel)
-logging.getLogger('nshm_toshi_client.toshi_client_base').setLevel(loglevel)
-logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
-logging.getLogger('urllib3').setLevel(loglevel)
-logging.getLogger('botocore').setLevel(loglevel)
-logging.getLogger('git.cmd').setLevel(loglevel)
+logging.getLogger("py4j.java_gateway").setLevel(loglevel)
+logging.getLogger("nshm_toshi_client.toshi_client_base").setLevel(loglevel)
+logging.getLogger("nshm_toshi_client.toshi_file").setLevel(loglevel)
+logging.getLogger("urllib3").setLevel(loglevel)
+logging.getLogger("botocore").setLevel(loglevel)
+logging.getLogger("git.cmd").setLevel(loglevel)
 
 
 class JobRunner(ABC):
@@ -34,7 +34,7 @@ class JobRunner(ABC):
     subtask_type: SubtaskType
     job_name: str
 
-    def __init__(self, argument_sweeper: ArgSweeper, task_module: ModuleType):
+    def __init__(self, argument_sweeper: ArgSweeper, task_module: ModuleWithDefaultSysArgs):
         """Initialize the JobRunner.
 
         Args:
@@ -80,7 +80,6 @@ class JobRunner(ABC):
         model_type = self.get_model_type()
 
         if USE_API:
-
             gt_args = (
                 CreateGeneralTaskArgs(
                     agent_name=getpass.getuser(),
@@ -109,10 +108,10 @@ class JobRunner(ABC):
 
             def call_script(script_name):
                 print("call_script with:", script_name)
-                check_call(['bash', script_name])
+                check_call(["bash", script_name])
 
-            print('task count: ', len(scripts))
-            print('worker count: ', WORKER_POOL_SIZE)
+            print("task count: ", len(scripts))
+            print("worker count: ", WORKER_POOL_SIZE)
             pool = Pool(WORKER_POOL_SIZE)
             pool.map(call_script, scripts)
             pool.close()
@@ -126,7 +125,7 @@ class JobRunner(ABC):
                 print(res)
         elif CLUSTER_MODE is EnvMode.CLUSTER:
             for script_name in scripts:
-                check_call(['qsub', script_name])  # type: ignore
+                check_call(["qsub", script_name])  # type: ignore
 
         print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
 

@@ -18,7 +18,6 @@ The job is responsible for
 import json
 import os
 from pathlib import Path, PurePath
-from types import ModuleType
 from typing import Optional, Protocol, TypeVar
 
 from pydantic import BaseModel
@@ -28,13 +27,14 @@ from runzi.automation.python_task_factory import PythonTaskFactory
 from runzi.automation.python_task_factory import get_factory as get_python_factory
 from runzi.automation.task_config import get_task_config
 from runzi.automation.toshi_api import ModelType
+from runzi.protocols import ModuleWithDefaultSysArgs
 
 from .local_config import EnvMode
 
 # from runzi.runners.inversion_inputs import InversionArgs
 
 
-OpenshaTaskFactoryType = TypeVar('OpenshaTaskFactoryType', bound='OpenshaTaskFactory')
+OpenshaTaskFactoryType = TypeVar("OpenshaTaskFactoryType", bound="OpenshaTaskFactory")
 
 # import scaling.rupture_set_builder_task
 
@@ -49,21 +49,20 @@ class TaskFactory(Protocol):
     def get_next_port(self) -> int: ...
 
     @classmethod
-    def create(cls, **kwargs) -> 'TaskFactory': ...
+    def create(cls, **kwargs) -> "TaskFactory": ...
 
 
 class OpenshaTaskFactory:
-
     def __init__(
         self,
         root_path: Path | PurePath | str,
         working_path: Path | PurePath | str,
-        python_script_module: ModuleType,
+        python_script_module: ModuleWithDefaultSysArgs,
         jre_path: Path | PurePath | str,
         app_jar_path: Path | PurePath | str,
         task_config_path: Optional[Path | PurePath | str] = None,
         initial_gateway_port: int = 25333,
-        python: str = 'python3',
+        python: str = "python3",
         jvm_heap_start: int = 3,
         jvm_heap_max: int = 10,
     ):
@@ -87,18 +86,18 @@ class OpenshaTaskFactory:
         # self._python_script = python_script or 'rupture_set_builder_task.py'
 
     @classmethod
-    def create(cls, **kwargs) -> 'TaskFactory':
+    def create(cls, **kwargs) -> "TaskFactory":
         return cls(
-            kwargs['root_path'],
-            kwargs['working_path'],
-            kwargs['python_script_module'],
-            jre_path=kwargs['jre_path'],
-            app_jar_path=kwargs['app_jar_path'],
-            task_config_path=kwargs.get('task_config_path'),
-            initial_gateway_port=kwargs.get('initial_gateway_port', 25333),
-            python=kwargs.get('python', 'python3'),
-            jvm_heap_start=kwargs.get('jvm_heap_start', 3),
-            jvm_heap_max=kwargs.get('jvm_heap_max', 10),
+            kwargs["root_path"],
+            kwargs["working_path"],
+            kwargs["python_script_module"],
+            jre_path=kwargs["jre_path"],
+            app_jar_path=kwargs["app_jar_path"],
+            task_config_path=kwargs.get("task_config_path"),
+            initial_gateway_port=kwargs.get("initial_gateway_port", 25333),
+            python=kwargs.get("python", "python3"),
+            jvm_heap_start=kwargs.get("jvm_heap_start", 3),
+            jvm_heap_max=kwargs.get("jvm_heap_max", 10),
         )
 
     def get_container_task(self) -> str:
@@ -107,7 +106,7 @@ class OpenshaTaskFactory:
     def write_task_config(self, task_args: BaseModel, task_system_args: SystemArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_port}.json"
         task_config = get_task_config(task_args, task_system_args, model_type)
-        fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
+        fname.write_text(json.dumps(task_config, indent=4), encoding="utf-8")
 
     def get_task_script(self) -> str:
         return self._get_bash_script()
@@ -139,7 +138,6 @@ class OpenshaTaskFactory:
 
 
 class OpenshaAWSTaskFactory(OpenshaTaskFactory):
-
     def __init__(self, root_path, working_path, python_script_module, **kwargs):
         super().__init__(root_path, working_path, python_script_module, **kwargs)
 
@@ -167,18 +165,17 @@ class OpenshaAWSTaskFactory(OpenshaTaskFactory):
 
 
 class OpenshaPBSTaskFactory(OpenshaTaskFactory):
-
     def __init__(
         self,
         root_path: Path | PurePath | str,
         working_path: Path | PurePath | str,
-        python_script_module: ModuleType,
+        python_script_module: ModuleWithDefaultSysArgs,
         **kwargs,
     ):
 
         super().__init__(root_path, working_path, python_script_module, **kwargs)
 
-        self._pbs_ppn = kwargs.get('pbs_ppn', 16)  # define hows many processors the PBS job should 'see'
+        self._pbs_ppn = kwargs.get("pbs_ppn", 16)  # define hows many processors the PBS job should 'see'
         self._pbs_nodes = 1  # always ust one PBS node (and which one we don't know)
         self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1)  # defines maximum time the jobs is allocated by PBS
 
@@ -191,13 +188,13 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
         self._pbs_ppn = task_system_args.java_threads
 
         task_config = get_task_config(task_args, task_system_args, model_type)
-        fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
+        fname.write_text(json.dumps(task_config, indent=4), encoding="utf-8")
 
     def get_task_script(self) -> str:
         return f"""
 #PBS -l nodes={self._pbs_nodes}:ppn={self._pbs_ppn}
 #PBS -l walltime={self._pbs_wall_hours}:00:00
-#PBS -l mem={int(self._jvm_heap_max_gb)+2}gb
+#PBS -l mem={int(self._jvm_heap_max_gb) + 2}gb
 
 source {self._root_path}/nzshm-runzi/bin/activate
 
