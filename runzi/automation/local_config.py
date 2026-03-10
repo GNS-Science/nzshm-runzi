@@ -15,7 +15,7 @@ from runzi.aws import get_secret
 load_dotenv()
 
 
-class EnvMode(str, enum.Enum):
+class EnvMode(enum.Enum):
     LOCAL = "LOCAL"
     CLUSTER = "CLUSTER"
     AWS = "AWS"
