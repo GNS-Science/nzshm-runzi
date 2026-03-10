@@ -5,9 +5,11 @@
 ## Added
  - Shared validator module `runzi/tasks/validators.py` with `all_or_none`, `exactly_one`, `at_most_one`, and `resolve_path` helpers
  - Tests for all shared validators (`tests/test_validators.py`)
+ - `ModuleWithDefaultSysArgs` protocol in `runzi/protocols.py` for task modules that expose `default_system_args`
 
 ## Changed
  - Refactored inline validation logic in inversion, coulomb, and hazard task modules to use shared validators
+ - Refactored task factories and job runner to use `ModuleWithDefaultSysArgs` protocol instead of untyped module references
 
 ## [0.9.1] 2026-03-10
 
