@@ -17,6 +17,7 @@ from runzi.arguments import SystemArgs
 from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import API_KEY, API_URL, S3_URL, SPOOF, WORK_PATH
 from runzi.automation.toshi_api import ModelType, ToshiApi
+from runzi.tasks.validators import all_or_none
 
 logging.basicConfig(level=logging.INFO)
 
@@ -28,14 +29,6 @@ logging.getLogger('urllib3').setLevel(loglevel)
 logging.getLogger('git.cmd').setLevel(loglevel)
 
 log = logging.getLogger(__name__)
-
-
-def all_or_none(params: list) -> bool:
-    """Checks that either all or none of the parameters have been set."""
-    is_none = [param is None for param in params]
-    if (not all(is_none)) and (any(is_none)):
-        return False
-    return True
 
 
 class InversionArgs(BaseModel):
