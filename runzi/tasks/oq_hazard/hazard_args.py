@@ -18,11 +18,12 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from runzi.tasks.validators import resolve_path
 from toshi_hazard_store.config import STORAGE_FOLDER
 from toshi_hazard_store.model import AggregationEnum
 from toshi_hazard_store.model.hazard_models_manager import CompatibleHazardCalculationManager
 from typing_extensions import Self
+
+from runzi.tasks.validators import resolve_path
 
 
 def _is_model_version(value: str | None) -> str | None:
