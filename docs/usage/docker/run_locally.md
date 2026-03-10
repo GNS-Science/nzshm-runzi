@@ -16,7 +16,7 @@ You must map `NZSHM22_THS_RLZ_DB` to the `/THS` directory in the docker so that 
 
 ```console
 docker run --entrypoint runzi \
--v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
+-v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -v <path to input files>:/INPUT_FILES
 -v $NZSHM22_THS_RLZ_DB:/THS \
 -e AWS_PROFILE \
@@ -34,7 +34,7 @@ In this case you must set `NZSHM22_THS_RLZ_DB` to the S3 URI.
 
 ```console
 docker run --entrypoint runzi \
--v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
+-v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -v <path to input files>:/INPUT_FILES
 -e NZSHM22_THS_RLZ_DB \
 -e AWS_PROFILE \
@@ -52,7 +52,8 @@ Optionally, environment variables can be passed to the container using an file:
 
 ```console
 docker run --entrypoint runzi \
--v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro \
+-v <path to input files>:/INPUT_FILES \
+-v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -v $NZSHM22_THS_RLZ_DB:/THS \
 --env-file .my.env
 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:latest [COMMAND] [COMMAND] [OPTIONS]

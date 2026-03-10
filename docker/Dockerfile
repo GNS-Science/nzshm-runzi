@@ -1,5 +1,5 @@
 ARG PYTHON_VERSION
-FROM python:${PYTHON_VERSION}-slim-bookworm
+FROM python:${PYTHON_VERSION}-slim-bookworm AS build
 
 ARG PYTHON_VERSION
 ARG FATJAR_TAG
@@ -27,7 +27,7 @@ RUN curl -sSL -o /tmp/jdk.tar.gz \
     && rm /tmp/jdk.tar.gz
 
 # Install OpenSHA
-WORKDIR /app/nzshm-opensha/build/libs
+WORKDIR /opt/nzshm-opensha/build/libs
 RUN curl -sSL -o nzshm-opensha-all-${FATJAR_TAG}.jar \
     https://nzshm-opensha-public-jars.s3.ap-southeast-2.amazonaws.com/nzshm-opensha-all-${FATJAR_TAG}.jar
 
@@ -38,24 +38,29 @@ RUN export PY_NO_DOT=$(echo $PYTHON_VERSION | tr -d '.') && \
 # Optionally install UCERF converter
 WORKDIR /app
 COPY ucerf* /app/ucerf
-# RUN test "$INSTALL_CONVERTER" = "Y" && cd /app/ucerf && pip install .
 RUN if [ "$INSTALL_CONVERTER" = "Y" ] ; then \
     cd /app/ucerf && pip install . ; \
     fi
 
 WORKDIR /app
 # Install runzi
-COPY java_container_task.sh .
-COPY python_container_task.sh .
-RUN chmod +x java_container_task.sh
-RUN chmod +x python_container_task.sh
 RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 RUN git fetch
 RUN git checkout ${RUNZI_GITREF}
 RUN pip install .
 
-# create the toshi-hazard-store dataset directory for use 
+# RUN rm -r /app
+FROM python:${PYTHON_VERSION}-slim-bookworm
+ARG FATJAR_TAG
+COPY --from=build /usr /usr
+COPY --from=build /opt /opt
+COPY java_container_task.sh /usr/local/bin/java_container_task.sh
+COPY python_container_task.sh /usr/local/bin/python_container_task.sh
+RUN chmod +x /usr/local/bin/java_container_task.sh
+RUN chmod +x /usr/local/bin/python_container_task.sh
+
+# create the toshi-hazard-store dataset directory to store hazard realiztions locally
 WORKDIR /THS
 ENV NZSHM22_THS_RLZ_DB=/THS
 
@@ -65,7 +70,7 @@ RUN mkdir -p /WORKING
 ENV NZSHM22_TOSHI_API_ENABLED=1
 ENV NZSHM22_SCRIPT_WORK_PATH=/WORKING
 ENV NZSHM22_OPENSHA_JRE=/opt/java/bin
-ENV NZSHM22_FATJAR=/app/nzshm-opensha/build/libs/nzshm-opensha-all-${FATJAR_TAG}.jar
+ENV NZSHM22_FATJAR=/opt/nzshm-opensha/build/libs/nzshm-opensha-all-${FATJAR_TAG}.jar
 ENV NZSHM22_OPENSHA_ROOT=/app
 ENV NZSHM22_S3_UPLOAD_WORKERS=25
 ENV NZSHM22_BUILD_PLOTS=TRUE
