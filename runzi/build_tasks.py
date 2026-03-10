@@ -4,9 +4,9 @@ from pathlib import PurePath
 from typing import Any, Generator
 
 from runzi.arguments import ArgSweeper, SystemArgs
+from runzi.automation import local_config
 from runzi.automation.local_config import (
     API_URL,
-    CLUSTER_MODE,
     ECR_DIGEST,
     FATJAR,
     JVM_HEAP_START,
@@ -37,7 +37,7 @@ def build_tasks(
     build the shell scripts 1 per task, based on all the inputs
 
     """
-    factory_class = get_factory(CLUSTER_MODE, system_args.task_language)  # type: ignore
+    factory_class = get_factory(local_config.CLUSTER_MODE, system_args.task_language)  # type: ignore
 
     task_factory = factory_class.create(
         root_path=OPENSHA_ROOT,
@@ -56,7 +56,7 @@ def build_tasks(
         task_system_args.task_count = task_count
         task_system_args.java_gateway_port = task_factory.get_next_port()
 
-        if CLUSTER_MODE == EnvMode["AWS"]:
+        if local_config.CLUSTER_MODE == EnvMode.AWS:
             container_task = task_factory.get_container_task()
 
             job_name = f"{job_name}-{task_count}"
