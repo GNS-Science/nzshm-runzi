@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from runzi.tasks.validators import all_or_none, at_most_one, exactly_one, resolve_path
+from runzi.tasks.validators import all_or_none, exactly_one, more_than_one, resolve_path
 
 
 class TestAllOrNone:
@@ -52,24 +52,24 @@ class TestExactlyOne:
         assert exactly_one([None]) is False
 
 
-class TestAtMostOne:
+class TestMoreThanOne:
     def test_none_set(self):
-        assert at_most_one([None, None, None]) is True
+        assert more_than_one([None, None, None]) is False
 
     def test_one_set(self):
-        assert at_most_one([1, None, None]) is True
+        assert more_than_one([1, None, None]) is False
 
     def test_two_set(self):
-        assert at_most_one([1, 2, None]) is False
+        assert more_than_one([1, 2, None]) is True
 
     def test_three_set(self):
-        assert at_most_one([1, 2, 3]) is False
+        assert more_than_one([1, 2, 3]) is True
 
     def test_single_element_set(self):
-        assert at_most_one([42]) is True
+        assert more_than_one([42]) is False
 
     def test_single_element_none(self):
-        assert at_most_one([None]) is True
+        assert more_than_one([None]) is False
 
 
 class TestResolvePath:

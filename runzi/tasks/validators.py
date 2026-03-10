@@ -33,16 +33,16 @@ def exactly_one(params: list) -> bool:
     return sum(p is not None for p in params) == 1
 
 
-def at_most_one(params: list) -> bool:
-    """Checks that no more than one of the parameters has been set (non-None).
+def more_than_one(params: list) -> bool:
+    """Checks that more than one of the parameters has been set (non-None).
 
     Args:
         params: List of values to check. Each element is tested for None.
 
     Returns:
-        True if zero or one element is non-None; False if two or more are set.
+        True if two or more elements are non-None; False if zero or one are set.
     """
-    return sum(p is not None for p in params) <= 1
+    return sum(p is not None for p in params) > 1
 
 
 def resolve_path(value: Any, info: ValidationInfo) -> Any:
