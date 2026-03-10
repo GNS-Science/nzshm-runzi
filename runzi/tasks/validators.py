@@ -21,6 +21,30 @@ def all_or_none(params: list) -> bool:
     return True
 
 
+def exactly_one(params: list) -> bool:
+    """Checks that exactly one of the parameters has been set (non-None).
+
+    Args:
+        params: List of values to check. Each element is tested for None.
+
+    Returns:
+        True if exactly one element is non-None; False otherwise.
+    """
+    return sum(p is not None for p in params) == 1
+
+
+def at_most_one(params: list) -> bool:
+    """Checks that no more than one of the parameters has been set (non-None).
+
+    Args:
+        params: List of values to check. Each element is tested for None.
+
+    Returns:
+        True if zero or one element is non-None; False if two or more are set.
+    """
+    return sum(p is not None for p in params) <= 1
+
+
 def resolve_path(value: Any, info: ValidationInfo) -> Any:
     """Resolve a Path field to an absolute path using the 'base_path' validation context.
 
