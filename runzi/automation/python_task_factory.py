@@ -13,7 +13,6 @@ The job is responsible for configuring and executing the python script
 import json
 import os
 from pathlib import Path, PurePath
-from types import ModuleType
 from typing import Optional
 
 from pydantic import BaseModel
@@ -21,18 +20,18 @@ from pydantic import BaseModel
 from runzi.arguments import SystemArgs
 from runzi.automation.task_config import get_task_config
 from runzi.automation.toshi_api import ModelType
+from runzi.protocols import ModuleWithDefaultSysArgs
 
 from .local_config import EnvMode
 
 
 class PythonTaskFactory:
-
     def __init__(
         self,
         working_path: Path | PurePath | str,
-        python_script_module: ModuleType,
+        python_script_module: ModuleWithDefaultSysArgs,
         task_config_path: Optional[Path | PurePath | str] = None,
-        python: str = 'python3',
+        python: str = "python3",
     ):
 
         self._config_path = Path(task_config_path or Path.cwd())
@@ -42,12 +41,12 @@ class PythonTaskFactory:
         self._next_task = 1
 
     @classmethod
-    def create(cls, **kwargs) -> 'PythonTaskFactory':
+    def create(cls, **kwargs) -> "PythonTaskFactory":
         return cls(
-            kwargs['working_path'],
-            kwargs['python_script_module'],
-            task_config_path=kwargs.get('task_config_path'),
-            python=kwargs.get('python', 'python3'),
+            kwargs["working_path"],
+            kwargs["python_script_module"],
+            task_config_path=kwargs.get("task_config_path"),
+            python=kwargs.get("python", "python3"),
         )
 
     def get_container_task(self) -> str:
@@ -59,7 +58,7 @@ class PythonTaskFactory:
     def write_task_config(self, task_arguments: BaseModel, task_system_args: SystemArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_task}.json"
         task_config = get_task_config(task_arguments, task_system_args, model_type)
-        fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
+        fname.write_text(json.dumps(task_config, indent=4), encoding="utf-8")
 
     def get_task_script(self) -> str:
         return self._get_bash_script()
@@ -80,8 +79,12 @@ class PythonTaskFactory:
 
 
 class PythonAWSTaskFactory(PythonTaskFactory):
-
-    def __init__(self, working_path: Path | PurePath | str, python_script_module: ModuleType, **kwargs):
+    def __init__(
+        self,
+        working_path: Path | PurePath | str,
+        python_script_module: ModuleWithDefaultSysArgs,
+        **kwargs,
+    ):
         super().__init__(working_path, python_script_module, **kwargs)
 
     def get_container_task(self) -> str:
@@ -89,20 +92,19 @@ class PythonAWSTaskFactory(PythonTaskFactory):
 
 
 class PythonPBSTaskFactory(PythonTaskFactory):
-
     def __init__(
         self,
         # root_path: Path | PurePath | str,
         working_path: Path | PurePath | str,
-        python_script_module: ModuleType,
+        python_script_module: ModuleWithDefaultSysArgs,
         **kwargs,
     ):
 
         super().__init__(working_path, python_script_module, **kwargs)
 
-        self._pbs_ppn = kwargs.get('pbs_ppn', 16)  # define hows many processors the PBS job should 'see'
+        self._pbs_ppn = kwargs.get("pbs_ppn", 16)  # define hows many processors the PBS job should 'see'
         self._pbs_nodes = 1  # always ust one PBS node (and which one we don't know)
-        self._pbs_wall_hours = kwargs.get('pbs_wall_hours', 1)  # defines maximum time the jobs is allocated by PBS
+        self._pbs_wall_hours = kwargs.get("pbs_wall_hours", 1)  # defines maximum time the jobs is allocated by PBS
 
     def get_container_task(self) -> str:
         return ""
