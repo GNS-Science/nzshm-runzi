@@ -20,6 +20,7 @@ from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import API_KEY, API_URL, S3_URL, SPOOF, USE_API, WORK_PATH
 from runzi.automation.toshi_api import ToshiApi
 from runzi.tasks.get_config import get_config
+from runzi.tasks.validators import exactly_one
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -95,9 +96,7 @@ class CoulombRuptureSetArgs(BaseModel):
     @model_validator(mode='after')
     def check_fault_model(self) -> Self:
         """Must specify either fault_model or fault_model_file"""
-        has_fault_model = bool(self.fault_model)
-        has_fault_model_file = bool(self.fault_model_file)
-        if not (has_fault_model != has_fault_model_file):
+        if not exactly_one([self.fault_model, self.fault_model_file]):
             raise ValueError("Must specify fault_model or fault_model_file, not both")
         return self
 
