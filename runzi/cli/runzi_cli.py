@@ -2,18 +2,20 @@
 
 import typer
 
-from runzi.automation import local_config
-from runzi.automation.local_config import EnvMode
-from runzi.cli import hazard_cli, inversion_cli, inversion_post_process_cli, reports_cli, rupture_sets_cli, utils_cli
+from runzi.cli import (
+    cluster_mode_callback,
+    hazard_cli,
+    inversion_cli,
+    inversion_post_process_cli,
+    reports_cli,
+    rupture_sets_cli,
+    utils_cli,
+)
 
 app = typer.Typer(help="The NZ NSHM runzi CLI.", no_args_is_help=True)
 
+app.callback()(cluster_mode_callback)
 
-@app.callback()
-def main(
-    cluster_mode: EnvMode = typer.Option(EnvMode.LOCAL, help="Execution target: LOCAL machine, HPC CLUSTER, or AWS cloud.")
-) -> None:
-    local_config.CLUSTER_MODE = cluster_mode
 app.add_typer(inversion_cli.app, name="inversion", help="inversion", no_args_is_help=True)
 app.add_typer(hazard_cli.app, name="hazard", help="hazard calculations", no_args_is_help=True)
 app.add_typer(inversion_post_process_cli.app, name="ipp", help="inversion post processing", no_args_is_help=True)

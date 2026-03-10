@@ -6,6 +6,7 @@ import typer
 from rich import print as rich_print
 
 from runzi.arguments import ArgSweeper
+from runzi.cli import cluster_mode_callback
 from runzi.tasks.inversion import (
     CrustalInversionArgs,
     CrustalInversionJobRunner,
@@ -14,6 +15,7 @@ from runzi.tasks.inversion import (
 )
 
 app = typer.Typer()
+app.callback()(cluster_mode_callback)
 
 
 @app.command()

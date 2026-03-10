@@ -6,12 +6,14 @@ import typer
 from rich import print as rich_print
 
 from runzi.arguments import ArgSweeper
+from runzi.cli import cluster_mode_callback
 from runzi.tasks.average_solutions import AverageSolutionsArgs, AverageSolutionsJobRunner
 from runzi.tasks.oq_opensha_convert import OQConvertArgs, OQConvertJobRunner
 from runzi.tasks.scale_solution import ScaleSolutionArgs, ScaleSolutionJobRunner
 from runzi.tasks.time_dependent_solution import TimeDependentSolutionArgs, TimeDependentSolutionJobRunner
 
 app = typer.Typer()
+app.callback()(cluster_mode_callback)
 
 
 @app.command()
