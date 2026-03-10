@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.2] 2026-03-11
+
+## Added
+ - Shared validator module `runzi/tasks/validators.py` with `all_or_none`, `exactly_one`, `at_most_one`, and `resolve_path` helpers
+ - Tests for all shared validators (`tests/test_validators.py`)
+
+## Changed
+ - Refactored inline validation logic in inversion, coulomb, and hazard task modules to use shared validators
+
 ## [0.9.1] 2026-03-10
 
 ## Changed
