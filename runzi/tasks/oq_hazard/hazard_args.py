@@ -18,6 +18,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from runzi.tasks.validators import resolve_path
 from toshi_hazard_store.config import STORAGE_FOLDER
 from toshi_hazard_store.model import AggregationEnum
 from toshi_hazard_store.model.hazard_models_manager import CompatibleHazardCalculationManager
@@ -99,17 +100,7 @@ class OQArgs(BaseModel):
     @classmethod
     def abs_path(cls, value: Any, info: ValidationInfo) -> Any:
         """If any of the fields are paths, resolve the absolute path and check that it exists."""
-        if isinstance(value, Path):
-            file_path = value
-            if not file_path.is_absolute():
-                if isinstance(info.context, dict):
-                    base_path = info.context.get("base_path")
-                    if base_path is not None:
-                        file_path = (Path(base_path) / file_path).resolve()
-            if not file_path.exists():
-                raise ValueError(f"file {value} does not exist")
-            return file_path
-        return value
+        return resolve_path(value, info)
 
     # OpenquakeConfig is not a dataclass so we have to tell pydantic how to serialize it
     @field_serializer('hazard_config', mode='plain')
