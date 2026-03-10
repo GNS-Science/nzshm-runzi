@@ -17,6 +17,7 @@ from runzi.arguments import SystemArgs
 from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import API_KEY, API_URL, S3_URL, SPOOF, WORK_PATH
 from runzi.automation.toshi_api import ModelType, ToshiApi
+from runzi.tasks.validators import all_or_none, more_than_one
 
 logging.basicConfig(level=logging.INFO)
 
@@ -28,14 +29,6 @@ logging.getLogger('urllib3').setLevel(loglevel)
 logging.getLogger('git.cmd').setLevel(loglevel)
 
 log = logging.getLogger(__name__)
-
-
-def all_or_none(params: list) -> bool:
-    """Checks that either all or none of the parameters have been set."""
-    is_none = [param is None for param in params]
-    if (not all(is_none)) and (any(is_none)):
-        return False
-    return True
 
 
 class InversionArgs(BaseModel):
@@ -145,7 +138,7 @@ class InversionArgs(BaseModel):
     @model_validator(mode='after')
     def check_mfd_constraint(self) -> Self:
         """Choose either uncertainty weighted or eq/ineq constraints for MFD, not both."""
-        if (self.mfd_uncertainty_weight is not None) and (self.mfd_equality_weight is not None):
+        if more_than_one([self.mfd_uncertainty_weight, self.mfd_equality_weight]):
             raise ValueError("Cannot combine uncertainty and equality/inequality MFD weights.")
         return self
 
@@ -173,7 +166,7 @@ class InversionArgs(BaseModel):
     @model_validator(mode='after')
     def check_slip_constraint(self) -> Self:
         """Choose either uncertainty weighted or 'regular' slip constraints, not both."""
-        if (self.slip_rate_normalized_weight is not None) and (self.slip_rate_uncertainty_weight is not None):
+        if more_than_one([self.slip_rate_normalized_weight, self.slip_rate_uncertainty_weight]):
             raise ValueError("Cannot combine uncertainty and 'regular' slip rate constraints.")
         return self
 

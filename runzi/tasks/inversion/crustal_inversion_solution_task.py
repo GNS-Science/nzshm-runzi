@@ -11,7 +11,8 @@ from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import USE_API, WORK_PATH
 from runzi.automation.toshi_api import ModelType
 from runzi.tasks.get_config import get_config
-from runzi.tasks.inversion.inversion_solution_builder import InversionArgs, InversionSolutionBuilder, all_or_none
+from runzi.tasks.inversion.inversion_solution_builder import InversionArgs, InversionSolutionBuilder
+from runzi.tasks.validators import all_or_none
 
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
