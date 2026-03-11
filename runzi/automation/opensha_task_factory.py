@@ -29,7 +29,7 @@ from runzi.automation.task_config import get_task_config
 from runzi.automation.toshi_api import ModelType
 from runzi.protocols import ModuleWithDefaultSysArgs
 
-from .local_config import EnvMode
+from .local_config import ClusterModeEnum
 
 # from runzi.runners.inversion_inputs import InversionArgs
 
@@ -211,19 +211,21 @@ export NO_PROXY=${{no_proxy}}
 """
 
 
-def get_java_factory(environment_mode: EnvMode) -> type[OpenshaTaskFactory]:
+def get_java_factory(environment_mode: ClusterModeEnum) -> type[OpenshaTaskFactory]:
     match environment_mode:
-        case EnvMode.LOCAL:
+        case ClusterModeEnum.LOCAL:
             return OpenshaTaskFactory
-        case EnvMode.CLUSTER:
+        case ClusterModeEnum.CLUSTER:
             return OpenshaPBSTaskFactory
-        case EnvMode.AWS:
+        case ClusterModeEnum.AWS:
             return OpenshaAWSTaskFactory
         case _:
             raise ValueError(f"Unknown environment_mode: {environment_mode}")
 
 
-def get_factory(environment_mode: EnvMode, task_language: TaskLanguage) -> type[OpenshaTaskFactory | PythonTaskFactory]:
+def get_factory(
+    environment_mode: ClusterModeEnum, task_language: TaskLanguage
+) -> type[OpenshaTaskFactory | PythonTaskFactory]:
     match task_language:
         case TaskLanguage.JAVA:
             return get_java_factory(environment_mode)

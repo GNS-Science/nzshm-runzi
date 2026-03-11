@@ -16,7 +16,7 @@ from runzi.automation.local_config import (
     S3_URL,
     THS_RLZ_DB,
     WORK_PATH,
-    EnvMode,
+    ClusterModeEnum,
 )
 from runzi.automation.opensha_task_factory import get_factory
 from runzi.automation.toshi_api import ModelType
@@ -56,7 +56,7 @@ def build_tasks(
         task_system_args.task_count = task_count
         task_system_args.java_gateway_port = task_factory.get_next_port()
 
-        if local_config.CLUSTER_MODE == EnvMode.AWS:
+        if local_config.CLUSTER_MODE == ClusterModeEnum.AWS:
             container_task = task_factory.get_container_task()
 
             job_name = f"{job_name}-{task_count}"

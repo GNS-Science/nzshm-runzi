@@ -14,6 +14,10 @@ from runzi.cli import (
 
 app = typer.Typer(help="The NZ NSHM runzi CLI.", no_args_is_help=True)
 
+# Register cluster_mode_callback as the top-level app callback so that
+# `--cluster-mode` is accepted on the root `runzi` command. The same callback
+# is also registered on each sub-command typer app so the option is available
+# at every level (e.g. `runzi inversion --cluster-mode CLUSTER run ...`).
 app.callback()(cluster_mode_callback)
 
 app.add_typer(inversion_cli.app, name="inversion", help="inversion", no_args_is_help=True)

@@ -11,7 +11,7 @@ from typing import Any, Optional
 import boto3
 
 from runzi.automation import local_config
-from runzi.automation.local_config import WORKER_POOL_SIZE, EnvMode
+from runzi.automation.local_config import WORKER_POOL_SIZE, ClusterModeEnum
 
 
 def schedule_tasks(scripts: Sequence[Any], worker_pool_size: Optional[int] = None):
@@ -22,14 +22,14 @@ def schedule_tasks(scripts: Sequence[Any], worker_pool_size: Optional[int] = Non
     def call_script(script_name):
         print("call_script with:", script_name)
         try:
-            if local_config.CLUSTER_MODE is EnvMode.CLUSTER:
+            if local_config.CLUSTER_MODE is ClusterModeEnum.CLUSTER:
                 check_call(['qsub', script_name])
             else:
                 check_call(['bash', script_name])
         except Exception as err:
             print(f"check_call err: {err}")
 
-    if local_config.CLUSTER_MODE is EnvMode.AWS:
+    if local_config.CLUSTER_MODE is ClusterModeEnum.AWS:
         batch_client = boto3.client(
             service_name='batch', region_name='us-east-1', endpoint_url='https://batch.us-east-1.amazonaws.com'
         )

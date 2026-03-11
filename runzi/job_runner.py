@@ -11,7 +11,7 @@ import boto3
 
 from runzi.arguments import ArgSweeper, SystemArgs
 from runzi.automation import local_config
-from runzi.automation.local_config import USE_API, WORKER_POOL_SIZE, EnvMode
+from runzi.automation.local_config import USE_API, WORKER_POOL_SIZE, ClusterModeEnum
 from runzi.automation.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType
 from runzi.build_tasks import build_tasks
 from runzi.protocols import ModuleWithDefaultSysArgs
@@ -105,7 +105,7 @@ class JobRunner(ABC):
         if USE_API:
             toshi_api.general_task.update_subtask_count(general_task_id, len(scripts))
 
-        if local_config.CLUSTER_MODE is EnvMode.LOCAL:
+        if local_config.CLUSTER_MODE is ClusterModeEnum.LOCAL:
 
             def call_script(script_name):
                 print("call_script with:", script_name)
@@ -117,14 +117,14 @@ class JobRunner(ABC):
             pool.map(call_script, scripts)
             pool.close()
             pool.join()
-        elif local_config.CLUSTER_MODE is EnvMode.AWS:
+        elif local_config.CLUSTER_MODE is ClusterModeEnum.AWS:
             batch_client = boto3.client(
                 service_name='batch', region_name='us-east-1', endpoint_url='https://batch.us-east-1.amazonaws.com'
             )
             for script_or_config in scripts:
                 res = batch_client.submit_job(**script_or_config)
                 print(res)
-        elif local_config.CLUSTER_MODE is EnvMode.CLUSTER:
+        elif local_config.CLUSTER_MODE is ClusterModeEnum.CLUSTER:
             for script_name in scripts:
                 check_call(["qsub", script_name])  # type: ignore
 

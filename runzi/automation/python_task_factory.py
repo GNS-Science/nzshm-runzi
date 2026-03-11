@@ -22,7 +22,7 @@ from runzi.automation.task_config import get_task_config
 from runzi.automation.toshi_api import ModelType
 from runzi.protocols import ModuleWithDefaultSysArgs
 
-from .local_config import EnvMode
+from .local_config import ClusterModeEnum
 
 
 class PythonTaskFactory:
@@ -143,11 +143,11 @@ export NO_PROXY=${{no_proxy}}
 
 def get_factory(environment_mode) -> type[PythonTaskFactory]:
     match environment_mode:
-        case EnvMode.LOCAL:
+        case ClusterModeEnum.LOCAL:
             return PythonTaskFactory
-        case EnvMode.CLUSTER:
+        case ClusterModeEnum.CLUSTER:
             return PythonPBSTaskFactory
-        case EnvMode.AWS:
+        case ClusterModeEnum.AWS:
             return PythonAWSTaskFactory
         case _:
             raise ValueError(f"Unknown environment_mode: {environment_mode}")
