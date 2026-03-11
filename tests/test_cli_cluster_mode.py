@@ -38,23 +38,23 @@ def reset_cluster_mode():
 
 def test_callback_none_gets_default():
     cluster_mode_callback()
-    assert local_config.CLUSTER_MODE == ClusterModeEnum.LOCAL
+    assert local_config.CLUSTER_MODE is ClusterModeEnum.LOCAL
 
 
 def test_callback_sets_cluster_mode():
     cluster_mode_callback(ClusterModeEnum.AWS)
-    assert local_config.CLUSTER_MODE == ClusterModeEnum.AWS
+    assert local_config.CLUSTER_MODE is ClusterModeEnum.AWS
 
 
 def test_callback_sets_cluster_mode_cluster():
     cluster_mode_callback(ClusterModeEnum.CLUSTER)
-    assert local_config.CLUSTER_MODE == ClusterModeEnum.CLUSTER
+    assert local_config.CLUSTER_MODE is ClusterModeEnum.CLUSTER
 
 
 def test_callback_noop_when_none():
     local_config.CLUSTER_MODE = ClusterModeEnum.CLUSTER  # non-default
     cluster_mode_callback()
-    assert local_config.CLUSTER_MODE == ClusterModeEnum.CLUSTER  # unchanged
+    assert local_config.CLUSTER_MODE is ClusterModeEnum.CLUSTER  # unchanged
 
 
 # ── Root CLI tests ───────────────────────────────────────────────────────────
@@ -63,19 +63,19 @@ def test_callback_noop_when_none():
 def test_root_cli_cluster_mode_sets_aws():
     result = runner.invoke(runzi_cli.app, ['--cluster-mode', 'AWS', 'hazard', 'oq-hazard', '--help'])
     assert result.exit_code == 0
-    assert local_config.CLUSTER_MODE == ClusterModeEnum.AWS
+    assert local_config.CLUSTER_MODE is ClusterModeEnum.AWS
 
 
 def test_root_cli_cluster_mode_sets_cluster():
     result = runner.invoke(runzi_cli.app, ['--cluster-mode', 'CLUSTER', 'hazard', 'oq-hazard', '--help'])
     assert result.exit_code == 0
-    assert local_config.CLUSTER_MODE == ClusterModeEnum.CLUSTER
+    assert local_config.CLUSTER_MODE is ClusterModeEnum.CLUSTER
 
 
 def test_root_cli_no_option_keeps_default():
     result = runner.invoke(runzi_cli.app, ['hazard', 'oq-hazard', '--help'])
     assert result.exit_code == 0
-    assert local_config.CLUSTER_MODE == ClusterModeEnum.LOCAL
+    assert local_config.CLUSTER_MODE is ClusterModeEnum.LOCAL
 
 
 def test_root_cli_help_shows_cluster_mode():
@@ -99,21 +99,21 @@ SUB_CLIS = [
 def test_sub_cli_cluster_mode_sets_aws(app, subcmd, label):
     result = runner.invoke(app, ['--cluster-mode', 'AWS', subcmd, '--help'])
     assert result.exit_code == 0, f'{label}: {result.output}'
-    assert local_config.CLUSTER_MODE == ClusterModeEnum.AWS
+    assert local_config.CLUSTER_MODE is ClusterModeEnum.AWS
 
 
 @pytest.mark.parametrize('app,subcmd,label', SUB_CLIS)
 def test_sub_cli_cluster_mode_sets_cluster(app, subcmd, label):
     result = runner.invoke(app, ['--cluster-mode', 'CLUSTER', subcmd, '--help'])
     assert result.exit_code == 0, f'{label}: {result.output}'
-    assert local_config.CLUSTER_MODE == ClusterModeEnum.CLUSTER
+    assert local_config.CLUSTER_MODE is ClusterModeEnum.CLUSTER
 
 
 @pytest.mark.parametrize('app,subcmd,label', SUB_CLIS)
 def test_sub_cli_no_option_keeps_default(app, subcmd, label):
     result = runner.invoke(app, [subcmd, '--help'])
     assert result.exit_code == 0, f'{label}: {result.output}'
-    assert local_config.CLUSTER_MODE == ClusterModeEnum.LOCAL
+    assert local_config.CLUSTER_MODE is ClusterModeEnum.LOCAL
 
 
 @pytest.mark.parametrize('app,subcmd,label', SUB_CLIS)
