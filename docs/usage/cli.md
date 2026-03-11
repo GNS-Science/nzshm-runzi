@@ -10,6 +10,7 @@ $ runzi [OPTIONS] COMMAND [ARGS]...
 
 **Options**:
 
+* `--cluster-mode [LOCAL|CLUSTER|AWS]`: Execution target: LOCAL machine, HPC CLUSTER, or AWS cloud.  [default: LOCAL]
 * `--install-completion`: Install completion for the current shell.
 * `--show-completion`: Show completion for the current shell, to copy it or customize the installation.
 * `--help`: Show this message and exit.
@@ -35,6 +36,7 @@ $ runzi inversion [OPTIONS] COMMAND [ARGS]...
 
 **Options**:
 
+* `--cluster-mode [LOCAL|CLUSTER|AWS]`: Execution target: LOCAL machine, HPC CLUSTER, or AWS cloud.  [default: LOCAL]
 * `--help`: Show this message and exit.
 
 **Commands**:
@@ -90,6 +92,7 @@ $ runzi hazard [OPTIONS] COMMAND [ARGS]...
 
 **Options**:
 
+* `--cluster-mode [LOCAL|CLUSTER|AWS]`: Execution target: LOCAL machine, HPC CLUSTER, or AWS cloud.  [default: LOCAL]
 * `--help`: Show this message and exit.
 
 **Commands**:
@@ -145,6 +148,7 @@ $ runzi ipp [OPTIONS] COMMAND [ARGS]...
 
 **Options**:
 
+* `--cluster-mode [LOCAL|CLUSTER|AWS]`: Execution target: LOCAL machine, HPC CLUSTER, or AWS cloud.  [default: LOCAL]
 * `--help`: Show this message and exit.
 
 **Commands**:
@@ -238,6 +242,7 @@ $ runzi rupset [OPTIONS] COMMAND [ARGS]...
 
 **Options**:
 
+* `--cluster-mode [LOCAL|CLUSTER|AWS]`: Execution target: LOCAL machine, HPC CLUSTER, or AWS cloud.  [default: LOCAL]
 * `--help`: Show this message and exit.
 
 **Commands**:
@@ -293,6 +298,7 @@ $ runzi reports [OPTIONS] COMMAND [ARGS]...
 
 **Options**:
 
+* `--cluster-mode [LOCAL|CLUSTER|AWS]`: Execution target: LOCAL machine, HPC CLUSTER, or AWS cloud.  [default: LOCAL]
 * `--help`: Show this message and exit.
 
 **Commands**:
