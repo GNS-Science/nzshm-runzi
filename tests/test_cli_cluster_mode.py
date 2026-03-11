@@ -78,7 +78,7 @@ def test_root_cli_no_option_keeps_default():
 
 
 def test_root_cli_help_shows_cluster_mode():
-    result = runner.invoke(runzi_cli.app, ['--help'], env=env)
+    result = runner.invoke(runzi_cli.app, ['--help'])
     assert '--cluster-mode' in strip_ansi(result.output)
 
 
@@ -117,5 +117,5 @@ def test_sub_cli_no_option_keeps_default(app, subcmd, label):
 
 @pytest.mark.parametrize('app,subcmd,label', SUB_CLIS)
 def test_sub_cli_help_shows_cluster_mode(app, subcmd, label):
-    result = runner.invoke(app, ['--help'], env=env)
+    result = runner.invoke(app, ['--help'])
     assert '--cluster-mode' in strip_ansi(result.output), f'{label} missing --cluster-mode in help'
