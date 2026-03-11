@@ -32,7 +32,7 @@ S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL', "http://localhost:4569")
 ECR_DIGEST = os.getenv('NZSHM22_RUNZI_ECR_DIGEST')
 THS_RLZ_DB = os.getenv('NZSHM22_THS_RLZ_DB')
 
-CLUSTER_MODE = EnvMode.LOCAL  # set by --cluster-mode CLI option
+CLUSTER_MODE = EnvMode.LOCAL  # set by --cluster-mode CLI option. This sets the default
 
 # Get API key from AWS secrets manager
 API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
