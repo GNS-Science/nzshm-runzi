@@ -1,5 +1,7 @@
 """Tests for the --cluster-mode CLI option."""
 
+import re
+
 import pytest
 from typer.testing import CliRunner
 
@@ -14,6 +16,12 @@ from runzi.cli import (
     runzi_cli,
     rupture_sets_cli,
 )
+
+
+def strip_ansi(text: str) -> str:
+    return re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', text)
+
+
 env = {"NO_COLOR": "1", "LANG": "en_US.UTF-8"}
 runner = CliRunner(env=env)
 
@@ -71,7 +79,7 @@ def test_root_cli_no_option_keeps_default():
 
 def test_root_cli_help_shows_cluster_mode():
     result = runner.invoke(runzi_cli.app, ['--help'], env=env)
-    assert '--cluster-mode' in result.output
+    assert '--cluster-mode' in strip_ansi(result.output)
 
 
 # ── Sub-CLI parametrized tests ───────────────────────────────────────────────
@@ -110,4 +118,4 @@ def test_sub_cli_no_option_keeps_default(app, subcmd, label):
 @pytest.mark.parametrize('app,subcmd,label', SUB_CLIS)
 def test_sub_cli_help_shows_cluster_mode(app, subcmd, label):
     result = runner.invoke(app, ['--help'], env=env)
-    assert '--cluster-mode' in result.output, f'{label} missing --cluster-mode in help'
+    assert '--cluster-mode' in strip_ansi(result.output), f'{label} missing --cluster-mode in help'
