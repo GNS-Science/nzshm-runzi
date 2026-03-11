@@ -14,7 +14,7 @@ from runzi.cli import (
     runzi_cli,
     rupture_sets_cli,
 )
-env = {"NO_COLOR": "1"}
+env = {"NO_COLOR": "1", "LANG": "en_US.UTF-8"}
 runner = CliRunner(env=env)
 
 
