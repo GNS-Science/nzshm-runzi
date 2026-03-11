@@ -17,7 +17,7 @@ from runzi.cli import (
     rupture_sets_cli,
 )
 
-
+# some platforms print ANSI codes to the CLI output
 def strip_ansi(text: str) -> str:
     return re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', text)
 
