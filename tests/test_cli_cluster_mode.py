@@ -15,7 +15,7 @@ from runzi.cli import (
     rupture_sets_cli,
 )
 
-runner = CliRunner()
+runner = CliRunner(env={"NO_COLOR": "1"})
 
 
 # reset default mode before each test
