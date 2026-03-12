@@ -6,12 +6,10 @@ import typer
 from rich import print as rich_print
 
 from runzi.arguments import ArgSweeper
-from runzi.cli import cluster_mode_callback
 from runzi.tasks.coulomb_rupture_sets import CoulombRuptureSetArgs, CoulombRuptureSetJobRunner
 from runzi.tasks.subduction_rupture_sets import SubductionRuptureSetArgs, SubductionRuptureSetJobRunner
 
 app = typer.Typer()
-app.callback()(cluster_mode_callback)
 
 
 @app.command()

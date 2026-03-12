@@ -4,7 +4,6 @@
 
 ## Changed
  - `NZSHM22_SCRIPT_CLUSTER_MODE` environment variable replaced by `--cluster-mode` CLI option
- - `--cluster-mode` option added to all sub-CLIs (hazard, inversion, ipp, reports, rupset) for standalone invocation
  - Updated documentation to reflect `--cluster-mode` CLI argument
 
 ## Added

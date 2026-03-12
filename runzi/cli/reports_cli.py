@@ -5,12 +5,10 @@ from rich import print as rich_print
 from typing_extensions import Annotated
 
 from runzi.arguments import ArgSweeper
-from runzi.cli import cluster_mode_callback
 from runzi.tasks.inversion_report import InversionReportArgs, InversionReportJobRunner
 from runzi.tasks.rupset_report import RupsetReportArgs, RupsetReportJobRunner
 
 app = typer.Typer()
-app.callback()(cluster_mode_callback)
 
 
 @app.command()
