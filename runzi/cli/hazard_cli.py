@@ -1,16 +1,12 @@
 """Command line functions for calculationg hazard realizations."""
 
-# import logging
 from pathlib import Path
 
-# import gql
 import typer
 from rich import print as rich_print
 
 from runzi.arguments import ArgSweeper
 from runzi.tasks.oq_hazard import OQDisaggArgs, OQDisaggJobRunner, OQHazardArgs, OQHazardJobRunner
-
-# logging.getLogger("gql").setLevel(logging.INFO)
 
 app = typer.Typer()
 

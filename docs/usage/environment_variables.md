@@ -12,7 +12,7 @@ Defaults are given in brackets.
 - `NZSHM22_TOSHI_S3_URL` [`http://localhost:4569`]
 - `NZSHM22_RUNZI_ECR_DIGEST`: used by `toshi-hazard-store` to record the Docker image digest used to generate hazard cruves.
 - `NZSHM22_THS_RLZ_DB`: path to location of parquet files where hazard realizations are stored by `toshi-hazard-store`. Can be local directory or s3 bucket (`s3://`)
-- `NZSHM22_SCRIPT_CLUSTER_MODE` [`LOCAL`]: can be `LOCAL`, `CLUSTER`, `AWS`
+- `NZSHM22_SCRIPT_CLUSTER_MODE`: **removed** — use the `--cluster-mode` CLI option instead (see [CLI reference](cli.md)).
 - `NZSHM22_SCRIPT_JVM_HEAP_START` [4]: Startup JAVA Memory (per worker)
 - `NZSHM22_OPENSHA_ROOT` [`~/DEV/GNS/opensha-modular`]: path to root directory for OpenSHA
 - `NZSHM22_OPENSHA_JRE` [`/usr/lib/jvm/java-11-openjdk-amd64/bin/java`]: location of java executable

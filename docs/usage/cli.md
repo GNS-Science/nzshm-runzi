@@ -10,6 +10,7 @@ $ runzi [OPTIONS] COMMAND [ARGS]...
 
 **Options**:
 
+* `--cluster-mode [LOCAL|CLUSTER|AWS]`: Execution target: LOCAL machine, HPC CLUSTER, or AWS cloud.  [default: LOCAL]
 * `--install-completion`: Install completion for the current shell.
 * `--show-completion`: Show completion for the current shell, to copy it or customize the installation.
 * `--help`: Show this message and exit.
@@ -25,7 +26,7 @@ $ runzi [OPTIONS] COMMAND [ARGS]...
 
 ## `inversion`
 
-runzi inversion
+inversion
 
 **Usage**:
 
@@ -352,8 +353,36 @@ $ runzi utils [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
+* `container`: Build runzi-opensha Docker image, push to...
 * `save-file`: Zip a file and save as a ToshiAPI File...
 * `index-inv`: Add inversions to the index (static web...
+
+### `utils container`
+
+Build runzi-opensha Docker image, push to ECR, update Batch job definition.
+
+**Usage**:
+
+```console
+$ runzi utils container [OPTIONS]
+```
+
+**Options**:
+
+* `--fatjar-tag TEXT`: OpenSHA fatjar tag  [default: bf70d35]
+* `--runzi-gitref TEXT`: Git branch, tag, or commit to build  [default: main]
+* `--python-version TEXT`: Python version  [default: 3.11]
+* `--oq-version TEXT`: OpenQuake version  [default: 3.23.4]
+* `--install-converter / --no-install-converter`: Set to install UCERF converter  [default: no-install-converter]
+* `--region TEXT`: AWS region  [default: us-east-1]
+* `--aws-account-id TEXT`: AWS account ID  [default: 461564345538]
+* `--ecr-repo TEXT`: ECR repository  [default: nzshm22/runzi]
+* `--job-definition TEXT`: Batch job definition  [default: runzi_32GB_8VCPU_JD]
+* `--dockerfile TEXT`: Path to Dockerfile  [default: docker/Dockerfile]
+* `--skip-build / --no-skip-build`: Skip Docker build  [default: no-skip-build]
+* `--skip-push / --no-skip-push`: Skip ECR push  [default: no-skip-push]
+* `--skip-job-update / --no-skip-job-update`: Skip job definition update  [default: no-skip-job-update]
+* `--help`: Show this message and exit.
 
 ### `utils save-file`
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.10.0] 2026-03-12
+
+## Changed
+ - `NZSHM22_SCRIPT_CLUSTER_MODE` environment variable replaced by `--cluster-mode` CLI option
+ - Updated documentation to reflect `--cluster-mode` CLI argument
+
+## Added
+ - Tests for `--cluster-mode` CLI option (`tests/test_cli_cluster_mode.py`)
+
+## Removed
+ - `NZSHM22_SCRIPT_CLUSTER_MODE` environment variable support
+
 ## [0.9.2] 2026-03-11
 
 ## Added

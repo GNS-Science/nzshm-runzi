@@ -15,10 +15,10 @@ from runzi.aws import get_secret
 load_dotenv()
 
 
-class EnvMode(enum.IntEnum):
-    LOCAL = 0
-    CLUSTER = 1
-    AWS = 2
+class ClusterModeEnum(enum.Enum):
+    LOCAL = "LOCAL"
+    CLUSTER = "CLUSTER"
+    AWS = "AWS"
 
 
 def boolean_env(environ_name):
@@ -32,9 +32,9 @@ S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL', "http://localhost:4569")
 ECR_DIGEST = os.getenv('NZSHM22_RUNZI_ECR_DIGEST')
 THS_RLZ_DB = os.getenv('NZSHM22_THS_RLZ_DB')
 
-CLUSTER_MODE = EnvMode[
-    os.getenv('NZSHM22_SCRIPT_CLUSTER_MODE', 'LOCAL')
-]  # Wase True/False now EnvMode: LOCAL, CLUSTER, AWS
+DEFAULT_CLUSTER_MODE = ClusterModeEnum.LOCAL
+# the value of this variable can be changed by the CLI but we set it here in-case it's being accessed w/o the CLI
+CLUSTER_MODE = DEFAULT_CLUSTER_MODE
 
 # Get API key from AWS secrets manager
 API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
