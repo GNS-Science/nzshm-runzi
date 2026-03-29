@@ -161,9 +161,7 @@ class OQDisaggTask:
     ):
         """Record results in API."""
         json_filepath = Path(WORK_PATH, "task_args.json")
-        # TODO: uncomment once nzshm-common has fixed the CodedLocation / pydantic problem
-        # json_filepath.write_text(self.user_args.model_dump_json(exclude='site', indent=2))
-        json_filepath.write_text(json.dumps({"nothing": "here"}))
+        json_filepath.write_text(self.user_args.model_dump_json(indent=2))
 
         # save the json
         task_args_id, post_url = self._toshi_api.file.create_file(json_filepath)
