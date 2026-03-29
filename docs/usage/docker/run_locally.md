@@ -19,13 +19,13 @@ docker run --entrypoint runzi \
 -v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -v <path to input files>:/INPUT_FILES
 -v $NZSHM22_THS_RLZ_DB:/THS \
+-e THS_DATASET_AGGR_URI \
 -e AWS_PROFILE \
 -e NZSHM22_TOSHI_S3_URL \
 -e NZSHM22_TOSHI_API_URL \
 -e NZSHM22_TOSHI_API_KEY \
--e NZSHM22_SCRIPT_CLUSTER_MODE \
 -e NZSHM22_RUNZI_ECR_DIGEST \
-runzi-build:latest runzi [COMMAND] [COMMAND] [OPTIONS]
+runzi-build:latest [COMMAND] [COMMAND] [OPTIONS]
 ```
 
 ## If using an S3 realization dataset for OpenQuake
@@ -37,13 +37,13 @@ docker run --entrypoint runzi \
 -v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -v <path to input files>:/INPUT_FILES
 -e NZSHM22_THS_RLZ_DB \
+-e THS_DATASET_AGGR_URI \
 -e AWS_PROFILE \
 -e NZSHM22_TOSHI_S3_URL \
 -e NZSHM22_TOSHI_API_URL \
 -e NZSHM22_TOSHI_API_KEY \
--e NZSHM22_SCRIPT_CLUSTER_MODE \
 -e NZSHM22_RUNZI_ECR_DIGEST \
-runzi-build:latest runzi [COMMAND] [COMMAND] [OPTIONS]
+runzi-build:latest [COMMAND] [COMMAND] [OPTIONS]
 ```
 
 ## Environment file
