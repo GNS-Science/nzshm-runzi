@@ -1623,37 +1623,39 @@ urllib3 = ">=1.25.3,<3.0.0"
 
 [[package]]
 name = "lancedb"
-version = "0.30.1"
+version = "0.29.2"
 description = "lancedb"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "lancedb-0.30.1-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:34cf0d49e755313867c04e0f3e7e4dde222e31110a60ca45ef0dc4c72d9a705d"},
-    {file = "lancedb-0.30.1-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f21d794a506ff2bba77ba7eba12a476f518c62c78803af765ebd35b83f9097a3"},
-    {file = "lancedb-0.30.1-cp39-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:2eaebfa5add91c0185be4baa0c1a714877e203340a116102b12ad5e60bf36209"},
-    {file = "lancedb-0.30.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:7beb23b096b7798f65aac6203deab0e4b4c9d541050f17bc38312e6cf143fafd"},
+    {file = "lancedb-0.29.2-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:bc1faf2e12addb9585569d0fb114ecc25ec3867e4e1aa6934e9343cfb5265ee4"},
+    {file = "lancedb-0.29.2-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0fec19cfc52a5b9d98e060bd2f02a1c9df6a0bfd15b36021b6017327a41893a3"},
+    {file = "lancedb-0.29.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:636939ab9225d435020ba17c231f5eaba15312a07813bcebcd71128204cc039f"},
+    {file = "lancedb-0.29.2-cp39-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:f79b32083fcab139009db521d2f7fcd6afe4cca98a78c06c5940ff00a170cc1a"},
+    {file = "lancedb-0.29.2-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:991043a28c1f49f14df2479b554a95c759a85666dc58573cc86c1b9df05db794"},
+    {file = "lancedb-0.29.2-cp39-abi3-win_amd64.whl", hash = "sha256:101eb0ac018bb0b643dd9ea22065f6f2102e9d44c9ac58a197477ccbfbc0b9fa"},
 ]
 
 [package.dependencies]
-deprecation = ">=2.1.0"
+deprecation = "*"
 lance-namespace = ">=0.3.2"
-numpy = ">=1.24.0"
+numpy = "*"
 overrides = {version = ">=0.7", markers = "python_full_version < \"3.12.0\""}
-packaging = ">=23.0"
+packaging = "*"
 pyarrow = ">=16"
 pydantic = ">=1.10"
 tqdm = ">=4.27.0"
 
 [package.extras]
 azure = ["adlfs (>=2024.2.0)"]
-clip = ["open-clip-torch", "pillow (>=12.1.1)", "torch"]
-dev = ["pre-commit (>=3.5.0)", "pyright (>=1.1.350)", "ruff (>=0.3.0)", "typing-extensions (>=4.0.0) ; python_full_version < \"3.11.0\""]
+clip = ["open-clip-torch", "pillow", "torch"]
+dev = ["pre-commit", "pyright", "ruff", "typing-extensions (>=4.0.0) ; python_full_version < \"3.11.0\""]
 docs = ["mkdocs", "mkdocs-jupyter", "mkdocs-material", "mkdocstrings-python"]
-embeddings = ["awscli (>=1.44.38)", "boto3 (>=1.28.57)", "botocore (>=1.31.57)", "cohere (>=4.0)", "colpali-engine (>=0.3.10)", "google-generativeai (>=0.3.0)", "huggingface-hub (>=0.19.0)", "ibm-watsonx-ai (>=1.1.2) ; python_full_version >= \"3.10.0\"", "instructorembedding (>=1.0.1)", "ollama (>=0.3.0)", "open-clip-torch (>=2.20.0)", "openai (>=1.6.1)", "pillow (>=12.1.1)", "requests (>=2.31.0)", "sentence-transformers (>=2.2.0)", "sentencepiece (>=0.1.99)", "torch (>=2.0.0)"]
-pylance = ["pylance (>=4.0.0b7)"]
-siglip = ["pillow (>=12.1.1)", "sentencepiece", "torch", "transformers (>=4.41.0)"]
-tests = ["aiohttp (>=3.9.0)", "boto3 (>=1.28.57)", "datafusion (>=52,<53)", "duckdb (>=0.9.0)", "pandas (>=1.4)", "polars (>=0.19,<=1.3.0)", "pyarrow-stubs (>=16.0)", "pylance (>=4.0.0b7)", "pytest (>=7.0)", "pytest-asyncio (>=0.21)", "pytest-mock (>=3.10)", "pytz (>=2023.3)", "requests (>=2.31.0)", "tantivy (>=0.20.0)"]
+embeddings = ["awscli (>=1.29.57)", "boto3 (>=1.28.57)", "botocore (>=1.31.57)", "cohere", "colpali-engine (>=0.3.10)", "google-generativeai", "huggingface-hub", "ibm-watsonx-ai (>=1.1.2) ; python_full_version >= \"3.10.0\"", "instructorembedding", "ollama (>=0.3.0)", "open-clip-torch", "openai (>=1.6.1)", "pillow", "requests (>=2.31.0)", "sentence-transformers", "sentencepiece", "torch"]
+pylance = ["pylance (>=1.0.0b14)"]
+siglip = ["pillow", "sentencepiece", "torch", "transformers (>=4.41.0)"]
+tests = ["aiohttp", "boto3", "datafusion", "duckdb", "pandas (>=1.4)", "polars (>=0.19,<=1.3.0)", "pyarrow-stubs", "pylance (>=1.0.0b14)", "pytest", "pytest-asyncio", "pytest-mock", "pytz", "requests", "tantivy"]
 
 [[package]]
 name = "librt"
@@ -2863,14 +2865,14 @@ geometry = ["shapely"]
 
 [[package]]
 name = "nzshm-hazlab"
-version = "0.1.2"
+version = "0.1.3"
 description = "A laboratory for exploring hazard models"
 optional = false
 python-versions = "<3.13,>=3.11"
 groups = ["main"]
 files = [
-    {file = "nzshm_hazlab-0.1.2-py3-none-any.whl", hash = "sha256:53dac4d54343082b42f79d2f59339159dbe7b637c7c4ce83b1af283ee4965d86"},
-    {file = "nzshm_hazlab-0.1.2.tar.gz", hash = "sha256:8f25dd8be8dcd58ab74bc7c45a467997e66d7e3beb8600cee6935c4e1e8da882"},
+    {file = "nzshm_hazlab-0.1.3-py3-none-any.whl", hash = "sha256:a4e7def3479bee2ec966590c6b79eb9098ddcbcbfebe597c780b65086c4c69ab"},
+    {file = "nzshm_hazlab-0.1.3.tar.gz", hash = "sha256:e68907f32f457cb7734c220a23e3e5ef07c9a6816befe490e96d4eaeeaf36105"},
 ]
 
 [package.dependencies]
@@ -2881,7 +2883,7 @@ nzshm-common = ">=0.9.3"
 nzshm-model = ">=0.14.2"
 pandas = ">=2.2.3,<3.0.0"
 toshi-hazard-post = ">=0.7.1"
-toshi-hazard-store = ">=1.2.4,<2.0.0"
+toshi-hazard-store = ">=1.4.3,<2.0.0"
 
 [package.extras]
 interactive = ["ipython (>=9.9.0)", "jupyterlab (>=4.5.2)"]
@@ -4899,19 +4901,19 @@ tzdata = ">=2025.2,<2026.0"
 
 [[package]]
 name = "toshi-hazard-store"
-version = "1.4.2"
+version = "1.4.3"
 description = "Library for saving and retrieving NZHSM openquake hazard results with convenience (uses pyarrow with parquet format)."
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "toshi_hazard_store-1.4.2-py3-none-any.whl", hash = "sha256:85bcc39ec19cb2ca48e6bd89547d7f3f4a2de87be6535582d26dcc7863ca42d0"},
-    {file = "toshi_hazard_store-1.4.2.tar.gz", hash = "sha256:63971a1cf1ade3f1458cfd58a204ed1a0f2e0b61f437198596223d74f36f68e3"},
+    {file = "toshi_hazard_store-1.4.3-py3-none-any.whl", hash = "sha256:8ffafb851a245c3f31fe4b17293683c544e467ab4daa685df8051e3bac79751e"},
+    {file = "toshi_hazard_store-1.4.3.tar.gz", hash = "sha256:389a0754ea0f58a3a7d1c9119a64b9b69e3f1c2890db77153262581425b66055"},
 ]
 
 [package.dependencies]
 geopandas = ">=1.1.2"
-lancedb = ">=0.27.1"
+lancedb = ">=0.27.1,<0.30.0"
 matplotlib = ">=3.10.8"
 nshm-toshi-client = ">=1.0.1"
 numpy = ">=1.24"
@@ -5456,4 +5458,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.12"
-content-hash = "7715029d77e1d8fb5ac5228018324cd67485c4618c0ecea6ba1e75c87aa24441"
+content-hash = "9433ec7c9a9459c2e9c072400215fbee110c55d544535e891bff3452f435c234"
