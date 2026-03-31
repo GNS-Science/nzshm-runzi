@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.10.1] 2026-03-30
+
+## Changed
+ - Updated nzhsm-hazlab and nzshm-common dependencies to take advantage of fix to deserialization of CodedLocation.
+ - Improved documentation to include missing env vars and correct command for running docker locally
+ - Updated toshi-hazard-store to fix windows build problem due to lancedb
+
+## Added
+ - Save task arguments for disaggregation to toshiAPI.
+
 ## [0.10.0] 2026-03-12
 
 ## Changed

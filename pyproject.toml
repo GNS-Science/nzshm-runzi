@@ -1,6 +1,6 @@
 [project]
 name = "runzi"
-version = "0.10.0"
+version = "0.10.1"
 readme = "README.md"
 authors = [
     {name = "Chris DiCaprio", email = "christopher.dicaprio@gmail.com"}, 
@@ -22,16 +22,16 @@ dependencies = [
     "tqdm (>=4.67.3)",
     "click (>=8.1.7)",
     "python-dateutil (>=2.8.2)",
-    "nzshm-common[geometry] (>=0.8.4)",
+    "nzshm-common[geometry] (>=0.9.3)",
     "pytz (>=2025.1)",
     "pydantic (>=2.12)",
     "nzshm-model (>=0.13.6)",
     "python-dotenv (>=1.1.0)",
-    "toshi-hazard-store (>=1.2.3,<2.0.0)",
+    "toshi-hazard-store (>=1.4.3,<2.0.0)",
     "typer (>=0.17.4,<0.18.0)",
     "solvis (>=1.2.0,<2.0.0)",
     "nshm-toshi-client (>=1.1.0,<2.0.0)",
-    "nzshm-hazlab (>=0.1.1,<0.2.0)",
+    "nzshm-hazlab (>=0.1.3,<0.2.0)",
 ]
 
 
