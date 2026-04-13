@@ -4901,14 +4901,14 @@ tzdata = ">=2025.2,<2026.0"
 
 [[package]]
 name = "toshi-hazard-store"
-version = "1.4.3"
+version = "1.5.0"
 description = "Library for saving and retrieving NZHSM openquake hazard results with convenience (uses pyarrow with parquet format)."
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "toshi_hazard_store-1.4.3-py3-none-any.whl", hash = "sha256:8ffafb851a245c3f31fe4b17293683c544e467ab4daa685df8051e3bac79751e"},
-    {file = "toshi_hazard_store-1.4.3.tar.gz", hash = "sha256:389a0754ea0f58a3a7d1c9119a64b9b69e3f1c2890db77153262581425b66055"},
+    {file = "toshi_hazard_store-1.5.0-py3-none-any.whl", hash = "sha256:9904e4fcdc469cbf01a26634e5a7fadb00c886a37bdb40a9af33418d84384a36"},
+    {file = "toshi_hazard_store-1.5.0.tar.gz", hash = "sha256:7ea4cc2fb92c702b122dadebd71e02b9fc848e89cb77c1a298bdce5722a67243"},
 ]
 
 [package.dependencies]
@@ -4926,6 +4926,10 @@ pydantic = ">=2.11.5"
 python-dotenv = ">=1.0.1"
 s3path = ">=0.6.1"
 toml = ">=0.10.2"
+
+[package.extras]
+openquake = ["fiona (>=1.9.5)", "networkx (>=3.2.1)", "numba", "openquake-engine (>=3.20.1)", "pydantic-to-pyarrow (>=0.1.6)"]
+scripts = ["boto3", "click (>=8.1.3)", "click-plugins (>=1.1.1)"]
 
 [[package]]
 name = "tox"
@@ -5458,4 +5462,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.12"
-content-hash = "9433ec7c9a9459c2e9c072400215fbee110c55d544535e891bff3452f435c234"
+content-hash = "6b2f9402e70396635028fcabb6225c801b5fb98c64bf82f70e05b8bc59717786"
