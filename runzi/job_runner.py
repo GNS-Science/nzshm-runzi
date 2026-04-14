@@ -122,11 +122,13 @@ class JobRunner(ABC):
                 service_name='batch', region_name='us-east-1', endpoint_url='https://batch.us-east-1.amazonaws.com'
             )
             for script_or_config in scripts:
+                assert isinstance(script_or_config, dict)
                 res = batch_client.submit_job(**script_or_config)
                 print(res)
         elif local_config.CLUSTER_MODE is ClusterModeEnum.CLUSTER:
             for script_name in scripts:
-                check_call(["qsub", script_name])  # type: ignore
+                assert isinstance(script_name, str)
+                check_call(["qsub", script_name])
 
         print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
 
