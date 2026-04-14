@@ -244,13 +244,9 @@ class InversionSolutionBuilder(ABC):
             int(self.user_args.max_inversion_time * 60)
         ).setEnergyChangeCompletionCriteria(float(0), self.user_args.completion_energy, float(1)).setSelectionInterval(
             self.user_args.selection_interval_secs
-        ).setNumThreadsPerSelector(
-            self.user_args.selector_threads
-        ).setNonnegativityConstraintType(
+        ).setNumThreadsPerSelector(self.user_args.selector_threads).setNonnegativityConstraintType(
             self.user_args.non_negativity_function
-        ).setPerturbationFunction(
-            self.user_args.perturbation_function
-        )
+        ).setPerturbationFunction(self.user_args.perturbation_function)
 
         if (averaging_threads := self.user_args.averaging_threads) is not None:
             self.inversion_runner.setInversionAveraging(averaging_threads, self.user_args.averaging_interval_secs)
@@ -295,9 +291,7 @@ class InversionSolutionBuilder(ABC):
             self.inversion_runner.setSlipRateUncertaintyConstraint(
                 weight,
                 slip_uncertainty_scaling_factor,
-            ).setUnmodifiedSlipRateStdvs(
-                not use_slip_scalings
-            )  # True means no slips scaling and vice-versa
+            ).setUnmodifiedSlipRateStdvs(not use_slip_scalings)  # True means no slips scaling and vice-versa
         elif (slip_rate_normalized_weight) and (slip_rate_unnormalized_weight is not None):
             self.inversion_runner.setSlipRateConstraint(
                 slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight
@@ -329,7 +323,6 @@ class InversionSolutionBuilder(ABC):
         environment = {"host": platform.node(), "nzshm-opensha.version": API_GitVersion}
 
         if self.system_args.use_api:
-
             general_task_id = self.system_args.general_task_id
             # create new task in toshi_api
             task_id = self.toshi_api.automation_task.create_task(

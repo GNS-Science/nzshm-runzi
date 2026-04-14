@@ -12,7 +12,6 @@ class HazardTaskType(Enum):
 
 
 class OpenquakeHazardTask(object):
-
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)

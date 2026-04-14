@@ -41,7 +41,6 @@ class OQConvertArgs(BaseModel):
 
 
 class OQConvertTask:
-
     def __init__(self, user_args: OQConvertArgs, system_args: SystemArgs, model_type: ModelType):
 
         self.user_args = user_args
@@ -151,7 +150,6 @@ class OQConvertTask:
         print("Conversion took %s secs" % (t1 - t0).total_seconds())
 
         if self.use_api:
-
             # get the predecessors
             predecessors = [
                 dict(id=self.user_args.source_solution_id, depth=-1),
@@ -184,7 +182,6 @@ class OQConvertTask:
 
 
 if __name__ == "__main__":
-
     config = get_config()
 
     user_args = OQConvertArgs(**config['task_args'])

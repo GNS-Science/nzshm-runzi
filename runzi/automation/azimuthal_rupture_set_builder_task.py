@@ -104,17 +104,11 @@ class RuptureSetBuilderTask:
             float(ta["max_jump_distance"])
         ).setPermutationStrategy(ta["connection_strategy"]).setMaxSubSectionLength(
             float(ta["down_dip_width"])
-        ).setMinSubSectsPerParent(
-            int(ta["min_sub_sects_per_parent"])
-        ).setMinSubSections(
+        ).setMinSubSectsPerParent(int(ta["min_sub_sects_per_parent"])).setMinSubSections(
             int(ta["min_sub_sections"])
-        ).setMaxCumulativeAzimuthChange(
-            float(ta["max_cumulative_azimuth"])
-        ).setThinningFactor(
+        ).setMaxCumulativeAzimuthChange(float(ta["max_cumulative_azimuth"])).setThinningFactor(
             float(ta["thinning_factor"])
-        ).setFaultModel(
-            ta["fault_model"]
-        )
+        ).setFaultModel(ta["fault_model"])
 
         # name the output file
         outputfile = self._output_folder.joinpath(self._builder.getDescriptiveName() + ".zip")
@@ -161,7 +155,6 @@ def get_repo_heads(rootdir, repos):
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument("config")
     args = parser.parse_args()

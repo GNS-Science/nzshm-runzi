@@ -3,38 +3,32 @@ name = "runzi"
 version = "0.10.1"
 readme = "README.md"
 authors = [
-    {name = "Chris DiCaprio", email = "christopher.dicaprio@gmail.com"}, 
-    {name = "Chris Chamberlain", email = "chrisbc@artisan.co.nz"}, 
+    {name = "Chris DiCaprio", email = "christopher.dicaprio@gmail.com"},
+    {name = "Chris Chamberlain", email = "chrisbc@artisan.co.nz"},
     {name = "Oakley Jurgens", email = "o.jurgens@gns.cri.nz"},
 ]
 description = "scripting and cli for the NSHM"
 license = "GPL-3.0-only"
 requires-python = ">=3.11,<3.12"
-packages = [
-    { include = "runzi" },
-    { include = "tests", format = "sdist" },
-]
 dependencies = [
-    "gitpython (>=3.1.46)",
-    "py4j (==0.10.9.1)",
-    "boto3 (>=1.26.43)",
-    "lxml (>=4.9.2)",
-    "tqdm (>=4.67.3)",
-    "click (>=8.1.7)",
-    "python-dateutil (>=2.8.2)",
-    "nzshm-common[geometry] (>=0.9.3)",
-    "pytz (>=2025.1)",
-    "pydantic (>=2.12)",
-    "nzshm-model (>=0.13.6)",
-    "python-dotenv (>=1.1.0)",
-    "toshi-hazard-store (>=1.5.0,<2.0.0)",
-    "typer (>=0.17.4,<0.18.0)",
-    "solvis (>=1.2.0,<2.0.0)",
-    "nshm-toshi-client (>=1.1.0,<2.0.0)",
-    "nzshm-hazlab (>=0.1.3,<0.2.0)",
+    "gitpython>=3.1.46",
+    "py4j==0.10.9.1",
+    "boto3>=1.26.43",
+    "lxml>=4.9.2",
+    "tqdm>=4.67.3",
+    "click>=8.1.7",
+    "python-dateutil>=2.8.2",
+    "nzshm-common[geometry]>=0.9.3",
+    "pytz>=2025.1",
+    "pydantic>=2.12",
+    "nzshm-model>=0.13.6",
+    "python-dotenv>=1.1.0",
+    "toshi-hazard-store>=1.5.0,<2.0.0",
+    "typer>=0.17.4,<0.18.0",
+    "solvis>=1.2.0,<2.0.0",
+    "nshm-toshi-client>=1.1.0,<2.0.0",
+    "nzshm-hazlab>=0.1.3,<0.2.0",
 ]
-
-
 
 
 [project.scripts]
@@ -44,9 +38,7 @@ runzi = 'runzi.cli.runzi_cli:app'
 [dependency-groups]
 dev = [
     "pytest",
-    "flake8",
-    "black",
-    "isort",
+    "ruff",
     "bump2version",
     "tox",
     "mypy",
@@ -58,7 +50,7 @@ dev = [
     "vulture",
     "safety",
     "pip-audit",
-    "chardet (<6)",
+    "chardet<6",
 ]
 
 
@@ -68,51 +60,49 @@ doc = [
     "mkdocs-include-markdown-plugin",
     "mkdocstrings",
     "mkdocstrings-python",
-    "griffe (>=2.0.0,<3.0.0)",
-    "griffe-pydantic (>=1.3.1,<2.0.0)",
-    "griffe-fieldz (>=0.4.0,<0.5.0)",
-    "mkdocs-gen-files (>=0.6.0,<0.7.0)",
+    "griffe>=2.0.0,<3.0.0",
+    "griffe-pydantic>=1.3.1,<2.0.0",
+    "griffe-fieldz>=0.4.0,<0.5.0",
+    "mkdocs-gen-files>=0.6.0,<0.7.0",
 ]
 
 
+[tool.uv.build-backend]
+module-name = "runzi"
+module-root = ""
 
-[tool.isort]
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-line_length = 120
-skip_gitignore = true
 
-[tool.black]
+[tool.ruff]
 line-length = 120
-skip-string-normalization = true
-target-version = ['py311']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  | runzi/CONFIG
-)/
-'''
+target-version = "py311"
+extend-exclude = ["runzi/CONFIG"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",   # pyflakes + pycodestyle (flake8 baseline)
+    "I",              # isort
+    "C90",            # mccabe complexity
+]
+# D rules (pydocstyle) intentionally excluded — flake8-docstrings was never installed,
+# so the docstring-convention = google setting in the old setup.cfg was never enforced.
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 18
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+[tool.ruff.format]
+quote-style = "preserve"
+
 
 [tool.mypy]
 ignore_missing_imports = true
 
-[tool.poetry.requires-plugins]
-poetry-plugin-export = ">=1.8"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
+requires = ["uv_build>=0.10,<0.11"]
+build-backend = "uv_build"

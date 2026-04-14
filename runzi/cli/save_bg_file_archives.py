@@ -57,7 +57,6 @@ def single_directory_crawl(search_dir, archive_table_fn, dry_run):
 
 
 if __name__ == "__main__":
-
     dry_run = False
 
     archive_table_fn = 'noNB_dist_seis.csv'

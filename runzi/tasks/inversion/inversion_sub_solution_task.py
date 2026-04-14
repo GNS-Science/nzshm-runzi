@@ -123,7 +123,7 @@ class BuilderTask:
         sp0 = section_participation(ri_sol, ri)  # noqa: F821
 
         # write out a geojson
-        radius = f"{int(radius_m/1000)}km"
+        radius = f"{int(radius_m / 1000)}km"
         geofile = PurePath(WORK_PATH, f"{location[0]}_ruptures_radius({radius})_rate_filter({rate_threshold}).geojson")
         print(f"write new geojson file: {geofile}")
         export_geojson(gpd.GeoDataFrame(sp0), geofile)  # noqa: F821
@@ -145,7 +145,6 @@ class BuilderTask:
 
 
 if __name__ == "__main__":
-
     config = get_config()
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue

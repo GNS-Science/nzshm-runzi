@@ -16,7 +16,6 @@ class TaskLanguage(Enum):
 
 
 class SystemArgs(BaseModel):
-
     task_language: TaskLanguage
     general_task_id: Optional[str] = None
     task_count: int = 0

@@ -293,7 +293,6 @@ class OQHazardTask:
             #############################
             # run the store_hazard job
             if not SPOOF and (not oq_result.get("no_ruptures")):
-
                 # write config to json
                 config_filepath = config_folder / "hazard_config.json"
                 hazard_config.to_json(config_filepath)
@@ -314,7 +313,6 @@ class OQHazardTask:
 
 
 if __name__ == "__main__":
-
     config = get_config()
 
     # print(config)

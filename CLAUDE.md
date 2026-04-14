@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `nzshm-runzi` is a Python CLI application for running, scheduling, and managing NZSHM (New Zealand Seismic Hazard Model) computational jobs across local machines, AWS ECS/Batch, and HPC clusters. It coordinates job creation, argument sweeping, script generation, and result storage via the toshi API.
 
 - **Python**: 3.11 only (`>=3.11,<3.12`)
-- **Package manager**: Poetry
+- **Package manager**: uv
 - **CLI framework**: Typer
 - **Data validation**: Pydantic v2+
 
@@ -27,10 +27,10 @@ pytest tests/test_get_oq_hazard_tasks.py::test_build_hazard_tasks
 pytest -k "hazard"
 
 # Format code
-isort runzi tests && black runzi tests
+ruff check --select I --fix runzi tests && ruff format runzi tests
 
 # Lint
-flake8 runzi tests && mypy runzi tests
+ruff check runzi tests && mypy runzi tests
 
 # Full tox suite
 tox -e py311,format,lint
