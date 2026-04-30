@@ -20,7 +20,8 @@ class ScaleSolutionJobRunner(JobRunner):
         Args:
             job_args: input arguments for the jobs including swept args.
         """
-        super().__init__(job_args, task_module)
+        super().__init__(job_args, task_module)  # type: ignore
+        # TODO: remove 'type: ignore' once solvis tasks have been fixed for new solvis API
 
         # convert GT IDs to swept IDs of inversion solutions
         convert_gt_to_swept(self.argument_sweeper)

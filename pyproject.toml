@@ -98,11 +98,6 @@ combine-as-imports = true
 [tool.ruff.format]
 quote-style = "preserve"
 
-
-[tool.mypy]
-ignore_missing_imports = true
-
-
 [build-system]
 requires = ["uv_build>=0.10,<0.11"]
 build-backend = "uv_build"

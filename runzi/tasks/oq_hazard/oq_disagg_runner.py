@@ -6,6 +6,7 @@ from typing import cast
 from nzshm_common.location.location import get_locations
 from nzshm_model import get_model_version
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
+from nzshm_model.logic_tree.source_logic_tree.logic_tree import SourceFilteredBranch
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 
 import runzi.tasks.oq_hazard.oq_disagg_task as task_module
@@ -83,15 +84,19 @@ class OQDisaggJobRunner(JobRunner):
             else:
                 hazard_config = hazard_config_ovr
 
+        assert isinstance(hazard_config, OpenquakeConfig)
         self.argument_sweeper.prototype_args.srm_logic_tree = srm_logic_tree
         self.argument_sweeper.prototype_args.gmcm_logic_tree = gmcm_logic_tree
         self.argument_sweeper.prototype_args.hazard_config = hazard_config
 
         # convert the SRM logic tree into swept arguments
         logic_trees = []
-        for branch in self.argument_sweeper.prototype_args.srm_logic_tree:  # type: ignore
+        for branch in self.argument_sweeper.prototype_args.srm_logic_tree:
+            assert isinstance(branch, SourceFilteredBranch)
             branch.weight = 1.0
-            logic_trees.append(SourceLogicTree.from_branches([branch]))
+            # TODO: remove type: ignore when nzshm-model type hint is fixed
+            # https://github.com/GNS-Science/nzshm-model/issues/156
+            logic_trees.append(SourceLogicTree.from_branches([branch]))  # type: ignore
         self.argument_sweeper.swept_args['srm_logic_tree'] = logic_trees
 
         # convert site parameters into swept arguments

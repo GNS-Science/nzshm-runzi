@@ -1,3 +1,5 @@
+# type: ignore
+# TODO: remove 'type: ignore' once solvis tasks have been fixed for new solvis API
 import datetime as dt
 import time
 import uuid
