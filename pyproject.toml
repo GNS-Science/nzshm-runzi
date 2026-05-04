@@ -74,6 +74,9 @@ exclude-newer-package = { "nzshm-common" = false, "nzshm-model" = false, "toshi-
 module-name = "runzi"
 module-root = ""
 
+[tool.uv.sources]
+toshi-hazard-store = { git = "https://github.com/GNS-Science/toshi-hazard-store.git" }
+
 
 [tool.ruff]
 line-length = 120
