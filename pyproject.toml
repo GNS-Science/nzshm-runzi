@@ -66,6 +66,9 @@ doc = [
     "mkdocs-gen-files>=0.6.0,<0.7.0",
 ]
 
+[tool.uv]
+exclude-newer = "1 week"
+exclude-newer-package = { "nzshm-common" = false, "nzshm-model" = false, "toshi-hazard-store" = false, "nzshm-hazlab" = false, "solvis" = false}
 
 [tool.uv.build-backend]
 module-name = "runzi"
