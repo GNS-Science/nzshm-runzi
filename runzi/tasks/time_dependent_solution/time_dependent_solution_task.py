@@ -121,7 +121,6 @@ class TimeDependentSolutionTask:
 
         # SAVE the results
         if self.use_api:
-
             # record the complteded task
             done_args = {
                 'task_id': task_id,
@@ -164,7 +163,6 @@ class TimeDependentSolutionTask:
 
 
 if __name__ == "__main__":
-
     config = get_config()
 
     user_args = TimeDependentSolutionArgs(**config['task_args'])

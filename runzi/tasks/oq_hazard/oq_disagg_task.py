@@ -29,6 +29,7 @@ from runzi.tasks.oq_hazard.execute_openquake import execute_openquake
 from runzi.tasks.oq_hazard.hazard_args import OQDisaggArgs
 
 if TYPE_CHECKING:
+    from nzshm_common import CodedLocation
     from toshi_hazard_store.model import AggregationEnum
 
 # logging.basicConfig(level=logging.DEBUG)
@@ -62,7 +63,7 @@ default_system_args = SystemArgs(
 
 def get_target_level(
     hazard_model_id: str,
-    location: str,
+    location: 'CodedLocation',
     vs30: int,
     imt: str,
     agg: 'AggregationEnum',
@@ -123,9 +124,12 @@ class OQDisaggTask:
             "openquake.version": "SPOOFED" if SPOOF else "TODO: get openquake version",
         }
 
-        srm_logic_tree: SourceLogicTree = self.user_args.srm_logic_tree
-        gmcm_logic_tree: GMCMLogicTree = self.user_args.gmcm_logic_tree
-        openquake_config: OpenquakeConfig = self.user_args.hazard_config
+        assert isinstance(self.user_args.srm_logic_tree, SourceLogicTree)
+        assert isinstance(self.user_args.gmcm_logic_tree, GMCMLogicTree)
+        assert isinstance(self.user_args.hazard_config, OpenquakeConfig)
+        srm_logic_tree = self.user_args.srm_logic_tree
+        gmcm_logic_tree = self.user_args.gmcm_logic_tree
+        openquake_config = self.user_args.hazard_config
 
         automation_task_id = self._toshi_api.openquake_hazard_task.create_task(
             dict(
@@ -297,7 +301,6 @@ class OQDisaggTask:
             #############################
             # run the store_hazard job
             if not SPOOF and (not oq_result.get("no_ruptures")):
-
                 # write config to json
                 config_filepath = config_folder / "hazard_config.json"
                 hazard_config.to_json(config_filepath)
@@ -318,7 +321,6 @@ class OQDisaggTask:
 
 
 if __name__ == "__main__":
-
     config = get_config()
 
     # print(config)

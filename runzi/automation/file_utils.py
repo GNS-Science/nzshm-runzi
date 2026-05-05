@@ -18,7 +18,6 @@ def get_output_file_ids(general_task_api, upstream_task_id, file_extension='zip'
 
     api_result = general_task_api.get_subtask_files(upstream_task_id)
     for subtask in api_result['children']['edges']:
-
         # get rupture set fault model
         fault_model = ""
         for filenode in subtask['node']['child']['files']['edges']:
@@ -139,7 +138,6 @@ def download_files(
     downloads = dict()
 
     for info in get_download_info(file_api, file_generator):
-
         folder = Path(dest_folder, 'downloads', info['id'])
         folder.mkdir(parents=True, exist_ok=True)
 

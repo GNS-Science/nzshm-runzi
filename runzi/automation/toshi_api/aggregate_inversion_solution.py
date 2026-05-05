@@ -13,7 +13,6 @@ log = logging.getLogger(__name__)
 
 
 class AggregateInversionSolution(object):
-
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)

@@ -6,7 +6,6 @@ from runzi.arguments import ArgSweeper
 
 
 class SimpleArgs(BaseModel):
-
     class ComplexThing(BaseModel):
         a: int
         b: str

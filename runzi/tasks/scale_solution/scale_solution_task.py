@@ -1,3 +1,5 @@
+# type: ignore
+# TODO: remove 'type: ignore' once solvis tasks have been fixed for new solvis API
 import datetime as dt
 import time
 import uuid
@@ -109,7 +111,6 @@ class ScaleSolutionTask:
 
         # SAVE the results
         if self.use_api:
-
             # record the complteded task
             done_args = {
                 'task_id': task_id,
@@ -187,7 +188,6 @@ class ScaleSolutionTask:
 
 
 if __name__ == "__main__":
-
     config = get_config()
 
     user_args = ScaleSolutionArgs(**config['task_args'])

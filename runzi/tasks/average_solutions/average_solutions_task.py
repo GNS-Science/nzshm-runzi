@@ -38,7 +38,6 @@ def get_common_rupture_set(source_solution_ids: list[str], toshi_api: ToshiApi) 
 
     rupture_set_id = ''
     for source_solution_id in source_solution_ids:
-
         new_rupture_set_id = get_rupture_set_id(source_solution_id, toshi_api)
         if not rupture_set_id:
             rupture_set_id = new_rupture_set_id
@@ -160,7 +159,6 @@ class AverageSolutionsTask:
 
         # SAVE the results
         if self.use_api:
-
             # record the complteded task
             done_args = {
                 'task_id': task_id,
@@ -230,7 +228,6 @@ class AverageSolutionsTask:
 
 
 if __name__ == "__main__":
-
     config = get_config()
 
     user_args = AverageSolutionsArgs(**config['task_args'])

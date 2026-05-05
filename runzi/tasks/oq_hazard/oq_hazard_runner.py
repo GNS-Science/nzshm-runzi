@@ -81,15 +81,18 @@ class OQHazardJobRunner(JobRunner):
             else:
                 hazard_config = hazard_config_ovr
 
+        assert isinstance(hazard_config, OpenquakeConfig)
         self.argument_sweeper.prototype_args.srm_logic_tree = srm_logic_tree
         self.argument_sweeper.prototype_args.gmcm_logic_tree = gmcm_logic_tree
         self.argument_sweeper.prototype_args.hazard_config = hazard_config
 
         # convert the SRM logic tree into swept arguments
         logic_trees = []
-        for branch in self.argument_sweeper.prototype_args.srm_logic_tree:  # type: ignore
+        for branch in self.argument_sweeper.prototype_args.srm_logic_tree:
             branch.weight = 1.0
-            logic_trees.append(SourceLogicTree.from_branches([branch]))
+            # TODO: remove type: ignore when nzshm-model type hint is fixed
+            # https://github.com/GNS-Science/nzshm-model/issues/156
+            logic_trees.append(SourceLogicTree.from_branches([branch]))  # type: ignore
         self.argument_sweeper.swept_args['srm_logic_tree'] = logic_trees
 
     def get_model_type(self) -> ModelType:

@@ -1,6 +1,6 @@
 # Installation
 
-For easy package installation, either [pip][] or [poetry][] is recommended.
+For easy package installation, either [pip][] or [uv][] is recommended.
 
 ## Stable release
 
@@ -11,7 +11,7 @@ For easy package installation, either [pip][] or [poetry][] is recommended.
 
 ???
 
-### Adding to a poetry project
+### Adding to a uv project
 
 ???
 
@@ -32,14 +32,13 @@ Python environment:
 $ pip install .
 ```
 
-Or with Poetry (using `--all-extras` to install all extra dependencies is
-recommended for development):
+Or with uv (installs all dependency groups including dev and doc):
 ```console
-$ poetry install --all-extras
+$ uv sync --all-groups
 ```
 
 
-[poetry]: https://python-poetry.org/
+[uv]: https://docs.astral.sh/uv/
 [pip]: https://pip.pypa.io
 [Python installation guide]: http://docs.python-guide.org/en/latest/starting/installation/
 [Github repository]: https://github.com/GNS-Science/nzshm-runzi

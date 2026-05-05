@@ -25,7 +25,6 @@ class ModelType(Enum):
 
 
 class CreateGeneralTaskArgs(object):
-
     def __init__(self, title, description, agent_name, created=None):
         self._arguments = dict(
             created=dt.datetime.now(tzutc()).isoformat(),
@@ -70,7 +69,6 @@ class CreateGeneralTaskArgs(object):
 
 
 class GeneralTask(object):
-
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)

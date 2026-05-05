@@ -76,8 +76,7 @@ def get_locations_from_file(
             locations_file = Path(temp_dir) / "sites.csv"
         else:
             assert locations_file
-            locations_file = locations_file
-        locations = get_locations([locations_file])
+        locations = get_locations([str(locations_file)])
         with locations_file.open() as lf:
             reader = csv.reader(lf)
             header = next(reader)
@@ -107,9 +106,12 @@ class OQHazardTask:
             "openquake.version": "SPOOFED" if SPOOF else "TODO: get openquake version",
         }
 
-        srm_logic_tree: SourceLogicTree = self.user_args.srm_logic_tree
-        gmcm_logic_tree: GMCMLogicTree = self.user_args.gmcm_logic_tree
-        openquake_config: OpenquakeConfig = self.user_args.hazard_config
+        assert isinstance(self.user_args.srm_logic_tree, SourceLogicTree)
+        assert isinstance(self.user_args.gmcm_logic_tree, GMCMLogicTree)
+        assert isinstance(self.user_args.hazard_config, OpenquakeConfig)
+        srm_logic_tree = self.user_args.srm_logic_tree
+        gmcm_logic_tree = self.user_args.gmcm_logic_tree
+        openquake_config = self.user_args.hazard_config
 
         automation_task_id = self._toshi_api.openquake_hazard_task.create_task(
             dict(
@@ -293,7 +295,6 @@ class OQHazardTask:
             #############################
             # run the store_hazard job
             if not SPOOF and (not oq_result.get("no_ruptures")):
-
                 # write config to json
                 config_filepath = config_folder / "hazard_config.json"
                 hazard_config.to_json(config_filepath)
@@ -314,7 +315,6 @@ class OQHazardTask:
 
 
 if __name__ == "__main__":
-
     config = get_config()
 
     # print(config)

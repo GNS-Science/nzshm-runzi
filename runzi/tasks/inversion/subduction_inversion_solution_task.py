@@ -93,7 +93,6 @@ def get_repo_heads(rootdir, repos):
 
 
 if __name__ == "__main__":
-
     config = get_config()
 
     # print(config)

@@ -13,7 +13,6 @@ log = logging.getLogger(__name__)
 
 
 class InversionSolutionNrml(object):
-
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)
