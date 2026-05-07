@@ -3,7 +3,7 @@ revision = 3
 requires-python = "==3.11.*"
 
 [options]
-exclude-newer = "2026-04-27T23:20:33.60086324Z"
+exclude-newer = "2026-04-29T03:44:16.833872099Z"
 exclude-newer-span = "P1W"
 
 [options.exclude-newer-package]
@@ -782,7 +782,7 @@ wheels = [
 
 [[package]]
 name = "lancedb"
-version = "0.30.2"
+version = "0.29.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "deprecation" },
@@ -795,12 +795,12 @@ dependencies = [
     { name = "tqdm" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7f/87/67b23006663be175c396ae8f7c6ac98bfa4728de5b5583016b8b8c54eb14/lancedb-0.30.2-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:3dd8cb9e2e25efb32c088b24b3fbc57f3f24a636f4b8ad4b287b1eb52f6b5075", size = 41720461, upload-time = "2026-03-31T22:42:32.853Z" },
-    { url = "https://files.pythonhosted.org/packages/78/68/b3b5f638f8de91de75751414114690cae9c294dc79d9ab2602f4562ed9df/lancedb-0.30.2-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f083d50b257f645bd5c4b295d693648ffb37640ce1e9d72f55041b1382f0dbd6", size = 43626135, upload-time = "2026-03-31T22:50:28.577Z" },
-    { url = "https://files.pythonhosted.org/packages/ef/d1/ea8b74a8b56dd4925cc9cb9cc23c7d9675708a7f6b33d22136dc7bb34dbc/lancedb-0.30.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3aef5538db9cd82af79c90831035b4d67e9aa182ef73095a1b919caddf9bb7a5", size = 46619289, upload-time = "2026-03-31T22:55:02.242Z" },
-    { url = "https://files.pythonhosted.org/packages/74/4b/5bfeacf948cfc3452b286a792dcbbfaf04649ef0820e1d3790d47bf5527e/lancedb-0.30.2-cp39-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:8b161cb1da04ae6ad45afe10093cfe4107821d93e7712b50200c435d6f4c8a20", size = 43641193, upload-time = "2026-03-31T22:51:13.63Z" },
-    { url = "https://files.pythonhosted.org/packages/28/4c/a51af0ce1d18fd86afa3e8538a81abf5523d24632abe7665ce6795b8009d/lancedb-0.30.2-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:7fabc0f57944fd79ddef62ed8cf4df770654b172b1ad1019a999304fed3169f3", size = 46665361, upload-time = "2026-03-31T22:54:20.282Z" },
-    { url = "https://files.pythonhosted.org/packages/88/d0/7e44e8143ac2dae8979ba882cc33d4af7b8da4741fb0361497e69b4a4379/lancedb-0.30.2-cp39-abi3-win_amd64.whl", hash = "sha256:531da53002c1c6fda829afccc8ced3056ef58eb036f09ddb2b94a06877ecc66c", size = 50940681, upload-time = "2026-03-31T23:25:52.35Z" },
+    { url = "https://files.pythonhosted.org/packages/f7/77/fbb25946a234928958e016c5448343fd314bd601315f9587568321591a17/lancedb-0.29.2-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:bc1faf2e12addb9585569d0fb114ecc25ec3867e4e1aa6934e9343cfb5265ee4", size = 42341708, upload-time = "2026-02-09T06:21:31.677Z" },
+    { url = "https://files.pythonhosted.org/packages/cd/95/d3a7b6d0237e343ad5b2afef2bdb99423746d5c3e882a9cab68dc041c2d0/lancedb-0.29.2-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0fec19cfc52a5b9d98e060bd2f02a1c9df6a0bfd15b36021b6017327a41893a3", size = 44147347, upload-time = "2026-02-09T06:31:02.567Z" },
+    { url = "https://files.pythonhosted.org/packages/66/21/153a42294279c5b66d763f357808dde0899b71c5c8e41ad5ecbeeb8728df/lancedb-0.29.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:636939ab9225d435020ba17c231f5eaba15312a07813bcebcd71128204cc039f", size = 47186355, upload-time = "2026-02-09T06:34:47.726Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/f7/f7041ae7d7730332b2754fe7adc2e0bd496f92bf526ac710b7eb3caf1d0a/lancedb-0.29.2-cp39-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:f79b32083fcab139009db521d2f7fcd6afe4cca98a78c06c5940ff00a170cc1a", size = 44172354, upload-time = "2026-02-09T06:31:03.834Z" },
+    { url = "https://files.pythonhosted.org/packages/72/6f/c152497c18cea0f36b523fc03b8e0a48be2b120276cc15a86d79b8b83cde/lancedb-0.29.2-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:991043a28c1f49f14df2479b554a95c759a85666dc58573cc86c1b9df05db794", size = 47228009, upload-time = "2026-02-09T06:34:40.872Z" },
+    { url = "https://files.pythonhosted.org/packages/66/50/bd47bca59a87a88a4ca291a0718291422440750d84b34318048c70a537c2/lancedb-0.29.2-cp39-abi3-win_amd64.whl", hash = "sha256:101eb0ac018bb0b643dd9ea22065f6f2102e9d44c9ac58a197477ccbfbc0b9fa", size = 52028768, upload-time = "2026-02-09T07:00:02.272Z" },
 ]
 
 [[package]]
@@ -1270,7 +1270,7 @@ geometry = [
 
 [[package]]
 name = "nzshm-hazlab"
-version = "0.1.3"
+version = "0.1.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cartopy" },
@@ -1282,9 +1282,9 @@ dependencies = [
     { name = "toshi-hazard-post" },
     { name = "toshi-hazard-store" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/76/ac/3aae8347463af84f0d1f95c196e4974eb8ed26baf9da8bc1bc6c89cbdc5f/nzshm_hazlab-0.1.3.tar.gz", hash = "sha256:e68907f32f457cb7734c220a23e3e5ef07c9a6816befe490e96d4eaeeaf36105", size = 28831, upload-time = "2026-03-30T00:35:10.765Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fd/82/b3b1278a93d56732916ab0cf85c12175d26d8a708ce68a052ef7d387f52d/nzshm_hazlab-0.1.4.tar.gz", hash = "sha256:e17a7eb05450404440ec351b0db226138e0b0dd9dfb00662e5946c613d81515d", size = 1099377, upload-time = "2026-05-06T03:27:11.17Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f3/1b/f507efebce43fc9bc3d405ee3d871c98d5285effb5a064a5b96a564e557e/nzshm_hazlab-0.1.3-py3-none-any.whl", hash = "sha256:a4e7def3479bee2ec966590c6b79eb9098ddcbcbfebe597c780b65086c4c69ab", size = 38964, upload-time = "2026-03-30T00:35:09.721Z" },
+    { url = "https://files.pythonhosted.org/packages/cc/23/7b0c494f458f635ed4614992896f3e2d87086ece6ef4de5a7f102943e465/nzshm_hazlab-0.1.4-py3-none-any.whl", hash = "sha256:d863b136dcf631fdfd742ac33158d2d57a4f04c8de5639449ecd4b2cc50e1e2d", size = 39352, upload-time = "2026-05-06T03:27:09.917Z" },
 ]
 
 [[package]]
@@ -2021,7 +2021,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.1.0" },
     { name = "pytz", specifier = ">=2025.1" },
     { name = "solvis", specifier = ">=1.2.0,<2.0.0" },
-    { name = "toshi-hazard-store", git = "https://github.com/GNS-Science/toshi-hazard-store.git" },
+    { name = "toshi-hazard-store", specifier = ">=2.0.0" },
     { name = "tqdm", specifier = ">=4.67.3" },
     { name = "typer", specifier = ">=0.17.4,<0.18.0" },
 ]
@@ -2289,8 +2289,8 @@ wheels = [
 
 [[package]]
 name = "toshi-hazard-store"
-version = "1.5.0"
-source = { git = "https://github.com/GNS-Science/toshi-hazard-store.git#a342a035ee9a896dfcf25eb17ea81517be3bbdbc" }
+version = "2.0.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "geopandas" },
     { name = "lancedb" },
@@ -2306,6 +2306,10 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "s3path" },
     { name = "toml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/23/ff/d2f00480ac2e15762dfadc53e0ac7e664b3e3a0813f40d5424ad94d3409b/toshi_hazard_store-2.0.0.tar.gz", hash = "sha256:2bda4547331583e2fcf40b6a6590ab587ecef8233b3dbee845cfbc1b054fa2ac", size = 46381666, upload-time = "2026-05-06T01:08:04.469Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0f/76/922025c1394282b6e39b1a7ea6de907f9ac3b98958dc76c29bfebbee2983/toshi_hazard_store-2.0.0-py3-none-any.whl", hash = "sha256:39b69efd0e2badb435b829568d4406fb7f2b6e67fca0f95632463e0e912c9032", size = 127695, upload-time = "2026-05-06T01:08:01.516Z" },
 ]
 
 [[package]]
