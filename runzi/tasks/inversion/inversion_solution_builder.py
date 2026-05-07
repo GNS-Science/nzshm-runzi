@@ -197,7 +197,7 @@ class InversionArgs(BaseModel):
         names = self.model_fields_set
         values = [getattr(self, name) for name in names]
         for task_combination in product(*values):
-            task_args = {name: [ta] for name, ta in zip(names, task_combination)}
+            task_args = {name: [ta] for name, ta in zip(names, task_combination, strict=True)}
             yield self.model_validate(task_args)
 
 

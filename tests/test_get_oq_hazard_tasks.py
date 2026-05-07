@@ -22,16 +22,16 @@ def test_build_hazard_tasks():
     job_input = ArgSweeper.from_config_file(input_filepath, OQHazardArgs)
     runner = OQHazardJobRunner(job_input)
 
-    for num_tasks, task_args in enumerate(runner.argument_sweeper.get_tasks(), start=1):
-        pass
+    all_tasks = list(enumerate(runner.argument_sweeper.get_tasks(), start=1))
+    num_tasks, task_args = all_tasks[-1]
     gmcm = task_args.gmcm_logic_tree
     srm = task_args.srm_logic_tree
     hazard_config = task_args.hazard_config
 
     model_expected = get_model_version(hazard_args.nshm_model_version)
     gmcm_expected = model_expected.gmm_logic_tree
-    for num_branches, branch_expected in enumerate(model_expected.source_logic_tree, start=1):
-        pass
+    all_branches = list(enumerate(model_expected.source_logic_tree, start=1))
+    num_branches, branch_expected = all_branches[-1]
     branch_expected.weight = 1.0
     srm_expected = SourceLogicTree.from_branches([branch_expected])
     hazard_config_expected = model_expected.hazard_config
@@ -60,8 +60,7 @@ def test_build_hazard_tasks_overwrite_model():
     gmcm_expected = GMCMLogicTree.from_json(root_filepath / input_data["gmcm_logic_tree"])
     hazard_config_expected = OpenquakeConfig.from_json(root_filepath / input_data["hazard_config"])
     model_expected = NshmModel("", "", srm_overwrite, gmcm_expected, hazard_config_expected)
-    for branch_expected in model_expected.source_logic_tree:
-        break
+    branch_expected = next(iter(model_expected.source_logic_tree))
     branch_expected.weight = 1.0
     srm_expected = SourceLogicTree.from_branches([branch_expected])
 

@@ -113,6 +113,6 @@ class ArgSweeper:
 
         prototype_data = self.prototype_args.model_dump()
         for values in product(*self.swept_args.values()):
-            update_data = dict(zip(self.swept_args.keys(), values))
+            update_data = dict(zip(self.swept_args.keys(), values, strict=True))
             prototype_data_copy = copy.deepcopy(prototype_data)
             yield self.prototype_args.model_validate(prototype_data_copy | update_data)

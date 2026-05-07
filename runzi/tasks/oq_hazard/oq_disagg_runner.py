@@ -116,7 +116,7 @@ class OQDisaggJobRunner(JobRunner):
             assert self.argument_sweeper.prototype_args.vs30
             vs30s = [self.argument_sweeper.prototype_args.vs30] * len(locations)
         sites = []
-        for location, vs30 in zip(locations, vs30s):
+        for location, vs30 in zip(locations, vs30s, strict=True):
             sites.append(OQDisaggArgs.Site(location=location, vs30=vs30))
         self.argument_sweeper.swept_args['site'] = sites
 

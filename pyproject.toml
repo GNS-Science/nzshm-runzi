@@ -81,12 +81,7 @@ target-version = "py311"
 extend-exclude = ["runzi/CONFIG"]
 
 [tool.ruff.lint]
-select = [
-    "E", "F", "W",   # pyflakes + pycodestyle (flake8 baseline)
-    "I",              # isort
-    "C90",            # mccabe complexity
-    "UP", "G004",
-]
+select = ["E", "F", "W", "I", "C90", "UP", "G004", "B"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]

@@ -23,7 +23,7 @@ def upload_to_bucket(toshi_id: str, bucket: str, root_path=S3_REPORT_BUCKET_ROOT
     session = boto3.session.Session()
     client = session.client('s3')
     file_list = []
-    for root, dirs, files in os.walk(local_directory):
+    for root, _dirs, files in os.walk(local_directory):
         for filename in files:
             local_path = os.path.join(root, filename)
             relative_path = os.path.relpath(local_path, local_directory)
