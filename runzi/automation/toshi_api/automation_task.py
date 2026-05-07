@@ -41,7 +41,7 @@ class AutomationTask:
         if environment:
             qry = qry.replace("##ENVIRONMENT##", kvl_to_graphql('environment', environment))
 
-        log.debug(f'create_task() qry: {qry}')
+        log.debug('create_task() qry: %s', qry)
         self.validate_variables(self.get_example_create_variables(), input_variables)
 
         executed = self.api.run_query(qry, input_variables)
@@ -79,7 +79,7 @@ class AutomationTask:
             missing_keys = ", ".join(diffs)
             print(valid_keys)
             print(values.keys())
-            raise ValueError("complete_variables must contain keys: %s" % missing_keys)
+            raise ValueError(f'complete_variables must contain keys: {missing_keys}')
 
     def complete_task(self, input_variables, metrics=None):
         qry = '''
@@ -110,7 +110,7 @@ class AutomationTask:
         if metrics:
             qry = qry.replace("##METRICS##", kvl_to_graphql('metrics', metrics))
 
-        log.debug(f'complete_task() qry: {qry}')
+        log.debug('complete_task() qry: %s', qry)
 
         self.validate_variables(self.get_example_complete_variables(), input_variables)
         executed = self.api.run_query(qry, input_variables)

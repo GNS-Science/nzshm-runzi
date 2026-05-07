@@ -72,7 +72,7 @@ class BuilderTask:
             sites_table_data += [row for row in self.run_sites(ta, calculator, **named_args)]
 
             t2 = dt.datetime.utcnow()
-            print("Site calcs ran in %s secs" % (t2 - t1).total_seconds())
+            print(f'Site calcs ran in {(t2 - t1).total_seconds()} secs')
 
         #     grid_table_data += [row for row in self.run_gridded(ta, calculator, **named_args)]
         #     t3 = dt.datetime.utcnow()
@@ -133,7 +133,7 @@ class BuilderTask:
             print("created & linked sites table: ", sites_table_id)
 
         t4 = dt.datetime.utcnow()
-        print("Task took %s secs" % (t4 - t0).total_seconds())
+        print(f'Task took {(t4 - t0).total_seconds()} secs')
 
     def setup_builder(
         self, ta, forecast_timespans, bg_seismicitys, iml_periods, gmpes, grid_spacings, regions, **kwargs

@@ -314,7 +314,7 @@ class InversionSolutionBuilder(ABC):
 
         API_GitVersion = self.gateway.entry_point.getGitVersion()
 
-        log.info(f"Running nzshm-opensha {API_GitVersion}")
+        log.info('Running nzshm-opensha %s', API_GitVersion)
 
         initial_solution_id = self.user_args.initial_solution_id
         if initial_solution_id is not None:
@@ -339,7 +339,7 @@ class InversionSolutionBuilder(ABC):
 
             # link task to the parent task
             gt_conn = self.task_relation_api.create_task_relation(general_task_id, task_id)
-            log.info(f"created task_relationship: {gt_conn} for at: {task_id} on GT: {general_task_id}")
+            log.info('created task_relationship: %s for at: %s on GT: %s', gt_conn, task_id, general_task_id)
 
             # link task to the input datafiles
             if rupture_set_id:
@@ -365,7 +365,7 @@ class InversionSolutionBuilder(ABC):
             self.inversion_runner.setInitialSolution(initial_solution_info[initial_solution_id]['filepath'])
 
         if not SPOOF:
-            log.info("Starting inversion of up to %s minutes" % self.user_args.max_inversion_time)
+            log.info('Starting inversion of up to %s minutes', self.user_args.max_inversion_time)
             log.info("======================================")
             self.inversion_runner.runInversion()
 
@@ -382,7 +382,7 @@ class InversionSolutionBuilder(ABC):
                 spoof.write("this is spoofed solution")
 
         t1 = dt.datetime.now()
-        log.info("Inversion took %s secs" % (t1 - t0).total_seconds())
+        log.info('Inversion took %s secs', (t1 - t0).total_seconds())
 
         # capture task metrics
         duration = (dt.datetime.now() - t0).total_seconds()
@@ -428,7 +428,7 @@ class InversionSolutionBuilder(ABC):
                 predecessors=predecessors,
                 metrics=metrics,
             )
-            log.info(f"created inversion solution: {inversion_id}")
+            log.info('created inversion solution: %s', inversion_id)
 
             # Get the MFD tables...
             if not SPOOF:
@@ -456,8 +456,8 @@ class InversionSolutionBuilder(ABC):
                         table_type=table_type,
                         dimensions=None,
                     )
-                    log.info(f"created & linked table: {mfd_table_id}")
+                    log.info('created & linked table: %s', mfd_table_id)
 
         else:
             log.info(metrics)
-        log.info("Inversion task took %s secs" % (dt.datetime.now() - t0).total_seconds())
+        log.info('Inversion task took %s secs', (dt.datetime.now() - t0).total_seconds())

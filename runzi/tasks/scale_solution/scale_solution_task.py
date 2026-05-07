@@ -149,7 +149,7 @@ class ScaleSolutionTask:
             print("created scaled inversion solution: ", inversion_id)
 
         t1 = dt.datetime.now()
-        print("Report took %s secs" % (t1 - t0).total_seconds())
+        print(f'Report took {(t1 - t0).total_seconds()} secs')
 
     def scaleRuptureRates(
         self,

@@ -28,7 +28,7 @@ def process_masterfile(args):
         header = list(map(lambda x: x.replace('-', '_'), header))  # deal with hyphens
 
         if not header == VALID_ROW:
-            log.error(f'file {args.masterfile} is not in the correct format.')
+            log.error('file %s is not in the correct format.', args.masterfile)
 
         for dr in map(lambda x: InputDataRow(*x), reader):
             filepath = Path(distseis_parent, dr.xmlfile)

@@ -147,7 +147,7 @@ class OQConvertTask:
             output_zip = self.convert(src_folder)
 
         t1 = dt.datetime.now()
-        print("Conversion took %s secs" % (t1 - t0).total_seconds())
+        print(f'Conversion took {(t1 - t0).total_seconds()} secs')
 
         if self.use_api:
             # get the predecessors

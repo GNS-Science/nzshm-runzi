@@ -311,7 +311,7 @@ class OQHazardTask:
                 )
 
         t1 = dt.datetime.now(dt.UTC)
-        log.info("Task took %s secs" % (t1 - t0).total_seconds())
+        log.info('Task took %s secs', (t1 - t0).total_seconds())
 
 
 if __name__ == "__main__":

@@ -114,10 +114,10 @@ class TimeDependentSolutionTask:
             Path(output_file).touch()
         else:
             self.time_dependent_generator.generate()
-            log.info(f'Produced file : {output_file}')
+            log.info('Produced file : %s', output_file)
 
         t1 = dt.datetime.now()
-        log.info("TimeDependent rates generation took %s secs" % (t1 - t0).total_seconds())
+        log.info('TimeDependent rates generation took %s secs', (t1 - t0).total_seconds())
 
         # SAVE the results
         if self.use_api:
@@ -156,10 +156,10 @@ class TimeDependentSolutionTask:
                 predecessors=predecessors,
                 meta=self.user_args.model_dump(mode='json'),
             )
-            log.info(f"Saved time dependent inversion solution: {inversion_id}")
+            log.info('Saved time dependent inversion solution: %s', inversion_id)
 
         t1 = dt.datetime.now()
-        log.info("Report took %s secs" % (t1 - t0).total_seconds())
+        log.info('Report took %s secs', (t1 - t0).total_seconds())
 
 
 if __name__ == "__main__":

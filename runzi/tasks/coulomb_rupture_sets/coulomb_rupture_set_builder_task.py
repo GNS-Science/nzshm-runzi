@@ -227,7 +227,7 @@ class CoulombRuptureSetBuilderTask:
             outputfile = self.output_folder.joinpath(f"NZSHM22_RuptureSet-{task_id}.zip")
         else:
             outputfile = self.output_folder.joinpath(self.builder.getDescriptiveName() + ".zip")
-        log.info("building %s started at %s" % (outputfile, dt.datetime.now().isoformat()))
+        log.info('building %s started at %s', outputfile, dt.datetime.now().isoformat())
 
         if SPOOF:
             metrics = {"subsection_count": 0, "rupture_count": 0}
@@ -266,7 +266,7 @@ class CoulombRuptureSetBuilderTask:
             # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
             # self._ruptgen_api.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
-        log.info("build took %s secs" % (dt.datetime.now() - t0).total_seconds())
+        log.info('build took %s secs', (dt.datetime.now() - t0).total_seconds())
 
 
 def get_repo_heads(rootdir, repos):

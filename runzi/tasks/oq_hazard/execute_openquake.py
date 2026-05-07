@@ -50,7 +50,7 @@ def execute_openquake(
         # -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
         #
         cmd = ['oq', 'engine', '--run', f'{configfile}', '-L', f'{logfile}']
-        log.info(f'cmd 1: {cmd}')
+        log.info('cmd 1: %s', cmd)
         subprocess.run(cmd)
 
         with open(logfile) as logf:
@@ -109,7 +109,7 @@ def execute_openquake(
             #  cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
             #
             cmd = ['oq', 'engine', '--export-outputs', str(last_task), str(output_path)]
-            log.info(f'cmd 2: {cmd}')
+            log.info('cmd 2: %s', cmd)
             subprocess.check_call(cmd, stdout=subprocess.DEVNULL)
             oq_result['csv_archive'] = archive(
                 output_path, Path(WORK_PATH, f'openquake_csv_archive-{toshi_task_id}.zip')
@@ -127,7 +127,7 @@ def execute_openquake(
             oq_result['hdf5_filepath'] = Path(OQDATA, hdf5_file)
 
     except Exception as err:
-        log.error(f"err: {err}")
+        log.error('err: %s', err)
 
-    log.info(f"oq_result {oq_result}")
+    log.info('oq_result %s', oq_result)
     return oq_result
