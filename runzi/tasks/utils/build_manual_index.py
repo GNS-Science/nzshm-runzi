@@ -77,8 +77,7 @@ def gt_template(node, general_task_id, tui):
 
 
 def get_file_meta(file_node, tui, display_keys=None):
-    if display_keys is None:
-        display_keys = []
+    display_keys = display_keys or []
     display_keys = [k[:-1] if k[-2:] == "ts" else k for k in display_keys]
     display_info = ""
     for kv_pair in file_node["meta"]:
