@@ -3,7 +3,6 @@ import logging
 import platform
 import time
 from pathlib import Path, PurePath
-from typing import Optional
 
 import git
 from dateutil.tz import tzutc
@@ -64,7 +63,7 @@ class SubductionRuptureSetArgs(BaseModel):
         """/SlipAlongRuptureModels.java"""
     )
 
-    deformation_model: Optional[str] = None
+    deformation_model: str | None = None
 
 
 class SubductionRuptureSetBuilderTask:

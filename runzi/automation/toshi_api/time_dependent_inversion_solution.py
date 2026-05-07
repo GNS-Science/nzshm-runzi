@@ -11,7 +11,7 @@ from nshm_toshi_client.toshi_client_base import ToshiClientBase, kvl_to_graphql
 log = logging.getLogger(__name__)
 
 
-class TimeDependentInversionSolution(object):
+class TimeDependentInversionSolution:
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)

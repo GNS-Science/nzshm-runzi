@@ -160,7 +160,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config_file = args.config
-    f = open(config_file, 'r', encoding='utf-8')
+    f = open(config_file, encoding='utf-8')
     config = json.load(f)
 
     # maybe the JVM App is a little slow to get listening

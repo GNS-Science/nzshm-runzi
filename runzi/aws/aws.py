@@ -8,7 +8,7 @@ import io
 import json
 import urllib.parse
 import zipfile
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any
 
 import boto3
 from botocore.exceptions import ClientError
@@ -106,7 +106,7 @@ def get_ecs_job_config(
     vcpu: int,
     job_definition: str,
     job_queue: str,
-    extra_env: Optional[List[BatchEnvironmentSetting]] = None,
+    extra_env: list[BatchEnvironmentSetting] | None = None,
     use_compression=False,
 ):
 

@@ -22,7 +22,7 @@ OutputDataRow = collections.namedtuple('OutputDataRow', VALID_ROW_OUT)  # type: 
 def process_masterfile(args):
 
     distseis_parent = Path(args.masterfile).parent.parent.parent
-    with open(args.masterfile, 'r') as csvfile:
+    with open(args.masterfile) as csvfile:
         reader = csv.reader(csvfile)
         header = next(reader)
         header = list(map(lambda x: x.replace('-', '_'), header))  # deal with hyphens

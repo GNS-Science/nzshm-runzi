@@ -1,5 +1,5 @@
 import time
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, cast
 
 import git
 
@@ -32,7 +32,7 @@ default_system_args = SystemArgs(
 class SubductionInversionArgs(InversionArgs):
     """Subduction inversion arguments."""
 
-    scaling_c_val: Optional[float] = None
+    scaling_c_val: float | None = None
     mfd_min_mag: float
 
 

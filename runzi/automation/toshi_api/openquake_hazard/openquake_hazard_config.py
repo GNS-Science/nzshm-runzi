@@ -7,7 +7,7 @@ from nshm_toshi_client.toshi_client_base import ToshiClientBase
 log = logging.getLogger(__name__)
 
 
-class OpenquakeHazardConfig(object):
+class OpenquakeHazardConfig:
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)

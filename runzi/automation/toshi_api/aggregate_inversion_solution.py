@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 # logging.basicConfig(level=logging.DEBUG)
 
 
-class AggregateInversionSolution(object):
+class AggregateInversionSolution:
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)

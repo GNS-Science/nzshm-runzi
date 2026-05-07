@@ -221,7 +221,7 @@ class OQDisaggTask:
         self.model.hazard_config.set_sites([location], backarc=backarc_flags)
 
     def run(self):
-        t0 = dt.datetime.now(dt.timezone.utc)
+        t0 = dt.datetime.now(dt.UTC)
 
         if self.user_args.srm_logic_tree is None:
             raise ValueError("SRM logic tree or path to file not provided")
@@ -293,7 +293,7 @@ class OQDisaggTask:
             solution_id = self._store_api_result(
                 automation_task_id,
                 oq_result,
-                duration=(dt.datetime.now(dt.timezone.utc) - t0).total_seconds(),
+                duration=(dt.datetime.now(dt.UTC) - t0).total_seconds(),
             )
 
             #############################
@@ -316,7 +316,7 @@ class OQDisaggTask:
                     THS_RLZ_DB,
                 )
 
-        t1 = dt.datetime.now(dt.timezone.utc)
+        t1 = dt.datetime.now(dt.UTC)
         log.info("Task took %s secs" % (t1 - t0).total_seconds())
 
 

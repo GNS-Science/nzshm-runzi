@@ -13,7 +13,6 @@ The job is responsible for configuring and executing the python script
 import json
 import os
 from pathlib import Path, PurePath
-from typing import Optional
 
 from pydantic import BaseModel
 
@@ -30,7 +29,7 @@ class PythonTaskFactory:
         self,
         working_path: Path | PurePath | str,
         python_script_module: ModuleWithDefaultSysArgs,
-        task_config_path: Optional[Path | PurePath | str] = None,
+        task_config_path: Path | PurePath | str | None = None,
         python: str = "python3",
     ):
 

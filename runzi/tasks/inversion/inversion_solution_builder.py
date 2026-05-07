@@ -4,9 +4,10 @@ import platform
 import time
 import uuid
 from abc import ABC, abstractmethod
+from collections.abc import Generator
 from itertools import product
 from pathlib import PurePath
-from typing import Generator, Literal, Optional, Self, cast
+from typing import Literal, Self, cast
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
@@ -60,7 +61,7 @@ class InversionArgs(BaseModel):
         tag: str
 
     rupture_set: RuptureSet
-    initial_solution_id: Optional[str] = None
+    initial_solution_id: str | None = None
 
     max_inversion_time: float
     """Maximum time to run inversion in minutes."""
@@ -68,18 +69,18 @@ class InversionArgs(BaseModel):
     completion_energy: float
     """Completion energy criterion. Ignored if 0."""
 
-    averaging_threads: Optional[int] = None
+    averaging_threads: int | None = None
     averaging_interval_secs: int
     selector_threads: int
     selection_interval_secs: int
     perturbation_function: str
-    cooling_schedule: Optional[str] = None
+    cooling_schedule: str | None = None
     non_negativity_function: str
 
-    scaling_relationship: Optional[str] = None
+    scaling_relationship: str | None = None
     """Type of scaling relationship, e.g. 'SIMPLE_SUBDUCTION'."""
 
-    scaling_recalc_mag: Optional[bool] = None
+    scaling_recalc_mag: bool | None = None
     """Recaculate magnitudes using scaling relationship if True."""
 
     deformation_model: str
@@ -88,41 +89,41 @@ class InversionArgs(BaseModel):
     mfd: MFD
     """N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated."""
 
-    reweight: Optional[bool] = None
+    reweight: bool | None = None
     """If True, must also have uncertainty weighting for mfd and slip rate."""
 
-    mfd_uncertainty_weight: Optional[float] = None
+    mfd_uncertainty_weight: float | None = None
     """Used to when penalizing MFD residuals normalized by uncertainty."""
 
-    mfd_uncertainty_power: Optional[float] = None
+    mfd_uncertainty_power: float | None = None
     """Used to when penalizing MFD residuals normalized by uncertainty."""
 
-    mfd_uncertainty_scalar: Optional[float] = None
+    mfd_uncertainty_scalar: float | None = None
     """Used to when penalizing MFD residuals normalized by uncertainty."""
 
-    mfd_equality_weight: Optional[float] = None
+    mfd_equality_weight: float | None = None
     """Used to penalize MFD residuals in absolute terms (no normalization)."""
 
-    mfd_inequality_weight: Optional[float] = None
-    mfd_eq_ineq_transition_mag: Optional[float] = None
+    mfd_inequality_weight: float | None = None
+    mfd_eq_ineq_transition_mag: float | None = None
     """Magnitude at which to transition from equality to inequality constraint."""
 
-    slip_rate_weighting_type: Optional[Literal["BOTH", "NORMALIZED", "UNNORMALIZED"]] = None
+    slip_rate_weighting_type: Literal["BOTH", "NORMALIZED", "UNNORMALIZED"] | None = None
     """Penalize absolute and relative to uncertinaty slip rate residuals."""
 
-    slip_rate_normalized_weight: Optional[float] = None
+    slip_rate_normalized_weight: float | None = None
     """Penalize absolute and relative to uncertinaty slip rate residuals."""
 
-    slip_rate_unnormalized_weight: Optional[float] = None
+    slip_rate_unnormalized_weight: float | None = None
     """Penalize absolute and relative to uncertinaty slip rate residuals."""
 
-    use_slip_scaling: Optional[bool] = None
+    use_slip_scaling: bool | None = None
     """Penalize slip rate by uncerainty only."""
 
-    slip_rate_uncertainty_weight: Optional[float] = None
+    slip_rate_uncertainty_weight: float | None = None
     """Penalize slip rate by uncerainty only."""
 
-    slip_uncertainty_scaling_factor: Optional[float] = None
+    slip_uncertainty_scaling_factor: float | None = None
     """Penalize slip rate by uncerainty only."""
 
     @model_validator(mode='after')

@@ -24,7 +24,7 @@ class ModelType(Enum):
     COMPOSITE = 30
 
 
-class CreateGeneralTaskArgs(object):
+class CreateGeneralTaskArgs:
     def __init__(self, title, description, agent_name, created=None):
         self._arguments = dict(
             created=dt.datetime.now(tzutc()).isoformat(),
@@ -68,7 +68,7 @@ class CreateGeneralTaskArgs(object):
         return copy.copy(self._arguments)
 
 
-class GeneralTask(object):
+class GeneralTask:
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)

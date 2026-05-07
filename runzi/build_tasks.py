@@ -1,7 +1,8 @@
 import os
 import stat
+from collections.abc import Generator
 from pathlib import PurePath
-from typing import Any, Generator
+from typing import Any
 
 from runzi.arguments import ArgSweeper, SystemArgs
 from runzi.automation import local_config

@@ -1,11 +1,11 @@
 import copy
 import json
+from collections.abc import Generator, Sequence
 from enum import Enum
 from pathlib import Path
-from typing import Any, Generator, Optional, Sequence
+from typing import Any, Self
 
 from pydantic import BaseModel
-from typing_extensions import Self
 
 from runzi.aws import BatchEnvironmentSetting
 
@@ -17,20 +17,20 @@ class TaskLanguage(Enum):
 
 class SystemArgs(BaseModel):
     task_language: TaskLanguage
-    general_task_id: Optional[str] = None
+    general_task_id: str | None = None
     task_count: int = 0
     use_api: bool
 
-    java_threads: Optional[int] = None  # only used for pbs mode, which is not supported anymore
-    jvm_heap_max: Optional[int] = None
-    java_gateway_port: Optional[int] = None
+    java_threads: int | None = None  # only used for pbs mode, which is not supported anymore
+    jvm_heap_max: int | None = None
+    java_gateway_port: int | None = None
 
     ecs_max_job_time_min: int
     ecs_memory: int
     ecs_vcpu: int
     ecs_job_definition: str
     ecs_job_queue: str
-    ecs_extra_env: Optional[list[BatchEnvironmentSetting]] = None
+    ecs_extra_env: list[BatchEnvironmentSetting] | None = None
 
 
 class ArgSweeper:
@@ -42,7 +42,7 @@ class ArgSweeper:
         swept_args: dict[str, Sequence[Any]],
         title: str,
         description: str,
-        sys_arg_overrides: Optional[dict[str, Any]] = None,
+        sys_arg_overrides: dict[str, Any] | None = None,
     ):
         """Initialize a SweptArgs instance.
 

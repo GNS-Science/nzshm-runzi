@@ -230,7 +230,7 @@ def build_manual_index(
         elements = parsed_index_html.split("<hr />", 1)
         new_index_html = elements[0] + new_entries + elements[1]
     else:
-        with open(f"{WORK_PATH}/index.html", "r") as index:
+        with open(f"{WORK_PATH}/index.html") as index:
             parsed_index_html = index.read()
             elements = parsed_index_html.split("<hr />", 1)
             new_index_html = elements[0] + new_entries + elements[1]

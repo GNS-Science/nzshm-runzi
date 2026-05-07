@@ -5,8 +5,9 @@ helpers for upstream file retrieval
 """
 
 import os
+from collections.abc import Generator, Iterable
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, Any, Generator, Iterable
+from typing import TYPE_CHECKING, Any
 
 import requests
 

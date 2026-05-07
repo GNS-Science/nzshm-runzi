@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 # logging.basicConfig(level=logging.DEBUG)
 
 
-class AutomationTask(object):
+class AutomationTask:
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)

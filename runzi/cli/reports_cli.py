@@ -1,8 +1,9 @@
 """Command line functions for generating diagnostic reports for rupture sets and inversions."""
 
+from typing import Annotated
+
 import typer
 from rich import print as rich_print
-from typing_extensions import Annotated
 
 from runzi.arguments import ArgSweeper
 from runzi.tasks.inversion_report import InversionReportArgs, InversionReportJobRunner

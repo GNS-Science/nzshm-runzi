@@ -85,12 +85,14 @@ select = [
     "E", "F", "W",   # pyflakes + pycodestyle (flake8 baseline)
     "I",              # isort
     "C90",            # mccabe complexity
+    "UP", "G004",
 ]
 # D rules (pydocstyle) intentionally excluded — flake8-docstrings was never installed,
 # so the docstring-convention = google setting in the old setup.cfg was never enforced.
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+"tests/*.py" = ["D100", "D103"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 18

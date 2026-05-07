@@ -3,7 +3,7 @@ import logging
 import platform
 import time
 from pathlib import Path, PurePath
-from typing import Optional
+from typing import Self
 from zipfile import ZipFile
 
 import git
@@ -13,7 +13,6 @@ from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel, model_validator
-from typing_extensions import Self
 
 from runzi.arguments import SystemArgs, TaskLanguage
 from runzi.automation.file_utils import download_files, get_output_file_id
@@ -83,14 +82,14 @@ class CoulombRuptureSetArgs(BaseModel):
     min_sub_sects_per_parent: int
     min_sub_sections: int
     scaling_relationship: str
-    depth_scaling: Optional[DepthScaling] = None
+    depth_scaling: DepthScaling | None = None
     """The amount by which to scale the depths of the faults."""
 
-    fault_model: Optional[str] = None
-    fault_model_file: Optional[FaultModelFile] = None
+    fault_model: str | None = None
+    fault_model_file: FaultModelFile | None = None
     """Side-loaded fault model files must be found via toshi API."""
 
-    named_faults_file: Optional[FaultModelFile] = None
+    named_faults_file: FaultModelFile | None = None
     """If side-loading the fault model, you can provide the named faults to group them for reporting."""
 
     @model_validator(mode='after')

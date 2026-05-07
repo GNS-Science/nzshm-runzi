@@ -5,7 +5,7 @@ import logging
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from runzi.automation.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 
@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 
 
 def execute_openquake(
-    configfile: Union[str, Path], task_no: int, toshi_task_id: Optional[str], hazard_task_type: HazardTaskType
+    configfile: str | Path, task_no: int, toshi_task_id: str | None, hazard_task_type: HazardTaskType
 ):
     """Do the actusal openquake work."""
     toshi_task_id = toshi_task_id or f"DUMMY{task_no}_toshi_TASK_ID"
@@ -34,7 +34,7 @@ def execute_openquake(
         shutil.rmtree(output_path)
     output_path.mkdir()
 
-    oq_result: Dict[str, Any] = dict()
+    oq_result: dict[str, Any] = dict()
 
     if SPOOF:
         print("execute_openquake skipping SPOOF=True")
@@ -53,7 +53,7 @@ def execute_openquake(
         log.info(f'cmd 1: {cmd}')
         subprocess.run(cmd)
 
-        with open(logfile, 'r') as logf:
+        with open(logfile) as logf:
             oq_out = logf.read()
 
         filtered_txt1 = 'Filtered away all ruptures??'

@@ -18,7 +18,7 @@ The job is responsible for
 import json
 import os
 from pathlib import Path, PurePath
-from typing import Optional, Protocol, TypeVar
+from typing import Protocol, TypeVar
 
 from pydantic import BaseModel
 
@@ -59,7 +59,7 @@ class OpenshaTaskFactory:
         python_script_module: ModuleWithDefaultSysArgs,
         jre_path: Path | PurePath | str,
         app_jar_path: Path | PurePath | str,
-        task_config_path: Optional[Path | PurePath | str] = None,
+        task_config_path: Path | PurePath | str | None = None,
         initial_gateway_port: int = 25333,
         python: str = "python3",
         jvm_heap_start: int = 3,

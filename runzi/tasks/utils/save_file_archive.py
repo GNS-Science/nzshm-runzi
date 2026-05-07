@@ -74,7 +74,7 @@ def process_file_list(
     target: Path,
     dry_run: bool,
 ):
-    with open(target, 'r') as csvfile:
+    with open(target) as csvfile:
         reader = csv.reader(csvfile)
         header = next(reader)
         if not header == VALID_ROW:

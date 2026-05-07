@@ -255,7 +255,7 @@ if __name__ == "__main__":
     try:
         # LOCAL and CLUSTER this is a file
         config_file = args.config
-        f = open(args.config, 'r', encoding='utf-8')
+        f = open(args.config, encoding='utf-8')
         config = json.load(f)
     except FileNotFoundError:
         # for AWS this must be a quoted JSON string

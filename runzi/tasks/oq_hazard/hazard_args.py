@@ -1,7 +1,7 @@
 """This module provides the Pydantic intput parameter classes of hazard and disaggregation caculations."""
 
 from pathlib import Path
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any, Self
 
 from nzshm_common import CodedLocation
 from nzshm_model import all_model_versions
@@ -21,7 +21,6 @@ from pydantic import (
 from toshi_hazard_store.config import STORAGE_FOLDER
 from toshi_hazard_store.model import AggregationEnum
 from toshi_hazard_store.model.hazard_models_manager import CompatibleHazardCalculationManager
-from typing_extensions import Self
 
 from runzi.tasks.validators import resolve_path
 
@@ -65,29 +64,29 @@ class OQArgs(BaseModel):
     compatible_calc_id: Annotated[str, AfterValidator(_is_compat_calc_id)]
     """Identifies hazard run with similar software and settigs such that results can be compared."""
 
-    nshm_model_version: Annotated[Optional[str], AfterValidator(_is_model_version)] = None
+    nshm_model_version: Annotated[str | None, AfterValidator(_is_model_version)] = None
     """An official released NSHM model. Includes logic trees and calculation configuration (i.e. OQ settings)."""
 
-    srm_logic_tree: Optional[SourceLogicTree | Path] = None
+    srm_logic_tree: SourceLogicTree | Path | None = None
     """Seismicity rate model logic tree."""
 
-    gmcm_logic_tree: Optional[GMCMLogicTree | Path] = None
+    gmcm_logic_tree: GMCMLogicTree | Path | None = None
     """Ground motion model logic tree."""
 
-    hazard_config: Optional[OpenquakeConfig | Path] = None
+    hazard_config: OpenquakeConfig | Path | None = None
     """OpenQuake settings."""
 
     # the site
-    vs30: Optional[PositiveInt] = None
+    vs30: PositiveInt | None = None
     """Uniform site vs30."""
 
-    locations: Optional[list[str]] = None
+    locations: list[str] | None = None
     """Location strings as used by nzshm-common."""
 
-    locations_file: Optional[Path] = None
+    locations_file: Path | None = None
     """A file with lon, lat locations, and optinoally vs30."""
 
-    locations_file_id: Optional[str] = None
+    locations_file_id: str | None = None
     """A toshi ID of a file with lon, lat locations, and optinoally vs30."""
 
     @model_validator(mode='after')
@@ -151,7 +150,7 @@ class OQDisaggArgs(OQArgs):
         location: CodedLocation
         vs30: PositiveInt
 
-    site: Optional[Site] = None
+    site: Site | None = None
     """Used by runzi to create a unique task for each location, vs30 pair, not to be set by user."""
 
     hazard_model_id: str
@@ -182,10 +181,10 @@ class OQDisaggArgs(OQArgs):
     # defines the disaggregation to calculate (what types, bins, etc.)
     disagg_types: list[str]
     """Dimensions along which to calculate disaggregation. e.g. 'Mag', 'Dist', 'TRT_Mag_Dist_Eps'"""
-    mag_bin_width: Optional[float] = None
-    distance_bin_width: Optional[float] = None
-    coordinate_bin_width: Optional[float] = None
-    num_epsilon_bins: Optional[int] = None
+    mag_bin_width: float | None = None
+    distance_bin_width: float | None = None
+    coordinate_bin_width: float | None = None
+    num_epsilon_bins: int | None = None
     disagg_bin_edges: dict[str, list[float]] = Field(default_factory=dict)
     """Dict of disaggregation bin edges. Keys are dimentions (e.g. 'dist'), values are
     the edges (e.g. [0, 5.0, 10.0, ]).
@@ -211,7 +210,7 @@ class OQDisaggArgs(OQArgs):
                     if self.num_epsilon_bins:
                         raise ValueError("cannot specify num_epsilon_bins and eps bin edges")
                 case undef:
-                    raise ValueError("invalid bin edge category {}".format(undef))
+                    raise ValueError(f"invalid bin edge category {undef}")
 
         return self
 
@@ -237,7 +236,7 @@ class OQDisaggArgs(OQArgs):
                     if not ("eps" in self.disagg_bin_edges or self.num_epsilon_bins):
                         raise ValueError("epsilon disaggregation requries num_epsilon_bins or bin edges")
                 case undef:
-                    raise ValueError("unrecognized disaggregation type {}".format(undef))
+                    raise ValueError(f"unrecognized disaggregation type {undef}")
 
         return self
 

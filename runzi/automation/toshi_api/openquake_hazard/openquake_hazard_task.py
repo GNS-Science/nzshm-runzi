@@ -11,7 +11,7 @@ class HazardTaskType(Enum):
     DISAGG = 20
 
 
-class OpenquakeHazardTask(object):
+class OpenquakeHazardTask:
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)
