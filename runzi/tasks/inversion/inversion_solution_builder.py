@@ -4,9 +4,10 @@ import platform
 import time
 import uuid
 from abc import ABC, abstractmethod
+from collections.abc import Generator
 from itertools import product
 from pathlib import PurePath
-from typing import Generator, Literal, Optional, Self, cast
+from typing import Literal, Self, cast
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
@@ -60,7 +61,7 @@ class InversionArgs(BaseModel):
         tag: str
 
     rupture_set: RuptureSet
-    initial_solution_id: Optional[str] = None
+    initial_solution_id: str | None = None
 
     max_inversion_time: float
     """Maximum time to run inversion in minutes."""
@@ -68,18 +69,18 @@ class InversionArgs(BaseModel):
     completion_energy: float
     """Completion energy criterion. Ignored if 0."""
 
-    averaging_threads: Optional[int] = None
+    averaging_threads: int | None = None
     averaging_interval_secs: int
     selector_threads: int
     selection_interval_secs: int
     perturbation_function: str
-    cooling_schedule: Optional[str] = None
+    cooling_schedule: str | None = None
     non_negativity_function: str
 
-    scaling_relationship: Optional[str] = None
+    scaling_relationship: str | None = None
     """Type of scaling relationship, e.g. 'SIMPLE_SUBDUCTION'."""
 
-    scaling_recalc_mag: Optional[bool] = None
+    scaling_recalc_mag: bool | None = None
     """Recaculate magnitudes using scaling relationship if True."""
 
     deformation_model: str
@@ -88,41 +89,41 @@ class InversionArgs(BaseModel):
     mfd: MFD
     """N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated."""
 
-    reweight: Optional[bool] = None
+    reweight: bool | None = None
     """If True, must also have uncertainty weighting for mfd and slip rate."""
 
-    mfd_uncertainty_weight: Optional[float] = None
+    mfd_uncertainty_weight: float | None = None
     """Used to when penalizing MFD residuals normalized by uncertainty."""
 
-    mfd_uncertainty_power: Optional[float] = None
+    mfd_uncertainty_power: float | None = None
     """Used to when penalizing MFD residuals normalized by uncertainty."""
 
-    mfd_uncertainty_scalar: Optional[float] = None
+    mfd_uncertainty_scalar: float | None = None
     """Used to when penalizing MFD residuals normalized by uncertainty."""
 
-    mfd_equality_weight: Optional[float] = None
+    mfd_equality_weight: float | None = None
     """Used to penalize MFD residuals in absolute terms (no normalization)."""
 
-    mfd_inequality_weight: Optional[float] = None
-    mfd_eq_ineq_transition_mag: Optional[float] = None
+    mfd_inequality_weight: float | None = None
+    mfd_eq_ineq_transition_mag: float | None = None
     """Magnitude at which to transition from equality to inequality constraint."""
 
-    slip_rate_weighting_type: Optional[Literal["BOTH", "NORMALIZED", "UNNORMALIZED"]] = None
+    slip_rate_weighting_type: Literal["BOTH", "NORMALIZED", "UNNORMALIZED"] | None = None
     """Penalize absolute and relative to uncertinaty slip rate residuals."""
 
-    slip_rate_normalized_weight: Optional[float] = None
+    slip_rate_normalized_weight: float | None = None
     """Penalize absolute and relative to uncertinaty slip rate residuals."""
 
-    slip_rate_unnormalized_weight: Optional[float] = None
+    slip_rate_unnormalized_weight: float | None = None
     """Penalize absolute and relative to uncertinaty slip rate residuals."""
 
-    use_slip_scaling: Optional[bool] = None
+    use_slip_scaling: bool | None = None
     """Penalize slip rate by uncerainty only."""
 
-    slip_rate_uncertainty_weight: Optional[float] = None
+    slip_rate_uncertainty_weight: float | None = None
     """Penalize slip rate by uncerainty only."""
 
-    slip_uncertainty_scaling_factor: Optional[float] = None
+    slip_uncertainty_scaling_factor: float | None = None
     """Penalize slip rate by uncerainty only."""
 
     @model_validator(mode='after')
@@ -196,7 +197,7 @@ class InversionArgs(BaseModel):
         names = self.model_fields_set
         values = [getattr(self, name) for name in names]
         for task_combination in product(*values):
-            task_args = {name: [ta] for name, ta in zip(names, task_combination)}
+            task_args = {name: [ta] for name, ta in zip(names, task_combination, strict=True)}
             yield self.model_validate(task_args)
 
 
@@ -313,7 +314,7 @@ class InversionSolutionBuilder(ABC):
 
         API_GitVersion = self.gateway.entry_point.getGitVersion()
 
-        log.info(f"Running nzshm-opensha {API_GitVersion}")
+        log.info('Running nzshm-opensha %s', API_GitVersion)
 
         initial_solution_id = self.user_args.initial_solution_id
         if initial_solution_id is not None:
@@ -338,7 +339,7 @@ class InversionSolutionBuilder(ABC):
 
             # link task to the parent task
             gt_conn = self.task_relation_api.create_task_relation(general_task_id, task_id)
-            log.info(f"created task_relationship: {gt_conn} for at: {task_id} on GT: {general_task_id}")
+            log.info('created task_relationship: %s for at: %s on GT: %s', gt_conn, task_id, general_task_id)
 
             # link task to the input datafiles
             if rupture_set_id:
@@ -364,7 +365,7 @@ class InversionSolutionBuilder(ABC):
             self.inversion_runner.setInitialSolution(initial_solution_info[initial_solution_id]['filepath'])
 
         if not SPOOF:
-            log.info("Starting inversion of up to %s minutes" % self.user_args.max_inversion_time)
+            log.info('Starting inversion of up to %s minutes', self.user_args.max_inversion_time)
             log.info("======================================")
             self.inversion_runner.runInversion()
 
@@ -381,7 +382,7 @@ class InversionSolutionBuilder(ABC):
                 spoof.write("this is spoofed solution")
 
         t1 = dt.datetime.now()
-        log.info("Inversion took %s secs" % (t1 - t0).total_seconds())
+        log.info('Inversion took %s secs', (t1 - t0).total_seconds())
 
         # capture task metrics
         duration = (dt.datetime.now() - t0).total_seconds()
@@ -427,7 +428,7 @@ class InversionSolutionBuilder(ABC):
                 predecessors=predecessors,
                 metrics=metrics,
             )
-            log.info(f"created inversion solution: {inversion_id}")
+            log.info('created inversion solution: %s', inversion_id)
 
             # Get the MFD tables...
             if not SPOOF:
@@ -455,8 +456,8 @@ class InversionSolutionBuilder(ABC):
                         table_type=table_type,
                         dimensions=None,
                     )
-                    log.info(f"created & linked table: {mfd_table_id}")
+                    log.info('created & linked table: %s', mfd_table_id)
 
         else:
             log.info(metrics)
-        log.info("Inversion task took %s secs" % (dt.datetime.now() - t0).total_seconds())
+        log.info('Inversion task took %s secs', (dt.datetime.now() - t0).total_seconds())

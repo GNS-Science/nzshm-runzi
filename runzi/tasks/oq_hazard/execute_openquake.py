@@ -5,7 +5,7 @@ import logging
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from runzi.automation.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 
@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 
 
 def execute_openquake(
-    configfile: Union[str, Path], task_no: int, toshi_task_id: Optional[str], hazard_task_type: HazardTaskType
+    configfile: str | Path, task_no: int, toshi_task_id: str | None, hazard_task_type: HazardTaskType
 ):
     """Do the actusal openquake work."""
     toshi_task_id = toshi_task_id or f"DUMMY{task_no}_toshi_TASK_ID"
@@ -34,7 +34,7 @@ def execute_openquake(
         shutil.rmtree(output_path)
     output_path.mkdir()
 
-    oq_result: Dict[str, Any] = dict()
+    oq_result: dict[str, Any] = dict()
 
     if SPOOF:
         print("execute_openquake skipping SPOOF=True")
@@ -50,10 +50,10 @@ def execute_openquake(
         # -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
         #
         cmd = ['oq', 'engine', '--run', f'{configfile}', '-L', f'{logfile}']
-        log.info(f'cmd 1: {cmd}')
+        log.info('cmd 1: %s', cmd)
         subprocess.run(cmd)
 
-        with open(logfile, 'r') as logf:
+        with open(logfile) as logf:
             oq_out = logf.read()
 
         filtered_txt1 = 'Filtered away all ruptures??'
@@ -109,7 +109,7 @@ def execute_openquake(
             #  cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
             #
             cmd = ['oq', 'engine', '--export-outputs', str(last_task), str(output_path)]
-            log.info(f'cmd 2: {cmd}')
+            log.info('cmd 2: %s', cmd)
             subprocess.check_call(cmd, stdout=subprocess.DEVNULL)
             oq_result['csv_archive'] = archive(
                 output_path, Path(WORK_PATH, f'openquake_csv_archive-{toshi_task_id}.zip')
@@ -127,7 +127,7 @@ def execute_openquake(
             oq_result['hdf5_filepath'] = Path(OQDATA, hdf5_file)
 
     except Exception as err:
-        log.error(f"err: {err}")
+        log.error('err: %s', err)
 
-    log.info(f"oq_result {oq_result}")
+    log.info('oq_result %s', oq_result)
     return oq_result

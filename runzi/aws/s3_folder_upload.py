@@ -17,13 +17,13 @@ S3_REPORT_BUCKET_ROOT = 'opensha/DATA'
 
 
 def upload_to_bucket(toshi_id: str, bucket: str, root_path=S3_REPORT_BUCKET_ROOT, force_upload=False):
-    info(f"Beginning bucket upload... to {bucket}/{root_path}/{toshi_id}")
+    info("Beginning bucket upload... to %s/%s/%s", bucket, root_path, toshi_id)
     t0 = dt.datetime.now()
     local_directory = WORK_PATH / toshi_id
     session = boto3.session.Session()
     client = session.client('s3')
     file_list = []
-    for root, dirs, files in os.walk(local_directory):
+    for root, _dirs, files in os.walk(local_directory):
         for filename in files:
             local_path = os.path.join(root, filename)
             relative_path = os.path.relpath(local_path, local_directory)
@@ -36,15 +36,15 @@ def upload_to_bucket(toshi_id: str, bucket: str, root_path=S3_REPORT_BUCKET_ROOT
         local_path, bucket, s3_path = args[0], args[1], args[2]
 
         if not force_upload and path_exists(s3_path, bucket):
-            info("Path found on S3! Skipping %s to %s" % (s3_path, bucket))
+            info('Path found on S3! Skipping %s to %s', s3_path, bucket)
         else:
             try:
                 client.upload_file(
                     local_path, bucket, s3_path, ExtraArgs={'ACL': 'public-read', 'ContentType': mimetype(local_path)}
                 )
-                info("Uploading %s..." % s3_path)
+                info('Uploading %s...', s3_path)
             except Exception as e:
-                error(f"exception raised uploading {local_path} => {bucket}/{s3_path}")
+                error("exception raised uploading %s => %s/%s", local_path, bucket, s3_path)
                 error(e)
 
     def path_exists(path, bucket_name):
@@ -59,7 +59,7 @@ def upload_to_bucket(toshi_id: str, bucket: str, root_path=S3_REPORT_BUCKET_ROOT
                         if path == obj['Key']:
                             return True
         except ClientError as e:
-            error(f"exception raised on {bucket_name}/{path}")
+            error("exception raised on %s/%s", bucket_name, path)
             raise e
 
     pool = ThreadPool(processes=S3_UPLOAD_WORKERS)
@@ -67,14 +67,14 @@ def upload_to_bucket(toshi_id: str, bucket: str, root_path=S3_REPORT_BUCKET_ROOT
 
     pool.close()
     pool.join()
-    info("Done! uploaded %s in %s secs" % (len(file_list), (dt.datetime.now() - t0).total_seconds()))
+    info('Done! uploaded %s in %s secs', len(file_list), (dt.datetime.now() - t0).total_seconds())
     cleanup(local_directory)
 
 
 def cleanup(directory):
     try:
         shutil.rmtree(directory)
-        info('Cleaned up %s' % directory)
+        info('Cleaned up %s', directory)
     except Exception as e:
         error(e)
 

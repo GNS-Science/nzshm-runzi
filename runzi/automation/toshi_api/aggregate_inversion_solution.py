@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 # logging.basicConfig(level=logging.DEBUG)
 
 
-class AggregateInversionSolution(object):
+class AggregateInversionSolution:
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)
@@ -48,13 +48,13 @@ class AggregateInversionSolution(object):
         return file_id
 
     def upload_content(self, post_url, filepath):
-        log.debug(f'upload_content() POST URL: {post_url}; PATH: {filepath}')
+        log.debug('upload_content() POST URL: %s; PATH: %s', post_url, filepath)
         filedata = open(filepath, 'rb')
         files = {'file': filedata}
-        log.debug(f'upload_content() _s3_url: {self.api._s3_url}')
+        log.debug('upload_content() _s3_url: %s', self.api._s3_url)
 
         response = requests.post(url=self.api._s3_url, data=post_url, files=files)
-        log.debug(f'response {response}')
+        log.debug('response %s', response)
         response.raise_for_status()
 
     def _create_inversion_solution(

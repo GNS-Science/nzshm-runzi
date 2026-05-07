@@ -311,7 +311,7 @@ def build_and_deploy_container(
 
     except Exception as e:
         rich_print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 if __name__ == "__main__":

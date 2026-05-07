@@ -6,7 +6,7 @@ common function to schedule tasks as needed for given environment
 from collections.abc import Sequence
 from multiprocessing.dummy import Pool
 from subprocess import check_call
-from typing import Any, Optional
+from typing import Any
 
 import boto3
 
@@ -14,7 +14,7 @@ from runzi.automation import local_config
 from runzi.automation.local_config import WORKER_POOL_SIZE, ClusterModeEnum
 
 
-def schedule_tasks(scripts: Sequence[Any], worker_pool_size: Optional[int] = None):
+def schedule_tasks(scripts: Sequence[Any], worker_pool_size: int | None = None):
 
     if not (worker_pool_size):
         worker_pool_size = WORKER_POOL_SIZE

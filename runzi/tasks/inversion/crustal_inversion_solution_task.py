@@ -1,6 +1,6 @@
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Self, cast
+from typing import TYPE_CHECKING, Self, cast
 from zipfile import ZipFile
 
 import git
@@ -62,20 +62,20 @@ class CrustalInversionArgs(InversionArgs):
         file_name: str
         tag: str
 
-    spatial_seis_pdf: Optional[str] = None
+    spatial_seis_pdf: str | None = None
 
-    scaling_c_val: Optional[ScalingC] = None
+    scaling_c_val: ScalingC | None = None
 
     max_mag_type: str
     mag_range: MagRange
 
     slip_rate_factor: SlipRateFactor
 
-    paleo_rate_constraint_weight: Optional[float] = None
-    paleo_parent_rate_smoothness_constraint_weight: Optional[float] = None
-    paleo_rate_constraint: Optional[str] = None
-    paleo_probability_model: Optional[str] = None
-    paleo_rates_file: Optional[PaleoRatesFile] = None
+    paleo_rate_constraint_weight: float | None = None
+    paleo_parent_rate_smoothness_constraint_weight: float | None = None
+    paleo_rate_constraint: str | None = None
+    paleo_probability_model: str | None = None
+    paleo_rates_file: PaleoRatesFile | None = None
 
     @model_validator(mode='after')
     def check_paleo_constraint(self) -> Self:

@@ -101,7 +101,7 @@ class InversionReportTask:
         ).setPlotLevel(self.user_args.build_report_level).setFillSurfaces(True).generatePage()
 
         t1 = dt.datetime.now()
-        print("Report took %s secs" % (t1 - t0).total_seconds())
+        print(f'Report took {(t1 - t0).total_seconds()} secs')
 
     def build_mfd_plots(self):
         t0 = dt.datetime.now()
@@ -127,7 +127,7 @@ class InversionReportTask:
         plot_builder.plot()
 
         t1 = dt.datetime.now()
-        print("MFD plots took %s secs" % (t1 - t0).total_seconds())
+        print(f'MFD plots took {(t1 - t0).total_seconds()} secs')
 
 
 def get_repo_heads(rootdir, repos):

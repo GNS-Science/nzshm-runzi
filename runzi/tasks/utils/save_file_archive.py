@@ -37,7 +37,7 @@ def create_archive(filename, working_path):
     """
     verify source and if OK return the path to the zipped contents
     """
-    log.info(f"create_archive {filename}.zip in working_path={working_path}")
+    log.info('create_archive %s.zip in working_path=%s', filename, working_path)
     if Path(filename).exists():
         return archive(filename, Path(working_path, f"{Path(filename).name}.zip"))
     else:
@@ -47,12 +47,12 @@ def create_archive(filename, working_path):
 def process_one_file(dry_run: bool, filepath: str | Path, tag: str | None = None):
     """Archive and upload one file."""
 
-    log.info(f"Processing */{Path(filepath).name} :: {tag}")
+    log.info('Processing */%s :: %s', Path(filepath).name, tag)
     archive_path = None
 
     if not dry_run:
         archive_path = create_archive(filepath, WORK_PATH)
-        log.info(f'archived {filepath} in {archive_path}.')
+        log.info('archived %s in %s.', filepath, archive_path)
 
     if archive_path:
         headers = {"x-api-key": API_KEY}
@@ -66,7 +66,7 @@ def process_one_file(dry_run: bool, filepath: str | Path, tag: str | None = None
         if not dry_run:
             archive_file_id, post_url = toshi_api.file.create_file(archive_path, meta=meta)
             toshi_api.file.upload_content(post_url, archive_path)
-            log.info(f"pushed {archive_path} to ToshiAPI {API_URL} with id {archive_file_id}")
+            log.info('pushed %s to ToshiAPI %s with id %s', archive_path, API_URL, archive_file_id)
         return archive_file_id
 
 
@@ -74,11 +74,11 @@ def process_file_list(
     target: Path,
     dry_run: bool,
 ):
-    with open(target, 'r') as csvfile:
+    with open(target) as csvfile:
         reader = csv.reader(csvfile)
         header = next(reader)
         if not header == VALID_ROW:
-            log.error(f'file {target} is not in the correct format.')
+            log.error('file %s is not in the correct format.', target)
 
         for dr in map(lambda x: InputDataRow(*x), reader):
             toshi_id = process_one_file(dry_run, dr.fullpath, tag=dr.parent)  # type: ignore

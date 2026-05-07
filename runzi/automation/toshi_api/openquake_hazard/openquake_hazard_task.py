@@ -11,7 +11,7 @@ class HazardTaskType(Enum):
     DISAGG = 20
 
 
-class OpenquakeHazardTask(object):
+class OpenquakeHazardTask:
     def __init__(self, api):
         self.api = api
         assert isinstance(api, ToshiClientBase)
@@ -40,7 +40,7 @@ class OpenquakeHazardTask(object):
             missing_keys = ", ".join(diffs)
             print(valid_keys)
             print(values.keys())
-            raise ValueError("complete_variables must contain keys: %s" % missing_keys)
+            raise ValueError(f'complete_variables must contain keys: {missing_keys}')
 
     def create_task(self, input_variables, arguments=None, environment=None, task_type=HazardTaskType.HAZARD):
         qry = '''
@@ -80,7 +80,7 @@ class OpenquakeHazardTask(object):
 
         qry = qry.replace("###TASK_TYPE###", f"task_type: {task_type.name}")
 
-        log.debug(f'create_task() qry: {qry}')
+        log.debug('create_task() qry: %s', qry)
         self.validate_variables(self.get_example_create_variables(), {}, input_variables)
 
         executed = self.api.run_query(qry, input_variables)
@@ -121,7 +121,7 @@ class OpenquakeHazardTask(object):
         if metrics:
             qry = qry.replace("##METRICS##", kvl_to_graphql('metrics', metrics))
 
-        log.debug(f'complete_task() qry: {qry}')
+        log.debug('complete_task() qry: %s', qry)
 
         self.validate_variables(
             self.get_example_complete_variables(), self.get_optional_complete_variables(), input_variables

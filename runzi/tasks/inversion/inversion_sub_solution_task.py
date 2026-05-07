@@ -107,7 +107,7 @@ class BuilderTask:
             self._toshi_api.automation_task.complete_task(done_args, result['metrics'])
 
         t1 = dt.datetime.utcnow()
-        print("Report took %s secs" % (t1 - t0).total_seconds())
+        print(f'Report took {(t1 - t0).total_seconds()} secs')
 
     def process(self, solution_id, solution_filepath, location, radius_m, rate_threshold):
 

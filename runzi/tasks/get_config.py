@@ -19,7 +19,7 @@ def get_config() -> dict[str, Any]:
         config = json.loads(urllib.parse.unquote(args.config))
     except json.decoder.JSONDecodeError:
         # LOCAL and CLUSTER this is a file
-        f = open(args.config, 'r', encoding='utf-8')
+        f = open(args.config, encoding='utf-8')
         config = json.load(f)
 
     return config

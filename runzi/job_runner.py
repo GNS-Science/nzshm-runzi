@@ -130,6 +130,6 @@ class JobRunner(ABC):
                 assert isinstance(script_name, str)
                 check_call(["qsub", script_name])
 
-        print("Done! in %s secs" % (dt.datetime.now() - t0).total_seconds())
+        print(f'Done! in {(dt.datetime.now() - t0).total_seconds()} secs')
 
         return general_task_id

@@ -22,13 +22,13 @@ OutputDataRow = collections.namedtuple('OutputDataRow', VALID_ROW_OUT)  # type: 
 def process_masterfile(args):
 
     distseis_parent = Path(args.masterfile).parent.parent.parent
-    with open(args.masterfile, 'r') as csvfile:
+    with open(args.masterfile) as csvfile:
         reader = csv.reader(csvfile)
         header = next(reader)
         header = list(map(lambda x: x.replace('-', '_'), header))  # deal with hyphens
 
         if not header == VALID_ROW:
-            log.error(f'file {args.masterfile} is not in the correct format.')
+            log.error('file %s is not in the correct format.', args.masterfile)
 
         for dr in map(lambda x: InputDataRow(*x), reader):
             filepath = Path(distseis_parent, dr.xmlfile)

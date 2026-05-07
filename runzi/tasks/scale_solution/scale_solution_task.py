@@ -4,7 +4,7 @@ import datetime as dt
 import time
 import uuid
 from pathlib import Path, PurePath
-from typing import Any, Optional
+from typing import Any
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
@@ -149,15 +149,15 @@ class ScaleSolutionTask:
             print("created scaled inversion solution: ", inversion_id)
 
         t1 = dt.datetime.now()
-        print("Report took %s secs" % (t1 - t0).total_seconds())
+        print(f'Report took {(t1 - t0).total_seconds()} secs')
 
     def scaleRuptureRates(
         self,
         in_solution_filepath: str,
         task_id: str,
         scale: float,
-        polygon_scale: Optional[float] = None,
-        polygon_max_mag: Optional[float] = None,
+        polygon_scale: float | None = None,
+        polygon_max_mag: float | None = None,
     ) -> dict[str, Any]:
 
         soln = InversionSolution().from_archive(in_solution_filepath)

@@ -23,11 +23,11 @@ dependencies = [
     "pydantic>=2.12",
     "nzshm-model>=0.13.6",
     "python-dotenv>=1.1.0",
-    "toshi-hazard-store>=1.5.0,<2.0.0",
     "typer>=0.17.4,<0.18.0",
     "solvis>=1.2.0,<2.0.0",
     "nshm-toshi-client>=1.1.0,<2.0.0",
     "nzshm-hazlab>=0.1.3,<0.2.0",
+    "toshi-hazard-store>=2.0.0",
 ]
 
 
@@ -74,9 +74,6 @@ exclude-newer-package = { "nzshm-common" = false, "nzshm-model" = false, "toshi-
 module-name = "runzi"
 module-root = ""
 
-[tool.uv.sources]
-toshi-hazard-store = { git = "https://github.com/GNS-Science/toshi-hazard-store.git" }
-
 
 [tool.ruff]
 line-length = 120
@@ -84,16 +81,11 @@ target-version = "py311"
 extend-exclude = ["runzi/CONFIG"]
 
 [tool.ruff.lint]
-select = [
-    "E", "F", "W",   # pyflakes + pycodestyle (flake8 baseline)
-    "I",              # isort
-    "C90",            # mccabe complexity
-]
-# D rules (pydocstyle) intentionally excluded — flake8-docstrings was never installed,
-# so the docstring-convention = google setting in the old setup.cfg was never enforced.
+select = ["E", "F", "W", "I", "C90", "UP", "G004", "B"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+"tests/*.py" = ["D100", "D103"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 18
