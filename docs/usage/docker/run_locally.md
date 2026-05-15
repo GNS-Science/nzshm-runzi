@@ -12,14 +12,13 @@ Replace `[COMMAND] [COMMAND] [OPTIONS]` with the `runzi` commands you wish to ru
 
 ## If using a local realization dataset for OpenQuake
 
-You must map `NZSHM22_THS_RLZ_DB` and `NZSHM22_THS_DISAGG_RLZ_DB` to the `/THS/HAZARD` and `/THS/DISAGG` directory in the docker so that data can be written to it.
+You must map `NZSHM22_THS_RLZ_DB` to the `/THS` directory in the docker so that data can be written to it.
 
 ```console
 docker run --entrypoint runzi \
 -v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -v <path to input files>:/INPUT_FILES
--v $NZSHM22_THS_RLZ_DB:/THS/HAZARD \
--v $NZSHM22_THS_DISAGG_RLZ_DB:/THS/DISAGG \
+-v $NZSHM22_THS_RLZ_DB:/THS \
 -e THS_DATASET_AGGR_URI \
 -e AWS_PROFILE \
 -e NZSHM22_TOSHI_S3_URL \
@@ -31,14 +30,13 @@ runzi-build:latest [COMMAND] [COMMAND] [OPTIONS]
 
 ## If using an S3 realization dataset for OpenQuake
 
-In this case you must set `NZSHM22_THS_RLZ_DB` and `NZSHM22_THS_DISAGG_RLZ_DB` to the S3 URIs.
+In this case you must set `NZSHM22_THS_RLZ_DB` to the S3 URI.
 
 ```console
 docker run --entrypoint runzi \
 -v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -v <path to input files>:/INPUT_FILES
 -e NZSHM22_THS_RLZ_DB \
--e NZSHM22_THS_DISAGG_RLZ_DB \
 -e THS_DATASET_AGGR_URI \
 -e AWS_PROFILE \
 -e NZSHM22_TOSHI_S3_URL \
@@ -57,7 +55,6 @@ docker run --entrypoint runzi \
 -v <path to input files>:/INPUT_FILES \
 -v $HOME/.aws/credentials:/root/.aws/credentials:ro \
 -v $NZSHM22_THS_RLZ_DB:/THS \
--v $NZSHM22_THS_DISAGG_RLZ_DB:/THS \
 --env-file .my.env
 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:latest [COMMAND] [COMMAND] [OPTIONS]
 ```
