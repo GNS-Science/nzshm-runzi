@@ -33,6 +33,7 @@ def boolean_env(environ_name):
 USE_API = boolean_env('NZSHM22_TOSHI_API_ENABLED')
 ECR_DIGEST = os.getenv('NZSHM22_RUNZI_ECR_DIGEST')
 THS_RLZ_DB = os.getenv('NZSHM22_THS_RLZ_DB')
+THS_DISAGG_RLZ_DB = os.getenv('NZSHM22_THS_DISAGG_RLZ_DB')
 
 DEFAULT_CLUSTER_MODE = ClusterModeEnum.LOCAL
 # the value of this variable can be changed by the CLI but we set it here in-case it's being accessed w/o the CLI

@@ -8,7 +8,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-02T01:56:22.704358531Z"
+exclude-newer = "2026-05-03T22:56:40.368450731Z"
 exclude-newer-span = "P1W"
 
 [options.exclude-newer-package]
@@ -2143,7 +2143,7 @@ wheels = [
 
 [[package]]
 name = "nzshm-model"
-version = "0.15.3"
+version = "0.15.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dacite" },
@@ -2151,9 +2151,9 @@ dependencies = [
     { name = "nshm-toshi-client" },
     { name = "nzshm-common" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9f/62/2375094678698464c46623ec6d19d0a4d797f6db8092736a04398a8176e4/nzshm_model-0.15.3.tar.gz", hash = "sha256:042bb609dcb27f372f77ddc6d491ce08b82420c15d0a52edbbeb01cee1893207", size = 85560, upload-time = "2026-05-21T23:15:14.995Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e8/6e/d5ae9209f2618daebea3c8686251e8c4cf6b34d57335e0781cdc6ff197a9/nzshm_model-0.15.2.tar.gz", hash = "sha256:3254e15155c8d584cc8969558483924c5bd0a33ea3f8e7c78bc92cc4f466eb5e", size = 86822, upload-time = "2026-05-10T21:52:21.372Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9b/f5/a310c4c25ea963bd1b3a469e2e6dde301873efdc3c4773f829b49481131d/nzshm_model-0.15.3-py3-none-any.whl", hash = "sha256:019b8d3b49b02f138ae16d617fd3f323e5e85bf5d06d2e8c01726ed050ef1a66", size = 99411, upload-time = "2026-05-21T23:15:13.875Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/c2/31915a4604de680840a1708c1868e7a0cfbddda4718a54a21c1228cc7e5d/nzshm_model-0.15.2-py3-none-any.whl", hash = "sha256:c685b8f30b8dac7ba1dcd9a1bed13dec81fb9d6d054d58287656d6c8bf01597d", size = 100672, upload-time = "2026-05-10T21:52:19.968Z" },
 ]
 
 [[package]]
@@ -3337,14 +3337,15 @@ requires-dist = [
     { name = "nshm-toshi-client", specifier = ">=1.3.0" },
     { name = "nzshm-common", extras = ["geometry"], specifier = ">=0.9.3" },
     { name = "nzshm-hazlab", specifier = ">=0.1.3,<0.2.0" },
-    { name = "nzshm-model", specifier = ">=0.15.3" },
+    { name = "nzshm-model", specifier = ">=0.15.2" },
     { name = "py4j", specifier = "==0.10.9.1" },
     { name = "pydantic", specifier = ">=2.12" },
     { name = "python-dateutil", specifier = ">=2.8.2" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
     { name = "pytz", specifier = ">=2025.1" },
     { name = "solvis", specifier = ">=1.2.0,<2.0.0" },
-    { name = "toshi-hazard-store", specifier = ">=2.0.0" },
+    { name = "toshi-hazard-store", specifier = ">=2.0.1" },
+    { name = "tqdm", specifier = ">=4.67.3" },
     { name = "typer", specifier = ">=0.17.4,<0.18.0" },
 ]
 
@@ -3688,7 +3689,7 @@ wheels = [
 
 [[package]]
 name = "toshi-hazard-store"
-version = "2.1.0"
+version = "2.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "geopandas" },
@@ -3707,9 +3708,9 @@ dependencies = [
     { name = "s3path" },
     { name = "toml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/86/d5/efe8c55ff4d39ce159c0500303c22694d6a4309aa535650f22a3b9469864/toshi_hazard_store-2.1.0.tar.gz", hash = "sha256:1087eab91a65d68424d1f1b943e3945084741d6836e3341cad4114bc38fb6d5a", size = 62100741, upload-time = "2026-05-15T04:08:10.7Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6e/ab/a4b03c659ff592861d2801eb944447b17f2db764951f9c029ea994b82c28/toshi_hazard_store-2.0.1.tar.gz", hash = "sha256:d63002b201ea8a286b71e1fb66f37942b428e2c0ca0fd65c36a54bebd0134e52", size = 46381669, upload-time = "2026-05-10T22:46:13.085Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8b/0a/1dcff500755b1330150c2894ebb176ba5b698c95eee5ff386e5c01ebc598/toshi_hazard_store-2.1.0-py3-none-any.whl", hash = "sha256:da73afde6a9359ea90ef656ad1bdd93872bcfc5ddb089908f93cffde86b47158", size = 130397, upload-time = "2026-05-15T04:08:08.349Z" },
+    { url = "https://files.pythonhosted.org/packages/a5/19/ee48b4dee1fe347a11086606a7c53d5d83a6eda24da58632f84297dc74a5/toshi_hazard_store-2.0.1-py3-none-any.whl", hash = "sha256:6ebfc8b0e2f81cb5e67e2ccf0e811daae1ea73653b0337416de1e441be9a7c41", size = 128103, upload-time = "2026-05-10T22:46:10.961Z" },
 ]
 
 [[package]]

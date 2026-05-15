@@ -116,3 +116,18 @@ class ArgSweeper:
             update_data = dict(zip(self.swept_args.keys(), values, strict=True))
             prototype_data_copy = copy.deepcopy(prototype_data)
             yield self.prototype_args.model_validate(prototype_data_copy | update_data)
+
+    def validate_all_tasks(self) -> None:
+        """Re-run Pydantic validation on every task that would be generated.
+
+        Raises ValidationError if the (possibly-mutated) prototype, or any swept
+        combination, fails validation. Call before any dispatch side effect so
+        the job fails fast instead of partway through task submission.
+        """
+        if not self.swept_args:
+            # get_tasks() yields the prototype directly without re-validating —
+            # re-validate here in case the runner __init__ mutated prototype_args.
+            type(self.prototype_args).model_validate(self.prototype_args.model_dump())
+            return
+        for _ in self.get_tasks():
+            pass

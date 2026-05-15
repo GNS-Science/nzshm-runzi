@@ -21,6 +21,10 @@
  - Container runs as host UID
 
 
+## Added
+ - Store disaggregation realizations in toshi-hazard-store dataset
+ - Validate all tasks before running to fail early
+
 ## [0.10.1] 2026-03-30
 
 ### Changed
