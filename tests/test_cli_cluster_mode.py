@@ -8,7 +8,6 @@ from typer.testing import CliRunner
 from runzi.automation import local_config
 from runzi.automation.local_config import ClusterModeEnum
 from runzi.cli import runzi_cli
-from runzi.cli.runzi_cli import cluster_mode_callback
 
 
 # some platforms print ANSI codes to the CLI output
@@ -24,30 +23,6 @@ runner = CliRunner(env=env)
 @pytest.fixture(autouse=True)
 def reset_cluster_mode():
     local_config.CLUSTER_MODE = ClusterModeEnum.LOCAL
-
-
-# ── Unit tests for the callback function itself ─────────────────────────────
-
-
-def test_callback_none_gets_default():
-    cluster_mode_callback()
-    assert local_config.CLUSTER_MODE is local_config.DEFAULT_CLUSTER_MODE
-
-
-def test_callback_sets_cluster_mode():
-    cluster_mode_callback(ClusterModeEnum.AWS)
-    assert local_config.CLUSTER_MODE is ClusterModeEnum.AWS
-
-
-def test_callback_sets_cluster_mode_cluster():
-    cluster_mode_callback(ClusterModeEnum.CLUSTER)
-    assert local_config.CLUSTER_MODE is ClusterModeEnum.CLUSTER
-
-
-def test_callback_default_when_none():
-    local_config.CLUSTER_MODE = ClusterModeEnum.CLUSTER  # non-default
-    cluster_mode_callback()
-    assert local_config.CLUSTER_MODE is local_config.DEFAULT_CLUSTER_MODE  # changed
 
 
 # ── Root CLI tests ───────────────────────────────────────────────────────────

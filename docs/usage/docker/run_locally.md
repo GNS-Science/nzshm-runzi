@@ -1,60 +1,90 @@
 # Running the docker container locally
 
-Users may want to run the docker container locally so that all dependencies (OpenSHA and OpenQuake) are available. If you are not running jobs locally, only spawning them from your local machine, it is not necessary to run runzi in the container as the dependencies will be available on the cloud container.
+Users may want to run the docker container locally so that all dependencies (OpenSHA and OpenQuake) are available. If you are not running jobs locally — only spawning them from your local machine — it is not necessary to run runzi in the container, as the dependencies will be available on the cloud container.
 
-In the following commands, replace the docker image (e.g., `461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:latest`) with the image use wish to use. 
+## Using the `--docker` flag (recommended)
 
-Replace `[COMMAND] [COMMAND] [OPTIONS]` with the `runzi` commands you wish to run, e.g. `inversion crustal /INPUT_FILES/crustal_inversion.json`.
-
-## Notes:
-- You must map your AWS credentials to the container `-v $HOME/.aws/credentials:/home/openquake/.aws/credentials:ro`
-- In these examples we have mapped a directory containing input JSON files to `/INPUT_FILES` into the container.
-
-## If using a local realization dataset for OpenQuake
-
-You must map `NZSHM22_THS_RLZ_DB` to the `/THS` directory in the docker so that data can be written to it.
+The easiest way to run a command inside the container is to add `--docker` to any normal `runzi` invocation:
 
 ```console
-docker run --entrypoint runzi \
--v $HOME/.aws/credentials:/root/.aws/credentials:ro \
--v <path to input files>:/INPUT_FILES
--v $NZSHM22_THS_RLZ_DB:/THS \
--e THS_DATASET_AGGR_URI \
--e AWS_PROFILE \
--e NZSHM22_TOSHI_S3_URL \
--e NZSHM22_TOSHI_API_URL \
--e NZSHM22_TOSHI_API_KEY \
--e NZSHM22_RUNZI_ECR_DIGEST \
-runzi-build:latest [COMMAND] [COMMAND] [OPTIONS]
+runzi --docker hazard oq-hazard /path/to/config.json
+runzi --docker inversion crustal /path/to/config.json
 ```
 
-## If using an S3 realization dataset for OpenQuake
+The wrapper automatically:
 
-In this case you must set `NZSHM22_THS_RLZ_DB` to the S3 URI.
+- Pulls the image from ECR if it is not present locally (no manual `docker login` needed).
+- Mounts the config file's parent directory at `/INPUT_FILES` inside the container (all subdirectories are included, so configs that reference other files via relative paths work without extra flags).
+- Mounts your AWS credentials read-only.
+- Mounts your local THS dataset directories (from `$NZSHM22_THS_RLZ_DB` and `$NZSHM22_THS_DISAGG_RLZ_DB`) if they are local paths. If they are `s3://` URIs they are forwarded as environment variables instead.
+- Runs the container as your host user ID so output files are owned by you, not root.
+- Forwards all `NZSHM22_*`, `AWS_PROFILE`, `AWS_REGION`, and `THS_DATASET_AGGR_URI` environment variables from your `.env` file.
+
+### Prerequisites
+
+- Docker installed and running.
+- A `.env` file in your working directory (or the relevant env vars exported in your shell) — the same file you use for normal runzi runs.
+- AWS credentials at `~/.aws/credentials`.
+
+### Convention for config files that reference other files
+
+When using `--docker`, config files may only reference other files via **relative paths** to the same directory or a subdirectory. For example, if your config lives at `/data/jobs/run1/config.json` and references `../srm.zip`, that reference will not be accessible inside the container. Move `srm.zip` into `/data/jobs/run1/` or a subdirectory.
+
+### Interactive shell
+
+To drop into a bash shell inside the container with all mounts ready (useful for running multiple commands or debugging):
 
 ```console
-docker run --entrypoint runzi \
--v $HOME/.aws/credentials:/root/.aws/credentials:ro \
--v <path to input files>:/INPUT_FILES
--e NZSHM22_THS_RLZ_DB \
--e THS_DATASET_AGGR_URI \
--e AWS_PROFILE \
--e NZSHM22_TOSHI_S3_URL \
--e NZSHM22_TOSHI_API_URL \
--e NZSHM22_TOSHI_API_KEY \
--e NZSHM22_RUNZI_ECR_DIGEST \
-runzi-build:latest [COMMAND] [COMMAND] [OPTIONS]
+runzi --docker-shell
 ```
 
-## Environment file
+### Available `--docker-*` flags
 
-Optionally, environment variables can be passed to the container using an file:
+| Flag | Purpose |
+|---|---|
+| `--docker` | Route the command through a local Docker container |
+| `--docker-dev` | Use the dev image with editable host source; implies `--docker` |
+| `--docker-image TEXT` | Override the image tag or full ECR URI; implies `--docker` |
+| `--docker-shell` | Drop into an interactive bash session; implies `--docker` |
+| `--docker-dry-run` | Print the docker command without running it; implies `--docker` |
+
+## Fallback: raw `docker run`
+
+If you cannot install runzi on the host, you can still run the container directly. Replace `[COMMAND] [SUBCOMMAND] [OPTIONS]` with the runzi command you wish to run (e.g. `hazard oq-hazard /INPUT_FILES/config.json`).
+
+### With a local THS dataset
 
 ```console
-docker run --entrypoint runzi \
--v <path to input files>:/INPUT_FILES \
--v $HOME/.aws/credentials:/root/.aws/credentials:ro \
--v $NZSHM22_THS_RLZ_DB:/THS \
---env-file .my.env
-461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi-openquake:latest [COMMAND] [COMMAND] [OPTIONS]
+docker run --rm --user "$(id -u):$(id -g)" --entrypoint runzi \
+  -v <path to input files>:/INPUT_FILES:ro \
+  -v $HOME/.aws/credentials:/aws-credentials:ro \
+  -v $NZSHM22_THS_RLZ_DB:/THS/HAZARD \
+  -v $NZSHM22_THS_DISAGG_RLZ_DB:/THS/DISAGG \
+  -e AWS_SHARED_CREDENTIALS_FILE=/aws-credentials \
+  -e AWS_PROFILE \
+  -e NZSHM22_TOSHI_S3_URL \
+  -e NZSHM22_TOSHI_API_URL \
+  -e NZSHM22_TOSHI_API_KEY \
+  -e NZSHM22_RUNZI_ECR_DIGEST \
+  runzi-build:latest [COMMAND] [SUBCOMMAND] [OPTIONS]
+```
+
+### With an S3 THS dataset
+
+Set `NZSHM22_THS_RLZ_DB` and `NZSHM22_THS_DISAGG_RLZ_DB` to `s3://` URIs and omit the `/THS` mounts:
+
+```console
+docker run --rm --user "$(id -u):$(id -g)" --entrypoint runzi \
+  -v <path to input files>:/INPUT_FILES:ro \
+  -v $HOME/.aws/credentials:/aws-credentials:ro \
+  -e AWS_SHARED_CREDENTIALS_FILE=/aws-credentials \
+  -e NZSHM22_THS_RLZ_DB \
+  -e NZSHM22_THS_DISAGG_RLZ_DB \
+  -e THS_DATASET_AGGR_URI \
+  -e AWS_PROFILE \
+  -e NZSHM22_TOSHI_S3_URL \
+  -e NZSHM22_TOSHI_API_URL \
+  -e NZSHM22_TOSHI_API_KEY \
+  -e NZSHM22_RUNZI_ECR_DIGEST \
+  runzi-build:latest [COMMAND] [SUBCOMMAND] [OPTIONS]
 ```

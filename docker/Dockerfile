@@ -51,7 +51,7 @@ RUN git checkout ${RUNZI_GITREF}
 RUN pip install .
 
 # RUN rm -r /app
-FROM python:${PYTHON_VERSION}-slim-bookworm
+FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime
 ARG FATJAR_TAG
 COPY --from=build /usr /usr
 COPY --from=build /opt /opt
@@ -62,11 +62,14 @@ RUN chmod +x /usr/local/bin/python_container_task.sh
 
 # create the toshi-hazard-store dataset directory to store hazard realiztions locally
 WORKDIR /THS
-ENV NZSHM22_THS_RLZ_DB=/THS
+RUN mkdir HAZARD
+RUN mkdir DISAGG
+ENV NZSHM22_THS_RLZ_DB=/THS/HAZARD
+ENV NZSHM22_THS_DISAGG_RLZ_DB=/THS/DISAGG
 
 # Create working directory and set env vars
 WORKDIR /WORKING
-RUN mkdir -p /WORKING
+RUN mkdir -p /WORKING && chmod 0777 /WORKING /THS/HAZARD /THS/DISAGG
 ENV NZSHM22_TOSHI_API_ENABLED=1
 ENV NZSHM22_SCRIPT_WORK_PATH=/WORKING
 ENV NZSHM22_OPENSHA_JRE=/opt/java/bin
@@ -79,3 +82,10 @@ ENV PYTHON_PREP_MODULE=SET_AT_RUNTIME
 ENV PYTHON_TASK_MODULE=SET_AT_RUNTIME
 
 ENTRYPOINT ["/bin/bash", "-c"]
+
+FROM runtime AS dev
+COPY --from=build /app/nzshm-runzi /app/nzshm-runzi
+WORKDIR /app/nzshm-runzi
+RUN pip install -e .
+WORKDIR /WORKING
+ENV PYTHONDONTWRITEBYTECODE=1

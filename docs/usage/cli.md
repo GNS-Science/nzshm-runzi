@@ -369,7 +369,7 @@ $ runzi utils container [OPTIONS]
 
 **Options**:
 
-* `--fatjar-tag TEXT`: OpenSHA fatjar tag  [default: bf70d35]
+* `--fatjar-tag TEXT`: OpenSHA fatjar tag
 * `--runzi-gitref TEXT`: Git branch, tag, or commit to build  [default: main]
 * `--python-version TEXT`: Python version  [default: 3.11]
 * `--oq-version TEXT`: OpenQuake version  [default: 3.23.4]
