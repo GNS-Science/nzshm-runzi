@@ -194,6 +194,7 @@ def get_ecs_job_config(
                 {"name": "NZSHM22_S3_REPORT_BUCKET", "value": toshi_report_bucket},
                 {"name": "NZSHM22_RUNZI_ECR_DIGEST", "value": ecr_digest},
                 {"name": "NZSHM22_THS_RLZ_DB", "value": ths_rlz_db},
+                {"name": "NZSHM22_THS_DISAGG_RLZ_DB", "value": ths_rlz_db},
                 {"name": "PYTHON_TASK_MODULE", "value": task_module},
             ],
         },

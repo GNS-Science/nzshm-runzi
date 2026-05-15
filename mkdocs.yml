@@ -32,7 +32,6 @@ nav:
     - Docker:
       - Build and Deploy Container: usage/docker/build_and_deploy_container.md
       - Running the Container Locally: usage/docker/run_locally.md
-    - Inversion, Docker, and AWS: usage/docker/AWS_docker_containers_setup.md
   - Process:
     - Building the SRM: process/build_srm_for_oq.md
   - Installation: installation.md

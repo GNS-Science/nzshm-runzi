@@ -31,6 +31,7 @@ API_URL = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
 S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL', "http://localhost:4569")
 ECR_DIGEST = os.getenv('NZSHM22_RUNZI_ECR_DIGEST')
 THS_RLZ_DB = os.getenv('NZSHM22_THS_RLZ_DB')
+THS_DISAGG_RLZ_DB = os.getenv('NZSHM22_THS_DISAGG_RLZ_DB')
 
 DEFAULT_CLUSTER_MODE = ClusterModeEnum.LOCAL
 # the value of this variable can be changed by the CLI but we set it here in-case it's being accessed w/o the CLI
