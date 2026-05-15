@@ -5,8 +5,10 @@ from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
+from toshi_hazard_store.model.constraints import ProbabilityEnum
 
 from runzi.tasks.oq_hazard import OQDisaggArgs, OQHazardArgs
+from runzi.tasks.oq_hazard.hazard_args import get_probability_enum
 from tests.helpers import does_not_raise
 
 
@@ -185,3 +187,10 @@ def test_disagg_incorrect_agg(disagg_input_data):
     disagg_input_data["agg"] = ["PGA", "XYZ"]
     with pytest.raises(ValidationError):
         OQDisaggArgs.model_validate(disagg_input_data)
+
+
+def test_probability_enum():
+    assert get_probability_enum(0.1, 50.0) == ProbabilityEnum["_10_PCT_IN_50YRS"]
+
+    with pytest.raises(KeyError):
+        get_probability_enum(0.11, 50.0)

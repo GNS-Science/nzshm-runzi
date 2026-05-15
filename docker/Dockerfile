@@ -62,7 +62,10 @@ RUN chmod +x /usr/local/bin/python_container_task.sh
 
 # create the toshi-hazard-store dataset directory to store hazard realiztions locally
 WORKDIR /THS
-ENV NZSHM22_THS_RLZ_DB=/THS
+RUN mkdir HAZARD
+RUN mkdir DISAGG
+ENV NZSHM22_THS_RLZ_DB=/THS/HAZARD
+ENV NZSHM22_THS_DISAGG_RLZ_DB=/THS/DISAGG
 
 # Create working directory and set env vars
 WORKDIR /WORKING

@@ -5,6 +5,10 @@
 ## Changed
  - Upgrade dependencies (gitpython 3.1.47 → 3.1.49, fixes CVE-2026-44244)
 
+## Added
+ - Store disaggregation realizations in toshi-hazard-store dataset
+ - Validate all tasks before running to fail early
+
 ## [0.10.1] 2026-03-30
 
 ## Changed
