@@ -13,7 +13,7 @@ runzi --docker inversion crustal /path/to/config.json
 
 The wrapper automatically:
 
-- Pulls the image from ECR if it is not present locally (no manual `docker login` needed).
+- Pulls the image from ECR if it is not present locally.
 - Mounts the config file's parent directory at `/INPUT_FILES` inside the container (all subdirectories are included, so configs that reference other files via relative paths work without extra flags).
 - Mounts your AWS credentials read-only.
 - Mounts your local THS dataset directories (from `$NZSHM22_THS_RLZ_DB` and `$NZSHM22_THS_DISAGG_RLZ_DB`) if they are local paths. If they are `s3://` URIs they are forwarded as environment variables instead.
