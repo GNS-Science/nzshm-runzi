@@ -72,5 +72,5 @@ S3_UPLOAD_WORKERS = int(os.getenv('NZSHM22_S3_UPLOAD_WORKERS', 50))
 SPOOF = boolean_env('SPOOF')
 
 # OpenQuake environment settings
-OQ_VENV = os.environ.get('NZSHM22_OQ_VENV')
-OQ_DATADIR = os.environ.get('NZSHM22_OQ_DATADIR')
+OQ_VENV = os.getenv('NZSHM22_OQ_VENV')
+OQ_DATADIR = os.getenv('NZSHM22_OQ_DATADIR')
