@@ -12,12 +12,21 @@ import json
 from pathlib import Path
 
 
-def cmd_convert(args):
-    """Run the UCERF -> OpenQuake XML conversion using a JSON config file."""
+def cmd_convert(args: argparse.Namespace) -> None:
+    """Run UCERF -> OpenQuake XML conversion from a JSON config file.
+
+    Args:
+        args: Parsed CLI args; args.config is the path to the JSON config.
+    """
     from openquake.converters.ucerf.parsers.sections_geojson import get_multi_fault_source
     from openquake.hazardlib.sourcewriter import write_source_model
 
-    cfg = json.loads(Path(args.config).read_text())
+    try:
+        cfg = json.loads(Path(args.config).read_text())
+    except FileNotFoundError as e:
+        raise SystemExit(f'Config file not found: {args.config}') from e
+    except json.JSONDecodeError as e:
+        raise SystemExit(f'Invalid JSON in config: {e}') from e
     computed = get_multi_fault_source(
         cfg['src_folder'],
         cfg['dip_sd'],
@@ -37,7 +46,8 @@ def cmd_convert(args):
     )
 
 
-def main():
+def main() -> None:
+    """Parse CLI args and dispatch to subcommand."""
     p = argparse.ArgumentParser(description='OpenQuake venv-side helper for nzshm-runzi.')
     sub = p.add_subparsers(dest='cmd', required=True)
 
