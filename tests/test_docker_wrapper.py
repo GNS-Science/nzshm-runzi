@@ -1,6 +1,7 @@
 """Tests for the docker_wrapper module — TDD (RED phase first)."""
 
 import os
+import re
 
 import pytest
 from typer.testing import CliRunner
@@ -9,6 +10,13 @@ from runzi.cli import docker_wrapper
 from runzi.cli.runzi_cli import app
 
 runner = CliRunner(env={"NO_COLOR": "1", "LANG": "en_US.UTF-8"})
+
+_ANSI_RE = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
+
+
+def strip_ansi(text: str) -> str:
+    """Remove ANSI escape sequences so plain-text assertions are CI-safe."""
+    return _ANSI_RE.sub('', text)
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -402,7 +410,7 @@ def test_build_docker_cmd_image_at_end_before_args(aws_creds):
 
 def test_cli_help_shows_docker_flag():
     result = runner.invoke(app, ['--help'])
-    assert '--docker' in result.output
+    assert '--docker' in strip_ansi(result.output)
 
 
 def test_cli_docker_flag_invokes_wrapper(mocker, tmp_path):
@@ -670,8 +678,8 @@ def test_cli_docker_dry_run_uses_absolute_mount_for_relative_file(mocker, tmp_pa
     mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
     result = runner.invoke(app, ['--docker-dry-run', 'hazard', 'oq-hazard', 'foo.json'])
     assert result.exit_code == 0
-    assert str(tmp_path.resolve()) in result.output
-    assert '/INPUT_FILES/foo.json' in result.output
+    assert str(tmp_path.resolve()) in strip_ansi(result.output)
+    assert '/INPUT_FILES/foo.json' in strip_ansi(result.output)
 
 
 def test_cli_docker_forwards_subcommand_name_in_inner_args(mocker, tmp_path):
