@@ -1,6 +1,5 @@
 """Deploy docker image to AWS ECR and update Batch job definition."""
 
-import os
 import subprocess
 from pathlib import Path
 
@@ -10,16 +9,6 @@ from dotenv import load_dotenv
 from rich import print as rich_print
 
 load_dotenv()
-
-DEFAULTS = {
-    "python_version": os.environ.get("PYTHON_VERSION", "3.11"),
-    "oq_version": os.environ.get("OQ_VERSION", "3.23.4"),
-    "region": os.environ.get("AWS_REGION", "us-east-1"),
-    "aws_account_id": os.environ.get("AWS_ACCOUNT_ID", "461564345538"),
-    "ecr_repo": os.environ.get("ECR_REPO", "nzshm22/runzi"),
-    "job_definition": os.environ.get("JOB_DEFINITION", "runzi_32GB_8VCPU_JD"),
-    "dockerfile": os.environ.get("DOCKERFILE", "docker/Dockerfile"),
-}
 
 app = typer.Typer()
 
@@ -46,6 +35,7 @@ def build_docker_image(
     runzi_gitref: str,
     oq_version: str,
     install_converter: bool = False,
+    dev: bool = False,
     cwd: Path | None = None,
 ) -> str:
     """Build Docker image and return the full git hash used."""
@@ -55,6 +45,8 @@ def build_docker_image(
 
     dockerfile_path = Path(dockerfile)
     dockerfile_dir = dockerfile_path.parent.resolve()
+
+    image_tag = "runzi-build:dev" if dev else "runzi-build:latest"
 
     build_cmd = [
         "docker",
@@ -73,7 +65,9 @@ def build_docker_image(
     ]
     if install_converter:
         build_cmd.extend(["--build-arg", "INSTALL_CONVERTER=Y"])
-    build_cmd.extend(["-t", "runzi-build:latest", "."])
+    if dev:
+        build_cmd.extend(["--target", "dev"])
+    build_cmd.extend(["-t", image_tag, "."])
 
     print("Building Docker image...")
     print(f"  Dockerfile: {dockerfile}")
@@ -82,6 +76,9 @@ def build_docker_image(
     print(f"  FATJAR_TAG: {fatjar_tag}")
     print(f"  RUNZI_GITREF: {runzi_gitref} -> {git_hash}")
     print(f"  OQ_VERSION: {oq_version}")
+    print(f"  Image tag: {image_tag}")
+    if dev:
+        print("  Target: dev (editable install, local-only)")
 
     result = subprocess.run(build_cmd, cwd=dockerfile_dir)
     if result.returncode != 0:
@@ -186,50 +183,27 @@ def update_job_definition(
 
 @app.command()
 def build_and_deploy_container(
-    fatjar_tag: str = typer.Option(
-        default=os.environ.get("FATJAR_TAG"),
-        prompt=True if not os.environ.get("FATJAR_TAG") else False,
-        help="OpenSHA fatjar tag",
-    ),
-    runzi_gitref: str = typer.Option(
-        default=os.environ.get("RUNZI_GITREF"),
-        prompt=True if not os.environ.get("RUNZI_GITREF") else False,
-        help="Git branch, tag, or commit to build",
-    ),
-    python_version: str = typer.Option(
-        default=os.environ.get("PYTHON_VERSION", DEFAULTS["python_version"]),
-        help="Python version",
-    ),
-    oq_version: str = typer.Option(
-        default=os.environ.get("OQ_VERSION", DEFAULTS["oq_version"]),
-        help="OpenQuake version",
-    ),
+    fatjar_tag: str = typer.Option(..., envvar="FATJAR_TAG", prompt=True, help="OpenSHA fatjar tag"),
+    runzi_gitref: str = typer.Option("main", envvar="RUNZI_GITREF", help="Git branch, tag, or commit to build"),
+    python_version: str = typer.Option("3.11", envvar="PYTHON_VERSION", help="Python version"),
+    oq_version: str = typer.Option(..., envvar="OQ_VERSION", prompt=True, help="OpenQuake version"),
     install_converter: bool = typer.Option(default=False, help="Set to install UCERF converter"),
-    region: str = typer.Option(
-        default=os.environ.get("AWS_REGION", DEFAULTS["region"]),
-        help="AWS region",
+    dev: bool = typer.Option(
+        default=False, help="Build dev image (editable install, local-only; skips ECR push and job update)"
     ),
-    aws_account_id: str = typer.Option(
-        default=os.environ.get("AWS_ACCOUNT_ID", DEFAULTS["aws_account_id"]),
-        help="AWS account ID",
-    ),
-    ecr_repo: str = typer.Option(
-        default=os.environ.get("ECR_REPO", DEFAULTS["ecr_repo"]),
-        help="ECR repository",
-    ),
-    job_definition: str = typer.Option(
-        default=os.environ.get("JOB_DEFINITION", DEFAULTS["job_definition"]),
-        help="Batch job definition",
-    ),
-    dockerfile: str = typer.Option(
-        default=os.environ.get("DOCKERFILE", DEFAULTS["dockerfile"]),
-        help="Path to Dockerfile",
-    ),
+    region: str = typer.Option("us-east-1", envvar="AWS_REGION", help="AWS region"),
+    aws_account_id: str = typer.Option("461564345538", envvar="AWS_ACCOUNT_ID", help="AWS account ID"),
+    ecr_repo: str = typer.Option("nzshm22/runzi", envvar="ECR_REPO", help="ECR repository"),
+    job_definition: str = typer.Option("runzi_32GB_8VCPU_JD", envvar="JOB_DEFINITION", help="Batch job definition"),
+    dockerfile: str = typer.Option("docker/Dockerfile", envvar="DOCKERFILE", help="Path to Dockerfile"),
     skip_build: bool = typer.Option(default=False, help="Skip Docker build"),
     skip_push: bool = typer.Option(default=False, help="Skip ECR push"),
     skip_job_update: bool = typer.Option(default=False, help="Skip job definition update"),
 ):
     """Build runzi-opensha Docker image, push to ECR, update Batch job definition."""
+    if dev:
+        skip_push = True
+        skip_job_update = True
     if skip_push:
         skip_job_update = True
 
@@ -241,6 +215,7 @@ def build_and_deploy_container(
     print(f"  runzi_gitref: {runzi_gitref}")
     print(f"  oq_version: {oq_version}")
     print(f"  install_converter: {install_converter}")
+    print(f"  dev: {dev}")
     print(f"  region: {region}")
     print(f"  aws_account_id: {aws_account_id}")
     print(f"  ecr_repo: {ecr_repo}")
@@ -259,9 +234,11 @@ def build_and_deploy_container(
         rich_print(f"[red]Error: Dockerfile not found: {dockerfile_path}[/red]")
         raise typer.Exit(1)
 
+    local_image_tag = "runzi-build:dev" if dev else "runzi-build:latest"
+
     try:
         if skip_build:
-            print("Skipping build (using existing runzi-build:latest)")
+            print(f"Skipping build (using existing {local_image_tag})")
             git_hash = get_git_hash(runzi_gitref)
         else:
             git_hash = build_docker_image(
@@ -271,11 +248,11 @@ def build_and_deploy_container(
                 runzi_gitref,
                 oq_version,
                 install_converter,
+                dev,
             )
 
-        ecr_login(region, aws_account_id)
-
         if not skip_push:
+            ecr_login(region, aws_account_id)
             image_uri, image_digest = tag_and_push_image(
                 ecr_repo,
                 aws_account_id,
@@ -286,7 +263,7 @@ def build_and_deploy_container(
                 oq_version,
             )
         else:
-            image_uri, image_digest = "<skipped>", "sha256:skipped"
+            image_uri, image_digest = local_image_tag, "sha256:skipped"
 
         if not skip_job_update:
             new_job_def_arn = update_job_definition(
@@ -303,8 +280,9 @@ def build_and_deploy_container(
         ]
         completed = [name for name, done in stages if done]
         rich_print(f"[bold green]Completed {', '.join(completed)}![/bold green]")
-        print(f"Image URI: {image_uri}")
-        print(f"Image digest: {image_digest}")
+        print(f"Image: {local_image_tag if dev else image_uri}")
+        if not dev:
+            print(f"Image digest: {image_digest}")
         if not skip_job_update:
             print(f"Job Definition: {new_job_def_arn}")
         print()

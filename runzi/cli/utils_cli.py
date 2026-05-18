@@ -11,7 +11,7 @@ from runzi.tasks.utils import VALID_ROW, build_manual_index, run_save_file_archi
 
 app = typer.Typer()
 
-app.command("container")(build_and_deploy_container)
+app.command("docker-build")(build_and_deploy_container)
 
 
 @app.command()

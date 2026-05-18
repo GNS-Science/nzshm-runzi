@@ -1,4 +1,4 @@
 #This is the AWS CONTAINER SCRIPT for Python applications
 
-python3 -m ${PYTHON_TASK_MODULE} ${TASK_CONFIG_JSON_QUOTED}
+/opt/runzi-venv/bin/python -m ${PYTHON_TASK_MODULE} ${TASK_CONFIG_JSON_QUOTED}
 #END_OF_SCRIPT

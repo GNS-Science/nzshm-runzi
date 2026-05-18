@@ -191,6 +191,7 @@ def get_ecs_job_config(
                 {"name": "NZSHM22_AWS_JAVA_THREADS", "value": str(int(vcpu))},
                 {"name": "NZSHM22_TOSHI_S3_URL", "value": toshi_s3_url},
                 {"name": "NZSHM22_TOSHI_API_URL", "value": toshi_api_url},
+                {"name": "NZSHM22_TOSHI_API_ENABLED", "value": "1"},
                 {"name": "NZSHM22_S3_REPORT_BUCKET", "value": toshi_report_bucket},
                 {"name": "NZSHM22_RUNZI_ECR_DIGEST", "value": ecr_digest},
                 {"name": "NZSHM22_THS_RLZ_DB", "value": ths_rlz_db},

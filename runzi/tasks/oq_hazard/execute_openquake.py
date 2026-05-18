@@ -2,19 +2,14 @@
 
 import io
 import logging
+import os
 import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
 
+from runzi.automation.local_config import OQ_DATADIR, OQ_VENV, SPOOF, WORK_PATH
 from runzi.automation.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
-
-try:
-    from openquake.commonlib.datastore import get_datadir
-except ImportError:
-    print("openquake not installed, not importing")
-
-from runzi.automation.local_config import SPOOF, WORK_PATH
 from runzi.utils import archive
 
 log = logging.getLogger(__name__)
@@ -24,6 +19,11 @@ def execute_openquake(
     configfile: str | Path, task_no: int, toshi_task_id: str | None, hazard_task_type: HazardTaskType
 ):
     """Do the actusal openquake work."""
+    if not OQ_VENV:
+        raise RuntimeError('NZSHM22_OQ_VENV must be set for OQ tasks')
+    if not OQ_DATADIR:
+        raise RuntimeError('NZSHM22_OQ_DATADIR must be set for OQ tasks')
+    oq_bin = f'{OQ_VENV}/bin/oq'
     toshi_task_id = toshi_task_id or f"DUMMY{task_no}_toshi_TASK_ID"
     # if not toshi_task_id:
     #     toshi_task_id = f"DUMMY{task_no}_toshi_TASK_ID"
@@ -49,9 +49,10 @@ def execute_openquake(
         #  oq engine --run /WORKING/examples/18_SWRG_INIT/4-sites_many-periods_vs30-475.ini
         # -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
         #
-        cmd = ['oq', 'engine', '--run', f'{configfile}', '-L', f'{logfile}']
+        env = {**os.environ, 'OQ_DATADIR': str(OQ_DATADIR)}
+        cmd = [oq_bin, 'engine', '--run', f'{configfile}', '-L', f'{logfile}']
         log.info('cmd 1: %s', cmd)
-        subprocess.run(cmd)
+        subprocess.run(cmd, env=env)
 
         with open(logfile) as logf:
             oq_out = logf.read()
@@ -84,8 +85,8 @@ def execute_openquake(
                     6 |   complete | 2022-03-29 01:12:16 | 35 sites, few periods
                 """
 
-                cmd = ['oq', 'engine', '--lhc']
-                p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+                cmd = [oq_bin, 'engine', '--lhc']
+                p = subprocess.Popen(cmd, stdout=subprocess.PIPE, env=env)
                 out, err = p.communicate()
 
                 fileish = io.StringIO()
@@ -108,9 +109,9 @@ def execute_openquake(
             #  oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
             #  cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
             #
-            cmd = ['oq', 'engine', '--export-outputs', str(last_task), str(output_path)]
+            cmd = [oq_bin, 'engine', '--export-outputs', str(last_task), str(output_path)]
             log.info('cmd 2: %s', cmd)
-            subprocess.check_call(cmd, stdout=subprocess.DEVNULL)
+            subprocess.check_call(cmd, stdout=subprocess.DEVNULL, env=env)
             oq_result['csv_archive'] = archive(
                 output_path, Path(WORK_PATH, f'openquake_csv_archive-{toshi_task_id}.zip')
             )
@@ -118,7 +119,7 @@ def execute_openquake(
             # clean up export outputs
             shutil.rmtree(output_path)
 
-            OQDATA = Path(get_datadir())
+            OQDATA = Path(OQ_DATADIR)  # type: ignore[arg-type]  # guarded by module-level RuntimeError
 
             hdf5_file = f"calc_{last_task}.hdf5"
             oq_result['hdf5_archive'] = archive(
