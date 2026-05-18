@@ -436,6 +436,158 @@ def test_cli_no_docker_flag_does_not_invoke_wrapper(mocker):
     mock_run.assert_not_called()
 
 
+def test_cli_docker_drops_host_script_work_path_env(mocker, tmp_path, monkeypatch):
+    """Host NZSHM22_SCRIPT_WORK_PATH must not be forwarded as an env var."""
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    work = tmp_path / 'work'
+    monkeypatch.setenv('NZSHM22_SCRIPT_WORK_PATH', str(work))
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
+    assert result.exit_code == 0
+    assert not has_env(captured['cmd'], 'NZSHM22_SCRIPT_WORK_PATH'), (
+        f'host NZSHM22_SCRIPT_WORK_PATH leaked into container: {captured["cmd"]}'
+    )
+
+
+def test_cli_docker_mounts_script_work_path(mocker, tmp_path, monkeypatch):
+    """Host NZSHM22_SCRIPT_WORK_PATH is mounted at /WORKING read-write."""
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    work = tmp_path / 'work'
+    monkeypatch.setenv('NZSHM22_SCRIPT_WORK_PATH', str(work))
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
+    assert result.exit_code == 0
+    assert has_volume(captured['cmd'], f'{work}:/WORKING'), (
+        f'work-path mount missing or wrong: {captured["cmd"]}'
+    )
+    assert work.is_dir()
+
+
+def test_cli_docker_no_work_path_mount_when_unset(mocker, tmp_path, monkeypatch):
+    """When host has no NZSHM22_SCRIPT_WORK_PATH, no /WORKING mount is added."""
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv('NZSHM22_SCRIPT_WORK_PATH', raising=False)
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
+    assert result.exit_code == 0
+    assert '/WORKING' not in ' '.join(captured['cmd'])
+
+
+def test_cli_docker_drops_image_path_env_vars(mocker, tmp_path, monkeypatch):
+    """Image-set path vars must not be forwarded to the container."""
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('NZSHM22_OPENSHA_ROOT', '/host/opensha')
+    monkeypatch.setenv('NZSHM22_FATJAR', '/host/foo.jar')
+    monkeypatch.setenv('NZSHM22_OPENSHA_JRE', '/host/java')
+    monkeypatch.setenv('NZSHM22_OQ_VENV', '/host/oq-venv')
+    monkeypatch.setenv('NZSHM22_OQ_DATADIR', '/host/oqdata')
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
+    assert result.exit_code == 0
+    for var in ('NZSHM22_OPENSHA_ROOT', 'NZSHM22_FATJAR', 'NZSHM22_OPENSHA_JRE', 'NZSHM22_OQ_VENV', 'NZSHM22_OQ_DATADIR'):
+        assert not has_env(captured['cmd'], var), f'{var} leaked into container'
+
+
+def test_cli_docker_forwards_allowlisted_nzshm_vars(mocker, tmp_path, monkeypatch):
+    """Non-path NZSHM22 vars on the allowlist are still forwarded."""
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('NZSHM22_TOSHI_API_URL', 'http://api.example/graphql')
+    monkeypatch.setenv('NZSHM22_BUILD_PLOTS', 'TRUE')
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
+    assert result.exit_code == 0
+    assert has_env(captured['cmd'], 'NZSHM22_TOSHI_API_URL', 'http://api.example/graphql')
+    assert has_env(captured['cmd'], 'NZSHM22_BUILD_PLOTS', 'TRUE')
+
+
+def test_cli_docker_ths_s3_value_still_forwarded(mocker, tmp_path, monkeypatch):
+    """THS s3:// value is forwarded via extra_env even though THS is not in the allowlist."""
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('NZSHM22_THS_RLZ_DB', 's3://my-bucket/path')
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
+    assert result.exit_code == 0
+    assert has_env(captured['cmd'], 'NZSHM22_THS_RLZ_DB', 's3://my-bucket/path')
+
+
 def test_cli_docker_sets_user_env_in_container(mocker, tmp_path, monkeypatch):
     """USER must be forwarded so getpass.getuser() doesn't fall back to pwd.getpwuid()."""
     (tmp_path / 'foo.json').write_text('{}')

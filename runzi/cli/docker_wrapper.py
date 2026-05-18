@@ -17,7 +17,29 @@ _ENV_PASSTHROUGH = frozenset(
         'THS_DATASET_AGGR_URI',
     ]
 )
-_ENV_PREFIX_PASSTHROUGH = 'NZSHM22_'
+
+# NZSHM22_* env vars that should be forwarded from host to container.
+# Image-set path vars (NZSHM22_SCRIPT_WORK_PATH, OPENSHA_*, FATJAR, OQ_*, THS_*)
+# are intentionally omitted — the image provides container-side defaults and the
+# wrapper mounts host directories at those paths when applicable
+# (THS via _resolve_ths, work-path via _resolve_work_path).
+_ENV_FORWARDED_NZSHM_VARS: frozenset[str] = frozenset(
+    [
+        'NZSHM22_TOSHI_API_ENABLED',
+        'NZSHM22_TOSHI_API_URL',
+        'NZSHM22_TOSHI_API_KEY',
+        'NZSHM22_TOSHI_S3_URL',
+        'NZSHM22_RUNZI_ECR_DIGEST',
+        'NZSHM22_SCRIPT_WORKER_POOL_SIZE',
+        'NZSHM22_SCRIPT_JVM_HEAP_START',
+        'NZSHM22_SCRIPT_CLUSTER_MODE',
+        'NZSHM22_BUILD_PLOTS',
+        'NZSHM22_REPORT_LEVEL',
+        'NZSHM22_HACK_FAULT_MODEL',
+        'NZSHM22_S3_REPORT_BUCKET',
+        'NZSHM22_S3_UPLOAD_WORKERS',
+    ]
+)
 
 _DEFAULT_IMAGE = 'runzi-build:latest'
 _DEFAULT_DEV_IMAGE = 'runzi-build:dev'
@@ -27,6 +49,7 @@ _DEFAULT_AWS_REGION = 'us-east-1'
 
 _INPUT_FILES = '/INPUT_FILES'
 _AWS_CREDS_CONTAINER = '/aws-credentials'
+_WORK_PATH_CONTAINER = '/WORKING'
 
 
 # ── Pure path helpers ─────────────────────────────────────────────────────────
@@ -78,6 +101,7 @@ def build_docker_cmd(
     input_dir: Path | None = None,
     runzi_source: Path | None = None,
     interactive: bool = False,
+    work_path: Path | None = None,
 ) -> list[str]:
     """Build the docker run argument list. Does not call any subprocess."""
     cmd: list[str] = ['docker', 'run', '--rm']
@@ -94,6 +118,9 @@ def build_docker_cmd(
         cmd += ['-v', f'{input_dir}:{_INPUT_FILES}:ro']
 
     cmd += ['-v', f'{aws_credentials}:{_AWS_CREDS_CONTAINER}:ro']
+
+    if work_path is not None:
+        cmd += ['-v', f'{work_path}:{_WORK_PATH_CONTAINER}']
 
     if ths_hazard is not None:
         cmd += ['-v', f'{ths_hazard}:/THS/HAZARD']
@@ -159,7 +186,7 @@ def _collect_env_vars(extra: dict[str, str]) -> dict[str, str]:
     """Collect env vars to forward, from the current process environment."""
     result: dict[str, str] = {}
     for key, value in os.environ.items():
-        if key.startswith(_ENV_PREFIX_PASSTHROUGH) or key in _ENV_PASSTHROUGH:
+        if key in _ENV_FORWARDED_NZSHM_VARS or key in _ENV_PASSTHROUGH:
             result[key] = value
     result.update(extra)
     return result
@@ -173,6 +200,19 @@ def _resolve_ths(env_key: str) -> tuple[Path | None, dict[str, str]]:
     if val.startswith('s3://'):
         return None, {env_key: val}
     return Path(val), {}
+
+
+def _resolve_work_path() -> Path | None:
+    """Return the host work path to mount at /WORKING, or None if unset.
+
+    Creates the directory if it doesn't exist so Docker doesn't auto-create it as root.
+    """
+    val = os.environ.get('NZSHM22_SCRIPT_WORK_PATH', '')
+    if not val:
+        return None
+    p = Path(val).expanduser()
+    p.mkdir(parents=True, exist_ok=True)
+    return p
 
 
 # ── Main entry point ──────────────────────────────────────────────────────────
@@ -206,19 +246,16 @@ def run_in_docker(
 
     ths_hazard, ths_hazard_extra = _resolve_ths('NZSHM22_THS_RLZ_DB')
     ths_disagg, ths_disagg_extra = _resolve_ths('NZSHM22_THS_DISAGG_RLZ_DB')
+    work_path = _resolve_work_path()
 
     extra_env: dict[str, str] = {}
     extra_env.update(ths_hazard_extra)
     extra_env.update(ths_disagg_extra)
 
+    # _collect_env_vars uses an explicit allowlist for NZSHM22_* vars, so image-set
+    # path vars (THS, SCRIPT_WORK_PATH, OQ_*, OPENSHA_*, etc.) are never forwarded.
+    # THS s3:// values are re-added via extra_env after the allowlist pass.
     env_vars = _collect_env_vars(extra_env)
-    # Remove THS vars from forwarded env if they're host paths (image already has defaults)
-    env_vars.pop('NZSHM22_THS_RLZ_DB', None)
-    env_vars.pop('NZSHM22_THS_DISAGG_RLZ_DB', None)
-    if ths_hazard_extra:
-        env_vars.update(ths_hazard_extra)
-    if ths_disagg_extra:
-        env_vars.update(ths_disagg_extra)
 
     # Host UID is not in the container's /etc/passwd, so getpass.getuser() falls back
     # to pwd.getpwuid() and fails.  Ensure USER is set so the env-var path is taken.
@@ -265,6 +302,7 @@ def run_in_docker(
         input_dir=input_dir,
         runzi_source=runzi_source,
         interactive=interactive,
+        work_path=work_path,
     )
 
     if dry_run:
