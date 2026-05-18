@@ -84,10 +84,13 @@ class OQConvertTask:
             'prefix': prefix,
             'out_file': str(out_file),
         }))
-        subprocess.run(
-            [f'{OQ_VENV}/bin/python', str(oq_runner_script), 'convert', '--config', str(cfg_path)],
-            check=True,
-        )
+        try:
+            subprocess.run(
+                [f'{OQ_VENV}/bin/python', str(oq_runner_script), 'convert', '--config', str(cfg_path)],
+                check=True,
+            )
+        finally:
+            cfg_path.unlink(missing_ok=True)
 
         # zip this and return the archive path
         # TODO: should we not archive the huge hdf5. I don't think it's needed, but this needs to be tested
