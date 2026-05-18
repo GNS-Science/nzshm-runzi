@@ -2,58 +2,69 @@
 
 ## [unreleased]
 
-## Changed
+### Added
+ - --docker top-level flag to route any runzi command through a local Docker container, plus --dev build mode and dev_locally.md docs
+ - NZSHM22_OQ_VENV and NZSHM22_OQ_DATADIR environment variables for locating the OpenQuake venv and HDF5 datastore directory
+
+### Changed
  - Upgrade dependencies (gitpython 3.1.47 → 3.1.49, fixes CVE-2026-44244)
+ - Docker image now splits OpenQuake and runzi into separate venvs (/opt/oq-venv, /opt/runzi-venv)
+ - UCERF converter (oq_opensha_convert_task) now runs in oq-venv via subprocess, decoupling runzi from OpenQuake imports
+ - Renamed CLI command utils container → utils docker-build
+ - NZSHM22_TOSHI_API_ENABLED is no longer baked into the Docker image; set explicitly in AWS Batch job config and forwarded from host on local --docker runs
+ - oq-convert output zip is now written to WORK_PATH instead of being buried in a downloads/ subdirectory
+ - Container runs as host UID
+
 
 ## [0.10.1] 2026-03-30
 
-## Changed
+### Changed
  - Updated nzhsm-hazlab and nzshm-common dependencies to take advantage of fix to deserialization of CodedLocation.
  - Improved documentation to include missing env vars and correct command for running docker locally
  - Updated toshi-hazard-store to fix windows build problem due to lancedb
 
-## Added
+### Added
  - Save task arguments for disaggregation to toshiAPI.
 
 ## [0.10.0] 2026-03-12
 
-## Changed
+### Changed
  - `NZSHM22_SCRIPT_CLUSTER_MODE` environment variable replaced by `--cluster-mode` CLI option
  - Updated documentation to reflect `--cluster-mode` CLI argument
 
-## Added
+### Added
  - Tests for `--cluster-mode` CLI option (`tests/test_cli_cluster_mode.py`)
 
-## Removed
+### Removed
  - `NZSHM22_SCRIPT_CLUSTER_MODE` environment variable support
 
 ## [0.9.2] 2026-03-11
 
-## Added
+### Added
  - Shared validator module `runzi/tasks/validators.py` with `all_or_none`, `exactly_one`, `at_most_one`, and `resolve_path` helpers
  - Tests for all shared validators (`tests/test_validators.py`)
  - `ModuleWithDefaultSysArgs` protocol in `runzi/protocols.py` for task modules that expose `default_system_args`
 
-## Changed
+### Changed
  - Refactored inline validation logic in inversion, coulomb, and hazard task modules to use shared validators
  - Refactored task factories and job runner to use `ModuleWithDefaultSysArgs` protocol instead of untyped module references
 
 ## [0.9.1] 2026-03-10
 
-## Changed
+### Changed
  - Improved docker build with UCERF converter option
  - Documentation for building and running docker image
  - Reduced size of docker image
 
-## Added
+### Added
  - Script for building and deploying docker image
  
-## Removed
+### Removed
  - OpenQuake example input files
 
 ## [0.9.0] 2026-03-03
 
-## Changed
+### Changed
  - Complete refactor of job configuration and execution
    - Pydantic models for verification of input data
    - Simpler pattern for extending to new task types
@@ -61,29 +72,29 @@
    - CLI restructured into subcommands
  - Modernization of python dev standards (pyproject.toml, type hints, etc.)
 
-## Added
+### Added
  - Sideload paleoseismic recurrence interval
  - Sideload custom fault models
  - Sideload named faults
 
-## Removed
+### Removed
  - python3.9 support
 
 ## [0.1.0] 2025-*
 
-## Added
+### Added
 - Initial documentation
 - Development toolchain and workflows
 - Expand user paths for files specified in hazard config file
 - Hazard Task: docker image hash
 - Classes for specifying input arguments to scripts.
 
-## Changed
+### Changed
 - Hazard and disaggregation job configuration and parsing of sites handled by `nzhsm-model`
 - Hazard realizations written to arrow/parquet dataset with `toshi-hazard-store`
 - General Task: logic trees, location file, hazard config are uploaded as files
 - Hazard Task: logic trees, and hazard config are stored as json
 
-## Removed
+### Removed
  - Deleted unused automation scripts
  - Moved deprecated automation scripts to arkive
