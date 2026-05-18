@@ -240,7 +240,7 @@ def run_in_docker(
             return 1
     elif not _image_exists_locally(image_tag):
         rich_print(
-            f'[red]Dev image {image_tag!r} not found. Build it first with:[/red]\n  runzi utils container --dev ...'
+            f'[red]Dev image {image_tag!r} not found. Build it first with:[/red]\n  runzi utils docker-build --dev ...'
         )
         return 1
 

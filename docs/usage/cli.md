@@ -353,18 +353,18 @@ $ runzi utils [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `container`: Build runzi-opensha Docker image, push to...
+* `docker-build`: Build runzi-opensha Docker image, push to...
 * `save-file`: Zip a file and save as a ToshiAPI File...
 * `index-inv`: Add inversions to the index (static web...
 
-### `utils container`
+### `utils docker-build`
 
 Build runzi-opensha Docker image, push to ECR, update Batch job definition.
 
 **Usage**:
 
 ```console
-$ runzi utils container [OPTIONS]
+$ runzi utils docker-build [OPTIONS]
 ```
 
 **Options**:

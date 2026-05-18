@@ -17,7 +17,7 @@ This script is used to:
 The script is run via the runzi CLI:
 
 ```console
-$ runzi utils container [OPTIONS]
+$ runzi utils docker-build [OPTIONS]
 ```
 
 The script will print the image digest when completed. This is used to set the `NZSHM22_RUNZI_ECR_DIGEST` env var used by `toshi-hazard-store` to uniquely identify the code used to produce hazard realization curves.
@@ -90,7 +90,7 @@ JOB_DEFINITION=runzi_32GB_8VCPU_JD
 Deploy a new image with all defaults:
 
 ```bash
-runzi utils container --fatjar-tag bf70d35 --runzi-gitref main
+runzi utils docker-build --fatjar-tag bf70d35 --runzi-gitref main
 ```
 
 Or with environment variables:
@@ -98,7 +98,7 @@ Or with environment variables:
 ```bash
 export FATJAR_TAG=bf70d35
 export RUNZI_GITREF=main
-runzi utils container
+runzi utils docker-build
 ```
 
 ### Test Build Only
@@ -106,7 +106,7 @@ runzi utils container
 Build the image without pushing (useful for testing):
 
 ```bash
-runzi utils container --fatjar-tag bf70d35 --runzi-gitref main --skip-push
+runzi utils docker-build --fatjar-tag bf70d35 --runzi-gitref main --skip-push
 ```
 
 ### Specific Versions
@@ -114,7 +114,7 @@ runzi utils container --fatjar-tag bf70d35 --runzi-gitref main --skip-push
 Deploy with specific OpenQuake and Python versions:
 
 ```bash
-runzi utils container \
+runzi utils docker-build \
     --fatjar-tag bf70d35 \
     --runzi-gitref main \
     --oq-version 3.24.0 \
@@ -126,7 +126,7 @@ runzi utils container \
 Include the UCERF converter in the image:
 
 ```bash
-runzi utils container \
+runzi utils docker-build \
     --fatjar-tag bf70d35 \
     --runzi-gitref main \
     --install-converter
@@ -135,7 +135,7 @@ runzi utils container \
 ### Via runzi CLI
 
 ```bash
-runzi utils container \
+runzi utils docker-build \
     --fatjar-tag bf70d35 \
     --runzi-gitref main
 ```

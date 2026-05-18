@@ -5,7 +5,7 @@ Some tasks (OpenQuake hazard, disaggregation) require dependencies baked into th
 ## 1. Build the dev image (once, or when deps change)
 
 ```bash
-runzi utils container --dev \
+runzi utils docker-build --dev \
   --fatjar-tag <fatjar_tag> \
   --oq-version <oq_version> \
   --runzi-gitref <branch-or-commit>
