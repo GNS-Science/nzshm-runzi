@@ -1,4 +1,6 @@
 import datetime as dt
+import json
+import subprocess
 import time
 import uuid
 import zipfile
@@ -6,18 +8,12 @@ from pathlib import Path
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation  # TODO deprecate
-
-try:
-    from openquake.converters.ucerf.parsers.sections_geojson import get_multi_fault_source
-    from openquake.hazardlib.sourcewriter import write_source_model
-except ImportError:
-    print("openquake not installed, not importing")
-
 from pydantic import BaseModel
 
+import runzi
 from runzi.arguments import SystemArgs, TaskLanguage
 from runzi.automation.file_utils import download_files, get_output_file_id
-from runzi.automation.local_config import API_KEY, API_URL, S3_URL, SPOOF, USE_API, WORK_PATH
+from runzi.automation.local_config import API_KEY, API_URL, OQ_VENV, S3_URL, SPOOF, USE_API, WORK_PATH
 from runzi.automation.toshi_api import ModelType, SubtaskType, ToshiApi
 from runzi.tasks.get_config import get_config
 
@@ -54,6 +50,9 @@ class OQConvertTask:
 
     def convert(self, src_folder: Path) -> Path:
 
+        if not OQ_VENV:
+            raise RuntimeError('NZSHM22_OQ_VENV must be set for OQ conversion tasks')
+
         # The `tectonic_region_type` label must be consistent with what you use in the
         # logic tree for the ground-motion characterisation
         # Use "Subduction Interface" or "Active Shallow Crust"
@@ -70,15 +69,24 @@ class OQConvertTask:
         investigation_time = self.user_args.investigation_time_years
         prefix = source_id
 
-        computed = get_multi_fault_source(
-            str(src_folder), dip_sd, strike_sd, source_id, source_name, tectonic_region_type, investigation_time, prefix
-        )
-
-        print(computed)
-
         out_file = WORK_PATH / f'{source_id}-ruptures.xml'
-        write_source_model(
-            str(out_file), [computed], name=source_name, investigation_time=investigation_time, prefix=prefix
+
+        oq_runner_script = Path(runzi.__file__).parent / '_oq_runner.py'
+        cfg_path = WORK_PATH / f'convert_cfg_{source_id}.json'
+        cfg_path.write_text(json.dumps({
+            'src_folder': str(src_folder),
+            'dip_sd': dip_sd,
+            'strike_sd': strike_sd,
+            'source_id': source_id,
+            'source_name': source_name,
+            'tectonic_region_type': tectonic_region_type,
+            'investigation_time': investigation_time,
+            'prefix': prefix,
+            'out_file': str(out_file),
+        }))
+        subprocess.run(
+            [f'{OQ_VENV}/bin/python', str(oq_runner_script), 'convert', '--config', str(cfg_path)],
+            check=True,
         )
 
         # zip this and return the archive path
