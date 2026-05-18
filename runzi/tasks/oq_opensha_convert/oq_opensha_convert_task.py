@@ -92,15 +92,17 @@ class OQConvertTask:
         finally:
             cfg_path.unlink(missing_ok=True)
 
-        # zip this and return the archive path
-        # TODO: should we not archive the huge hdf5. I don't think it's needed, but this needs to be tested
-        output_zip = Path(WORK_PATH, self.solution_archive_filename.replace('.zip', '_nrml.zip'))
+        # Zip the converted XML and return the archive path.
+        # Use source_id directly so the zip lands in WORK_PATH, not buried in the
+        # downloads subdirectory (solution_archive_filename is an absolute path, so
+        # Path(WORK_PATH, absolute) would discard WORK_PATH via Python path rules).
+        output_zip = WORK_PATH / f'{source_id}_nrml.zip'
         print(f'output: {output_zip}')
-        zfile = zipfile.ZipFile(output_zip, 'w')
-        for filename in list(WORK_PATH.glob(f'{source_id}*')):
-            arcname = str(filename).replace(str(WORK_PATH), '')
-            zfile.write(filename, arcname)
-            print(f'archived {filename} as {arcname}')
+        with zipfile.ZipFile(output_zip, 'w') as zfile:
+            for filename in list(WORK_PATH.glob(f'{source_id}*')):
+                arcname = str(filename).replace(str(WORK_PATH), '')
+                zfile.write(filename, arcname)
+                print(f'archived {filename} as {arcname}')
 
         return output_zip
 
