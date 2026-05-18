@@ -89,6 +89,9 @@ ENV NZSHM22_OQ_DATADIR=/oqdata
 ENV PATH=/opt/runzi-venv/bin:$PATH
 RUN mkdir -p /oqdata && chmod 777 /oqdata
 
+ENV NUMBA_CACHE_DIR=/tmp/numba_cache
+RUN mkdir -p /tmp/numba_cache && chmod 777 /tmp/numba_cache
+
 ENTRYPOINT ["/bin/bash", "-c"]
 
 FROM runtime AS dev
