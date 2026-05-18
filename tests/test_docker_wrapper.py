@@ -436,6 +436,90 @@ def test_cli_no_docker_flag_does_not_invoke_wrapper(mocker):
     mock_run.assert_not_called()
 
 
+def test_cli_docker_sets_user_env_in_container(mocker, tmp_path, monkeypatch):
+    """USER must be forwarded so getpass.getuser() doesn't fall back to pwd.getpwuid()."""
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('USER', 'host-user')
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
+    assert result.exit_code == 0
+    assert has_env(captured['cmd'], 'USER', 'host-user'), f'USER missing from cmd: {captured["cmd"]}'
+
+
+def test_cli_docker_sets_default_user_when_host_unset(mocker, tmp_path, monkeypatch):
+    """When host has no USER, a fallback value is still forwarded to the container."""
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv('USER', raising=False)
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
+    assert result.exit_code == 0
+    assert has_env(captured['cmd'], 'USER', 'runzi'), f'fallback USER missing: {captured["cmd"]}'
+
+
+def test_cli_docker_resolves_relative_path_to_absolute_mount(mocker, tmp_path, monkeypatch):
+    """Relative-path file args must produce an absolute -v mount source."""
+    sub = tmp_path / 'sub'
+    sub.mkdir()
+    (sub / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'sub/foo.json'])
+    assert result.exit_code == 0
+    cmd = captured['cmd']
+    expected_mount = f'{(tmp_path / "sub").resolve()}:/INPUT_FILES:ro'
+    assert expected_mount in cmd, f'expected absolute mount, got cmd: {cmd}'
+    assert '/INPUT_FILES/foo.json' in cmd
+
+
+def test_cli_docker_dry_run_uses_absolute_mount_for_relative_file(mocker, tmp_path, monkeypatch):
+    """--docker-dry-run output must reference the absolute path for a relative file arg."""
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    result = runner.invoke(app, ['--docker-dry-run', 'hazard', 'oq-hazard', 'foo.json'])
+    assert result.exit_code == 0
+    assert str(tmp_path.resolve()) in result.output
+    assert '/INPUT_FILES/foo.json' in result.output
+
+
 def test_cli_docker_forwards_subcommand_name_in_inner_args(mocker, tmp_path):
     """Regression: --docker must include the subcommand name in inner_args.
 

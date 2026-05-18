@@ -220,6 +220,10 @@ def run_in_docker(
     if ths_disagg_extra:
         env_vars.update(ths_disagg_extra)
 
+    # Host UID is not in the container's /etc/passwd, so getpass.getuser() falls back
+    # to pwd.getpwuid() and fails.  Ensure USER is set so the env-var path is taken.
+    env_vars.setdefault('USER', os.environ.get('USER', 'runzi'))
+
     aws_credentials = Path.home() / '.aws' / 'credentials'
     if not aws_credentials.exists():
         rich_print(f'[yellow]Warning: AWS credentials not found at {aws_credentials}[/yellow]')
@@ -234,10 +238,16 @@ def run_in_docker(
     rewritten_args = inner_args
 
     if not shell and inner_args:
-        file_args = find_file_args(inner_args)
+        # Resolve any args that are existing files to absolute paths upfront.
+        # Docker mount sources must be absolute; a relative path like
+        # `INPUT_FILES/foo.json` is otherwise treated as a named volume.
+        normalized = [str(Path(arg).resolve()) if Path(arg).is_file() else arg for arg in inner_args]
+        file_args = find_file_args(normalized)
         if file_args:
             input_dir = common_ancestor(file_args)
-            rewritten_args = rewrite_file_args(inner_args, file_args, input_dir)
+            rewritten_args = rewrite_file_args(normalized, file_args, input_dir)
+        else:
+            rewritten_args = inner_args
     elif shell:
         input_dir = Path.cwd()
 
