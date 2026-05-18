@@ -12,8 +12,10 @@ from runzi.automation.local_config import OQ_DATADIR, OQ_VENV, SPOOF, WORK_PATH
 from runzi.automation.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.utils import archive
 
-assert OQ_VENV, 'NZSHM22_OQ_VENV must be set'
-assert OQ_DATADIR, 'NZSHM22_OQ_DATADIR must be set'
+if not OQ_VENV:
+    raise RuntimeError('NZSHM22_OQ_VENV must be set for OQ tasks')
+if not OQ_DATADIR:
+    raise RuntimeError('NZSHM22_OQ_DATADIR must be set for OQ tasks')
 OQ_BIN = f'{OQ_VENV}/bin/oq'
 
 log = logging.getLogger(__name__)
@@ -118,7 +120,7 @@ def execute_openquake(
             # clean up export outputs
             shutil.rmtree(output_path)
 
-            OQDATA = Path(str(OQ_DATADIR))
+            OQDATA = Path(OQ_DATADIR)  # type: ignore[arg-type]  # guarded by module-level RuntimeError
 
             hdf5_file = f"calc_{last_task}.hdf5"
             oq_result['hdf5_archive'] = archive(
