@@ -12,12 +12,6 @@ from runzi.automation.local_config import OQ_DATADIR, OQ_VENV, SPOOF, WORK_PATH
 from runzi.automation.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.utils import archive
 
-if not OQ_VENV:
-    raise RuntimeError('NZSHM22_OQ_VENV must be set for OQ tasks')
-if not OQ_DATADIR:
-    raise RuntimeError('NZSHM22_OQ_DATADIR must be set for OQ tasks')
-OQ_BIN = f'{OQ_VENV}/bin/oq'
-
 log = logging.getLogger(__name__)
 
 
@@ -25,6 +19,11 @@ def execute_openquake(
     configfile: str | Path, task_no: int, toshi_task_id: str | None, hazard_task_type: HazardTaskType
 ):
     """Do the actusal openquake work."""
+    if not OQ_VENV:
+        raise RuntimeError('NZSHM22_OQ_VENV must be set for OQ tasks')
+    if not OQ_DATADIR:
+        raise RuntimeError('NZSHM22_OQ_DATADIR must be set for OQ tasks')
+    oq_bin = f'{OQ_VENV}/bin/oq'
     toshi_task_id = toshi_task_id or f"DUMMY{task_no}_toshi_TASK_ID"
     # if not toshi_task_id:
     #     toshi_task_id = f"DUMMY{task_no}_toshi_TASK_ID"
@@ -51,7 +50,7 @@ def execute_openquake(
         # -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
         #
         env = {**os.environ, 'OQ_DATADIR': str(OQ_DATADIR)}
-        cmd = [OQ_BIN, 'engine', '--run', f'{configfile}', '-L', f'{logfile}']
+        cmd = [oq_bin, 'engine', '--run', f'{configfile}', '-L', f'{logfile}']
         log.info('cmd 1: %s', cmd)
         subprocess.run(cmd, env=env)
 
@@ -86,7 +85,7 @@ def execute_openquake(
                     6 |   complete | 2022-03-29 01:12:16 | 35 sites, few periods
                 """
 
-                cmd = [OQ_BIN, 'engine', '--lhc']
+                cmd = [oq_bin, 'engine', '--lhc']
                 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, env=env)
                 out, err = p.communicate()
 
@@ -110,7 +109,7 @@ def execute_openquake(
             #  oq engine --export-outputs 12 /WORKING/examples/output/PROD/34-sites-few-CRU+BG
             #  cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
             #
-            cmd = [OQ_BIN, 'engine', '--export-outputs', str(last_task), str(output_path)]
+            cmd = [oq_bin, 'engine', '--export-outputs', str(last_task), str(output_path)]
             log.info('cmd 2: %s', cmd)
             subprocess.check_call(cmd, stdout=subprocess.DEVNULL, env=env)
             oq_result['csv_archive'] = archive(
