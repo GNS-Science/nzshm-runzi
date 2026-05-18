@@ -123,7 +123,6 @@ class OpenshaTaskFactory:
             f"export JAVA_CLASSPATH={self._app_jar_path}\n"
             "export CLASSNAME=nz.cri.gns.NZSHM22.opensha.util.NZSHM22_PythonGateway\n"
             f"export NZSHM22_APP_PORT={self._next_port}\n"
-            f"cd {self._root_path}\n"
             f"java -Xms{self._jvm_heap_start_gb}G -Xmx{self._jvm_heap_max_gb}G"
             f" -classpath ${{JAVA_CLASSPATH}} ${{CLASSNAME}} > "
             f"{self._working_path}/java_app.{self._next_port}.log &\n"
