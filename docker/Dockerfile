@@ -72,7 +72,6 @@ ENV NZSHM22_THS_DISAGG_RLZ_DB=/THS/DISAGG
 # Create working directory and set env vars
 WORKDIR /WORKING
 RUN mkdir -p /WORKING && chmod 0777 /WORKING /THS/HAZARD /THS/DISAGG
-ENV NZSHM22_TOSHI_API_ENABLED=1
 ENV NZSHM22_SCRIPT_WORK_PATH=/WORKING
 ENV NZSHM22_OPENSHA_JRE=/opt/java/bin
 ENV NZSHM22_FATJAR=/opt/nzshm-opensha/build/libs/nzshm-opensha-all-${FATJAR_TAG}.jar
