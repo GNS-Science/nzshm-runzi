@@ -434,3 +434,20 @@ def test_cli_no_docker_flag_does_not_invoke_wrapper(mocker):
     mock_run = mocker.patch('runzi.cli.docker_wrapper.run_in_docker', return_value=0)
     runner.invoke(app, ['hazard', 'oq-hazard', '--help'])
     mock_run.assert_not_called()
+
+
+def test_cli_docker_forwards_subcommand_name_in_inner_args(mocker, tmp_path):
+    """Regression: --docker must include the subcommand name in inner_args.
+
+    ctx.protected_args holds the subcommand name; ctx.args holds the rest.
+    Passing only ctx.args drops the subcommand, so the container shows help.
+    """
+    config = tmp_path / 'foo.json'
+    config.write_text('{}')
+    mock_run = mocker.patch('runzi.cli.docker_wrapper.run_in_docker', return_value=0)
+    runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', str(config)])
+    mock_run.assert_called_once()
+    inner_args = mock_run.call_args.args[0]
+    assert inner_args[0] == 'hazard', f'subcommand missing from inner_args: {inner_args}'
+    assert 'oq-hazard' in inner_args
+    assert str(config) in inner_args

@@ -2,7 +2,9 @@
 
 from typing import Annotated
 
+import click
 import typer
+from typer.core import TyperGroup
 
 from runzi.automation import local_config
 from runzi.automation.local_config import ClusterModeEnum
@@ -16,7 +18,50 @@ from runzi.cli import (
     utils_cli,
 )
 
-app = typer.Typer(help="The NZ NSHM runzi CLI.", no_args_is_help=True)
+# ── Arg capture helpers ───────────────────────────────────────────────────────
+
+_DOCKER_BOOL_FLAGS: frozenset[str] = frozenset(
+    ['--docker', '--docker-dev', '--docker-shell', '--docker-dry-run']
+)
+_DOCKER_VALUE_FLAGS: frozenset[str] = frozenset(['--docker-image'])
+
+
+def _strip_docker_flags(args: list[str]) -> list[str]:
+    """Remove --docker-* flags (and their values) from a raw argv list."""
+    result: list[str] = []
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg in _DOCKER_BOOL_FLAGS:
+            pass  # drop boolean flag
+        elif arg in _DOCKER_VALUE_FLAGS:
+            i += 2  # drop --flag VALUE pair
+            continue
+        elif any(arg.startswith(f'{f}=') for f in _DOCKER_VALUE_FLAGS):
+            pass  # drop --flag=value form
+        else:
+            result.append(arg)
+        i += 1
+    return result
+
+
+class _ArgsCapturingGroup(TyperGroup):
+    """Typer Group subclass that stores the raw pre-parse args in ctx.meta.
+
+    Click's Group.invoke() clears ctx.args and ctx.protected_args before
+    invoking the callback, so the callback cannot recover the subcommand name
+    and its arguments from those attributes.  Capturing the args here, before
+    Click's own processing, is the only reliable interception point.
+    """
+
+    def parse_args(self, ctx: click.Context, args: list[str]) -> list[str]:
+        ctx.meta['_raw_args'] = list(args)
+        return super().parse_args(ctx, args)
+
+
+# ── Typer app ─────────────────────────────────────────────────────────────────
+
+app = typer.Typer(help="The NZ NSHM runzi CLI.", no_args_is_help=True, cls=_ArgsCapturingGroup)
 
 
 @app.callback(invoke_without_command=True)
@@ -57,7 +102,8 @@ def main_callback(
 
     use_docker = docker or docker_dev or docker_shell or docker_dry_run or (docker_image is not None)
     if use_docker:
-        inner_args = list(ctx.args)
+        raw_args = ctx.meta.get('_raw_args', [])
+        inner_args = _strip_docker_flags(raw_args)
         exit_code = docker_wrapper.run_in_docker(
             inner_args,
             dev=docker_dev,
