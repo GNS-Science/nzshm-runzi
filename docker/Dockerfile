@@ -92,6 +92,9 @@ RUN mkdir -p /oqdata && chmod 777 /oqdata
 ENV NUMBA_CACHE_DIR=/tmp/numba_cache
 RUN mkdir -p /tmp/numba_cache && chmod 777 /tmp/numba_cache
 
+ENV MPLCONFIGDIR=/tmp/matplotlib
+RUN mkdir -p /tmp/matplotlib && chmod 777 /tmp/matplotlib
+
 ENTRYPOINT ["/bin/bash", "-c"]
 
 FROM runtime AS dev
