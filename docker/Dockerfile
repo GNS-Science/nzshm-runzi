@@ -31,27 +31,29 @@ WORKDIR /opt/nzshm-opensha/build/libs
 RUN curl -sSL -o nzshm-opensha-all-${FATJAR_TAG}.jar \
     https://nzshm-opensha-public-jars.s3.ap-southeast-2.amazonaws.com/nzshm-opensha-all-${FATJAR_TAG}.jar
 
-# Install OpenQuake
+# oq-venv: OpenQuake (pinned requirements) — cached aggressively, rarely changes
+RUN python -m venv /opt/oq-venv
 RUN export PY_NO_DOT=$(echo $PYTHON_VERSION | tr -d '.') && \
-  pip install -r https://raw.githubusercontent.com/gem/oq-engine/refs/tags/v${OQ_VERSION}/requirements-py${PY_NO_DOT}-linux64.txt openquake.engine==${OQ_VERSION}
+    /opt/oq-venv/bin/pip install \
+        -r https://raw.githubusercontent.com/gem/oq-engine/refs/tags/v${OQ_VERSION}/requirements-py${PY_NO_DOT}-linux64.txt \
+        openquake.engine==${OQ_VERSION}
 
-# Optionally install UCERF converter
-WORKDIR /app
-COPY ucerf* /app/ucerf
+# Optional UCERF converter into oq-venv (INSTALL_CONVERTER=Y to enable)
 RUN if [ "$INSTALL_CONVERTER" = "Y" ] ; then \
-    cd /app/ucerf && pip install . ; \
+    cd /app/ucerf && /opt/oq-venv/bin/pip install . ; \
     fi
 
+# runzi-venv: runzi only — changes frequently, so comes after oq-venv
 WORKDIR /app
-# Install runzi
 RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
 WORKDIR /app/nzshm-runzi
 RUN git fetch
 RUN git checkout ${RUNZI_GITREF}
-RUN pip install .
+RUN python -m venv /opt/runzi-venv
+RUN /opt/runzi-venv/bin/pip install .
 
 # RUN rm -r /app
-FROM python:${PYTHON_VERSION}-slim-bookworm
+FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime
 ARG FATJAR_TAG
 COPY --from=build /usr /usr
 COPY --from=build /opt /opt
@@ -62,12 +64,14 @@ RUN chmod +x /usr/local/bin/python_container_task.sh
 
 # create the toshi-hazard-store dataset directory to store hazard realiztions locally
 WORKDIR /THS
-ENV NZSHM22_THS_RLZ_DB=/THS
+RUN mkdir HAZARD
+RUN mkdir DISAGG
+ENV NZSHM22_THS_RLZ_DB=/THS/HAZARD
+ENV NZSHM22_THS_DISAGG_RLZ_DB=/THS/DISAGG
 
 # Create working directory and set env vars
 WORKDIR /WORKING
-RUN mkdir -p /WORKING
-ENV NZSHM22_TOSHI_API_ENABLED=1
+RUN mkdir -p /WORKING && chmod 0777 /WORKING /THS/HAZARD /THS/DISAGG
 ENV NZSHM22_SCRIPT_WORK_PATH=/WORKING
 ENV NZSHM22_OPENSHA_JRE=/opt/java/bin
 ENV NZSHM22_FATJAR=/opt/nzshm-opensha/build/libs/nzshm-opensha-all-${FATJAR_TAG}.jar
@@ -78,4 +82,19 @@ ENV NZSHM22_BUILD_PLOTS=TRUE
 ENV PYTHON_PREP_MODULE=SET_AT_RUNTIME
 ENV PYTHON_TASK_MODULE=SET_AT_RUNTIME
 
+# OpenQuake venv isolation
+ENV NZSHM22_OQ_VENV=/opt/oq-venv
+ENV NZSHM22_OQ_DATADIR=/oqdata
+ENV PATH=/opt/runzi-venv/bin:$PATH
+ENV NUMBA_CACHE_DIR=/tmp/numba_cache
+ENV MPLCONFIGDIR=/tmp/matplotlib
+RUN mkdir -p /oqdata && chmod 777 /oqdata && mkdir -p /tmp/numba_cache && chmod 777 /tmp/numba_cache && mkdir -p /tmp/matplotlib && chmod 777 /tmp/matplotlib
+
 ENTRYPOINT ["/bin/bash", "-c"]
+
+FROM runtime AS dev
+COPY --from=build /app/nzshm-runzi /app/nzshm-runzi
+WORKDIR /app/nzshm-runzi
+RUN /opt/runzi-venv/bin/pip install -e .
+WORKDIR /WORKING
+ENV PYTHONDONTWRITEBYTECODE=1
