@@ -172,6 +172,8 @@ def _maybe_pull(image: str) -> None:
     region = os.environ.get('AWS_REGION', _DEFAULT_AWS_REGION)
     account = os.environ.get('AWS_ACCOUNT_ID', _DEFAULT_AWS_ACCOUNT)
     repo = os.environ.get('ECR_REPO', _DEFAULT_ECR_REPO)
+    if ":" not in image:  # guard againt no tag
+        image += ":"
     ecr_image = f'{account}.dkr.ecr.{region}.amazonaws.com/{repo}:{image.split(":")[-1]}'
     rich_print(f'[yellow]Image {image!r} not found locally — pulling {ecr_image} from ECR[/yellow]')
     _ecr_login(region, account)
