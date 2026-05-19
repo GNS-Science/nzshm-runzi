@@ -79,7 +79,7 @@ def rewrite_file_args(args: list[str], file_args: list[Path], ancestor: Path) ->
     for arg in args:
         if arg in file_map:
             rel = file_map[arg].relative_to(ancestor)
-            result.append(f'{_INPUT_FILES}/{rel}')
+            result.append(f'{_INPUT_FILES}/{rel.as_posix()}')
         else:
             result.append(arg)
     return result
