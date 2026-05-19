@@ -107,7 +107,7 @@ def build_docker_cmd(
     cmd: list[str] = ['docker', 'run', '--rm']
 
     if hasattr(os, 'getuid'):  # POSIX only — Docker Desktop on Windows handles UID mapping via WSL2
-        cmd += ['--user', f'{os.getuid()}:{os.getgid()}']
+        cmd += ['--user', f'{os.getuid()}:{os.getgid()}']  # type: ignore
 
     if interactive or shell or dev:
         cmd += ['--interactive', '--tty']
