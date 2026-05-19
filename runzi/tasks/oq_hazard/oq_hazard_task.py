@@ -212,6 +212,7 @@ class OQHazardTask:
             self.model.hazard_config.set_sites(locations, backarc=backarc_flags)
 
     def run(self):
+        log.info("starting oq hazard task")
         t0 = dt.datetime.now(dt.UTC)
 
         if self.user_args.srm_logic_tree is None:
@@ -273,6 +274,7 @@ class OQHazardTask:
         ##############
         # EXECUTE
         ##############
+        log.info("execute_openquake()")
         oq_result = execute_openquake(
             job_file,
             self.system_args.task_count,
@@ -284,6 +286,7 @@ class OQHazardTask:
         # API STORE RESULTS #
         ######################
         if self.use_api:
+            log.info("storing results with toshi API")
             solution_id = self._store_api_result(
                 automation_task_id,
                 oq_result,
@@ -295,12 +298,11 @@ class OQHazardTask:
             #############################
             # run the store_hazard job
             if not SPOOF and (not oq_result.get("no_ruptures")):
+                log.info("storing realizations with toshi-hazard-store")
                 # write config to json
                 config_filepath = config_folder / "hazard_config.json"
                 hazard_config.to_json(config_filepath)
 
-                # # THS does not yet support storing disaggregation realizations
-                log.info("store hazard")
                 store_hazard(
                     str(oq_result["hdf5_filepath"]),
                     config_filepath,
