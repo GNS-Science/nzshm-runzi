@@ -309,7 +309,7 @@ def run_in_docker(
 
     if dry_run:
         rich_print('[bold]docker command (dry run):[/bold]')
-        rich_print(' \\\n  '.join(cmd))
+        print(' \\\n  '.join(cmd))
         return 0
 
     result = subprocess.run(cmd, check=False)
