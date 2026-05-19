@@ -19,16 +19,22 @@ env = {"NO_COLOR": "1", "LANG": "en_US.UTF-8"}
 runner = CliRunner(env=env)
 
 
-# reset default mode before each test
+# reset default mode and USE_API before each test
 @pytest.fixture(autouse=True)
 def reset_cluster_mode():
+    saved_mode = local_config.CLUSTER_MODE
+    saved_use_api = local_config.USE_API
     local_config.CLUSTER_MODE = ClusterModeEnum.LOCAL
+    yield
+    local_config.CLUSTER_MODE = saved_mode
+    local_config.USE_API = saved_use_api
 
 
 # ── Root CLI tests ───────────────────────────────────────────────────────────
 
 
-def test_root_cli_cluster_mode_sets_aws():
+def test_root_cli_cluster_mode_sets_aws(monkeypatch):
+    monkeypatch.setattr(local_config, 'API_KEY', 'fake-key')
     result = runner.invoke(runzi_cli.app, ['--cluster-mode', 'AWS', 'hazard', 'oq-hazard', '--help'])
     assert result.exit_code == 0
     assert local_config.CLUSTER_MODE is ClusterModeEnum.AWS
@@ -49,3 +55,27 @@ def test_root_cli_no_option_keeps_default():
 def test_root_cli_help_shows_cluster_mode():
     result = runner.invoke(runzi_cli.app, ['--help'])
     assert '--cluster-mode' in strip_ansi(result.output)
+
+
+def test_aws_cluster_mode_forces_use_api(monkeypatch):
+    """AWS mode must set USE_API=True regardless of env var."""
+    monkeypatch.setattr(local_config, 'API_KEY', 'fake-key')
+    result = runner.invoke(runzi_cli.app, ['--cluster-mode', 'AWS', 'hazard', 'oq-hazard', '--help'])
+    assert result.exit_code == 0
+    assert local_config.USE_API is True
+
+
+def test_aws_cluster_mode_errors_without_api_key(monkeypatch):
+    """AWS mode must exit non-zero when API_KEY is missing."""
+    monkeypatch.setattr(local_config, 'API_KEY', '')
+    result = runner.invoke(runzi_cli.app, ['--cluster-mode', 'AWS', 'hazard', 'oq-hazard', '--help'])
+    assert result.exit_code != 0
+
+
+def test_non_aws_cluster_mode_does_not_change_use_api(monkeypatch):
+    """LOCAL and CLUSTER modes must not override USE_API."""
+    monkeypatch.setattr(local_config, 'API_KEY', 'fake-key')
+    original = local_config.USE_API
+    result = runner.invoke(runzi_cli.app, ['--cluster-mode', 'LOCAL', 'hazard', 'oq-hazard', '--help'])
+    assert result.exit_code == 0
+    assert local_config.USE_API == original

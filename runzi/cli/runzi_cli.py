@@ -100,6 +100,14 @@ def main_callback(
     """
     local_config.CLUSTER_MODE = cluster_mode
 
+    if cluster_mode is ClusterModeEnum.AWS:
+        if not local_config.API_KEY:
+            raise typer.BadParameter(
+                'NZSHM22_TOSHI_API_KEY (or AWS Secrets Manager) is required when --cluster-mode is AWS.',
+                param_hint="'--cluster-mode'",
+            )
+        local_config.USE_API = True
+
     use_docker = docker or docker_dev or docker_shell or docker_dry_run or (docker_image is not None)
     if use_docker:
         raw_args = ctx.meta.get('_raw_args', [])
