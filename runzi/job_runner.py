@@ -11,7 +11,7 @@ import boto3
 
 from runzi.arguments import ArgSweeper, SystemArgs
 from runzi.automation import local_config
-from runzi.automation.local_config import USE_API, WORKER_POOL_SIZE, ClusterModeEnum
+from runzi.automation.local_config import WORKER_POOL_SIZE, ClusterModeEnum
 from runzi.automation.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType
 from runzi.build_tasks import build_tasks
 from runzi.protocols import ModuleWithDefaultSysArgs
@@ -80,7 +80,7 @@ class JobRunner(ABC):
         args_list = self._build_argument_list()
         model_type = self.get_model_type()
 
-        if USE_API:
+        if local_config.USE_API:
             gt_args = (
                 CreateGeneralTaskArgs(
                     agent_name=getpass.getuser(),
@@ -102,7 +102,7 @@ class JobRunner(ABC):
                 self.argument_sweeper, system_args, self.task_module, model_type, self.job_name
             )
         ]
-        if USE_API:
+        if local_config.USE_API:
             toshi_api.general_task.update_subtask_count(general_task_id, len(scripts))
 
         if local_config.CLUSTER_MODE is ClusterModeEnum.LOCAL:
