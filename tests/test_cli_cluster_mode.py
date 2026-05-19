@@ -79,3 +79,38 @@ def test_non_aws_cluster_mode_does_not_change_use_api(monkeypatch):
     result = runner.invoke(runzi_cli.app, ['--cluster-mode', 'LOCAL', 'hazard', 'oq-hazard', '--help'])
     assert result.exit_code == 0
     assert local_config.USE_API == original
+
+
+def test_set_system_args_uses_runtime_use_api(monkeypatch):
+    """set_system_args must reflect local_config.USE_API, not the import-time snapshot."""
+    from unittest.mock import MagicMock
+
+    from runzi.arguments import SystemArgs, TaskLanguage
+    from runzi.automation.toshi_api import ModelType, SubtaskType
+    from runzi.job_runner import JobRunner
+
+    monkeypatch.setattr(local_config, 'USE_API', True)
+
+    baked_in_sys_args = SystemArgs(
+        task_language=TaskLanguage.PYTHON,
+        use_api=False,
+        ecs_max_job_time_min=30,
+        ecs_memory=1024,
+        ecs_vcpu=1,
+        ecs_job_definition='test-job-def',
+        ecs_job_queue='test-queue',
+    )
+    mock_module = MagicMock()
+    mock_module.default_system_args = baked_in_sys_args
+    mock_sweeper = MagicMock()
+    mock_sweeper.sys_arg_overrides = {}
+
+    class ConcreteRunner(JobRunner):
+        subtask_type = SubtaskType.INVERSION
+        job_name = 'test'
+
+        def get_model_type(self):
+            return ModelType.CRUSTAL
+
+    result = ConcreteRunner(mock_sweeper, mock_module).set_system_args()
+    assert result.use_api is True

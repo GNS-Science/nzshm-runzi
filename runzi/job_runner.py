@@ -50,6 +50,7 @@ class JobRunner(ABC):
         # make a copy here only to make it clear that we have modified it
         system_args = self.default_sys_args.model_copy(deep=True)
         system_args.general_task_id = general_task_id
+        system_args.use_api = local_config.USE_API
         for name, value in self.argument_sweeper.sys_arg_overrides.items():
             setattr(system_args, name, value)
         return system_args
