@@ -86,13 +86,9 @@ ENV PYTHON_TASK_MODULE=SET_AT_RUNTIME
 ENV NZSHM22_OQ_VENV=/opt/oq-venv
 ENV NZSHM22_OQ_DATADIR=/oqdata
 ENV PATH=/opt/runzi-venv/bin:$PATH
-RUN mkdir -p /oqdata && chmod 777 /oqdata
-
 ENV NUMBA_CACHE_DIR=/tmp/numba_cache
-RUN mkdir -p /tmp/numba_cache && chmod 777 /tmp/numba_cache
-
 ENV MPLCONFIGDIR=/tmp/matplotlib
-RUN mkdir -p /tmp/matplotlib && chmod 777 /tmp/matplotlib
+RUN mkdir -p /oqdata && chmod 777 /oqdata && mkdir -p /tmp/numba_cache && chmod 777 /tmp/numba_cache && mkdir -p /tmp/matplotlib && chmod 777 /tmp/matplotlib
 
 ENTRYPOINT ["/bin/bash", "-c"]
 
