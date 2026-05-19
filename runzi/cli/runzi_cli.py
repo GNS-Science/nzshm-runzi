@@ -125,8 +125,6 @@ app.add_typer(rupture_sets_cli.app, name="rupset", help="create rupture sets", n
 app.add_typer(reports_cli.app, name="reports", help="create inversion and rupture set reports", no_args_is_help=True)
 app.add_typer(utils_cli.app, name="utils", help="utilities", no_args_is_help=True)
 
-# backwards-compat alias used by test_cli_cluster_mode
-cluster_mode_callback = main_callback
 
 if __name__ == "__main__":
     app()
