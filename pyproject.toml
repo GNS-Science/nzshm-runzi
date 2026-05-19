@@ -25,7 +25,7 @@ dependencies = [
     "python-dotenv>=1.1.0",
     "typer>=0.17.4,<0.18.0",
     "solvis>=1.2.0,<2.0.0",
-    "nshm-toshi-client>=1.1.0,<2.0.0",
+    "nshm-toshi-client>=1.2.1",
     "nzshm-hazlab>=0.1.3,<0.2.0",
     "toshi-hazard-store>=2.0.0",
 ]
@@ -68,7 +68,13 @@ doc = [
 
 [tool.uv]
 exclude-newer = "1 week"
-exclude-newer-package = { "nzshm-common" = false, "nzshm-model" = false, "toshi-hazard-store" = false, "nzshm-hazlab" = false, "solvis" = false}
+[tool.uv.exclude-newer-package]
+"nzshm-common" = false
+"nzshm-model" = false
+"toshi-hazard-store" = false
+"nzshm-hazlab" = false
+"solvis" = false
+"nshm-toshi-client" = false
 
 [tool.uv.build-backend]
 module-name = "runzi"
