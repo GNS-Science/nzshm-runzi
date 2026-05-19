@@ -190,6 +190,7 @@ def test_build_docker_cmd_has_rm_flag(tmp_path, aws_creds):
     assert '--rm' in cmd
 
 
+@pytest.mark.skipif(not hasattr(os, 'getuid'), reason='POSIX-only --user mapping')
 def test_build_docker_cmd_has_user_flag(aws_creds):
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=[],

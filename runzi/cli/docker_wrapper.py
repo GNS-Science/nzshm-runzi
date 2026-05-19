@@ -106,7 +106,8 @@ def build_docker_cmd(
     """Build the docker run argument list. Does not call any subprocess."""
     cmd: list[str] = ['docker', 'run', '--rm']
 
-    cmd += ['--user', f'{os.getuid()}:{os.getgid()}']
+    if hasattr(os, 'getuid'):  # POSIX only — Docker Desktop on Windows handles UID mapping via WSL2
+        cmd += ['--user', f'{os.getuid()}:{os.getgid()}']
 
     if interactive or shell or dev:
         cmd += ['--interactive', '--tty']
