@@ -4,6 +4,7 @@ and is imported  by the various run_xxx.py scripts
 """
 
 import enum
+import logging
 import os
 from pathlib import Path
 
@@ -13,6 +14,8 @@ from runzi.aws import get_secret
 
 # fill environment variables from .env file if not yet set
 load_dotenv()
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 
 class ClusterModeEnum(enum.Enum):
@@ -46,6 +49,15 @@ if not API_KEY and os.getenv('AWS_BATCH_JOB_ID'):
         API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_TEST", "us-east-1").get("NZSHM22_TOSHI_API_KEY_TEST")
     elif 'PROD' in API_URL.upper():
         API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_PROD", "us-east-1").get("NZSHM22_TOSHI_API_KEY_PROD")
+
+if API_KEY:
+    log.info("toshi-client auth: legacy x-api-key (NZSHM22_TOSHI_API_KEY)")
+else:
+    log.info(
+        "toshi-client auth: Cognito JWT "
+        "(no NZSHM22_TOSHI_API_KEY — client will use ~/.toshi/credentials "
+        "or NZSHM22_TOSHI_COGNITO_* env vars)"
+    )
 
 
 def get_auth_kwargs() -> dict:
