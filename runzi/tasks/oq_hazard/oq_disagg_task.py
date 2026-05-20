@@ -21,7 +21,16 @@ from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 
 from runzi.arguments import SystemArgs, TaskLanguage
-from runzi.automation.local_config import API_KEY, API_URL, ECR_DIGEST, S3_URL, SPOOF, THS_RLZ_DB, USE_API, WORK_PATH
+from runzi.automation.local_config import (
+    API_URL,
+    ECR_DIGEST,
+    S3_URL,
+    SPOOF,
+    THS_RLZ_DB,
+    USE_API,
+    WORK_PATH,
+    get_auth_kwargs,
+)
 from runzi.automation.toshi_api import ModelType, ToshiApi
 from runzi.automation.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.tasks.get_config import get_config
@@ -84,9 +93,8 @@ class OQDisaggTask:
         self.system_args = system_args
 
         if self.use_api:
-            headers = {"x-api-key": API_KEY}
-            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
+            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
 
     def set_disaggregation_params(self):
         self.model.hazard_config.set_parameter("general", "calculation_mode", "disaggregation")

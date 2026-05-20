@@ -36,15 +36,25 @@ DEFAULT_CLUSTER_MODE = ClusterModeEnum.LOCAL
 # the value of this variable can be changed by the CLI but we set it here in-case it's being accessed w/o the CLI
 CLUSTER_MODE = DEFAULT_CLUSTER_MODE
 
-# Get API key from AWS secrets manager
+# AWS Batch containers don't receive NZSHM22_TOSHI_API_KEY in their env (see
+# runzi/aws/aws.py); they use this Secrets Manager fetch at container startup.
+# Gate on AWS_BATCH_JOB_ID so the fetch never fires on a local host — locally,
+# an empty API_KEY means "use Cognito JWT auth instead".
 API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
-if not API_KEY:
+if not API_KEY and os.getenv('AWS_BATCH_JOB_ID'):
     if 'TEST' in API_URL.upper():
         API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_TEST", "us-east-1").get("NZSHM22_TOSHI_API_KEY_TEST")
     elif 'PROD' in API_URL.upper():
         API_KEY = get_secret("NZSHM22_TOSHI_API_SECRET_PROD", "us-east-1").get("NZSHM22_TOSHI_API_KEY_PROD")
-if USE_API and (not API_KEY):
-    raise ValueError("No API key supplied. API key required if Toshi API enabled.")
+
+
+def get_auth_kwargs() -> dict:
+    """Return toshi-client constructor kwargs for the current auth mode.
+
+    Legacy (API_KEY resolved): passes x-api-key header.
+    Cognito (no API_KEY): returns {} so the client auto-detects ~/.toshi/credentials.
+    """
+    return {'headers': {'x-api-key': API_KEY}} if API_KEY else {}
 
 
 # How many jobs to run in parallel - keep thread/memory resources in mind

@@ -15,7 +15,7 @@ import csv
 import logging
 from pathlib import Path
 
-from runzi.automation.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
+from runzi.automation.local_config import API_URL, S3_URL, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ToshiApi
 from runzi.utils import archive
 
@@ -55,8 +55,7 @@ def process_one_file(dry_run: bool, filepath: str | Path, tag: str | None = None
         log.info('archived %s in %s.', filepath, archive_path)
 
     if archive_path:
-        headers = {"x-api-key": API_KEY}
-        toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+        toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
         filename = Path(filepath).name
         meta = dict(filename=filename)
         if tag:

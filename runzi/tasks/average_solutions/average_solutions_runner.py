@@ -5,13 +5,13 @@ from runzi.arguments import ArgSweeper
 from runzi.automation.task_utils import get_model_type
 from runzi.automation.toshi_api import ModelType, SubtaskType
 from runzi.job_runner import JobRunner
-from runzi.tasks.toshi_utils import toshi_api
+from runzi.tasks.toshi_utils import get_toshi_api
 
 
 def get_model_type_from_all(job_args: ArgSweeper) -> ModelType:
     model_type = None
     for task_args in job_args.get_tasks():
-        new_model_type = get_model_type(task_args.source_solution_ids, toshi_api)  # type: ignore
+        new_model_type = get_model_type(task_args.source_solution_ids, get_toshi_api())  # type: ignore
         if not model_type:
             model_type = new_model_type
         else:

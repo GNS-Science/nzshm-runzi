@@ -20,9 +20,7 @@ from runzi.cli import (
 
 # ── Arg capture helpers ───────────────────────────────────────────────────────
 
-_DOCKER_BOOL_FLAGS: frozenset[str] = frozenset(
-    ['--docker', '--docker-dev', '--docker-shell', '--docker-dry-run']
-)
+_DOCKER_BOOL_FLAGS: frozenset[str] = frozenset(['--docker', '--docker-dev', '--docker-shell', '--docker-dry-run'])
 _DOCKER_VALUE_FLAGS: frozenset[str] = frozenset(['--docker-image'])
 
 

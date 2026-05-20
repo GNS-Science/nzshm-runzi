@@ -76,7 +76,7 @@ The core execution pipeline is:
 
 **`ArgSweeper`**: Parses JSON config files with optional `swept_args` dict, generating all combinations as separate tasks. Config files have `title`, `description`, optional `swept_args`, and optional `sys_arg_overrides` fields alongside the task args.
 
-**Task Factory pattern** (`runzi/automation/opensha_task_factory.py`, `python_task_factory.py`): Produces bash scripts (LOCAL), PBS scripts (CLUSTER), or AWS Batch configs (AWS) depending on `NZSHM22_SCRIPT_CLUSTER_MODE`. Java-based tasks use `OpenshaTaskFactory`; Python-only tasks use `PythonTaskFactory`.
+**Task Factory pattern** (`runzi/automation/opensha_task_factory.py`, `python_task_factory.py`): Produces bash scripts (LOCAL), PBS scripts (CLUSTER), or AWS Batch configs (AWS) depending on the `--cluster-mode` CLI flag. Java-based tasks use `OpenshaTaskFactory`; Python-only tasks use `PythonTaskFactory`.
 
 **`ModuleWithDefaultSysArgs` protocol** (`runzi/protocols.py`): Task modules must expose a `default_system_args: SystemArgs` attribute and `__name__`, so the factory can locate the task script file and obtain ECS defaults.
 
@@ -104,7 +104,7 @@ All runtime configuration is via environment variables (loaded from `.env` by py
 
 | Variable | Purpose |
 |---|---|
-| `NZSHM22_SCRIPT_CLUSTER_MODE` | `LOCAL`, `CLUSTER`, or `AWS` |
+
 | `NZSHM22_TOSHI_API_ENABLED` | Enable toshi API metadata storage |
 | `NZSHM22_TOSHI_API_URL` | Toshi GraphQL API endpoint |
 | `NZSHM22_TOSHI_API_KEY` | API auth key (or fetched from AWS Secrets Manager) |

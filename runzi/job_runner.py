@@ -16,7 +16,7 @@ from runzi.automation.toshi_api import CreateGeneralTaskArgs, ModelType, Subtask
 from runzi.build_tasks import build_tasks
 from runzi.protocols import ModuleWithDefaultSysArgs
 
-from .tasks.toshi_utils import toshi_api
+from .tasks.toshi_utils import get_toshi_api
 
 logging.basicConfig(level=logging.INFO)
 
@@ -92,7 +92,7 @@ class JobRunner(ABC):
                 .set_subtask_type(self.subtask_type)
                 .set_model_type(model_type)
             )
-            general_task_id = toshi_api.general_task.create_task(gt_args)
+            general_task_id = get_toshi_api().general_task.create_task(gt_args)
 
         print("GENERAL_TASK_ID:", general_task_id)
         system_args = self.set_system_args(general_task_id)
@@ -104,7 +104,7 @@ class JobRunner(ABC):
             )
         ]
         if local_config.USE_API:
-            toshi_api.general_task.update_subtask_count(general_task_id, len(scripts))
+            get_toshi_api().general_task.update_subtask_count(general_task_id, len(scripts))
 
         if local_config.CLUSTER_MODE is ClusterModeEnum.LOCAL:
 

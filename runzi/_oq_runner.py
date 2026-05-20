@@ -7,6 +7,7 @@ by the oq-venv Python interpreter — never imported from the runzi virtualenv.
 openquake.* imports are deferred to function bodies so that syntax-checking or
 accidental import from a venv that lacks OpenQuake does not raise ImportError.
 """
+
 import argparse
 import json
 from pathlib import Path

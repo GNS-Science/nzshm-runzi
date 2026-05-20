@@ -10,7 +10,7 @@ from pathlib import PurePath
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
 # Set up local config, from environment variables, with some some defaults
-from runzi.automation.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
+from runzi.automation.local_config import API_URL, S3_URL, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ToshiApi
 
 # from runzi.automation.hazPlot import plotHazardCurve
@@ -26,9 +26,7 @@ class BuilderTask:
         self.use_api = job_args.get('use_api', False)
 
         if self.use_api:
-            self._toshi_api = ToshiApi(
-                API_URL, S3_URL, None, with_schema_validation=True, headers={"x-api-key": API_KEY}
-            )
+            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
 
         # setup the java gateway binding
         self._gateway = JavaGateway(gateway_parameters=GatewayParameters(port=job_args['java_gateway_port']))

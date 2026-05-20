@@ -1,7 +1,6 @@
 import argparse
 import datetime as dt
 import json
-import os
 import platform
 import time
 from pathlib import PurePath
@@ -13,9 +12,7 @@ from nshm_toshi_client.rupture_generation_task import RuptureGenerationTask
 from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 
-API_URL = os.getenv('NZSHM22_TOSHI_API_URL', "http://127.0.0.1:5000/graphql")
-API_KEY = os.getenv('NZSHM22_TOSHI_API_KEY', "")
-S3_URL = os.getenv('NZSHM22_TOSHI_S3_URL', "http://localhost:4569")
+from runzi.automation.local_config import API_URL, S3_URL, get_auth_kwargs
 
 
 class RuptureSetBuilderTask:
@@ -47,12 +44,11 @@ class RuptureSetBuilderTask:
         self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
 
         if self.use_api:
-            headers = {"x-api-key": API_KEY}
             self._ruptgen_api = RuptureGenerationTask(
-                API_URL, S3_URL, None, with_schema_validation=True, headers=headers
+                API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs()
             )
-            self._general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+            self._general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
+            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
 
     def ruptureSetMetrics(self):
         metrics = {}

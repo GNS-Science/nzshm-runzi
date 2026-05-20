@@ -54,9 +54,7 @@ def execute_openquake(
         log.info('executing with subprocess: %s', cmd)
         result = subprocess.run(cmd, env=env)
         if result.returncode != 0:
-            raise RuntimeError(
-                f'oq engine --run exited {result.returncode} for task {task_no}; see {logfile}'
-            )
+            raise RuntimeError(f'oq engine --run exited {result.returncode} for task {task_no}; see {logfile}')
 
         with open(logfile) as logf:
             oq_out = logf.read()

@@ -492,9 +492,7 @@ def test_cli_docker_mounts_script_work_path(mocker, tmp_path, monkeypatch):
     mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
     result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
     assert result.exit_code == 0
-    assert has_volume(captured['cmd'], f'{work}:/WORKING'), (
-        f'work-path mount missing or wrong: {captured["cmd"]}'
-    )
+    assert has_volume(captured['cmd'], f'{work}:/WORKING'), f'work-path mount missing or wrong: {captured["cmd"]}'
     assert work.is_dir()
 
 
@@ -546,7 +544,11 @@ def test_cli_docker_drops_image_path_env_vars(mocker, tmp_path, monkeypatch):
     result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
     assert result.exit_code == 0
     for var in (
-        'NZSHM22_OPENSHA_ROOT', 'NZSHM22_FATJAR', 'NZSHM22_OPENSHA_JRE', 'NZSHM22_OQ_VENV', 'NZSHM22_OQ_DATADIR'
+        'NZSHM22_OPENSHA_ROOT',
+        'NZSHM22_FATJAR',
+        'NZSHM22_OPENSHA_JRE',
+        'NZSHM22_OQ_VENV',
+        'NZSHM22_OQ_DATADIR',
     ):
         assert not has_env(captured['cmd'], var), f'{var} leaked into container'
 
