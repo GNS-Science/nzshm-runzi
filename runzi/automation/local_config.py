@@ -53,11 +53,18 @@ if not API_KEY and os.getenv('AWS_BATCH_JOB_ID'):
 if API_KEY:
     log.info("toshi-client auth: legacy x-api-key (NZSHM22_TOSHI_API_KEY)")
 else:
-    log.info(
-        "toshi-client auth: Cognito JWT "
-        "(no NZSHM22_TOSHI_API_KEY — client will use ~/.toshi/credentials "
-        "or NZSHM22_TOSHI_COGNITO_* env vars)"
-    )
+    log.info("toshi-client auth: Cognito JWT (no NZSHM22_TOSHI_API_KEY)")
+    _missing = []
+    if not os.getenv('NZSHM22_TOSHI_COGNITO_DOMAIN'):
+        _missing.append("NZSHM22_TOSHI_COGNITO_DOMAIN env var is not set")
+    if not os.getenv('NZSHM22_TOSHI_COGNITO_SCIENTIST_CLIENT_ID'):
+        _missing.append("NZSHM22_TOSHI_COGNITO_SCIENTIST_CLIENT_ID env var is not set")
+    if not (Path.home() / '.toshi' / 'credentials').exists():
+        _missing.append("~/.toshi/credentials not found — run: toshi-auth login")
+    if _missing:
+        log.warning("Cognito auth prerequisites missing:")
+        for item in _missing:
+            log.warning("  %s", item)
 
 
 def get_auth_kwargs() -> dict:
