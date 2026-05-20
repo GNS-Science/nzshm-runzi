@@ -139,10 +139,11 @@ def build_docker_cmd(
         cmd += ['-v', f'{runzi_source}:/app/nzshm-runzi']
 
     if toshi_home is not None:
+        # tmpfs gives a writable HOME: OQ can create HOME/oqdata on it.
+        # The ~/.toshi/ directory is overlaid read-only inside the tmpfs so
+        # Path.home()/'.toshi'/'credentials' is accessible to the toshi client.
+        cmd += ['--mount', f'type=tmpfs,destination={_TOSHI_HOME_CONTAINER},tmpfs-mode=0777']
         cmd += ['-v', f'{toshi_home}:{_TOSHI_HOME_CONTAINER}/.toshi:ro']
-        # Override HOME so Path.home() in the container resolves to the mounted path.
-        # The Python slim image sets HOME=/root but the container runs as a non-root
-        # UID that cannot traverse /root (700); /toshi-home is accessible to any UID.
         env_vars = {**env_vars, 'HOME': _TOSHI_HOME_CONTAINER}
 
     cmd += ['-e', f'AWS_SHARED_CREDENTIALS_FILE={_AWS_CREDS_CONTAINER}']
@@ -219,11 +220,19 @@ def _resolve_ths(env_key: str) -> tuple[Path | None, dict[str, str]]:
 
 
 def _resolve_toshi_home() -> Path | None:
-    """Return host ~/.toshi/ path if it exists so Cognito credentials can be mounted."""
+    """Return host ~/.toshi/ path if the directory exists, else warn and return None."""
     p = Path.home() / '.toshi'
     if not p.exists():
-        rich_print('[yellow]Warning: ~/.toshi/ not found — Cognito auth in container will not work[/yellow]')
+        rich_print(
+            '[yellow]Warning: ~/.toshi/ not found — '
+            'Cognito auth in container will not work. Run: toshi-auth login[/yellow]'
+        )
         return None
+    if not (p / 'credentials').exists():
+        rich_print(
+            '[yellow]Warning: ~/.toshi/credentials not found — '
+            'Cognito auth in container will not work. Run: toshi-auth login[/yellow]'
+        )
     return p
 
 
