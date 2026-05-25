@@ -7,6 +7,8 @@
  - NZSHM22_OQ_VENV and NZSHM22_OQ_DATADIR environment variables for locating the OpenQuake venv and HDF5 datastore directory
 
 ### Changed
+ - Upgrade nshm-toshi-client
+ - Use Cognito JWT authentication for Toshi API
  - Upgrade dependencies (gitpython 3.1.47 → 3.1.49, fixes CVE-2026-44244)
  - Docker image now splits OpenQuake and runzi into separate venvs (/opt/oq-venv, /opt/runzi-venv)
  - UCERF converter (oq_opensha_convert_task) now runs in oq-venv via subprocess, decoupling runzi from OpenQuake imports
