@@ -8,8 +8,8 @@ from runzi.arguments import ArgSweeper, SystemArgs
 from runzi.automation import local_config
 from runzi.automation.local_config import (
     API_URL,
-    ECR_DIGEST,
     COGNITO_DOMAIN,
+    ECR_DIGEST,
     FATJAR,
     JVM_HEAP_START,
     M2M_SECRET_ARN,

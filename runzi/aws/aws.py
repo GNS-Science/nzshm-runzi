@@ -6,6 +6,7 @@ import base64
 import collections
 import io
 import json
+import os
 import urllib.parse
 import zipfile
 from typing import TYPE_CHECKING, Any
@@ -200,6 +201,7 @@ def get_ecs_job_config(
                 {"name": "PYTHON_TASK_MODULE", "value": task_module},
                 {"name": "NZSHM22_TOSHI_M2M_SECRET_ARN", "value": m2m_secret_arn},
                 {"name": "NZSHM22_TOSHI_COGNITO_DOMAIN", "value": cognito_domain},
+                {"name": "AWS_DEFAULT_REGION", "value": os.getenv("AWS_DEFAULT_REGION", "us-east-1")},
             ],
         },
         "propagateTags": True,
