@@ -74,19 +74,30 @@ def _try_cognito_session() -> boto3.Session | None:
         domain: str = config['cognito_domain']
         scientist_client_id: str = config['scientist_client_id']
 
-        # _get_token() refreshes transparently if the access token is expired,
-        # and raises RuntimeError if no refresh token / refresh fails.
-        access_token = ToshiCredentialAuth(domain, scientist_client_id)._get_token()
+        # Trigger a refresh if the access_token is expired; this also refreshes
+        # id_token in ~/.toshi/credentials. Raises RuntimeError if no refresh
+        # token / refresh fails.
+        ToshiCredentialAuth(domain, scientist_client_id)._get_token()
+
+        # Cognito Identity Pool requires an id_token (not access_token) in the
+        # Logins map — id_token carries the `aud` claim that the pool validates.
+        id_token = load_credentials().get('id_token')
+        if not id_token:
+            log.warning(
+                "Cognito AWS auth unavailable: ~/.toshi/credentials has no id_token (re-run `toshi-auth login`); %s",
+                _FALLBACK_SUFFIX,
+            )
+            return None
 
         login_provider = f'cognito-idp.{region}.amazonaws.com/{user_pool_id}'
         ci = boto3.client('cognito-identity', region_name=region)
         identity_id = ci.get_id(
             IdentityPoolId=identity_pool_id,
-            Logins={login_provider: access_token},
+            Logins={login_provider: id_token},
         )['IdentityId']
         sts = ci.get_credentials_for_identity(
             IdentityId=identity_id,
-            Logins={login_provider: access_token},
+            Logins={login_provider: id_token},
         )['Credentials']
 
         log.info("Using Cognito-federated AWS credentials (identity %s)", identity_id)
