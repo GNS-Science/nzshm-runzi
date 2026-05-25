@@ -124,7 +124,7 @@ def build_docker_cmd(
     if input_dir is not None:
         cmd += ['-v', f'{input_dir}:{_INPUT_FILES}:ro']
 
-    cmd += ['-v', f'{aws_credentials}:{_AWS_CREDS_CONTAINER}:ro']
+    # cmd += ['-v', f'{aws_credentials}:{_AWS_CREDS_CONTAINER}:ro']  # TEMP: testing IAM auth
 
     if work_path is not None:
         cmd += ['-v', f'{work_path}:{_WORK_PATH_CONTAINER}']
@@ -146,7 +146,7 @@ def build_docker_cmd(
         cmd += ['-v', f'{toshi_home}:{_TOSHI_HOME_CONTAINER}/.toshi:ro']
         env_vars = {**env_vars, 'HOME': _TOSHI_HOME_CONTAINER}
 
-    cmd += ['-e', f'AWS_SHARED_CREDENTIALS_FILE={_AWS_CREDS_CONTAINER}']
+    # cmd += ['-e', f'AWS_SHARED_CREDENTIALS_FILE={_AWS_CREDS_CONTAINER}']  # TEMP: testing IAM auth
     for key, value in env_vars.items():
         cmd += ['-e', f'{key}={value}']
 
@@ -297,8 +297,8 @@ def run_in_docker(
     env_vars.setdefault('USER', os.environ.get('USER', 'runzi'))
 
     aws_credentials = Path.home() / '.aws' / 'credentials'
-    if not aws_credentials.exists():
-        rich_print(f'[yellow]Warning: AWS credentials not found at {aws_credentials}[/yellow]')
+    # if not aws_credentials.exists():  # TEMP: testing IAM auth
+    #     rich_print(f'[yellow]Warning: AWS credentials not found at {aws_credentials}[/yellow]')
 
     runzi_source: Path | None = None
     if dev:
