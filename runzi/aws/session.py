@@ -4,10 +4,21 @@ vars, IAM role).
 """
 
 import logging
+from pathlib import Path
 
 import boto3
 
 log = logging.getLogger(__name__)
+
+_REQUIRED_CONFIG_KEYS = (
+    'identity_pool_id',
+    'user_pool_id',
+    'region',
+    'cognito_domain',
+    'scientist_client_id',
+)
+
+_FALLBACK_SUFFIX = "falling back to default credential chain."
 
 
 def get_session() -> boto3.Session:
@@ -23,27 +34,45 @@ def _try_cognito_session() -> boto3.Session | None:
     try:
         from nshm_toshi_client.auth import ToshiCredentialAuth, load_credentials
         from nshm_toshi_client.cli import load_auth_config
-    except ImportError:
+    except ImportError as exc:
+        log.warning("Cognito AWS auth unavailable: nshm_toshi_client not importable (%s); %s", exc, _FALLBACK_SUFFIX)
         return None
+
+    toshi_dir = Path.home() / '.toshi'
+    log.debug(
+        "Cognito AWS auth attempt: HOME=%s, credentials_exists=%s, auth_config_exists=%s",
+        Path.home(),
+        (toshi_dir / 'credentials').exists(),
+        (toshi_dir / 'auth_config.json').exists(),
+    )
 
     try:
         creds = load_credentials()
         if not creds.get('access_token'):
+            log.warning(
+                "Cognito AWS auth unavailable: ~/.toshi/credentials has no access_token (run `toshi-auth login`); %s",
+                _FALLBACK_SUFFIX,
+            )
             return None
 
         # load_auth_config may raise click.ClickException if scientist_client_id
         # is missing; caught by the outer Exception handler below.
         config = load_auth_config()
-        try:
-            identity_pool_id: str = config['identity_pool_id']
-            user_pool_id: str = config['user_pool_id']
-            region: str = config['region']
-            domain: str = config['cognito_domain']
-            scientist_client_id: str = config['scientist_client_id']
-        except KeyError:
+        missing = [k for k in _REQUIRED_CONFIG_KEYS if not config.get(k)]
+        if missing:
+            log.warning(
+                "Cognito AWS auth unavailable: auth config missing key(s) %s "
+                "(expected in ~/.toshi/auth_config.json); %s",
+                missing,
+                _FALLBACK_SUFFIX,
+            )
             return None
-        if not all([identity_pool_id, user_pool_id, region, domain, scientist_client_id]):
-            return None
+
+        identity_pool_id: str = config['identity_pool_id']
+        user_pool_id: str = config['user_pool_id']
+        region: str = config['region']
+        domain: str = config['cognito_domain']
+        scientist_client_id: str = config['scientist_client_id']
 
         # _get_token() refreshes transparently if the access token is expired,
         # and raises RuntimeError if no refresh token / refresh fails.
@@ -68,9 +97,8 @@ def _try_cognito_session() -> boto3.Session | None:
         )
     except Exception as exc:
         log.warning(
-            "Cognito AWS auth unavailable (%s); falling back to default boto3 "
-            "credential chain. Run `toshi-auth login` if you intended to use "
-            "Cognito.",
+            "Cognito AWS auth unavailable (%s); %s Run `toshi-auth login` if you intended to use Cognito.",
             exc,
+            _FALLBACK_SUFFIX,
         )
         return None

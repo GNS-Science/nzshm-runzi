@@ -578,6 +578,31 @@ def test_cli_docker_forwards_allowlisted_nzshm_vars(mocker, tmp_path, monkeypatc
     assert has_env(captured['cmd'], 'NZSHM22_BUILD_PLOTS', 'TRUE')
 
 
+def test_cli_docker_forwards_cognito_user_pool_id(mocker, tmp_path, monkeypatch):
+    """NZSHM22_TOSHI_COGNITO_USER_POOL_ID must be forwarded so load_cognito_config
+    can resolve user_pool_id inside the container without falling back to the
+    auth_config.json file."""
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('NZSHM22_TOSHI_COGNITO_USER_POOL_ID', 'ap-southeast-2_FAKE')
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
+    assert result.exit_code == 0
+    assert has_env(captured['cmd'], 'NZSHM22_TOSHI_COGNITO_USER_POOL_ID', 'ap-southeast-2_FAKE')
+
+
 def test_cli_docker_ths_s3_value_still_forwarded(mocker, tmp_path, monkeypatch):
     """THS s3:// value is forwarded via extra_env even though THS is not in the allowlist."""
     (tmp_path / 'foo.json').write_text('{}')

@@ -1,6 +1,7 @@
 """Tests for runzi.aws.session.get_session()."""
 
 import logging
+import sys
 
 import boto3
 import pytest
@@ -62,22 +63,24 @@ def test_cognito_path_returns_session_with_sts_creds(mocker, fake_auth_config, f
     assert frozen.token == 'faketoken'
 
 
-def test_no_cognito_credentials_falls_back_to_default(mocker):
+def test_no_cognito_credentials_falls_back_to_default(mocker, caplog):
     mocker.patch('nshm_toshi_client.auth.load_credentials', return_value={})
     load_config = mocker.patch('nshm_toshi_client.cli.load_auth_config')
     boto3_client = mocker.patch.object(session_mod.boto3, 'client')
     default_sess = mocker.Mock(spec=boto3.Session)
     session_ctor = mocker.patch.object(session_mod.boto3, 'Session', return_value=default_sess)
 
-    sess = session_mod.get_session()
+    with caplog.at_level(logging.WARNING, logger=session_mod.log.name):
+        sess = session_mod.get_session()
 
     load_config.assert_not_called()
     boto3_client.assert_not_called()
     session_ctor.assert_called_once_with()
     assert sess is default_sess
+    assert any('has no access_token' in rec.message for rec in caplog.records)
 
 
-def test_incomplete_auth_config_falls_back_to_default(mocker):
+def test_incomplete_auth_config_falls_back_to_default(mocker, caplog):
     mocker.patch(
         'nshm_toshi_client.auth.load_credentials',
         return_value={'access_token': 'eyJ-fresh-token'},
@@ -96,11 +99,30 @@ def test_incomplete_auth_config_falls_back_to_default(mocker):
     default_sess = mocker.Mock(spec=boto3.Session)
     session_ctor = mocker.patch.object(session_mod.boto3, 'Session', return_value=default_sess)
 
-    sess = session_mod.get_session()
+    with caplog.at_level(logging.WARNING, logger=session_mod.log.name):
+        sess = session_mod.get_session()
 
     boto3_client.assert_not_called()
     session_ctor.assert_called_once_with()
     assert sess is default_sess
+    assert any(
+        'auth config missing key(s)' in rec.message and "'identity_pool_id'" in rec.message for rec in caplog.records
+    )
+
+
+def test_import_error_falls_back_to_default(mocker, caplog):
+    # Forcing `from nshm_toshi_client.auth import ...` to raise ImportError by
+    # poisoning sys.modules. Restore via mocker fixture teardown.
+    mocker.patch.dict(sys.modules, {'nshm_toshi_client.auth': None})
+    default_sess = mocker.Mock(spec=boto3.Session)
+    session_ctor = mocker.patch.object(session_mod.boto3, 'Session', return_value=default_sess)
+
+    with caplog.at_level(logging.WARNING, logger=session_mod.log.name):
+        sess = session_mod.get_session()
+
+    session_ctor.assert_called_once_with()
+    assert sess is default_sess
+    assert any('nshm_toshi_client not importable' in rec.message for rec in caplog.records)
 
 
 def test_token_refresh_failure_logs_warning_and_falls_back(mocker, caplog, fake_auth_config):
