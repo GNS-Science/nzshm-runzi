@@ -9,6 +9,7 @@
 ### Changed
  - Upgrade nshm-toshi-client
  - Use Cognito JWT authentication for Toshi API
+ - Forward NZSHM22_TOSHI_COGNITO_IDENTITY_POOL_ID into the local --docker container (newly supported by nshm-toshi-client)
  - Upgrade dependencies (gitpython 3.1.47 → 3.1.49, fixes CVE-2026-44244)
  - Docker image now splits OpenQuake and runzi into separate venvs (/opt/oq-venv, /opt/runzi-venv)
  - UCERF converter (oq_opensha_convert_task) now runs in oq-venv via subprocess, decoupling runzi from OpenQuake imports
