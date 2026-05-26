@@ -3,7 +3,7 @@ revision = 3
 requires-python = "==3.11.*"
 
 [options]
-exclude-newer = "2026-05-18T19:21:54.232442202Z"
+exclude-newer = "2026-05-18T23:24:17.860620057Z"
 exclude-newer-span = "P1W"
 
 [options.exclude-newer-package]
@@ -1247,8 +1247,8 @@ wheels = [
 
 [[package]]
 name = "nshm-toshi-client"
-version = "1.2.4.dev1+geffee8324"
-source = { git = "https://github.com/GNS-Science/nshm-toshi-client.git?branch=fix%2F48-id_token-and-auth_config#effee8324135d0e6fe5a9b988003f78b8a9e5f5a" }
+version = "1.2.4.dev2+g0e4e364cc"
+source = { git = "https://github.com/GNS-Science/nshm-toshi-client.git?branch=fix%2F48-id_token-and-auth_config#0e4e364ccb2f2307efad3f402ffe0d94251a6145" }
 dependencies = [
     { name = "boto3" },
     { name = "gql", extra = ["requests"] },
