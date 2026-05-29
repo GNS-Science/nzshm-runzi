@@ -100,14 +100,19 @@ runzi/
 
 ### Environment Configuration
 
-All runtime configuration is via environment variables (loaded from `.env` by python-dotenv):
+Runtime configuration is via environment variables (loaded from `.env` by python-dotenv on the local machine).
+
+**Local machine (`.env`)**
 
 | Variable | Purpose |
 |---|---|
-
 | `NZSHM22_TOSHI_API_ENABLED` | Enable toshi API metadata storage |
 | `NZSHM22_TOSHI_API_URL` | Toshi GraphQL API endpoint |
-| `NZSHM22_TOSHI_API_KEY` | API auth key (or fetched from AWS Secrets Manager) |
+| `NZSHM22_TOSHI_API_KEY` | API auth key (legacy; prefer Cognito login) |
+| `NZSHM22_TOSHI_COGNITO_DOMAIN` | Cognito domain for Scientist (interactive) login |
+| `NZSHM22_TOSHI_COGNITO_SCIENTIST_CLIENT_ID` | Cognito app client ID for Scientist login |
+| `NZSHM22_TOSHI_COGNITO_USER_POOL_ID` | Cognito user pool ID |
+| `NZSHM22_TOSHI_COGNITO_IDENTITY_POOL_ID` | Cognito identity pool ID (for AWS credential federation) |
 | `NZSHM22_SCRIPT_WORKER_POOL_SIZE` | Parallel worker count (LOCAL mode) |
 | `NZSHM22_SCRIPT_WORK_PATH` | Working directory for task scripts/configs |
 | `NZSHM22_OPENSHA_ROOT` | Path to OpenSHA repo (Java tasks) |
@@ -116,6 +121,13 @@ All runtime configuration is via environment variables (loaded from `.env` by py
 | `NZSHM22_THS_RLZ_DB` | toshi-hazard-store database config |
 | `NZSHM22_OQ_VENV` | Path to the OpenQuake virtual environment root (e.g. `/opt/oq-venv`); required for OQ tasks |
 | `NZSHM22_OQ_DATADIR` | Directory where `oq engine` writes HDF5 calc datastores (e.g. `/oqdata`); required for OQ tasks |
+
+**AWS Batch job definition** (set in infrastructure, not forwarded from the local host)
+
+| Variable | Purpose |
+|---|---|
+| `NZSHM22_TOSHI_M2M_SECRET_ARN` | ARN of the Secrets Manager secret holding the M2M (machine-to-machine) Cognito client credentials; triggers M2M JWT auth in the container |
+| `NZSHM22_TOSHI_COGNITO_DOMAIN` | Cognito domain used for M2M token exchange inside the Batch container |
 
 ### Adding a New Task
 
