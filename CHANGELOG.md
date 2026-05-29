@@ -7,6 +7,7 @@
  - NZSHM22_OQ_VENV and NZSHM22_OQ_DATADIR environment variables for locating the OpenQuake venv and HDF5 datastore directory
 
 ### Changed
+ - M2M auth config (`NZSHM22_TOSHI_M2M_SECRET_ARN`, `NZSHM22_TOSHI_COGNITO_DOMAIN`) is no longer forwarded from the local host into AWS Batch container environments; these must now be supplied by the Batch job definition. Local job submission uses Scientist (login) credentials exclusively.
  - Upgrade nshm-toshi-client
  - Use Cognito JWT authentication for Toshi API
  - Forward NZSHM22_TOSHI_COGNITO_IDENTITY_POOL_ID into the local --docker container (newly supported by nshm-toshi-client)

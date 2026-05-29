@@ -8,11 +8,9 @@ from runzi.arguments import ArgSweeper, SystemArgs
 from runzi.automation import local_config
 from runzi.automation.local_config import (
     API_URL,
-    COGNITO_DOMAIN,
     ECR_DIGEST,
     FATJAR,
     JVM_HEAP_START,
-    M2M_SECRET_ARN,
     OPENSHA_JRE,
     OPENSHA_ROOT,
     S3_REPORT_BUCKET,
@@ -72,8 +70,6 @@ def build_tasks(
                 task_system_args=task_system_args,
                 toshi_api_url=API_URL,
                 toshi_s3_url=S3_URL,
-                m2m_secret_arn=M2M_SECRET_ARN,
-                cognito_domain=COGNITO_DOMAIN,
                 toshi_report_bucket=S3_REPORT_BUCKET,
                 ths_rlz_db=THS_RLZ_DB,
                 ecr_digest=ECR_DIGEST,
