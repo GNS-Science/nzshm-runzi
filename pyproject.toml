@@ -27,7 +27,7 @@ dependencies = [
     "nzshm-hazlab>=0.1.3,<0.2.0",
     "toshi-hazard-store>=2.0.0",
     "nzshm-model>=0.15.3",
-    "nshm-toshi-client",
+    "nshm-toshi-client>=1.3.0",
 ]
 
 
@@ -79,9 +79,6 @@ exclude-newer = "1 week"
 [tool.uv.build-backend]
 module-name = "runzi"
 module-root = ""
-
-[tool.uv.sources]
-nshm-toshi-client = { git = "https://github.com/GNS-Science/nshm-toshi-client.git", branch = "fix/48-id_token-and-auth_config" }
 
 
 [tool.ruff]
