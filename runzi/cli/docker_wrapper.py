@@ -299,8 +299,8 @@ def run_in_docker(
     env_vars.setdefault('USER', os.environ.get('USER', 'runzi'))
 
     aws_credentials = Path.home() / '.aws' / 'credentials'
-    # if not aws_credentials.exists():  # TEMP: testing IAM auth
-    #     rich_print(f'[yellow]Warning: AWS credentials not found at {aws_credentials}[/yellow]')
+    if not aws_credentials.exists():  # TEMP: testing IAM auth
+        rich_print(f'[yellow]Warning: AWS credentials not found at {aws_credentials}[/yellow]')
 
     runzi_source: Path | None = None
     if dev:
