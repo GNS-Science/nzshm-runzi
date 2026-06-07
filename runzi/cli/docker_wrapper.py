@@ -126,7 +126,7 @@ def build_docker_cmd(
     if input_dir is not None:
         cmd += ['-v', f'{input_dir}:{_INPUT_FILES}:ro']
 
-    # cmd += ['-v', f'{aws_credentials}:{_AWS_CREDS_CONTAINER}:ro']  # TEMP: testing IAM auth
+    cmd += ['-v', f'{aws_credentials}:{_AWS_CREDS_CONTAINER}:ro']  # TEMP: testing IAM auth
 
     if work_path is not None:
         cmd += ['-v', f'{work_path}:{_WORK_PATH_CONTAINER}']
