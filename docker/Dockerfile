@@ -62,13 +62,14 @@ COPY python_container_task.sh /usr/local/bin/python_container_task.sh
 RUN chmod +x /usr/local/bin/java_container_task.sh
 RUN chmod +x /usr/local/bin/python_container_task.sh
 
-# create the toshi-hazard-store dataset directory to store hazard realiztions locally
+# create the toshi-hazard-store dataset directories to store realizations locally
 WORKDIR /THS
-ENV NZSHM22_THS_RLZ_DB=/THS
+ENV NZSHM22_THS_RLZ_DB=/THS/HAZARD
+ENV NZSHM22_THS_DISAGG_RLZ_DB=/THS/DISAGG
 
 # Create working directory and set env vars
 WORKDIR /WORKING
-RUN mkdir -p /WORKING && chmod 0777 /WORKING /THS/HAZARD /THS/DISAGG
+RUN mkdir -p /WORKING /THS/HAZARD /THS/DISAGG && chmod 0777 /WORKING /THS/HAZARD /THS/DISAGG
 ENV NZSHM22_SCRIPT_WORK_PATH=/WORKING
 ENV NZSHM22_OPENSHA_JRE=/opt/java/bin
 ENV NZSHM22_FATJAR=/opt/nzshm-opensha/build/libs/nzshm-opensha-all-${FATJAR_TAG}.jar
