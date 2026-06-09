@@ -51,12 +51,10 @@ def execute_openquake(
         #
         env = {**os.environ, 'OQ_DATADIR': str(OQ_DATADIR)}
         cmd = [oq_bin, 'engine', '--run', f'{configfile}', '-L', f'{logfile}']
-        log.info('cmd 1: %s', cmd)
+        log.info('executing with subprocess: %s', cmd)
         result = subprocess.run(cmd, env=env)
         if result.returncode != 0:
-            raise RuntimeError(
-                f'oq engine --run exited {result.returncode} for task {task_no}; see {logfile}'
-            )
+            raise RuntimeError(f'oq engine --run exited {result.returncode} for task {task_no}; see {logfile}')
 
         with open(logfile) as logf:
             oq_out = logf.read()
@@ -114,7 +112,7 @@ def execute_openquake(
             #  cp /home/openquake/oqdata/calc_12.hdf5 /WORKING/examples/output/PROD
             #
             cmd = [oq_bin, 'engine', '--export-outputs', str(last_task), str(output_path)]
-            log.info('cmd 2: %s', cmd)
+            log.info('executing with subprocess: %s', cmd)
             subprocess.check_call(cmd, stdout=subprocess.DEVNULL, env=env)
             oq_result['csv_archive'] = archive(
                 output_path, Path(WORK_PATH, f'openquake_csv_archive-{toshi_task_id}.zip')

@@ -6,15 +6,16 @@ import base64
 import collections
 import io
 import json
+import os
 import urllib.parse
 import zipfile
 from typing import TYPE_CHECKING, Any
 
-import boto3
 from botocore.exceptions import ClientError
 
 from runzi.automation.task_config import get_task_config
 from runzi.automation.toshi_api.general_task import ModelType
+from runzi.aws.session import get_session
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
@@ -27,8 +28,7 @@ BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'nam
 def get_secret(secret_name, region_name):
 
     # Create a Secrets Manager client
-    session = boto3.session.Session()
-    client = session.client(service_name='secretsmanager', region_name=region_name)
+    client = get_session().client(service_name='secretsmanager', region_name=region_name)
 
     # In this sample we only handle the specific exceptions for the 'GetSecretValue' API.
     # See https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
@@ -196,6 +196,7 @@ def get_ecs_job_config(
                 {"name": "NZSHM22_RUNZI_ECR_DIGEST", "value": ecr_digest},
                 {"name": "NZSHM22_THS_RLZ_DB", "value": ths_rlz_db},
                 {"name": "PYTHON_TASK_MODULE", "value": task_module},
+                {"name": "AWS_DEFAULT_REGION", "value": os.getenv("AWS_DEFAULT_REGION", "us-east-1")},
             ],
         },
         "propagateTags": True,

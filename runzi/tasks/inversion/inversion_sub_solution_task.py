@@ -10,7 +10,7 @@ from nshm_toshi_client.task_relation import TaskRelation
 from solvis import InversionSolution, circle_polygon
 from solvis.filter import FilterRuptureIds
 
-from runzi.automation.local_config import API_KEY, API_URL, S3_URL, WORK_PATH
+from runzi.automation.local_config import API_URL, S3_URL, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ToshiApi
 from runzi.tasks.get_config import get_config
 
@@ -33,13 +33,12 @@ class BuilderTask:
         self._output_folder = PurePath(WORK_PATH)
 
         if self.use_api:
-            headers = {"x-api-key": API_KEY}
             # self._ruptgen_api = RuptureGenerationTask(
             #   API_URL, S3_URL,
-            #   None, with_schema_validation=True, headers=headers
+            #   None, with_schema_validation=True, **get_auth_kwargs()
             # )
-            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
+            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
 
     def run(self, task_arguments, job_arguments):
         raise NotImplementedError("inversion sub solution uses removed solvis functions and does not work.")

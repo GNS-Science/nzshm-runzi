@@ -9,16 +9,14 @@ from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 
 import runzi.tasks.oq_hazard.oq_hazard_task as task_module
 from runzi.arguments import ArgSweeper
-from runzi.automation.local_config import API_KEY, API_URL, S3_URL, USE_API
+from runzi.automation.local_config import API_URL, S3_URL, USE_API, get_auth_kwargs
 from runzi.automation.toshi_api import ModelType, SubtaskType, ToshiApi
 from runzi.job_runner import JobRunner
 from runzi.tasks.oq_hazard.hazard_args import OQHazardArgs
 
-headers = {"x-api-key": API_KEY}
-toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-
 
 def _upload_file(file_path: Path) -> str:
+    toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
     file_id, post_url = toshi_api.file.create_file(file_path)
     toshi_api.file.upload_content(post_url, file_path)
     return file_id

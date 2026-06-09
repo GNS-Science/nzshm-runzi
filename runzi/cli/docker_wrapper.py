@@ -29,10 +29,14 @@ _ENV_FORWARDED_NZSHM_VARS: frozenset[str] = frozenset(
         'NZSHM22_TOSHI_API_URL',
         'NZSHM22_TOSHI_API_KEY',
         'NZSHM22_TOSHI_S3_URL',
+        'NZSHM22_TOSHI_COGNITO_DOMAIN',
+        'NZSHM22_TOSHI_COGNITO_SCIENTIST_CLIENT_ID',
+        'NZSHM22_TOSHI_COGNITO_REGION',
+        'NZSHM22_TOSHI_COGNITO_USER_POOL_ID',
+        'NZSHM22_TOSHI_COGNITO_IDENTITY_POOL_ID',
         'NZSHM22_RUNZI_ECR_DIGEST',
         'NZSHM22_SCRIPT_WORKER_POOL_SIZE',
         'NZSHM22_SCRIPT_JVM_HEAP_START',
-        'NZSHM22_SCRIPT_CLUSTER_MODE',
         'NZSHM22_BUILD_PLOTS',
         'NZSHM22_REPORT_LEVEL',
         'NZSHM22_HACK_FAULT_MODEL',
@@ -40,6 +44,8 @@ _ENV_FORWARDED_NZSHM_VARS: frozenset[str] = frozenset(
         'NZSHM22_S3_UPLOAD_WORKERS',
     ]
 )
+
+_TOSHI_HOME_CONTAINER = '/toshi-home'
 
 _DEFAULT_IMAGE = 'runzi-build:latest'
 _DEFAULT_DEV_IMAGE = 'runzi-build:dev'
@@ -102,6 +108,7 @@ def build_docker_cmd(
     runzi_source: Path | None = None,
     interactive: bool = False,
     work_path: Path | None = None,
+    toshi_home: Path | None = None,
 ) -> list[str]:
     """Build the docker run argument list. Does not call any subprocess."""
     cmd: list[str] = ['docker', 'run', '--rm']
@@ -131,6 +138,14 @@ def build_docker_cmd(
 
     if dev and runzi_source is not None:
         cmd += ['-v', f'{runzi_source}:/app/nzshm-runzi']
+
+    if toshi_home is not None:
+        # tmpfs gives a writable HOME: OQ can create HOME/oqdata on it.
+        # The ~/.toshi/ directory is overlaid read-only inside the tmpfs so
+        # Path.home()/'.toshi'/'credentials' is accessible to the toshi client.
+        cmd += ['--mount', f'type=tmpfs,destination={_TOSHI_HOME_CONTAINER},tmpfs-mode=0777']
+        cmd += ['-v', f'{toshi_home}:{_TOSHI_HOME_CONTAINER}/.toshi:ro']
+        env_vars = {**env_vars, 'HOME': _TOSHI_HOME_CONTAINER}
 
     cmd += ['-e', f'AWS_SHARED_CREDENTIALS_FILE={_AWS_CREDS_CONTAINER}']
     for key, value in env_vars.items():
@@ -205,6 +220,23 @@ def _resolve_ths(env_key: str) -> tuple[Path | None, dict[str, str]]:
     return Path(val), {}
 
 
+def _resolve_toshi_home() -> Path | None:
+    """Return host ~/.toshi/ path if the directory exists, else warn and return None."""
+    p = Path.home() / '.toshi'
+    if not p.exists():
+        rich_print(
+            '[yellow]Warning: ~/.toshi/ not found — '
+            'Cognito auth in container will not work. Run: toshi-auth login[/yellow]'
+        )
+        return None
+    if not (p / 'credentials').exists():
+        rich_print(
+            '[yellow]Warning: ~/.toshi/credentials not found — '
+            'Cognito auth in container will not work. Run: toshi-auth login[/yellow]'
+        )
+    return p
+
+
 def _resolve_work_path() -> Path | None:
     """Return the host work path to mount at /WORKING, or None if unset.
 
@@ -250,6 +282,7 @@ def run_in_docker(
     ths_hazard, ths_hazard_extra = _resolve_ths('NZSHM22_THS_RLZ_DB')
     ths_disagg, ths_disagg_extra = _resolve_ths('NZSHM22_THS_DISAGG_RLZ_DB')
     work_path = _resolve_work_path()
+    toshi_home = _resolve_toshi_home()
 
     extra_env: dict[str, str] = {}
     extra_env.update(ths_hazard_extra)
@@ -306,6 +339,7 @@ def run_in_docker(
         runzi_source=runzi_source,
         interactive=interactive,
         work_path=work_path,
+        toshi_home=toshi_home,
     )
 
     if dry_run:

@@ -12,7 +12,7 @@ from solvis import InversionSolution
 
 from runzi.arguments import SystemArgs, TaskLanguage
 from runzi.automation.file_utils import download_files, get_output_file_id
-from runzi.automation.local_config import API_KEY, API_URL, S3_URL, SPOOF, USE_API, WORK_PATH
+from runzi.automation.local_config import API_URL, S3_URL, SPOOF, USE_API, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ModelType, SubtaskType, ToshiApi
 from runzi.tasks.get_config import get_config
 
@@ -104,9 +104,8 @@ class AverageSolutionsTask:
         self.output_folder = WORK_PATH
         self.model_type = model_type
 
-        headers = {"x-api-key": API_KEY}
-        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-        self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
+        self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
 
     def run(self):
 

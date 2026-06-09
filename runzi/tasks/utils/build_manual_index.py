@@ -6,13 +6,12 @@ only to be used until we have automated rupture reporting
 
 """
 
-import os
 import urllib.request
 from datetime import datetime as dt
 
 import pytz
 
-from runzi.automation.local_config import WORK_PATH
+from runzi.automation.local_config import API_URL, S3_URL, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ToshiApi
 
 
@@ -187,14 +186,10 @@ def build_manual_index(
     index_url="http://nzshm22-static-reports.s3-website-ap-southeast-2.amazonaws.com/opensha/index.html",
 ):
 
-    API_URL = os.getenv("NZSHM22_TOSHI_API_URL", "http://127.0.0.1:5000/graphql")
-    API_KEY = os.getenv("NZSHM22_TOSHI_API_KEY", "")
-    S3_URL = os.getenv("NZSHM22_TOSHI_S3_URL", "http://localhost:4569")
     UPLOAD_FOLDER = "./DATA"
     TUI = "http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com/"
 
-    headers = {"x-api-key": API_KEY}
-    general_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
+    general_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
 
     try:
         node = general_api.get_general_task_subtask_files(general_task_id)

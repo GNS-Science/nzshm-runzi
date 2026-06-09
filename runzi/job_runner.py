@@ -7,16 +7,15 @@ from abc import ABC, abstractmethod
 from multiprocessing.dummy import Pool
 from subprocess import check_call
 
-import boto3
-
 from runzi.arguments import ArgSweeper, SystemArgs
 from runzi.automation import local_config
-from runzi.automation.local_config import USE_API, WORKER_POOL_SIZE, ClusterModeEnum
+from runzi.automation.local_config import WORKER_POOL_SIZE, ClusterModeEnum
 from runzi.automation.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType
+from runzi.aws.session import get_session
 from runzi.build_tasks import build_tasks
 from runzi.protocols import ModuleWithDefaultSysArgs
 
-from .tasks.toshi_utils import toshi_api
+from .tasks.toshi_utils import get_toshi_api
 
 logging.basicConfig(level=logging.INFO)
 
@@ -50,6 +49,7 @@ class JobRunner(ABC):
         # make a copy here only to make it clear that we have modified it
         system_args = self.default_sys_args.model_copy(deep=True)
         system_args.general_task_id = general_task_id
+        system_args.use_api = local_config.USE_API
         for name, value in self.argument_sweeper.sys_arg_overrides.items():
             setattr(system_args, name, value)
         return system_args
@@ -80,7 +80,7 @@ class JobRunner(ABC):
         args_list = self._build_argument_list()
         model_type = self.get_model_type()
 
-        if USE_API:
+        if local_config.USE_API:
             gt_args = (
                 CreateGeneralTaskArgs(
                     agent_name=getpass.getuser(),
@@ -91,7 +91,7 @@ class JobRunner(ABC):
                 .set_subtask_type(self.subtask_type)
                 .set_model_type(model_type)
             )
-            general_task_id = toshi_api.general_task.create_task(gt_args)
+            general_task_id = get_toshi_api().general_task.create_task(gt_args)
 
         print("GENERAL_TASK_ID:", general_task_id)
         system_args = self.set_system_args(general_task_id)
@@ -102,8 +102,8 @@ class JobRunner(ABC):
                 self.argument_sweeper, system_args, self.task_module, model_type, self.job_name
             )
         ]
-        if USE_API:
-            toshi_api.general_task.update_subtask_count(general_task_id, len(scripts))
+        if local_config.USE_API:
+            get_toshi_api().general_task.update_subtask_count(general_task_id, len(scripts))
 
         if local_config.CLUSTER_MODE is ClusterModeEnum.LOCAL:
 
@@ -118,7 +118,7 @@ class JobRunner(ABC):
             pool.close()
             pool.join()
         elif local_config.CLUSTER_MODE is ClusterModeEnum.AWS:
-            batch_client = boto3.client(
+            batch_client = get_session().client(
                 service_name='batch', region_name='us-east-1', endpoint_url='https://batch.us-east-1.amazonaws.com'
             )
             for script_or_config in scripts:

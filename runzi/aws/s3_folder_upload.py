@@ -6,11 +6,10 @@ import shutil
 from logging import error, info
 from multiprocessing.pool import ThreadPool
 
-import boto3
-import boto3.session
 from botocore.errorfactory import ClientError
 
 from runzi.automation.local_config import S3_UPLOAD_WORKERS, WORK_PATH
+from runzi.aws.session import get_session
 
 logging.basicConfig(level="INFO")
 S3_REPORT_BUCKET_ROOT = 'opensha/DATA'
@@ -20,8 +19,7 @@ def upload_to_bucket(toshi_id: str, bucket: str, root_path=S3_REPORT_BUCKET_ROOT
     info("Beginning bucket upload... to %s/%s/%s", bucket, root_path, toshi_id)
     t0 = dt.datetime.now()
     local_directory = WORK_PATH / toshi_id
-    session = boto3.session.Session()
-    client = session.client('s3')
+    client = get_session().client('s3')
     file_list = []
     for root, _dirs, files in os.walk(local_directory):
         for filename in files:

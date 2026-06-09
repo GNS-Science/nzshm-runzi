@@ -2,6 +2,26 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Code Intelligence
+
+Prefer LSP over Grep/Glob/Read for code navigation:
+- `goToDefinition` / `goToImplementation` to jump to source
+- `findReferences` to see all usages across the codebase
+- `workspaceSymbol` to find where something is defined
+- `documentSymbol` to list all symbols in a file
+- `hover` for type info without reading the file
+- `incomingCalls` / `outgoingCalls` for call hierarchy
+
+Before renaming or changing a function signature, use
+`findReferences` to find all call sites first.
+
+Use Grep/Glob only for text/pattern searches (comments,
+strings, config values) where LSP doesn't help.
+
+After writing or editing code, check LSP diagnostics before
+moving on. Fix any type errors or missing imports immediately.
+
+
 ## Overview
 
 `nzshm-runzi` is a Python CLI application for running, scheduling, and managing NZSHM (New Zealand Seismic Hazard Model) computational jobs across local machines, AWS ECS/Batch, and HPC clusters. It coordinates job creation, argument sweeping, script generation, and result storage via the toshi API.
@@ -56,7 +76,7 @@ The core execution pipeline is:
 
 **`ArgSweeper`**: Parses JSON config files with optional `swept_args` dict, generating all combinations as separate tasks. Config files have `title`, `description`, optional `swept_args`, and optional `sys_arg_overrides` fields alongside the task args.
 
-**Task Factory pattern** (`runzi/automation/opensha_task_factory.py`, `python_task_factory.py`): Produces bash scripts (LOCAL), PBS scripts (CLUSTER), or AWS Batch configs (AWS) depending on `NZSHM22_SCRIPT_CLUSTER_MODE`. Java-based tasks use `OpenshaTaskFactory`; Python-only tasks use `PythonTaskFactory`.
+**Task Factory pattern** (`runzi/automation/opensha_task_factory.py`, `python_task_factory.py`): Produces bash scripts (LOCAL), PBS scripts (CLUSTER), or AWS Batch configs (AWS) depending on the `--cluster-mode` CLI flag. Java-based tasks use `OpenshaTaskFactory`; Python-only tasks use `PythonTaskFactory`.
 
 **`ModuleWithDefaultSysArgs` protocol** (`runzi/protocols.py`): Task modules must expose a `default_system_args: SystemArgs` attribute and `__name__`, so the factory can locate the task script file and obtain ECS defaults.
 
@@ -80,14 +100,20 @@ runzi/
 
 ### Environment Configuration
 
-All runtime configuration is via environment variables (loaded from `.env` by python-dotenv):
+Runtime configuration is via environment variables (loaded from `.env` by python-dotenv on the local machine).
+
+**Local machine (`.env`)**
 
 | Variable | Purpose |
 |---|---|
-| `NZSHM22_SCRIPT_CLUSTER_MODE` | `LOCAL`, `CLUSTER`, or `AWS` |
 | `NZSHM22_TOSHI_API_ENABLED` | Enable toshi API metadata storage |
 | `NZSHM22_TOSHI_API_URL` | Toshi GraphQL API endpoint |
-| `NZSHM22_TOSHI_API_KEY` | API auth key (or fetched from AWS Secrets Manager) |
+| `NZSHM22_TOSHI_API_KEY` | API auth key (legacy; prefer Cognito login) |
+| `NZSHM22_TOSHI_COGNITO_DOMAIN` | Cognito domain for Scientist (interactive) login |
+| `NZSHM22_TOSHI_COGNITO_SCIENTIST_CLIENT_ID` | Cognito app client ID for Scientist login |
+| `NZSHM22_TOSHI_COGNITO_USER_POOL_ID` | Cognito user pool ID |
+| `NZSHM22_TOSHI_COGNITO_IDENTITY_POOL_ID` | Cognito identity pool ID (for AWS credential federation) |
+| `NZSHM22_TOSHI_COGNITO_REGION` | AWS region for Cognito (default `ap-southeast-2`) |
 | `NZSHM22_SCRIPT_WORKER_POOL_SIZE` | Parallel worker count (LOCAL mode) |
 | `NZSHM22_SCRIPT_WORK_PATH` | Working directory for task scripts/configs |
 | `NZSHM22_OPENSHA_ROOT` | Path to OpenSHA repo (Java tasks) |
@@ -96,6 +122,13 @@ All runtime configuration is via environment variables (loaded from `.env` by py
 | `NZSHM22_THS_RLZ_DB` | toshi-hazard-store database config |
 | `NZSHM22_OQ_VENV` | Path to the OpenQuake virtual environment root (e.g. `/opt/oq-venv`); required for OQ tasks |
 | `NZSHM22_OQ_DATADIR` | Directory where `oq engine` writes HDF5 calc datastores (e.g. `/oqdata`); required for OQ tasks |
+
+**AWS Batch job definition** (set in infrastructure, not forwarded from the local host)
+
+| Variable | Purpose |
+|---|---|
+| `NZSHM22_TOSHI_M2M_SECRET_ARN` | ARN of the Secrets Manager secret holding the M2M (machine-to-machine) Cognito client credentials; triggers M2M JWT auth in the container |
+| `NZSHM22_TOSHI_COGNITO_DOMAIN` | Cognito domain used for M2M token exchange inside the Batch container |
 
 ### Adding a New Task
 

@@ -492,9 +492,7 @@ def test_cli_docker_mounts_script_work_path(mocker, tmp_path, monkeypatch):
     mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
     result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
     assert result.exit_code == 0
-    assert has_volume(captured['cmd'], f'{work}:/WORKING'), (
-        f'work-path mount missing or wrong: {captured["cmd"]}'
-    )
+    assert has_volume(captured['cmd'], f'{work}:/WORKING'), f'work-path mount missing or wrong: {captured["cmd"]}'
     assert work.is_dir()
 
 
@@ -546,7 +544,11 @@ def test_cli_docker_drops_image_path_env_vars(mocker, tmp_path, monkeypatch):
     result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
     assert result.exit_code == 0
     for var in (
-        'NZSHM22_OPENSHA_ROOT', 'NZSHM22_FATJAR', 'NZSHM22_OPENSHA_JRE', 'NZSHM22_OQ_VENV', 'NZSHM22_OQ_DATADIR'
+        'NZSHM22_OPENSHA_ROOT',
+        'NZSHM22_FATJAR',
+        'NZSHM22_OPENSHA_JRE',
+        'NZSHM22_OQ_VENV',
+        'NZSHM22_OQ_DATADIR',
     ):
         assert not has_env(captured['cmd'], var), f'{var} leaked into container'
 
@@ -574,6 +576,87 @@ def test_cli_docker_forwards_allowlisted_nzshm_vars(mocker, tmp_path, monkeypatc
     assert result.exit_code == 0
     assert has_env(captured['cmd'], 'NZSHM22_TOSHI_API_URL', 'http://api.example/graphql')
     assert has_env(captured['cmd'], 'NZSHM22_BUILD_PLOTS', 'TRUE')
+
+
+def test_cli_docker_forwards_cognito_user_pool_id(mocker, tmp_path, monkeypatch):
+    """NZSHM22_TOSHI_COGNITO_USER_POOL_ID must be forwarded so load_cognito_config
+    can resolve user_pool_id inside the container without falling back to the
+    auth_config.json file."""
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('NZSHM22_TOSHI_COGNITO_USER_POOL_ID', 'ap-southeast-2_FAKE')
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
+    assert result.exit_code == 0
+    assert has_env(captured['cmd'], 'NZSHM22_TOSHI_COGNITO_USER_POOL_ID', 'ap-southeast-2_FAKE')
+
+
+def test_cli_docker_forwards_cognito_identity_pool_id(mocker, tmp_path, monkeypatch):
+    """NZSHM22_TOSHI_COGNITO_IDENTITY_POOL_ID must be forwarded so load_cognito_config
+    can resolve identity_pool_id inside the container without requiring an
+    auth_config.json file mounted in."""
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('NZSHM22_TOSHI_COGNITO_IDENTITY_POOL_ID', 'ap-southeast-2:fake-pool')
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
+    assert result.exit_code == 0
+    assert has_env(captured['cmd'], 'NZSHM22_TOSHI_COGNITO_IDENTITY_POOL_ID', 'ap-southeast-2:fake-pool')
+
+
+def test_cli_docker_does_not_forward_m2m_secret_arn(mocker, tmp_path, monkeypatch):
+    """NZSHM22_TOSHI_M2M_SECRET_ARN must never be forwarded into a local --docker container.
+
+    M2M auth is a Batch-job-definition concern only. Forwarding this var would cause
+    the client to select M2M auth and silently override the mounted ~/.toshi/credentials,
+    breaking Scientist (interactive) auth for local docker runs.
+    """
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('NZSHM22_TOSHI_M2M_SECRET_ARN', 'arn:aws:secretsmanager:ap-southeast-2:123:secret/fake')
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', 'foo.json'])
+    assert result.exit_code == 0
+    assert not has_env(captured['cmd'], 'NZSHM22_TOSHI_M2M_SECRET_ARN'), (
+        'NZSHM22_TOSHI_M2M_SECRET_ARN must not be forwarded to local docker containers; '
+        'M2M config must be supplied by the Batch job definition only.'
+    )
 
 
 def test_cli_docker_ths_s3_value_still_forwarded(mocker, tmp_path, monkeypatch):

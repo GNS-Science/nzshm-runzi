@@ -13,7 +13,7 @@ from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel
 
 from runzi.arguments import SystemArgs, TaskLanguage
-from runzi.automation.local_config import API_KEY, API_URL, S3_URL, SPOOF, USE_API, WORK_PATH
+from runzi.automation.local_config import API_URL, S3_URL, SPOOF, USE_API, WORK_PATH, get_auth_kwargs
 from runzi.tasks.get_config import get_config
 
 log = logging.getLogger(__name__)
@@ -83,12 +83,11 @@ class SubductionRuptureSetBuilderTask:
         self.output_folder = PurePath(WORK_PATH)
 
         if self.use_api:
-            headers = {"x-api-key": API_KEY}
             self.ruptgen_api = RuptureGenerationTask(
-                API_URL, S3_URL, None, with_schema_validation=True, headers=headers
+                API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs()
             )
-            self.general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-            self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+            self.general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
+            self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
 
     def ruptureSetMetrics(self):
         return dict(

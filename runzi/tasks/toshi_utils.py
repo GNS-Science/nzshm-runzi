@@ -2,11 +2,12 @@ import base64
 
 from runzi.arguments import ArgSweeper
 from runzi.automation.file_utils import get_output_file_ids
-from runzi.automation.local_config import API_KEY, API_URL
+from runzi.automation.local_config import API_URL, get_auth_kwargs
 from runzi.automation.toshi_api import ToshiApi
 
-headers = {"x-api-key": API_KEY}
-toshi_api = ToshiApi(API_URL, None, None, with_schema_validation=True, headers=headers)
+
+def get_toshi_api() -> ToshiApi:
+    return ToshiApi(API_URL, None, None, with_schema_validation=True, **get_auth_kwargs())
 
 
 def get_solution_ids_from_id(toshi_id):
@@ -20,7 +21,7 @@ def get_solution_ids_from_id(toshi_id):
     Returns:
         A list of solutution ids."""
     if 'GeneralTask' in str(base64.b64decode(toshi_id)):
-        return [out['id'] for out in get_output_file_ids(toshi_api, toshi_id)]
+        return [out['id'] for out in get_output_file_ids(get_toshi_api(), toshi_id)]
 
     return [toshi_id]
 

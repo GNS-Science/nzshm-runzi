@@ -5,14 +5,14 @@ from runzi.arguments import ArgSweeper
 from runzi.automation.task_utils import get_model_type
 from runzi.automation.toshi_api import ModelType, SubtaskType
 from runzi.job_runner import JobRunner
-from runzi.tasks.toshi_utils import convert_gt_to_swept, toshi_api
+from runzi.tasks.toshi_utils import convert_gt_to_swept, get_toshi_api
 
 
 # TODO: redundant code shared by average_solutions, but just enough difference to need a new function. Can we merge?
 def get_model_type_from_all(job_args: ArgSweeper) -> ModelType:
     model_type = None
     for task_args in job_args.get_tasks():
-        new_model_type = get_model_type([task_args.source_solution_id], toshi_api)  # type: ignore
+        new_model_type = get_model_type([task_args.source_solution_id], get_toshi_api())  # type: ignore
         if not model_type:
             model_type = new_model_type
         else:

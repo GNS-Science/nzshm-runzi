@@ -20,9 +20,7 @@ from runzi.cli import (
 
 # ── Arg capture helpers ───────────────────────────────────────────────────────
 
-_DOCKER_BOOL_FLAGS: frozenset[str] = frozenset(
-    ['--docker', '--docker-dev', '--docker-shell', '--docker-dry-run']
-)
+_DOCKER_BOOL_FLAGS: frozenset[str] = frozenset(['--docker', '--docker-dev', '--docker-shell', '--docker-dry-run'])
 _DOCKER_VALUE_FLAGS: frozenset[str] = frozenset(['--docker-image'])
 
 
@@ -99,6 +97,9 @@ def main_callback(
     Prefix any command with --docker to run it inside a local Docker container instead of natively.
     """
     local_config.CLUSTER_MODE = cluster_mode
+
+    if cluster_mode is ClusterModeEnum.AWS:
+        local_config.USE_API = True
 
     use_docker = docker or docker_dev or docker_shell or docker_dry_run or (docker_image is not None)
     if use_docker:

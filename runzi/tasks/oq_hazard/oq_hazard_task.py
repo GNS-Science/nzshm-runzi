@@ -20,7 +20,16 @@ from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 
 from runzi.arguments import SystemArgs, TaskLanguage
-from runzi.automation.local_config import API_KEY, API_URL, ECR_DIGEST, S3_URL, SPOOF, THS_RLZ_DB, USE_API, WORK_PATH
+from runzi.automation.local_config import (
+    API_URL,
+    ECR_DIGEST,
+    S3_URL,
+    SPOOF,
+    THS_RLZ_DB,
+    USE_API,
+    WORK_PATH,
+    get_auth_kwargs,
+)
 from runzi.automation.toshi_api import ModelType, ToshiApi
 from runzi.automation.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.tasks.get_config import get_config
@@ -64,14 +73,7 @@ def get_locations_from_file(
     vs30s: list[int] = []
     with tempfile.TemporaryDirectory() as temp_dir:
         if locations_file_id:
-            headers = {"x-api-key": API_KEY}
-            file_api = ToshiFile(
-                API_URL,
-                None,
-                None,
-                with_schema_validation=True,
-                headers=headers,
-            )
+            file_api = ToshiFile(API_URL, None, None, with_schema_validation=True, **get_auth_kwargs())
             file_api.download_file(locations_file_id, target_dir=temp_dir, target_name="sites.csv")
             locations_file = Path(temp_dir) / "sites.csv"
         else:
@@ -94,9 +96,8 @@ class OQHazardTask:
         self.system_args = system_args
 
         if self.use_api:
-            headers = {"x-api-key": API_KEY}
-            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, headers=headers)
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, headers=headers)
+            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
+            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
 
     def _setup_automation_task(self) -> str:
 
@@ -212,6 +213,7 @@ class OQHazardTask:
             self.model.hazard_config.set_sites(locations, backarc=backarc_flags)
 
     def run(self):
+        log.info("starting oq hazard task")
         t0 = dt.datetime.now(dt.UTC)
 
         if self.user_args.srm_logic_tree is None:
@@ -273,6 +275,7 @@ class OQHazardTask:
         ##############
         # EXECUTE
         ##############
+        log.info("execute_openquake()")
         oq_result = execute_openquake(
             job_file,
             self.system_args.task_count,
@@ -284,6 +287,7 @@ class OQHazardTask:
         # API STORE RESULTS #
         ######################
         if self.use_api:
+            log.info("storing results with toshi API")
             solution_id = self._store_api_result(
                 automation_task_id,
                 oq_result,
@@ -295,12 +299,11 @@ class OQHazardTask:
             #############################
             # run the store_hazard job
             if not SPOOF and (not oq_result.get("no_ruptures")):
+                log.info("storing realizations with toshi-hazard-store")
                 # write config to json
                 config_filepath = config_folder / "hazard_config.json"
                 hazard_config.to_json(config_filepath)
 
-                # # THS does not yet support storing disaggregation realizations
-                log.info("store hazard")
                 store_hazard(
                     str(oq_result["hdf5_filepath"]),
                     config_filepath,
