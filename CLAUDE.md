@@ -119,7 +119,8 @@ Runtime configuration is via environment variables (loaded from `.env` by python
 | `NZSHM22_OPENSHA_ROOT` | Path to OpenSHA repo (Java tasks) |
 | `NZSHM22_FATJAR` | Path to OpenSHA fat JAR |
 | `NZSHM22_RUNZI_ECR_DIGEST` | AWS ECR image digest for ECS tasks |
-| `NZSHM22_THS_RLZ_DB` | toshi-hazard-store database config |
+| `NZSHM22_THS_RLZ_DB` | toshi-hazard-store hazard realization database path (local directory or `s3://`) |
+| `NZSHM22_THS_DISAGG_RLZ_DB` | toshi-hazard-store disaggregation realization database path (local directory or `s3://`) |
 | `NZSHM22_OQ_VENV` | Path to the OpenQuake virtual environment root (e.g. `/opt/oq-venv`); required for OQ tasks |
 | `NZSHM22_OQ_DATADIR` | Directory where `oq engine` writes HDF5 calc datastores (e.g. `/oqdata`); required for OQ tasks |
 
