@@ -113,6 +113,7 @@ Runtime configuration is via environment variables (loaded from `.env` by python
 | `NZSHM22_TOSHI_COGNITO_SCIENTIST_CLIENT_ID` | Cognito app client ID for Scientist login |
 | `NZSHM22_TOSHI_COGNITO_USER_POOL_ID` | Cognito user pool ID |
 | `NZSHM22_TOSHI_COGNITO_IDENTITY_POOL_ID` | Cognito identity pool ID (for AWS credential federation) |
+| `NZSHM22_TOSHI_COGNITO_REGION` | AWS region for Cognito (default `ap-southeast-2`) |
 | `NZSHM22_SCRIPT_WORKER_POOL_SIZE` | Parallel worker count (LOCAL mode) |
 | `NZSHM22_SCRIPT_WORK_PATH` | Working directory for task scripts/configs |
 | `NZSHM22_OPENSHA_ROOT` | Path to OpenSHA repo (Java tasks) |

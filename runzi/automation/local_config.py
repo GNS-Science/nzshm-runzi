@@ -16,7 +16,6 @@ load_dotenv()
 
 from nshm_toshi_client import API_URL, S3_URL, get_auth_kwargs  # noqa: F401, E402
 
-logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 

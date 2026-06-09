@@ -14,6 +14,7 @@ Set these in your `.env` file. Defaults are given in brackets.
 - `NZSHM22_TOSHI_COGNITO_SCIENTIST_CLIENT_ID`: Cognito app client ID for Scientist login.
 - `NZSHM22_TOSHI_COGNITO_USER_POOL_ID`: Cognito user pool ID.
 - `NZSHM22_TOSHI_COGNITO_IDENTITY_POOL_ID`: Cognito identity pool ID; used to federate AWS credentials via the identity pool.
+- `NZSHM22_TOSHI_COGNITO_REGION`: AWS region for Cognito (default `ap-southeast-2`).
 
   These four Cognito vars can alternatively be stored in `~/.toshi/auth_config.json` (written by `toshi-auth configure`). Env vars take precedence over the file; any key absent from the environment is read from the file.
 - `NZSHM22_RUNZI_ECR_DIGEST`: used by `toshi-hazard-store` to record the Docker image digest used to generate hazard cruves.

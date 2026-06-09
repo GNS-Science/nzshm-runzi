@@ -44,7 +44,7 @@ Both paths use the same Cognito Identity Pool authenticated role and end up with
 | **Auth steps per session** | `toshi-auth login` + `toshi-auth aws-creds` + `export AWS_PROFILE=toshi`. | `toshi-auth login` only. |
 | **STS expiry (~1h)** | User re-runs `aws-creds`; gets `ExpiredTokenException` from AWS if they forget. | runzi mints fresh STS creds on every invocation. |
 | **Cognito access_token expiry (~1h)** | `aws-creds` fails → user re-runs `toshi-auth login`. | Library refreshes via `refresh_token` (silent). |
-| **Docker wrapper** | Would need `~/.aws/credentials` mount + `AWS_SHARED_CREDENTIALS_FILE` env var re-enabled (currently commented out in `runzi/cli/docker_wrapper.py:129,151` as `# TEMP: testing IAM auth`). | Only the existing `~/.toshi` mount is required. |
+| **Docker wrapper** | `~/.aws/credentials` mount (`docker_wrapper.py:129`) and `AWS_SHARED_CREDENTIALS_FILE` env var (`docker_wrapper.py:151`) are active for the THS S3 pyarrow disk-path (see "THS S3 write exception" above). | Only the existing `~/.toshi` mount is required. |
 | **Tool consistency** | One credential source serves all tools (aws-cli, terraform, console federation, notebooks). | runzi-only; other tools still need `aws-creds` if they're ever used. |
 | **Credential leakage surface** | World-readable `~/.aws/credentials` is the classic mishap. STS creds expire in 1h so the leakage window is bounded. | `~/.toshi/credentials` holds the refresh_token, which has a much longer lifetime — leakage of *that* file is arguably worse. |
 | **Code locality** | Zero runzi code; minimal upstream code (`toshi-auth aws-creds` CLI). | ~37 lines in `runzi/aws/session.py` + ~120 lines in `nshm_toshi_client/aws.py`. |
@@ -68,5 +68,5 @@ Both paths use the same Cognito Identity Pool authenticated role and end up with
 ## Files
 
 - `runzi/aws/session.py` — thin wrapper around `nshm_toshi_client.aws.get_aws_session()` with fallback to the default boto3 credential chain on any `CognitoAuthError` or `ImportError`.
-- `runzi/cli/docker_wrapper.py:129,151` — disabled `~/.aws/credentials` mount lines, kept commented as a record of the prior direction.
+- `runzi/cli/docker_wrapper.py:129,151` — active `~/.aws/credentials` volume mount and `AWS_SHARED_CREDENTIALS_FILE` env var; required for the THS S3 pyarrow disk-path described above.
 - `nshm_toshi_client.aws` (upstream) — programmatic `get_aws_session()` and the `CognitoAuthError` exception hierarchy that runzi consumes.
