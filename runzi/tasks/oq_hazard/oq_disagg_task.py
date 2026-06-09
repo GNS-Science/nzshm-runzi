@@ -326,7 +326,7 @@ class OQDisaggTask:
                     output=THS_DISAGG_RLZ_DB,
                     probability=get_probability_enum(self.user_args.poe, self.user_args.investigation_time),
                     hazard_model_id=self.user_args.hazard_model_id,
-                    target_aggr=self.user_args.agg.value, # TODO: this is being import as str, which is luck b.c. that's what the function wants, but it's not the correct behavior. The typ is an enum and needs to be deserialized that way, then get the name or value here, should also check why mypy didn't catch this
+                    target_aggr=self.user_args.agg.value,
                     kind=get_kind(self.user_args.disagg_types),
                 )
         t1 = dt.datetime.now(dt.UTC)
