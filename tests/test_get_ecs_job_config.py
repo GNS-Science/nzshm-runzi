@@ -24,6 +24,7 @@ def _call_get_ecs_job_config(**overrides):
         toshi_s3_url='https://s3.example.com',
         toshi_report_bucket='my-report-bucket',
         ths_rlz_db=None,
+        ths_disagg_rlz_db=None,
         ecr_digest=None,
         task_module='runzi.tasks.oq_hazard.oq_hazard_task',
         time_minutes=60,
@@ -98,3 +99,21 @@ class TestContainerEnvContents:
         assert 'MY_CUSTOM_VAR' in names
         entry = next(e for e in result['containerOverrides']['environment'] if e['name'] == 'MY_CUSTOM_VAR')
         assert entry['value'] == 'hello'
+
+    def test_ths_rlz_db_and_disagg_rlz_db_are_independent(self, mocker):
+        """NZSHM22_THS_RLZ_DB and NZSHM22_THS_DISAGG_RLZ_DB must be configurable independently."""
+        mocker.patch('runzi.aws.aws.get_task_config', return_value={})
+        result = _call_get_ecs_job_config(
+            ths_rlz_db='s3://hazard-bucket/rlz',
+            ths_disagg_rlz_db='s3://disagg-bucket/rlz',
+        )
+        env = {e['name']: e['value'] for e in result['containerOverrides']['environment']}
+        assert env['NZSHM22_THS_RLZ_DB'] == 's3://hazard-bucket/rlz'
+        assert env['NZSHM22_THS_DISAGG_RLZ_DB'] == 's3://disagg-bucket/rlz'
+
+    def test_ths_disagg_rlz_db_defaults_to_working_path_when_none(self, mocker):
+        """When ths_disagg_rlz_db is None, NZSHM22_THS_DISAGG_RLZ_DB gets the fallback path."""
+        mocker.patch('runzi.aws.aws.get_task_config', return_value={})
+        result = _call_get_ecs_job_config(ths_disagg_rlz_db=None)
+        env = {e['name']: e['value'] for e in result['containerOverrides']['environment']}
+        assert env['NZSHM22_THS_DISAGG_RLZ_DB'] == '/WORKING/THS_DISAGG_RLZ'
