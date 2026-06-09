@@ -682,6 +682,29 @@ def test_cli_docker_ths_s3_value_still_forwarded(mocker, tmp_path, monkeypatch):
     assert has_env(captured['cmd'], 'NZSHM22_THS_RLZ_DB', 's3://my-bucket/path')
 
 
+def test_cli_docker_disagg_ths_s3_value_still_forwarded(mocker, tmp_path, monkeypatch):
+    """NZSHM22_THS_DISAGG_RLZ_DB s3:// value is forwarded via extra_env even though THS is not in the allowlist."""
+    (tmp_path / 'foo.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('NZSHM22_THS_DISAGG_RLZ_DB', 's3://my-disagg-bucket/path')
+
+    captured: dict = {}
+
+    def fake_run(cmd, check=False):
+        captured['cmd'] = cmd
+
+        class R:
+            returncode = 0
+
+        return R()
+
+    mocker.patch('runzi.cli.docker_wrapper._maybe_pull')
+    mocker.patch('runzi.cli.docker_wrapper.subprocess.run', side_effect=fake_run)
+    result = runner.invoke(app, ['--docker', 'hazard', 'oq-disagg', 'foo.json'])
+    assert result.exit_code == 0
+    assert has_env(captured['cmd'], 'NZSHM22_THS_DISAGG_RLZ_DB', 's3://my-disagg-bucket/path')
+
+
 def test_cli_docker_sets_user_env_in_container(mocker, tmp_path, monkeypatch):
     """USER must be forwarded so getpass.getuser() doesn't fall back to pwd.getpwuid()."""
     (tmp_path / 'foo.json').write_text('{}')
