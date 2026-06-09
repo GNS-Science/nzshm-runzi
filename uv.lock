@@ -8,7 +8,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-02T01:00:02.71157832Z"
+exclude-newer = "2026-06-02T01:56:22.704358531Z"
 exclude-newer-span = "P1W"
 
 [options.exclude-newer-package]
@@ -3286,9 +3286,7 @@ version = "0.10.1"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
-    { name = "click" },
     { name = "gitpython" },
-    { name = "lxml" },
     { name = "nshm-toshi-client" },
     { name = "nzshm-common", extra = ["geometry"] },
     { name = "nzshm-hazlab" },
@@ -3300,7 +3298,6 @@ dependencies = [
     { name = "pytz" },
     { name = "solvis" },
     { name = "toshi-hazard-store" },
-    { name = "tqdm" },
     { name = "typer" },
 ]
 
@@ -3336,9 +3333,7 @@ doc = [
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = ">=1.26.43" },
-    { name = "click", specifier = ">=8.1.7" },
     { name = "gitpython", specifier = ">=3.1.46" },
-    { name = "lxml", specifier = ">=4.9.2" },
     { name = "nshm-toshi-client", specifier = ">=1.3.0" },
     { name = "nzshm-common", extras = ["geometry"], specifier = ">=0.9.3" },
     { name = "nzshm-hazlab", specifier = ">=0.1.3,<0.2.0" },
@@ -3350,7 +3345,6 @@ requires-dist = [
     { name = "pytz", specifier = ">=2025.1" },
     { name = "solvis", specifier = ">=1.2.0,<2.0.0" },
     { name = "toshi-hazard-store", specifier = ">=2.0.0" },
-    { name = "tqdm", specifier = ">=4.67.3" },
     { name = "typer", specifier = ">=0.17.4,<0.18.0" },
 ]
 
