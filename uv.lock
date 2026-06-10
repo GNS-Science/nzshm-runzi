@@ -8,7 +8,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-02T03:55:06.475483146Z"
+exclude-newer = "2026-06-03T00:43:56.313696012Z"
 exclude-newer-span = "P1W"
 
 [options.exclude-newer-package]
@@ -136,30 +136,30 @@ wheels = [
 
 [[package]]
 name = "boto3"
-version = "1.43.19"
+version = "1.43.20"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore" },
     { name = "jmespath" },
     { name = "s3transfer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/97/da/229987ebb70daf5928f959aa8f4dd77dfcf425e6b0e7ff03aaef61ccc333/boto3-1.43.19.tar.gz", hash = "sha256:8b84704719dd3960ac12a8f37d9ff5adb853715baa9742f84fdbe2de0305c4cb", size = 113225, upload-time = "2026-06-01T19:33:06.514Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4b/7a/a3605b814fedd052fec798932f8d2b0459e61fd60ab2f652de1ce95815df/boto3-1.43.20.tar.gz", hash = "sha256:536d023d9f72dcec04254f71b216b78c6ee644be56ac61e780a6c73c1ddea445", size = 113210, upload-time = "2026-06-02T19:43:36.98Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/be/cc/77097be39d83068f864767b710cee0d8f9cd61331de816dd2675a596c328/boto3-1.43.19-py3-none-any.whl", hash = "sha256:ec6825193b75fbb6bfbf12181e4960d00ad2f404343586765394ce620e63783c", size = 140535, upload-time = "2026-06-01T19:33:03.758Z" },
+    { url = "https://files.pythonhosted.org/packages/5d/af/05411a9dc841d6e2344f2b8101338991bb32248e1bfa7cf8e2288327c025/boto3-1.43.20-py3-none-any.whl", hash = "sha256:ee878fa5cd739f38e68fbad535ff9bc3bf7c409290943a62f5e8bddad486aad4", size = 140536, upload-time = "2026-06-02T19:43:34.21Z" },
 ]
 
 [[package]]
 name = "botocore"
-version = "1.43.19"
+version = "1.43.20"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jmespath" },
     { name = "python-dateutil" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e2/a7/298986789785b74a954e2347114993be7e6b070417159125a6865f2687b6/botocore-1.43.19.tar.gz", hash = "sha256:18ac2fdd76c89b940707eb10493ff58678adad337d03215caec2d408ccd43cc0", size = 15435441, upload-time = "2026-06-01T19:32:53.126Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5b/04/ab59a00e6f003a5bee49464a14fa801b1498ecf1fb1ec32d5d847ab0e639/botocore-1.43.20.tar.gz", hash = "sha256:84fec90a8f25d11bb98176a3fa31c8b8e031b5be37d56f9a1a16f825b483ad4b", size = 15453850, upload-time = "2026-06-02T19:43:25.572Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/99/75/fe4d45bdd08afd66f3d5273db58f3d8a29365e52ce3a0851f7f5e5900943/botocore-1.43.19-py3-none-any.whl", hash = "sha256:99dbdccbf748974750601e805cecc9362a85d11fee89d6d58cd3f4ff302e6ff9", size = 15117709, upload-time = "2026-06-01T19:32:47.871Z" },
+    { url = "https://files.pythonhosted.org/packages/94/97/0bf341f86389a02cd3c4e6e2c597d15c7bf6c033a2abf1352473fc2e8354/botocore-1.43.20-py3-none-any.whl", hash = "sha256:1ee28afba70210f726c24f4bed1bf238a33542937fa2cf1b8cf2107287b85e04", size = 15135023, upload-time = "2026-06-02T19:43:20.939Z" },
 ]
 
 [[package]]
@@ -735,11 +735,11 @@ wheels = [
 
 [[package]]
 name = "distlib"
-version = "0.4.0"
+version = "0.4.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/96/8e/709914eb2b5749865801041647dc7f4e6d00b549cfe88b65ca192995f07c/distlib-0.4.0.tar.gz", hash = "sha256:feec40075be03a04501a973d81f633735b4b69f98b05450592310c0f401a4e0d", size = 614605, upload-time = "2025-07-17T16:52:00.465Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/86/b2/d6fc3f2347f43dada79e5ff118493e8109c98400a0e29a1d5264a3aa479b/distlib-0.4.1.tar.gz", hash = "sha256:c3804d0d2d4b5fcd44036eb860cb6660485fcdf5c2aba53dc324d805837ea65b", size = 610526, upload-time = "2026-06-02T11:17:40.691Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/33/6b/e0547afaf41bf2c42e52430072fa5658766e3d65bd4b03a563d1b6336f57/distlib-0.4.0-py2.py3-none-any.whl", hash = "sha256:9659f7d87e46584a30b5780e43ac7a2143098441670ff0a49d5f9034c54a6c16", size = 469047, upload-time = "2025-07-17T16:51:58.613Z" },
+    { url = "https://files.pythonhosted.org/packages/25/18/3497c4fa83a76dcb154923fd2075522e8dd6995ecee4093c00ae18160046/distlib-0.4.1-py2.py3-none-any.whl", hash = "sha256:9c2c552c68cbadc619f2d0ed3a69e27c351a3f4c9baa9ffb7df9e9cdc3d19a97", size = 469216, upload-time = "2026-06-02T11:17:38.779Z" },
 ]
 
 [[package]]
@@ -1057,11 +1057,11 @@ wheels = [
 
 [[package]]
 name = "idna"
-version = "3.17"
+version = "3.18"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b9/28/99c51f664567218d824af024c0251650fb27e4ca066df188dab0769c5b91/idna-3.17.tar.gz", hash = "sha256:5eb0cb53bc467c12eadcf6de83163ad8527cec9416f44b9b61b19caedad2b87f", size = 196048, upload-time = "2026-05-28T14:32:38.55Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cd/63/9496c57188a2ee585e0f1db071d75089a11e98aa86eb99d9d7618fc1edce/idna-3.18.tar.gz", hash = "sha256:ffb385a7e039654cef1ab9ef32c6fafe283c0c0467bba1d9029738ce4a14a848", size = 196711, upload-time = "2026-06-02T14:34:07.794Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/de/a7/f76514cc40ad6234098ecdebda08732d75964776c51a42845b7da10649e2/idna-3.17-py3-none-any.whl", hash = "sha256:466e48829084efe2548012b855df21540b96f2e20e51bd124c851536556a592c", size = 65316, upload-time = "2026-05-28T14:32:37.035Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/5e/d4e9f1a599fb8e573b7b87160658329fbf28d19eac2718f51fc3def3aa5a/idna-3.18-py3-none-any.whl", hash = "sha256:7f952cbe720b688055e3f87de14f5c3e5fdaa8bc3928985c4077ca689de849a2", size = 65455, upload-time = "2026-06-02T14:34:06.319Z" },
 ]
 
 [[package]]
@@ -1105,14 +1105,14 @@ wheels = [
 
 [[package]]
 name = "joserfc"
-version = "1.6.8"
+version = "1.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5d/ac/d4fd5b30f82900eac60d765f179f0ba005825ac462cc8ced6e13ec685ab3/joserfc-1.6.8.tar.gz", hash = "sha256:878620c553a6ebdd76ccdc356782fee3f735f21a356d079a546b42a4670ace5f", size = 232930, upload-time = "2026-05-27T03:22:37.819Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d3/c3/2f590052b55cbdd0ace470ee7ee1f685f6882051be93a9374891005623e2/joserfc-1.7.0.tar.gz", hash = "sha256:4aced6ab0c47846f0a531402aec2419a874b91e918df9c4c9da8a82fb559d6c4", size = 232967, upload-time = "2026-06-02T09:59:34.506Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/98/8c/5cdce2cf3ce8155849baf9a5e2ce77e89dc87ec3bdb38259e5d85fbc45bd/joserfc-1.6.8-py3-none-any.whl", hash = "sha256:22fb31a69094a5e6f44632002a9df2c30c941fc6c8ce1b037e92c03de954cf9f", size = 70927, upload-time = "2026-05-27T03:22:35.796Z" },
+    { url = "https://files.pythonhosted.org/packages/5b/83/b6b62a66a06ce872d9429a5eb5ee20b2002fd9c331b953c94381c1f7c9f9/joserfc-1.7.0-py3-none-any.whl", hash = "sha256:17e5d7a5a35e65442b05efc435a3d5d46696ffa2c8a2ed0eea6f63fc268e3224", size = 70387, upload-time = "2026-06-02T09:59:33.264Z" },
 ]
 
 [[package]]
@@ -3337,7 +3337,6 @@ requires-dist = [
     { name = "nshm-toshi-client", specifier = ">=1.3.0" },
     { name = "nzshm-common", extras = ["geometry"], specifier = ">=0.9.3" },
     { name = "nzshm-hazlab", specifier = ">=0.1.3,<0.2.0" },
-    { name = "nzshm-model", specifier = ">=0.15.2" },
     { name = "nzshm-model", specifier = ">=0.15.3" },
     { name = "py4j", specifier = "==0.10.9.1" },
     { name = "pydantic", specifier = ">=2.12" },
