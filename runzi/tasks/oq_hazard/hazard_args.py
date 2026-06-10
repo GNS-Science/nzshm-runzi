@@ -27,7 +27,8 @@ from runzi.tasks.validators import resolve_path
 
 
 def get_probability_enum(poe: float, investigation_time: float) -> ProbabilityEnum:
-    name = f"_{int(poe * 100)}_PCT_IN_{int(investigation_time)}YRS"
+    pct = f"{poe * 100:g}".replace(".", "")  # 10.0->"10", 5.0->"5", 0.5->"05"
+    name = f"_{pct}_PCT_IN_{int(investigation_time)}YRS"
     try:
         return ProbabilityEnum[name]
     except KeyError:
@@ -206,7 +207,7 @@ class OQDisaggArgs(OQArgs):
         try:
             get_probability_enum(self.poe, self.investigation_time)
         except KeyError as err:
-            raise ValueError(err) from err
+            raise ValueError(err.args[0]) from err
         return self
 
     @model_validator(mode='after')
