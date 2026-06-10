@@ -18,6 +18,7 @@ from nzshm_model import NshmModel
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
+from toshi_hazard_store.scripts.ths_rlz_import import store_hazard
 
 from runzi.arguments import SystemArgs, TaskLanguage
 from runzi.automation.local_config import (
@@ -48,11 +49,6 @@ logging.getLogger("git.cmd").setLevel(LOG_INFO)
 logging.getLogger("gql.transport").setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
-
-try:
-    from toshi_hazard_store.scripts.ths_rlz_import import store_hazard
-except ModuleNotFoundError:
-    log.info("not importing from toshi_hazard_store.scripts.ths_import due to missing dependencies")
 
 default_system_args = SystemArgs(
     task_language=TaskLanguage.PYTHON,
