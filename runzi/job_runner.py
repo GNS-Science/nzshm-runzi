@@ -73,6 +73,7 @@ class JobRunner(ABC):
         """
         # self.custom_setup()
         t0 = dt.datetime.now()
+        self.argument_sweeper.validate_all_tasks()
 
         # USE_API = False
         general_task_id = None

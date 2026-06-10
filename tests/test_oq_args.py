@@ -5,8 +5,10 @@ from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
+from toshi_hazard_store.model.constraints import ProbabilityEnum
 
 from runzi.tasks.oq_hazard import OQDisaggArgs, OQHazardArgs
+from runzi.tasks.oq_hazard.hazard_args import get_probability_enum
 from tests.helpers import does_not_raise
 
 
@@ -185,3 +187,31 @@ def test_disagg_incorrect_agg(disagg_input_data):
     disagg_input_data["agg"] = ["PGA", "XYZ"]
     with pytest.raises(ValidationError):
         OQDisaggArgs.model_validate(disagg_input_data)
+
+
+def test_probability_enum():
+    assert get_probability_enum(0.1, 50.0) == ProbabilityEnum["_10_PCT_IN_50YRS"]
+    assert get_probability_enum(0.005, 50.0) == ProbabilityEnum["_05_PCT_IN_50YRS"]
+
+    with pytest.raises(KeyError):
+        get_probability_enum(0.11, 50.0)
+
+
+def test_probability_enum_round_trips_all_members():
+    """Every ProbabilityEnum member must be reachable via get_probability_enum."""
+    poe_by_pct = {86: 0.86, 63: 0.63, 39: 0.39, 18: 0.18, 10: 0.10, 5: 0.05, 2: 0.02, 1: 0.01}
+    for pct, poe in poe_by_pct.items():
+        assert get_probability_enum(poe, 50.0) == ProbabilityEnum[f"_{pct}_PCT_IN_50YRS"]
+    # Sub-1% member uses a leading zero in its name — previously broken by int() truncation
+    assert get_probability_enum(0.005, 50.0) == ProbabilityEnum["_05_PCT_IN_50YRS"]
+
+
+def test_validate_poe_error_message_is_clean(disagg_input_data):
+    """An invalid poe must produce a clean ValidationError message, not the quoted KeyError repr."""
+    disagg_input_data["poe"] = 0.11  # no matching ProbabilityEnum
+    with pytest.raises(ValidationError) as exc_info:
+        OQDisaggArgs.model_validate(disagg_input_data)
+    msg = str(exc_info.value)
+    assert "Cannot find matching ProbabilityEnum" in msg
+    # ValueError(KeyError("msg")) would produce "'msg'" — ensure the quotes are gone
+    assert "'Cannot find" not in msg

@@ -19,6 +19,7 @@ from nzshm_model import NshmModel
 from nzshm_model.logic_tree import GMCMLogicTree, SourceLogicTree
 from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
+from toshi_hazard_store.scripts.ths_disagg_import import store_disagg
 
 from runzi.arguments import SystemArgs, TaskLanguage
 from runzi.automation.local_config import (
@@ -26,7 +27,7 @@ from runzi.automation.local_config import (
     ECR_DIGEST,
     S3_URL,
     SPOOF,
-    THS_RLZ_DB,
+    THS_DISAGG_RLZ_DB,
     USE_API,
     WORK_PATH,
     get_auth_kwargs,
@@ -35,7 +36,7 @@ from runzi.automation.toshi_api import ModelType, ToshiApi
 from runzi.automation.toshi_api.openquake_hazard.openquake_hazard_task import HazardTaskType
 from runzi.tasks.get_config import get_config
 from runzi.tasks.oq_hazard.execute_openquake import execute_openquake
-from runzi.tasks.oq_hazard.hazard_args import OQDisaggArgs
+from runzi.tasks.oq_hazard.hazard_args import OQDisaggArgs, get_probability_enum
 
 if TYPE_CHECKING:
     from nzshm_common import CodedLocation
@@ -53,11 +54,6 @@ logging.getLogger("git.cmd").setLevel(LOG_INFO)
 logging.getLogger("gql.transport").setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
-
-try:
-    from toshi_hazard_store.scripts.ths_rlz_import import store_hazard
-except ModuleNotFoundError:
-    log.info("not importing from toshi_hazard_store.scripts.ths_import due to missing dependencies")
 
 default_system_args = SystemArgs(
     task_language=TaskLanguage.PYTHON,
@@ -313,17 +309,22 @@ class OQDisaggTask:
                 config_filepath = config_folder / "hazard_config.json"
                 hazard_config.to_json(config_filepath)
 
-                # # THS does not yet support storing disaggregation realizations
-                log.info("store hazard")
-                store_hazard(
-                    str(oq_result["hdf5_filepath"]),
-                    config_filepath,
-                    self.user_args.compatible_calc_id,
-                    solution_id,
-                    ECR_DIGEST,
-                    THS_RLZ_DB,
-                )
+                def get_kind(disagg_types: list[str]) -> str:
+                    return "_".join(disagg_types)
 
+                log.info("store disaggs")
+                store_disagg(
+                    hdf5_path=str(oq_result["hdf5_filepath"]),
+                    config_path=config_filepath,
+                    compatible_calc_id=self.user_args.compatible_calc_id,
+                    hazard_calc_id=solution_id,
+                    ecr_digest=ECR_DIGEST,
+                    output=THS_DISAGG_RLZ_DB,
+                    probability=get_probability_enum(self.user_args.poe, self.user_args.investigation_time),
+                    hazard_model_id=self.user_args.hazard_model_id,
+                    target_aggr=self.user_args.agg.value,
+                    kind=get_kind(self.user_args.disagg_types),
+                )
         t1 = dt.datetime.now(dt.UTC)
         log.info('Task took %s secs', (t1 - t0).total_seconds())
 

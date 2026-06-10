@@ -99,6 +99,7 @@ def get_ecs_job_config(
     toshi_s3_url: str,
     toshi_report_bucket: str,
     ths_rlz_db: str | None,
+    ths_disagg_rlz_db: str | None,
     ecr_digest: str | None,
     task_module: str,
     time_minutes: int,
@@ -110,7 +111,8 @@ def get_ecs_job_config(
     use_compression=False,
 ):
 
-    ths_rlz_db = ths_rlz_db or "/WORKING/THS_RLZ"
+    ths_rlz_db = ths_rlz_db or '/WORKING/THS_RLZ'
+    ths_disagg_rlz_db = ths_disagg_rlz_db or '/WORKING/THS_DISAGG_RLZ'
     ecr_digest = ecr_digest or "sha256:NOT_SET"
     task_config = get_task_config(task_args, task_system_args, model_type)
     if "Fargate" in job_definition:
@@ -195,6 +197,7 @@ def get_ecs_job_config(
                 {"name": "NZSHM22_S3_REPORT_BUCKET", "value": toshi_report_bucket},
                 {"name": "NZSHM22_RUNZI_ECR_DIGEST", "value": ecr_digest},
                 {"name": "NZSHM22_THS_RLZ_DB", "value": ths_rlz_db},
+                {"name": "NZSHM22_THS_DISAGG_RLZ_DB", "value": ths_disagg_rlz_db},
                 {"name": "PYTHON_TASK_MODULE", "value": task_module},
                 {"name": "AWS_DEFAULT_REGION", "value": os.getenv("AWS_DEFAULT_REGION", "us-east-1")},
             ],

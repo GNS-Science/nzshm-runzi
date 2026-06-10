@@ -20,9 +20,20 @@ from pydantic import (
 )
 from toshi_hazard_store.config import STORAGE_FOLDER
 from toshi_hazard_store.model import AggregationEnum
+from toshi_hazard_store.model.constraints import ProbabilityEnum
 from toshi_hazard_store.model.hazard_models_manager import CompatibleHazardCalculationManager
 
 from runzi.tasks.validators import resolve_path
+
+
+def get_probability_enum(poe: float, investigation_time: float) -> ProbabilityEnum:
+    pct = f"{poe * 100:g}".replace(".", "")  # 10.0->"10", 5.0->"5", 0.5->"05"
+    name = f"_{pct}_PCT_IN_{int(investigation_time)}YRS"
+    try:
+        return ProbabilityEnum[name]
+    except KeyError:
+        msg = f"Cannot find matching ProbabilityEnum for {poe} in {investigation_time}"
+        raise KeyError(msg) from None
 
 
 def _is_model_version(value: str | None) -> str | None:
@@ -189,6 +200,15 @@ class OQDisaggArgs(OQArgs):
     """Dict of disaggregation bin edges. Keys are dimentions (e.g. 'dist'), values are
     the edges (e.g. [0, 5.0, 10.0, ]).
     """
+
+    @model_validator(mode='after')
+    def validate_poe(self) -> Self:
+        """The poe and investigation time must match one of the ProbabilityEnum."""
+        try:
+            get_probability_enum(self.poe, self.investigation_time)
+        except KeyError as err:
+            raise ValueError(err.args[0]) from err
+        return self
 
     @model_validator(mode='after')
     def validate_bins(self) -> Self:

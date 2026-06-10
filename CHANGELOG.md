@@ -1,8 +1,10 @@
 # Changelog
 
-## [unreleased]
+## [0.11.0] 2026-10-06
 
 ### Added
+ - Store disaggregation realizations in toshi-hazard-store dataset
+ - Validate all tasks before running to fail early
  - --docker top-level flag to route any runzi command through a local Docker container, plus --dev build mode and dev_locally.md docs
  - NZSHM22_OQ_VENV and NZSHM22_OQ_DATADIR environment variables for locating the OpenQuake venv and HDF5 datastore directory
 
@@ -19,7 +21,6 @@
  - NZSHM22_TOSHI_API_ENABLED is no longer baked into the Docker image; set explicitly in AWS Batch job config and forwarded from host on local --docker runs
  - oq-convert output zip is now written to WORK_PATH instead of being buried in a downloads/ subdirectory
  - Container runs as host UID
-
 
 ## [0.10.1] 2026-03-30
 
