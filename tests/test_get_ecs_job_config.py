@@ -8,8 +8,11 @@ Scientist credentials are not accidentally overridden by M2M config.
 
 import inspect
 
+import pytest
+
+from runzi.arguments import DEFAULT_JOB_DEFINITION, DEFAULT_JOB_QUEUE, SystemArgs, TaskLanguage
 from runzi.aws import get_ecs_job_config
-from runzi.aws.aws import BatchEnvironmentSetting
+from runzi.aws.aws import BatchEnvironmentSetting, validate_fargate_resources
 
 
 def _call_get_ecs_job_config(**overrides):
@@ -117,3 +120,67 @@ class TestContainerEnvContents:
         result = _call_get_ecs_job_config(ths_disagg_rlz_db=None)
         env = {e['name']: e['value'] for e in result['containerOverrides']['environment']}
         assert env['NZSHM22_THS_DISAGG_RLZ_DB'] == '/WORKING/THS_DISAGG_RLZ'
+
+
+class TestValidateFargateResources:
+    """validate_fargate_resources enforces the AWS Fargate vCPU/memory matrix."""
+
+    @pytest.mark.parametrize(
+        'vcpu, memory',
+        [
+            (0.25, 512),
+            (0.5, 4096),
+            (1, 2048),
+            (2, 16384),
+            (4, 30720),
+            (8, 16384),
+            (8, 32768),  # the value OQ tasks move to
+            (16, 122880),
+        ],
+    )
+    def test_valid_combinations_pass(self, vcpu, memory):
+        validate_fargate_resources(vcpu, memory)  # must not raise
+
+    def test_invalid_vcpu_raises(self):
+        with pytest.raises(ValueError, match='not a valid Fargate vCPU'):
+            validate_fargate_resources(6, 16384)
+
+    def test_invalid_memory_for_vcpu_raises(self):
+        # 30000 is not a valid 8-vCPU Fargate memory (must be a multiple of 4096 in 16384..61440).
+        with pytest.raises(ValueError, match='not valid for 8 vCPU'):
+            validate_fargate_resources(8, 30000)
+
+
+class TestFargateValidationInJobConfig:
+    """get_ecs_job_config validates only when the job definition targets Fargate."""
+
+    def test_invalid_fargate_size_rejected(self, mocker):
+        mocker.patch('runzi.aws.aws.get_task_config', return_value={})
+        with pytest.raises(ValueError):
+            _call_get_ecs_job_config(job_definition=DEFAULT_JOB_DEFINITION, vcpu=8, memory=30000)
+
+    def test_valid_fargate_size_accepted(self, mocker):
+        mocker.patch('runzi.aws.aws.get_task_config', return_value={})
+        result = _call_get_ecs_job_config(job_definition=DEFAULT_JOB_DEFINITION, vcpu=8, memory=32768)
+        assert result['jobDefinition'] == DEFAULT_JOB_DEFINITION
+
+    def test_non_fargate_job_definition_skips_validation(self, mocker):
+        """An EC2 job definition skips the Fargate matrix check (interim BigLever path)."""
+        mocker.patch('runzi.aws.aws.get_task_config', return_value={})
+        result = _call_get_ecs_job_config(vcpu=8, memory=30000)  # BasicEC2 default name
+        assert result['jobDefinition'] == 'BasicEC2-job-definition'
+
+
+class TestSystemArgsComputeDefaults:
+    """SystemArgs supplies the single canonical Fargate def/queue by default."""
+
+    def test_job_def_and_queue_default_to_fargate(self):
+        args = SystemArgs(
+            task_language=TaskLanguage.PYTHON,
+            use_api=False,
+            ecs_max_job_time_min=10,
+            ecs_memory=2048,
+            ecs_vcpu=1,
+        )
+        assert args.ecs_job_definition == DEFAULT_JOB_DEFINITION
+        assert args.ecs_job_queue == DEFAULT_JOB_QUEUE

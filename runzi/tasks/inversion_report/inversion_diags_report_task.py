@@ -22,8 +22,6 @@ default_system_args = SystemArgs(
     ecs_max_job_time_min=60,
     ecs_memory=30720,
     ecs_vcpu=4,
-    ecs_job_definition="Fargate-runzi-opensha-JD",
-    ecs_job_queue="BasicFargate_Q",
 )
 
 

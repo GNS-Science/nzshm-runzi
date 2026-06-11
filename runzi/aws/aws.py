@@ -25,6 +25,51 @@ if TYPE_CHECKING:
 BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')
 
 
+def _fargate_memory_values(min_mb: int, max_mb: int, step_mb: int) -> tuple[int, ...]:
+    return tuple(range(min_mb, max_mb + 1, step_mb))
+
+
+# Valid AWS Fargate task vCPU/memory(MB) combinations, encoded from the AWS docs table
+# "Fargate task CPU and memory":
+# https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-task-defs.html#fargate-tasks-size
+# AWS only ever expands this matrix, so a stale copy fails closed (rejects a newly-valid combo)
+# rather than accepting an invalid one; submit_job is the ultimate validator. To refresh, update
+# the ranges below and bump the marker.
+# last verified: 2026-06
+FARGATE_VCPU_MEMORY_MB: dict[float, tuple[int, ...]] = {
+    0.25: (512, 1024, 2048),
+    0.5: _fargate_memory_values(1024, 4096, 1024),
+    1: _fargate_memory_values(2048, 8192, 1024),
+    2: _fargate_memory_values(4096, 16384, 1024),
+    4: _fargate_memory_values(8192, 30720, 1024),
+    8: _fargate_memory_values(16384, 61440, 4096),
+    16: _fargate_memory_values(32768, 122880, 8192),
+}
+
+
+def validate_fargate_resources(vcpu: float, memory: int) -> None:
+    """Validate a vCPU/memory pair against the AWS Fargate task size matrix.
+
+    Args:
+        vcpu: requested vCPU (must be a Fargate-supported value).
+        memory: requested memory in MB.
+
+    Raises:
+        ValueError: if vcpu is not a supported Fargate value, or memory is not a valid
+            amount for that vcpu.
+    """
+    if vcpu not in FARGATE_VCPU_MEMORY_MB:
+        raise ValueError(
+            f"vcpu={vcpu} is not a valid Fargate vCPU value; choose one of {sorted(FARGATE_VCPU_MEMORY_MB)}"
+        )
+    valid_memory = FARGATE_VCPU_MEMORY_MB[vcpu]
+    if memory not in valid_memory:
+        raise ValueError(
+            f"memory={memory} MB is not valid for {vcpu} vCPU on Fargate; valid values are "
+            f"{valid_memory[0]}-{valid_memory[-1]} MB (allowed: {list(valid_memory)})"
+        )
+
+
 def get_secret(secret_name, region_name):
 
     # Create a Secrets Manager client
@@ -115,63 +160,11 @@ def get_ecs_job_config(
     ths_disagg_rlz_db = ths_disagg_rlz_db or '/WORKING/THS_DISAGG_RLZ'
     ecr_digest = ecr_digest or "sha256:NOT_SET"
     task_config = get_task_config(task_args, task_system_args, model_type)
+    # Interim: only Fargate job definitions are validated against the Fargate size matrix. The EC2
+    # BigLever path (OQ tasks) skips this until those tasks migrate to Fargate, after which this
+    # guard is removed and every job is Fargate-validated.
     if "Fargate" in job_definition:
-        assert vcpu in [0.25, 0.5, 1, 2, 4]
-        assert memory in [
-            512,
-            1024,
-            2048,  # value = 0.25
-            1024,
-            2048,
-            3072,
-            4096,  # value = 0.5
-            2048,
-            3072,
-            4096,
-            5120,
-            6144,
-            7168,
-            8192,  # value = 1
-            4096,
-            5120,
-            6144,
-            7168,
-            8192,
-            9216,
-            10240,
-            11264,
-            12288,
-            13312,
-            14336,
-            15360,
-            16384,  # value = 2
-            8192,
-            9216,
-            10240,
-            11264,
-            12288,
-            13312,
-            14336,
-            15360,
-            16384,
-            17408,
-            18432,
-            19456,
-            20480,
-            21504,
-            22528,
-            23552,
-            24576,
-            25600,
-            26624,
-            27648,
-            28672,
-            29696,
-            30720,  # value = 4
-        ]
-    #     job_queue = "BasicFargate_Q"
-    # else:
-    #     job_queue = "BigLeverOnDemandEC2-job-queue" #"getting-started-jun7" #"BiggerLeverQueue"
+        validate_fargate_resources(vcpu, memory)
 
     config: dict[str, Any] = {
         "jobName": job_name,

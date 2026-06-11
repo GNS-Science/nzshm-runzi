@@ -15,6 +15,12 @@ class TaskLanguage(Enum):
     JAVA = 'java'
 
 
+# Canonical AWS Batch compute target. All tasks share a single Fargate compute environment,
+# job definition, and queue (see docs/architecture/aws-batch-compute-consolidation.md).
+DEFAULT_JOB_DEFINITION = "Fargate-runzi-opensha-JD"
+DEFAULT_JOB_QUEUE = "BasicFargate_Q"
+
+
 class SystemArgs(BaseModel):
     task_language: TaskLanguage
     general_task_id: str | None = None
@@ -28,8 +34,8 @@ class SystemArgs(BaseModel):
     ecs_max_job_time_min: int
     ecs_memory: int
     ecs_vcpu: int
-    ecs_job_definition: str
-    ecs_job_queue: str
+    ecs_job_definition: str = DEFAULT_JOB_DEFINITION
+    ecs_job_queue: str = DEFAULT_JOB_QUEUE
     ecs_extra_env: list[BatchEnvironmentSetting] | None = None
 
 
