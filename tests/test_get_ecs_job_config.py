@@ -137,10 +137,18 @@ class TestValidateFargateResources:
             (8, 16384),
             (8, 32768),  # the value OQ tasks move to
             (16, 122880),
+            (32, 61440),  # 60 GB
+            (32, 122880),  # 120 GB
+            (32, 249856),  # 244 GB
         ],
     )
     def test_valid_combinations_pass(self, vcpu, memory):
         validate_fargate_resources(vcpu, memory)  # must not raise
+
+    def test_32_vcpu_rejects_non_discrete_memory(self):
+        """Unlike 8/16 vCPU, 32 vCPU only allows the three discrete values, not a stepped range."""
+        with pytest.raises(ValueError, match='not valid for 32 vCPU'):
+            validate_fargate_resources(32, 90112)  # 88 GB, between 60 and 120 but not allowed
 
     def test_invalid_vcpu_raises(self):
         with pytest.raises(ValueError, match='not a valid Fargate vCPU'):

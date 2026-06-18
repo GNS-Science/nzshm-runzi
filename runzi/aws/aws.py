@@ -47,6 +47,7 @@ FARGATE_VCPU_MEMORY_MB: dict[float, tuple[int, ...]] = {
     4: _fargate_memory_values(8192, 30720, 1024),
     8: _fargate_memory_values(16384, 61440, 4096),
     16: _fargate_memory_values(32768, 122880, 8192),
+    32: (61440, 122880, 249856),  # 60 GB, 120 GB, 244 GB — discrete, not a stepped range
 }
 
 
