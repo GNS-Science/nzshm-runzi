@@ -153,7 +153,8 @@ class TestValidateFargateResources:
 
 
 class TestFargateValidationInJobConfig:
-    """get_ecs_job_config validates only when the job definition targets Fargate."""
+    """get_ecs_job_config always validates vcpu/memory against the Fargate matrix, since every
+    job now targets the single Fargate queue (no EC2 job definitions remain)."""
 
     def test_invalid_fargate_size_rejected(self, mocker):
         mocker.patch('runzi.aws.aws.get_task_config', return_value={})
@@ -165,11 +166,11 @@ class TestFargateValidationInJobConfig:
         result = _call_get_ecs_job_config(job_definition=DEFAULT_JOB_DEFINITION, vcpu=8, memory=32768)
         assert result['jobDefinition'] == DEFAULT_JOB_DEFINITION
 
-    def test_non_fargate_job_definition_skips_validation(self, mocker):
-        """An EC2 job definition skips the Fargate matrix check (interim BigLever path)."""
+    def test_invalid_size_rejected_regardless_of_job_definition_name(self, mocker):
+        """Validation no longer keys off the job definition name; any job definition is checked."""
         mocker.patch('runzi.aws.aws.get_task_config', return_value={})
-        result = _call_get_ecs_job_config(vcpu=8, memory=30000)  # BasicEC2 default name
-        assert result['jobDefinition'] == 'BasicEC2-job-definition'
+        with pytest.raises(ValueError):
+            _call_get_ecs_job_config(vcpu=8, memory=30000)  # BasicEC2-job-definition default name
 
 
 class TestCompression:

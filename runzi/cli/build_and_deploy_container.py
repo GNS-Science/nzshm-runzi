@@ -8,6 +8,8 @@ import typer
 from dotenv import load_dotenv
 from rich import print as rich_print
 
+from runzi.arguments import DEFAULT_JOB_DEFINITION
+
 load_dotenv()
 
 app = typer.Typer()
@@ -196,7 +198,7 @@ def build_and_deploy_container(
     region: str = typer.Option("us-east-1", envvar="AWS_REGION", help="AWS region"),
     aws_account_id: str = typer.Option("461564345538", envvar="AWS_ACCOUNT_ID", help="AWS account ID"),
     ecr_repo: str = typer.Option("nzshm22/runzi", envvar="ECR_REPO", help="ECR repository"),
-    job_definition: str = typer.Option("runzi_32GB_8VCPU_JD", envvar="JOB_DEFINITION", help="Batch job definition"),
+    job_definition: str = typer.Option(DEFAULT_JOB_DEFINITION, envvar="JOB_DEFINITION", help="Batch job definition"),
     dockerfile: str = typer.Option("docker/Dockerfile", envvar="DOCKERFILE", help="Path to Dockerfile"),
     skip_build: bool = typer.Option(default=False, help="Skip Docker build"),
     skip_push: bool = typer.Option(default=False, help="Skip ECR push"),

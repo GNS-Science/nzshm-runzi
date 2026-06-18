@@ -163,11 +163,7 @@ def get_ecs_job_config(
     ths_disagg_rlz_db = ths_disagg_rlz_db or '/WORKING/THS_DISAGG_RLZ'
     ecr_digest = ecr_digest or "sha256:NOT_SET"
     task_config = get_task_config(task_args, task_system_args, model_type)
-    # Interim: only Fargate job definitions are validated against the Fargate size matrix. The EC2
-    # BigLever path (OQ tasks) skips this until those tasks migrate to Fargate, after which this
-    # guard is removed and every job is Fargate-validated.
-    if "Fargate" in job_definition:
-        validate_fargate_resources(vcpu, memory)
+    validate_fargate_resources(vcpu, memory)
 
     config: dict[str, Any] = {
         "jobName": job_name,
