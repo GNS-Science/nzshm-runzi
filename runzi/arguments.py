@@ -15,6 +15,18 @@ class TaskLanguage(Enum):
     JAVA = 'java'
 
 
+class ComputeEnvironment(Enum):
+    """Which AWS Batch compute target a job runs on.
+
+    Fargate is the default for every task; EC2 is an explicit per-job opt-in (set via a config
+    file's sys_arg_overrides) for jobs that need a size or instance feature Fargate can't
+    provide. See docs/usage/aws_batch.md.
+    """
+
+    FARGATE = 'fargate'
+    EC2 = 'ec2'
+
+
 # Canonical AWS Batch compute target. All tasks share a single Fargate compute environment,
 # job definition, and queue (see docs/architecture/aws-batch-compute-consolidation.md).
 DEFAULT_JOB_DEFINITION = "Fargate-runzi-opensha-JD"
@@ -36,6 +48,7 @@ class SystemArgs(BaseModel):
     ecs_vcpu: int
     ecs_job_definition: str = DEFAULT_JOB_DEFINITION
     ecs_job_queue: str = DEFAULT_JOB_QUEUE
+    ecs_compute_environment: ComputeEnvironment = ComputeEnvironment.FARGATE
     ecs_extra_env: list[BatchEnvironmentSetting] | None = None
 
 

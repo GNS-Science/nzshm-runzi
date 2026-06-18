@@ -2,10 +2,12 @@ This describes the AWS Batch architecture `runzi` submits jobs to in `--cluster-
 the operator-facing companion to the decision recorded in
 [`docs/architecture/aws-batch-compute-consolidation.md`](../architecture/aws-batch-compute-consolidation.md).
 
-# Single Fargate architecture
+# Single Fargate architecture (default)
 
-Every task module submits to the same compute environment, job definition, and job queue. There
-is no EC2 compute environment.
+Every task module submits to the same compute environment, job definition, and job queue by
+default. EC2 is also available as an explicit per-job opt-in — see
+["Targeting EC2"](#targeting-ec2) below — but Fargate remains what every task gets unless a job
+asks otherwise.
 
 - **Compute environment**: Fargate, backing the queue below. `maxvCpus` must be high enough for
   the desired concurrency at up to 8 vCPU/job (the largest current task size, used by the OQ
@@ -26,6 +28,32 @@ names (`DEFAULT_JOB_DEFINITION` / `DEFAULT_JOB_QUEUE`), so task modules only nee
 `ecs_memory` / `ecs_vcpu` / `ecs_max_job_time_min`. `get_ecs_job_config()`
 (`runzi/aws/aws.py`) validates every `vcpu`/`memory` pair against AWS's published Fargate
 CPU/memory matrix before submission, and raises if a job won't fit.
+
+# Targeting EC2
+
+A job can opt into EC2 instead of Fargate by setting `ecs_compute_environment: ec2` in its
+config file's `sys_arg_overrides`, alongside an EC2 job definition and queue (there are no
+canonical EC2 names — runzi has no opinion on which EC2 compute environment you point at):
+
+```json
+"sys_arg_overrides": {
+  "ecs_compute_environment": "ec2",
+  "ecs_job_definition": "<your-ec2-job-definition>",
+  "ecs_job_queue": "<your-ec2-job-queue>"
+}
+```
+
+**Validation is light on purpose.** Unlike Fargate, EC2 has no fixed CPU/memory matrix —
+`resourceRequirements` are minimums that the Batch scheduler bin-packs onto whatever instance
+types your compute environment offers. `validate_ec2_resources()` (`runzi/aws/aws.py`) only
+checks that vCPU is a positive integer and memory is positive; it can't validate against real
+instance sizes because runzi doesn't know what's in your compute environment.
+
+**The failure mode to watch for:** if you request more memory than any instance in the compute
+environment can actually allocate, the job won't error at submission — it will sit in
+`RUNNABLE` forever with no clear message. An instance's *allocatable* memory is somewhat less
+than its advertised RAM (the OS, ECS agent, and Docker daemon reserve some), so size EC2 jobs
+with margin below your largest instance's total memory, not right up against it.
 
 # Updating the job definition
 

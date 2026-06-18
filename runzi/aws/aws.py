@@ -20,7 +20,7 @@ from runzi.aws.session import get_session
 if TYPE_CHECKING:
     from pydantic import BaseModel
 
-    from runzi.arguments import SystemArgs
+    from runzi.arguments import ComputeEnvironment, SystemArgs
 
 BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')
 
@@ -72,6 +72,29 @@ def validate_fargate_resources(vcpu: float, memory: int) -> None:
             f"memory={memory} MB is not valid for {vcpu} vCPU on Fargate; valid values are "
             f"{valid_memory[0]}-{valid_memory[-1]} MB (allowed: {list(valid_memory)})"
         )
+
+
+def validate_ec2_resources(vcpu: float, memory: int) -> None:
+    """Light sanity check for an EC2 vCPU/memory pair.
+
+    Unlike Fargate, EC2 has no fixed CPU/memory matrix: the values are minimums that the Batch
+    scheduler bin-packs onto whatever instance types the compute environment offers, so runzi
+    can't validate them against a static table. This only catches obviously-wrong values; the
+    scheduler is the real arbiter. A request that's too large for any instance in the compute
+    environment won't raise here — it will sit in RUNNABLE forever instead, so size EC2 jobs
+    with some margin below your largest instance's allocatable memory.
+
+    Args:
+        vcpu: requested vCPU; must be a positive integer.
+        memory: requested memory in MB; must be positive.
+
+    Raises:
+        ValueError: if vcpu is not a positive integer, or memory is not positive.
+    """
+    if vcpu < 1 or vcpu != int(vcpu):
+        raise ValueError(f"vcpu={vcpu} is not valid for EC2; must be a positive integer")
+    if memory <= 0:
+        raise ValueError(f"memory={memory} MB is not valid for EC2; must be positive")
 
 
 def get_secret(secret_name, region_name):
@@ -158,13 +181,20 @@ def get_ecs_job_config(
     job_queue: str,
     extra_env: list[BatchEnvironmentSetting] | None = None,
     use_compression=False,
+    compute_environment: 'ComputeEnvironment | str' = 'fargate',
 ):
 
     ths_rlz_db = ths_rlz_db or '/WORKING/THS_RLZ'
     ths_disagg_rlz_db = ths_disagg_rlz_db or '/WORKING/THS_DISAGG_RLZ'
     ecr_digest = ecr_digest or "sha256:NOT_SET"
     task_config = get_task_config(task_args, task_system_args, model_type)
-    validate_fargate_resources(vcpu, memory)
+    # compute_environment may be the ComputeEnvironment enum or a raw string (sys_arg_overrides
+    # applies config-file overrides via setattr, which bypasses pydantic coercion).
+    compute_target = getattr(compute_environment, 'value', compute_environment)
+    if compute_target == 'ec2':
+        validate_ec2_resources(vcpu, memory)
+    else:
+        validate_fargate_resources(vcpu, memory)
 
     config: dict[str, Any] = {
         "jobName": job_name,

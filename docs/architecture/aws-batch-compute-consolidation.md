@@ -78,15 +78,31 @@ Because IaC is deferred, the following are **manual, external obligations** rath
 - **Optional dynamic resource validation** — query the Batch/ECS API for the compute
   environment's real capabilities instead of the static matrix. Needs live AWS credentials and is
   heavier; only worth it if the static table proves to drift painfully.
-- **Add an EC2 compute environment** only if a future task genuinely exceeds Fargate's limits
-  (>16 vCPU / 120 GB, GPU, or fast local scratch).
+
+## Addendum: EC2 re-supported as a per-job opt-in
+
+The "add an EC2 compute environment only if a future task genuinely exceeds Fargate's limits"
+followup above has been actioned: `SystemArgs.ecs_compute_environment` (default `FARGATE`) lets
+a job opt into EC2 via its config file's `sys_arg_overrides`, supplying its own
+`ecs_job_definition` / `ecs_job_queue` (no canonical EC2 names — fully config-driven, unlike the
+Fargate defaults). `get_ecs_job_config()` branches its validation accordingly:
+`validate_fargate_resources()` for Fargate (unchanged), or a new `validate_ec2_resources()` for
+EC2 — a light positive-integer-vCPU / positive-memory check only, since EC2 sizing depends on
+the compute environment's instance types, which runzi can't know statically. See
+`docs/usage/aws_batch.md#targeting-ec2` for the operator-facing details and the `RUNNABLE`-forever
+failure mode this implies for oversized EC2 jobs.
+
+Fargate remains the default for every task; this does not reopen the EC2 BigLever path that was
+retired above — it's a new, narrower, per-job mechanism.
 
 ## Files
 
-- `runzi/arguments.py` — `DEFAULT_JOB_DEFINITION` / `DEFAULT_JOB_QUEUE` constants and the
-  `SystemArgs.ecs_job_definition` / `ecs_job_queue` field defaults.
-- `runzi/aws/aws.py` — `validate_fargate_resources()` and the Fargate vcpu/memory matrix constant
-  consumed by `get_ecs_job_config()`.
+- `runzi/arguments.py` — `DEFAULT_JOB_DEFINITION` / `DEFAULT_JOB_QUEUE` constants, the
+  `SystemArgs.ecs_job_definition` / `ecs_job_queue` field defaults, and the `ComputeEnvironment`
+  enum / `ecs_compute_environment` field (default `FARGATE`).
+- `runzi/aws/aws.py` — `validate_fargate_resources()` and the Fargate vcpu/memory matrix constant,
+  plus `validate_ec2_resources()`; both consumed by `get_ecs_job_config()`'s
+  `compute_environment`-keyed branch.
 - `runzi/tasks/*/*_task.py` — task modules now inherit the default def/queue; OQ tasks carry the
   8 vCPU / 32 GB Fargate sizing.
 - `runzi/cli/build_and_deploy_container.py` — deploy default `job_definition` aligned to the
