@@ -158,6 +158,7 @@ def update_job_definition(
     current_revision = current_def["revision"]
     current_arn = current_def["jobDefinitionArn"]
     current_parameters = current_def["parameters"]
+    current_platform_capabilities = current_def["platformCapabilities"]
 
     print(f"Current revision: {current_revision}")
     print(f"Current ARN: {current_arn}")
@@ -170,6 +171,7 @@ def update_job_definition(
         type="container",
         parameters=current_parameters,
         containerProperties=container_props,
+        platformCapabilities=current_platform_capabilities,
     )
 
     new_arn = response["jobDefinitionArn"]
