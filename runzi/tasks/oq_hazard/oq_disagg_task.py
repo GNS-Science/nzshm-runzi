@@ -59,10 +59,8 @@ default_system_args = SystemArgs(
     task_language=TaskLanguage.PYTHON,
     use_api=USE_API,
     ecs_max_job_time_min=30,
-    ecs_memory=30000,
+    ecs_memory=32768,
     ecs_vcpu=8,
-    ecs_job_definition="BigLever_32GB_8VCPU_v2_JD",
-    ecs_job_queue="BigLever_32GB_8VCPU_v2_JQ",
 )
 
 

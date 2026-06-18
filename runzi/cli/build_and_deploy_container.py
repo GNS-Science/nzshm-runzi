@@ -8,6 +8,8 @@ import typer
 from dotenv import load_dotenv
 from rich import print as rich_print
 
+from runzi.arguments import DEFAULT_JOB_DEFINITION
+
 load_dotenv()
 
 app = typer.Typer()
@@ -158,6 +160,7 @@ def update_job_definition(
     current_revision = current_def["revision"]
     current_arn = current_def["jobDefinitionArn"]
     current_parameters = current_def["parameters"]
+    current_platform_capabilities = current_def["platformCapabilities"]
 
     print(f"Current revision: {current_revision}")
     print(f"Current ARN: {current_arn}")
@@ -170,6 +173,7 @@ def update_job_definition(
         type="container",
         parameters=current_parameters,
         containerProperties=container_props,
+        platformCapabilities=current_platform_capabilities,
     )
 
     new_arn = response["jobDefinitionArn"]
@@ -194,7 +198,7 @@ def build_and_deploy_container(
     region: str = typer.Option("us-east-1", envvar="AWS_REGION", help="AWS region"),
     aws_account_id: str = typer.Option("461564345538", envvar="AWS_ACCOUNT_ID", help="AWS account ID"),
     ecr_repo: str = typer.Option("nzshm22/runzi", envvar="ECR_REPO", help="ECR repository"),
-    job_definition: str = typer.Option("runzi_32GB_8VCPU_JD", envvar="JOB_DEFINITION", help="Batch job definition"),
+    job_definition: str = typer.Option(DEFAULT_JOB_DEFINITION, envvar="JOB_DEFINITION", help="Batch job definition"),
     dockerfile: str = typer.Option("docker/Dockerfile", envvar="DOCKERFILE", help="Path to Dockerfile"),
     skip_build: bool = typer.Option(default=False, help="Skip Docker build"),
     skip_push: bool = typer.Option(default=False, help="Skip ECR push"),

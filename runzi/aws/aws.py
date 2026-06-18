@@ -20,9 +20,81 @@ from runzi.aws.session import get_session
 if TYPE_CHECKING:
     from pydantic import BaseModel
 
-    from runzi.arguments import SystemArgs
+    from runzi.arguments import ComputeEnvironment, SystemArgs
 
 BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')
+
+# AWS Batch SubmitJob hard limit on the total size of containerOverrides.
+MAX_CONTAINER_OVERRIDES_BYTES = 8192
+
+
+def _fargate_memory_values(min_mb: int, max_mb: int, step_mb: int) -> tuple[int, ...]:
+    return tuple(range(min_mb, max_mb + 1, step_mb))
+
+
+# Valid AWS Fargate task vCPU/memory(MB) combinations, encoded from the AWS docs table
+# "Fargate task CPU and memory":
+# https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-task-defs.html#fargate-tasks-size
+# AWS only ever expands this matrix, so a stale copy fails closed (rejects a newly-valid combo)
+# rather than accepting an invalid one; submit_job is the ultimate validator. To refresh, update
+# the ranges below and bump the marker.
+# last verified: 2026-06
+FARGATE_VCPU_MEMORY_MB: dict[float, tuple[int, ...]] = {
+    0.25: (512, 1024, 2048),
+    0.5: _fargate_memory_values(1024, 4096, 1024),
+    1: _fargate_memory_values(2048, 8192, 1024),
+    2: _fargate_memory_values(4096, 16384, 1024),
+    4: _fargate_memory_values(8192, 30720, 1024),
+    8: _fargate_memory_values(16384, 61440, 4096),
+    16: _fargate_memory_values(32768, 122880, 8192),
+    32: (61440, 122880, 249856),  # 60 GB, 120 GB, 244 GB — discrete, not a stepped range
+}
+
+
+def validate_fargate_resources(vcpu: float, memory: int) -> None:
+    """Validate a vCPU/memory pair against the AWS Fargate task size matrix.
+
+    Args:
+        vcpu: requested vCPU (must be a Fargate-supported value).
+        memory: requested memory in MB.
+
+    Raises:
+        ValueError: if vcpu is not a supported Fargate value, or memory is not a valid
+            amount for that vcpu.
+    """
+    if vcpu not in FARGATE_VCPU_MEMORY_MB:
+        raise ValueError(
+            f"vcpu={vcpu} is not a valid Fargate vCPU value; choose one of {sorted(FARGATE_VCPU_MEMORY_MB)}"
+        )
+    valid_memory = FARGATE_VCPU_MEMORY_MB[vcpu]
+    if memory not in valid_memory:
+        raise ValueError(
+            f"memory={memory} MB is not valid for {vcpu} vCPU on Fargate; valid values are "
+            f"{valid_memory[0]}-{valid_memory[-1]} MB (allowed: {list(valid_memory)})"
+        )
+
+
+def validate_ec2_resources(vcpu: float, memory: int) -> None:
+    """Light sanity check for an EC2 vCPU/memory pair.
+
+    Unlike Fargate, EC2 has no fixed CPU/memory matrix: the values are minimums that the Batch
+    scheduler bin-packs onto whatever instance types the compute environment offers, so runzi
+    can't validate them against a static table. This only catches obviously-wrong values; the
+    scheduler is the real arbiter. A request that's too large for any instance in the compute
+    environment won't raise here — it will sit in RUNNABLE forever instead, so size EC2 jobs
+    with some margin below your largest instance's allocatable memory.
+
+    Args:
+        vcpu: requested vCPU; must be a positive integer.
+        memory: requested memory in MB; must be positive.
+
+    Raises:
+        ValueError: if vcpu is not a positive integer, or memory is not positive.
+    """
+    if vcpu < 1 or vcpu != int(vcpu):
+        raise ValueError(f"vcpu={vcpu} is not valid for EC2; must be a positive integer")
+    if memory <= 0:
+        raise ValueError(f"memory={memory} MB is not valid for EC2; must be positive")
 
 
 def get_secret(secret_name, region_name):
@@ -109,69 +181,20 @@ def get_ecs_job_config(
     job_queue: str,
     extra_env: list[BatchEnvironmentSetting] | None = None,
     use_compression=False,
+    compute_environment: 'ComputeEnvironment | str' = 'fargate',
 ):
 
     ths_rlz_db = ths_rlz_db or '/WORKING/THS_RLZ'
     ths_disagg_rlz_db = ths_disagg_rlz_db or '/WORKING/THS_DISAGG_RLZ'
     ecr_digest = ecr_digest or "sha256:NOT_SET"
     task_config = get_task_config(task_args, task_system_args, model_type)
-    if "Fargate" in job_definition:
-        assert vcpu in [0.25, 0.5, 1, 2, 4]
-        assert memory in [
-            512,
-            1024,
-            2048,  # value = 0.25
-            1024,
-            2048,
-            3072,
-            4096,  # value = 0.5
-            2048,
-            3072,
-            4096,
-            5120,
-            6144,
-            7168,
-            8192,  # value = 1
-            4096,
-            5120,
-            6144,
-            7168,
-            8192,
-            9216,
-            10240,
-            11264,
-            12288,
-            13312,
-            14336,
-            15360,
-            16384,  # value = 2
-            8192,
-            9216,
-            10240,
-            11264,
-            12288,
-            13312,
-            14336,
-            15360,
-            16384,
-            17408,
-            18432,
-            19456,
-            20480,
-            21504,
-            22528,
-            23552,
-            24576,
-            25600,
-            26624,
-            27648,
-            28672,
-            29696,
-            30720,  # value = 4
-        ]
-    #     job_queue = "BasicFargate_Q"
-    # else:
-    #     job_queue = "BigLeverOnDemandEC2-job-queue" #"getting-started-jun7" #"BiggerLeverQueue"
+    # compute_environment may be the ComputeEnvironment enum or a raw string (sys_arg_overrides
+    # applies config-file overrides via setattr, which bypasses pydantic coercion).
+    compute_target = getattr(compute_environment, 'value', compute_environment)
+    if compute_target == 'ec2':
+        validate_ec2_resources(vcpu, memory)
+    else:
+        validate_fargate_resources(vcpu, memory)
 
     config: dict[str, Any] = {
         "jobName": job_name,
@@ -209,5 +232,13 @@ def get_ecs_job_config(
     if extra_env:
         for ex in extra_env:
             config['containerOverrides']['environment'].append(dict(name=ex.name, value=ex.value))
+
+    overrides_size = len(json.dumps(config['containerOverrides']))
+    if overrides_size > MAX_CONTAINER_OVERRIDES_BYTES:
+        raise ValueError(
+            f"containerOverrides is {overrides_size} bytes, which exceeds AWS Batch's "
+            f"{MAX_CONTAINER_OVERRIDES_BYTES}-byte limit even after compression. The task config is too "
+            "large to ship inline; it needs to be staged externally (e.g. S3) and referenced instead."
+        )
 
     return config

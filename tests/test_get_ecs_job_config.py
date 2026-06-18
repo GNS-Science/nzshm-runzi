@@ -7,9 +7,13 @@ Scientist credentials are not accidentally overridden by M2M config.
 """
 
 import inspect
+import json
 
-from runzi.aws import get_ecs_job_config
-from runzi.aws.aws import BatchEnvironmentSetting
+import pytest
+
+from runzi.arguments import DEFAULT_JOB_DEFINITION, DEFAULT_JOB_QUEUE, ComputeEnvironment, SystemArgs, TaskLanguage
+from runzi.aws import decompress_config, get_ecs_job_config
+from runzi.aws.aws import BatchEnvironmentSetting, validate_ec2_resources, validate_fargate_resources
 
 
 def _call_get_ecs_job_config(**overrides):
@@ -117,3 +121,169 @@ class TestContainerEnvContents:
         result = _call_get_ecs_job_config(ths_disagg_rlz_db=None)
         env = {e['name']: e['value'] for e in result['containerOverrides']['environment']}
         assert env['NZSHM22_THS_DISAGG_RLZ_DB'] == '/WORKING/THS_DISAGG_RLZ'
+
+
+class TestValidateFargateResources:
+    """validate_fargate_resources enforces the AWS Fargate vCPU/memory matrix."""
+
+    @pytest.mark.parametrize(
+        'vcpu, memory',
+        [
+            (0.25, 512),
+            (0.5, 4096),
+            (1, 2048),
+            (2, 16384),
+            (4, 30720),
+            (8, 16384),
+            (8, 32768),  # the value OQ tasks move to
+            (16, 122880),
+            (32, 61440),  # 60 GB
+            (32, 122880),  # 120 GB
+            (32, 249856),  # 244 GB
+        ],
+    )
+    def test_valid_combinations_pass(self, vcpu, memory):
+        validate_fargate_resources(vcpu, memory)  # must not raise
+
+    def test_32_vcpu_rejects_non_discrete_memory(self):
+        """Unlike 8/16 vCPU, 32 vCPU only allows the three discrete values, not a stepped range."""
+        with pytest.raises(ValueError, match='not valid for 32 vCPU'):
+            validate_fargate_resources(32, 90112)  # 88 GB, between 60 and 120 but not allowed
+
+    def test_invalid_vcpu_raises(self):
+        with pytest.raises(ValueError, match='not a valid Fargate vCPU'):
+            validate_fargate_resources(6, 16384)
+
+    def test_invalid_memory_for_vcpu_raises(self):
+        # 30000 is not a valid 8-vCPU Fargate memory (must be a multiple of 4096 in 16384..61440).
+        with pytest.raises(ValueError, match='not valid for 8 vCPU'):
+            validate_fargate_resources(8, 30000)
+
+
+class TestFargateValidationInJobConfig:
+    """get_ecs_job_config validates vcpu/memory against the Fargate matrix by default
+    (compute_environment defaults to FARGATE)."""
+
+    def test_invalid_fargate_size_rejected(self, mocker):
+        mocker.patch('runzi.aws.aws.get_task_config', return_value={})
+        with pytest.raises(ValueError):
+            _call_get_ecs_job_config(job_definition=DEFAULT_JOB_DEFINITION, vcpu=8, memory=30000)
+
+    def test_valid_fargate_size_accepted(self, mocker):
+        mocker.patch('runzi.aws.aws.get_task_config', return_value={})
+        result = _call_get_ecs_job_config(job_definition=DEFAULT_JOB_DEFINITION, vcpu=8, memory=32768)
+        assert result['jobDefinition'] == DEFAULT_JOB_DEFINITION
+
+    def test_invalid_size_rejected_regardless_of_job_definition_name(self, mocker):
+        """Validation no longer keys off the job definition name; any job definition is checked."""
+        mocker.patch('runzi.aws.aws.get_task_config', return_value={})
+        with pytest.raises(ValueError):
+            _call_get_ecs_job_config(vcpu=8, memory=30000)  # BasicEC2-job-definition default name
+
+
+class TestValidateEc2Resources:
+    """validate_ec2_resources only does a light sanity check: EC2 sizing depends on the
+    compute environment's instance types, which runzi can't know statically."""
+
+    def test_normal_combination_passes(self):
+        validate_ec2_resources(8, 30000)  # must not raise; not a valid Fargate size, fine on EC2
+
+    def test_non_positive_memory_raises(self):
+        with pytest.raises(ValueError, match='memory'):
+            validate_ec2_resources(2, 0)
+
+    def test_vcpu_below_one_raises(self):
+        with pytest.raises(ValueError, match='vcpu'):
+            validate_ec2_resources(0, 4096)
+
+
+class TestComputeEnvironmentInJobConfig:
+    """get_ecs_job_config branches its validation on compute_environment."""
+
+    def test_ec2_accepts_off_fargate_matrix_size(self, mocker):
+        """8 vCPU / 30000 MB is invalid for Fargate but fine for EC2 (light check only)."""
+        mocker.patch('runzi.aws.aws.get_task_config', return_value={})
+        result = _call_get_ecs_job_config(
+            compute_environment=ComputeEnvironment.EC2, vcpu=8, memory=30000
+        )
+        assert result['containerOverrides']['resourceRequirements'] == [
+            {"value": "30000", "type": "MEMORY"},
+            {"value": "8", "type": "VCPU"},
+        ]
+
+    def test_fargate_still_rejects_off_matrix_size(self, mocker):
+        """Same size is still rejected when compute_environment is FARGATE (the default)."""
+        mocker.patch('runzi.aws.aws.get_task_config', return_value={})
+        with pytest.raises(ValueError):
+            _call_get_ecs_job_config(compute_environment=ComputeEnvironment.FARGATE, vcpu=8, memory=30000)
+
+    def test_string_compute_environment_is_coerced(self, mocker):
+        """sys_arg_overrides uses setattr, which can leave a raw string instead of the enum."""
+        mocker.patch('runzi.aws.aws.get_task_config', return_value={})
+        result = _call_get_ecs_job_config(compute_environment='ec2', vcpu=8, memory=30000)
+        assert result is not None
+
+
+class TestCompression:
+    """Large task configs are shipped LZMA+base64 compressed to stay under Batch's
+    containerOverrides limit; AWS Batch caps containerOverrides at 8192 bytes."""
+
+    def test_use_compression_round_trips(self, mocker):
+        """With use_compression=True, TASK_CONFIG_JSON_QUOTED decodes back via decompress_config."""
+        task_config = {"task_args": {"a": 1}, "task_system_args": {"b": 2}, "model_type": "X"}
+        mocker.patch('runzi.aws.aws.get_task_config', return_value=task_config)
+
+        result = _call_get_ecs_job_config(use_compression=True)
+        env = {e['name']: e['value'] for e in result['containerOverrides']['environment']}
+        decoded = json.loads(decompress_config(env['TASK_CONFIG_JSON_QUOTED']))
+        assert decoded == task_config
+
+    def test_use_compression_shrinks_large_config(self, mocker):
+        """Compression should produce a smaller payload than url-quoting for a repetitive config."""
+        large_task_config = {"items": [{"name": f"item-{i}", "value": "x" * 20} for i in range(50)]}
+        mocker.patch('runzi.aws.aws.get_task_config', return_value=large_task_config)
+
+        quoted_result = _call_get_ecs_job_config(use_compression=False)
+        compressed_result = _call_get_ecs_job_config(use_compression=True)
+
+        quoted_env = {e['name']: e['value'] for e in quoted_result['containerOverrides']['environment']}
+        compressed_env = {e['name']: e['value'] for e in compressed_result['containerOverrides']['environment']}
+        assert len(compressed_env['TASK_CONFIG_JSON_QUOTED']) < len(quoted_env['TASK_CONFIG_JSON_QUOTED'])
+
+    def test_oversized_container_overrides_rejected(self, mocker):
+        """get_ecs_job_config fails fast if containerOverrides would exceed Batch's 8192-byte limit,
+        instead of letting submit_job fail with a cryptic AWS error."""
+        # Not compressible (random-looking) and large enough that even compression can't save it.
+        import random
+        import string
+
+        huge_task_config = {"blob": ''.join(random.choices(string.ascii_letters + string.digits, k=20000))}
+        mocker.patch('runzi.aws.aws.get_task_config', return_value=huge_task_config)
+
+        with pytest.raises(ValueError, match='8192'):
+            _call_get_ecs_job_config(use_compression=True)
+
+
+class TestSystemArgsComputeDefaults:
+    """SystemArgs supplies the single canonical Fargate def/queue by default."""
+
+    def test_job_def_and_queue_default_to_fargate(self):
+        args = SystemArgs(
+            task_language=TaskLanguage.PYTHON,
+            use_api=False,
+            ecs_max_job_time_min=10,
+            ecs_memory=2048,
+            ecs_vcpu=1,
+        )
+        assert args.ecs_job_definition == DEFAULT_JOB_DEFINITION
+        assert args.ecs_job_queue == DEFAULT_JOB_QUEUE
+
+    def test_compute_environment_defaults_to_fargate(self):
+        args = SystemArgs(
+            task_language=TaskLanguage.PYTHON,
+            use_api=False,
+            ecs_max_job_time_min=10,
+            ecs_memory=2048,
+            ecs_vcpu=1,
+        )
+        assert args.ecs_compute_environment == ComputeEnvironment.FARGATE

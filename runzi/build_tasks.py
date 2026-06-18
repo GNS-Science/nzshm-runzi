@@ -82,6 +82,8 @@ def build_tasks(
                 job_definition=system_args.ecs_job_definition,
                 job_queue=system_args.ecs_job_queue,
                 extra_env=system_args.ecs_extra_env,
+                use_compression=True,
+                compute_environment=system_args.ecs_compute_environment,
             )
 
         else:
