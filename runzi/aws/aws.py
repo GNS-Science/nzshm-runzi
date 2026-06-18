@@ -24,6 +24,9 @@ if TYPE_CHECKING:
 
 BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')
 
+# AWS Batch SubmitJob hard limit on the total size of containerOverrides.
+MAX_CONTAINER_OVERRIDES_BYTES = 8192
+
 
 def _fargate_memory_values(min_mb: int, max_mb: int, step_mb: int) -> tuple[int, ...]:
     return tuple(range(min_mb, max_mb + 1, step_mb))
@@ -202,5 +205,13 @@ def get_ecs_job_config(
     if extra_env:
         for ex in extra_env:
             config['containerOverrides']['environment'].append(dict(name=ex.name, value=ex.value))
+
+    overrides_size = len(json.dumps(config['containerOverrides']))
+    if overrides_size > MAX_CONTAINER_OVERRIDES_BYTES:
+        raise ValueError(
+            f"containerOverrides is {overrides_size} bytes, which exceeds AWS Batch's "
+            f"{MAX_CONTAINER_OVERRIDES_BYTES}-byte limit even after compression. The task config is too "
+            "large to ship inline; it needs to be staged externally (e.g. S3) and referenced instead."
+        )
 
     return config

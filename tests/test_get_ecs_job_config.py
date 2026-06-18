@@ -7,11 +7,12 @@ Scientist credentials are not accidentally overridden by M2M config.
 """
 
 import inspect
+import json
 
 import pytest
 
 from runzi.arguments import DEFAULT_JOB_DEFINITION, DEFAULT_JOB_QUEUE, SystemArgs, TaskLanguage
-from runzi.aws import get_ecs_job_config
+from runzi.aws import decompress_config, get_ecs_job_config
 from runzi.aws.aws import BatchEnvironmentSetting, validate_fargate_resources
 
 
@@ -169,6 +170,46 @@ class TestFargateValidationInJobConfig:
         mocker.patch('runzi.aws.aws.get_task_config', return_value={})
         result = _call_get_ecs_job_config(vcpu=8, memory=30000)  # BasicEC2 default name
         assert result['jobDefinition'] == 'BasicEC2-job-definition'
+
+
+class TestCompression:
+    """Large task configs are shipped LZMA+base64 compressed to stay under Batch's
+    containerOverrides limit; AWS Batch caps containerOverrides at 8192 bytes."""
+
+    def test_use_compression_round_trips(self, mocker):
+        """With use_compression=True, TASK_CONFIG_JSON_QUOTED decodes back via decompress_config."""
+        task_config = {"task_args": {"a": 1}, "task_system_args": {"b": 2}, "model_type": "X"}
+        mocker.patch('runzi.aws.aws.get_task_config', return_value=task_config)
+
+        result = _call_get_ecs_job_config(use_compression=True)
+        env = {e['name']: e['value'] for e in result['containerOverrides']['environment']}
+        decoded = json.loads(decompress_config(env['TASK_CONFIG_JSON_QUOTED']))
+        assert decoded == task_config
+
+    def test_use_compression_shrinks_large_config(self, mocker):
+        """Compression should produce a smaller payload than url-quoting for a repetitive config."""
+        large_task_config = {"items": [{"name": f"item-{i}", "value": "x" * 20} for i in range(50)]}
+        mocker.patch('runzi.aws.aws.get_task_config', return_value=large_task_config)
+
+        quoted_result = _call_get_ecs_job_config(use_compression=False)
+        compressed_result = _call_get_ecs_job_config(use_compression=True)
+
+        quoted_env = {e['name']: e['value'] for e in quoted_result['containerOverrides']['environment']}
+        compressed_env = {e['name']: e['value'] for e in compressed_result['containerOverrides']['environment']}
+        assert len(compressed_env['TASK_CONFIG_JSON_QUOTED']) < len(quoted_env['TASK_CONFIG_JSON_QUOTED'])
+
+    def test_oversized_container_overrides_rejected(self, mocker):
+        """get_ecs_job_config fails fast if containerOverrides would exceed Batch's 8192-byte limit,
+        instead of letting submit_job fail with a cryptic AWS error."""
+        # Not compressible (random-looking) and large enough that even compression can't save it.
+        import random
+        import string
+
+        huge_task_config = {"blob": ''.join(random.choices(string.ascii_letters + string.digits, k=20000))}
+        mocker.patch('runzi.aws.aws.get_task_config', return_value=huge_task_config)
+
+        with pytest.raises(ValueError, match='8192'):
+            _call_get_ecs_job_config(use_compression=True)
 
 
 class TestSystemArgsComputeDefaults:
