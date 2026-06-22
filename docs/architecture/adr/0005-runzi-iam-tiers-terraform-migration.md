@@ -80,11 +80,14 @@ against `nshm-toshi-api` today.
 
 ## Consequences / deferred obligations
 
-- **The in-flight `ToshiRunziAdminManagedPolicy` edit must be live before import.** A prior
-  change added `CreateJobQueue`/`UpdateJobQueue`/`DeleteJobQueue` and a `TerraformStateS3`
-  statement to that policy. The Terraform HCL in `terraform/access/main.tf` must match whatever
-  is **actually deployed** at migration time, or the post-import `terraform plan` won't be clean.
-  Migrate faithfully first; fold in new grants as a separate, later Terraform change if needed.
+- **The admin policy's import is intentionally NOT zero-diff** — it's the one exception. The
+  `CreateJobQueue`/`UpdateJobQueue`/`DeleteJobQueue` and `TerraformStateS3` permissions that
+  runzi-admin needs for `terraform/batch/` are authored **only** in `terraform/access/main.tf`;
+  they were deliberately removed from `nshm-toshi-api` rather than deployed there just to be
+  migrated straight out (they were never part of any deployed `serverless.yml`). So when
+  `aws_iam_policy.runzi_admin` is imported, the live policy lacks them and the post-import
+  `terraform plan` will show **exactly those additions** — expected, not a faithfulness failure;
+  `terraform apply` then creates them. Every other resource still imports zero-diff.
 - **The base policy's S3 ARNs are stage-incorrect today** (hardcoded to `-test` buckets
   regardless of stage — flagged in toshi-api's ADR-003). This migration imports that bug
   faithfully rather than fixing it in-flight, to keep the custody transfer itself low-risk and
@@ -105,7 +108,6 @@ against `nshm-toshi-api` today.
   access axis, as opposed to runzi's AWS axis), and the M2M client/secret belong in
   `nzshm-security` or stay with `nshm-toshi-api`. Tracked via a `nzshm-security` issue (see Files).
 - **Fix the stage-incorrect S3 ARNs** in the base policy once Terraform owns it.
-- **Reconcile the in-flight admin-policy edit** mentioned above before/at import time.
 - **CI-driven `terraform apply`** for `terraform/access/`, if/when the team wants it automated.
 
 ## Files

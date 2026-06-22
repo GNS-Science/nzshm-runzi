@@ -63,11 +63,16 @@ order **exactly** — reversing it deletes live IAM resources used for active lo
    terraform import aws_iam_role.runzi_admin  toshi-runzi-admin-<stage>
    terraform plan
    ```
-   **`terraform plan` must show zero changes.** If it doesn't, fix `main.tf`/`terraform.tfvars`
-   to match the live resource (not the other way around) before proceeding.
-3. **In `nshm-toshi-api`:** once the plan above is clean, remove the 6 resource definitions (and
-   the `IdentityPoolId`-adjacent cleanup if any) and `sls deploy --stage <stage>` again.
-   CloudFormation drops them from the stack; `Retain` keeps the live resources untouched;
+   **`terraform plan` must show zero changes — with one expected exception:**
+   `aws_iam_policy.runzi_admin` will show the `CreateJobQueue`/`UpdateJobQueue`/`DeleteJobQueue`
+   actions and the `TerraformStateS3` statement being **added**. Those are authored only here
+   (never deployed via serverless) and runzi-admin needs them for `terraform/batch/` — so the
+   plan adding them is correct. `terraform apply` to create them. Any *other* diff means
+   `main.tf`/`terraform.tfvars` doesn't match the live resource — fix that (not the live
+   resource) before proceeding. See ADR-0005 "Consequences".
+3. **In `nshm-toshi-api`:** once the plan above shows only the expected admin-policy additions,
+   `terraform apply`, then remove the 6 resource definitions and `sls deploy --stage <stage>`
+   again. CloudFormation drops them from the stack; `Retain` keeps the live resources untouched;
    Terraform is now sole owner.
 4. Re-run `terraform plan` here once more — it should still be clean (the CloudFormation removal
    shouldn't have touched the now-Terraform-owned resources at all).

@@ -8,8 +8,13 @@
 #
 # IMPORTANT: keep this file byte-faithful to whatever is actually deployed in
 # nshm-toshi-api/serverless.yml at migration/import time for each stage - the success criterion
-# is `terraform plan` showing zero changes after import. Do not fold in new permissions here;
-# land those as a separate, later change once Terraform owns the resource.
+# is `terraform plan` showing zero changes after import.
+#
+# ONE INTENTIONAL EXCEPTION: aws_iam_policy.runzi_admin below includes the
+# CreateJobQueue/UpdateJobQueue/DeleteJobQueue actions and the TerraformStateS3 statement, which
+# are authored ONLY here (never deployed via serverless - removed from nshm-toshi-api). So the
+# admin policy's import will NOT be zero-diff: `terraform plan` will show exactly those additions,
+# which `terraform apply` then creates. That is expected. See ADR-0005 "Consequences".
 
 data "aws_caller_identity" "current" {}
 
