@@ -28,7 +28,7 @@ class ComputeEnvironment(Enum):
 
 
 # Canonical AWS Batch compute target. All tasks share a single Fargate compute environment,
-# job definition, and queue (see docs/architecture/aws-batch-compute-consolidation.md).
+# job definition, and queue (see docs/architecture/adr/0003-aws-batch-compute-consolidation.md).
 DEFAULT_JOB_DEFINITION = "Fargate-runzi-opensha-JD"
 DEFAULT_JOB_QUEUE = "BasicFargate_Q"
 

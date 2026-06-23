@@ -75,6 +75,11 @@ Because IaC is deferred, the following are **manual, external obligations** rath
 - **Adopt infrastructure-as-code** (Terraform or AWS CDK) to encode the single compute
   environment, job definition, and queue, replacing the console-managed resources. This ADR plus
   `docs/usage/aws_batch.md` are the spec.
+  - **Status: Phase 1 actioned.** See
+    [`0004-aws-batch-iac-terraform.md`](0004-aws-batch-iac-terraform.md) — Terraform now manages the
+    compute environment and job queue. The job definition remains CLI-managed (deferred to a
+    follow-up in that ADR) because it's re-registered with a new image digest on every deploy,
+    which would conflict with Terraform ownership.
 - **Optional dynamic resource validation** — query the Batch/ECS API for the compute
   environment's real capabilities instead of the static matrix. Needs live AWS credentials and is
   heavier; only worth it if the static table proves to drift painfully.

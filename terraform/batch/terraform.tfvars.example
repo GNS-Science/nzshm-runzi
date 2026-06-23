@@ -1,0 +1,9 @@
+# Copy to terraform.tfvars and fill in with values discovered from the live AWS resources
+# (see README.md "Discovery"). terraform.tfvars is gitignored - it's environment-specific and
+# may contain account-specific identifiers that shouldn't live in version control.
+
+compute_environment_name = "TODO-discover-from-aws-batch-describe-compute-environments"
+max_vcpus                = 0 # TODO
+subnets                  = ["subnet-TODO"]
+security_group_ids       = ["sg-TODO"]
+job_queue_priority       = 1 # TODO - confirm against live queue

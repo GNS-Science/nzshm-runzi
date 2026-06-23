@@ -1,6 +1,6 @@
 This describes the AWS Batch architecture `runzi` submits jobs to in `--cluster-mode AWS`. It is
 the operator-facing companion to the decision recorded in
-[`docs/architecture/aws-batch-compute-consolidation.md`](../architecture/aws-batch-compute-consolidation.md).
+[`docs/architecture/adr/0003-aws-batch-compute-consolidation.md`](../architecture/adr/0003-aws-batch-compute-consolidation.md).
 
 # Single Fargate architecture (default)
 
@@ -64,17 +64,17 @@ with margin below your largest instance's total memory, not right up against it.
 defaults `platformCapabilities` to `EC2` when omitted, which would silently break Fargate's
 fractional vCPU values, so this must always be forwarded explicitly.
 
-# Future: infrastructure-as-code
+# Infrastructure-as-code
 
-The compute environment, job definition, and job queue above are currently created and managed
-by hand in the AWS console — there is no Terraform/CDK/CloudFormation for them. This doc and the
-ADR are the interim source of truth.
+The **compute environment and `BasicFargate_Q` job queue** are managed by Terraform in
+[`terraform/batch/`](../../terraform/batch/) — see that directory's `README.md` for the operator
+runbook (discovery, state bucket, import, day-to-day `plan`/`apply`) and
+[`docs/architecture/adr/0004-aws-batch-iac-terraform.md`](../architecture/adr/0004-aws-batch-iac-terraform.md)
+for why.
 
-When IaC is adopted, it should encode:
-- The Fargate compute environment (`maxvCpus`, subnets, security groups)
-- The `Fargate-runzi-opensha-JD` job definition (image reference, IAM role, `platformCapabilities`,
-  the M2M env vars above)
-- The `BasicFargate_Q` job queue
-
-Until then, any change to these resources must be made manually in the console and reflected back
-into this doc.
+The **`Fargate-runzi-opensha-JD` job definition is still hand/CLI-managed**, not Terraform —
+it's re-registered with a new image digest on every `runzi utils docker-build` (see "Updating the
+job definition" above), which would conflict with Terraform ownership. Its IAM role,
+`platformCapabilities`, and the M2M env vars remain console-set and documented only here until a
+follow-up decision brings it under IaC too. Any change to the job definition must still be made
+manually/via the CLI and reflected back into this doc.
