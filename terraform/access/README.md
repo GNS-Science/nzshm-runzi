@@ -40,45 +40,25 @@ Copy `terraform.tfvars.example` to `terraform.tfvars` (gitignored) and fill in p
   `NZSHM22_TOSHI_COGNITO_IDENTITY_POOL_ID`, or from the `nshm-toshi-api` stack:
   ```bash
   aws cloudformation describe-stacks --stack-name nzshm22-toshi-api-<stage> \
+    --region ap-southeast-2 \
     --query "Stacks[0].Outputs[?OutputKey=='IdentityPoolId'].OutputValue" --output text
   ```
+  (The stack and the Identity Pool are in `ap-southeast-2`, not the IAM/Batch `us-east-1`.)
 
 ## Migrating an existing stage (import, don't recreate)
 
-These roles/policies already exist, created by `nshm-toshi-api`'s Serverless stack. Follow this
-order **exactly** — reversing it deletes live IAM resources used for active logins:
+These roles/policies already exist, created by `nshm-toshi-api`'s Serverless stack, so the stage
+is **migrated** (retain → import → de-template), not created from scratch. The full procedure —
+each step paired with an AWS-CLI validation gate that proves nothing changed except what was
+meant to — lives in **[`MIGRATION_RUNBOOK.md`](MIGRATION_RUNBOOK.md)**. Follow it end to end (it
+uses the read-only [`scripts/snapshot-access-tiers.sh`](scripts/snapshot-access-tiers.sh) helper
+to snapshot-and-`diff` at each checkpoint). Do `test` first and validate before touching `prod`.
 
-1. **In `nshm-toshi-api`:** add `DeletionPolicy: Retain` + `UpdateReplacePolicy: Retain` to the 6
-   resources, and change `ToshiIdentityPoolRoleAttachment`'s role references from `!GetAtt` to
-   `Fn::Sub` ARN strings. `sls deploy --stage <stage>`. (See the issue tracking this in that
-   repo.) **Do this before any `terraform import` below.**
-2. **Here:** select the workspace, fill `terraform.tfvars`, then:
-   ```bash
-   terraform init
-   terraform import aws_iam_policy.runzi_base   arn:aws:iam::<account-id>:policy/toshi-runzi-base-<stage>
-   terraform import aws_iam_policy.runzi_batch  arn:aws:iam::<account-id>:policy/toshi-runzi-batch-<stage>
-   terraform import aws_iam_policy.runzi_admin  arn:aws:iam::<account-id>:policy/toshi-runzi-admin-<stage>
-   terraform import aws_iam_role.runzi_local  toshi-runzi-local-<stage>
-   terraform import aws_iam_role.runzi_batch  toshi-runzi-batch-<stage>
-   terraform import aws_iam_role.runzi_admin  toshi-runzi-admin-<stage>
-   terraform plan
-   ```
-   **`terraform plan` must show zero changes — with one expected exception:**
-   `aws_iam_policy.runzi_admin` will show the `CreateJobQueue`/`UpdateJobQueue`/`DeleteJobQueue`
-   actions and the `TerraformStateS3` statement being **added**. Those are authored only here
-   (never deployed via serverless) and runzi-admin needs them for `terraform/batch/` — so the
-   plan adding them is correct. `terraform apply` to create them. Any *other* diff means
-   `main.tf`/`terraform.tfvars` doesn't match the live resource — fix that (not the live
-   resource) before proceeding. See ADR-0005 "Consequences".
-3. **In `nshm-toshi-api`:** once the plan above shows only the expected admin-policy additions,
-   `terraform apply`, then remove the 6 resource definitions and `sls deploy --stage <stage>`
-   again. CloudFormation drops them from the stack; `Retain` keeps the live resources untouched;
-   Terraform is now sole owner.
-4. Re-run `terraform plan` here once more — it should still be clean (the CloudFormation removal
-   shouldn't have touched the now-Terraform-owned resources at all).
-
-Repeat for each stage. **Do `test` first and validate (a `runzi-batch` user can still log in and
-submit a job) before touching `prod`.**
+The short version: deploy #1 (Retain + de-reference) in `nshm-toshi-api` → `terraform import` the
+6 resources here and confirm a clean `plan` (one expected exception: the admin policy gains the
+`CreateJobQueue`/`UpdateJobQueue`/`DeleteJobQueue` + `TerraformStateS3` grants that live only in
+Terraform) → `terraform apply` → deploy #2 (de-template) in `nshm-toshi-api`. Order matters —
+reversing it deletes live IAM resources used for active logins.
 
 ## Day-to-day workflow (after migration)
 

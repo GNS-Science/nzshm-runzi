@@ -53,3 +53,6 @@ lived together in `nshm-toshi-api`'s `serverless.yml`, originally designed under
 [ADR-003](https://github.com/GNS-Science/nshm-toshi-api/blob/main/docs/adrs/ADR-003-cognito-permission-model.md)
 (the cumulative-ladder design, and the most-privileged-first rule-ordering fix). The IAM
 policies/roles moved to this repo; the rest is tracked for a future move into `nzshm-security`.
+
+The per-stage hand-off (with AWS-CLI validation at each step) is documented in
+[`terraform/access/MIGRATION_RUNBOOK.md`](../../terraform/access/MIGRATION_RUNBOOK.md).
