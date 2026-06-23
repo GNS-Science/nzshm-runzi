@@ -78,7 +78,7 @@ Cognito → Identity Pools → your pool → User access → **Authenticated rol
 
 ## Related
 
-- `docs/architecture/aws-auth-decision.md` — why runzi uses the in-memory Cognito→boto3 path.
+- `docs/architecture/adr/0002-aws-auth-decision.md` — why runzi uses the in-memory Cognito→boto3 path.
 - `nshm_toshi_client/aws.py::get_aws_session()` — the federation call (no `CustomRoleArn`).
 - `nshm_toshi_client/auth.py:242,263` — `get_id_token()` / cached-token refresh behaviour.
 - `runzi/aws/session.py` — wrapper with fallback to the default boto3 chain.

@@ -1,0 +1,6 @@
+# Copy to terraform.tfvars and fill in per-stage. terraform.tfvars is gitignored.
+#
+# stage must equal the selected `terraform workspace` (test/prod) - see README.md.
+
+stage            = "test"
+identity_pool_id = "us-east-1:00000000-0000-0000-0000-000000000000" # TODO - from .env or the toshi-api stack output
