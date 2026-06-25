@@ -80,14 +80,31 @@ against `nshm-toshi-api` today.
 
 ## Consequences / deferred obligations
 
-- **The admin policy's import is intentionally NOT zero-diff** — it's the one exception. The
-  `CreateJobQueue`/`UpdateJobQueue`/`DeleteJobQueue` and `TerraformStateS3` permissions that
-  runzi-admin needs for `terraform/batch/` are authored **only** in `terraform/access/main.tf`;
-  they were deliberately removed from `nshm-toshi-api` rather than deployed there just to be
-  migrated straight out (they were never part of any deployed `serverless.yml`). So when
-  `aws_iam_policy.runzi_admin` is imported, the live policy lacks them and the post-import
-  `terraform plan` will show **exactly those additions** — expected, not a faithfulness failure;
-  `terraform apply` then creates them. Every other resource still imports zero-diff.
+- **`main.tf` must be reconciled to the LIVE resources per stage — they have drifted from
+  `serverless.yml`.** The test-stage migration (2026-06) found the live IAM resources hand-edited
+  in the AWS console, diverging from the `serverless.yml` `main.tf` was modelled on:
+  - the **admin policy** carried console-editor Sids (`VisualEditor0/1`, `IAMAdmin`), an
+    `iam:PassRole` grant on `toshi_batch_ECS_TaskExecution`, and ECR scoped to `nzshm22/*` (the
+    real repo) — none in `serverless.yml`. These are real, needed permissions, so `main.tf`
+    **mirrors the live statements verbatim** (preserving them) and appends only the intended
+    additions below;
+  - the **base policy**'s M2M secret ARN region is **`ap-southeast-2`** (the secret's real /
+    Cognito region), not the IAM root's `us-east-1` — `main.tf` was initially wrong here;
+  - the **roles** carry a `STAGE=<stage>` tag.
+  The authoritative source for reconciliation is the **T0 baseline snapshot**
+  (`baseline/policy-*.json`, `role-*-*.json`), not `serverless.yml`. **Prod must be reconciled to
+  its OWN baseline snapshot** — its console drift may differ from test's, so a single static
+  `main.tf` will not fit both stages unchanged (see Followups: per-stage definitions).
+- **The intended additions are the one *deliberate* non-zero-diff.** `runzi-admin` needs
+  `batch:CreateJobQueue/UpdateJobQueue/DeleteJobQueue` (a `BatchQueueAdmin` statement) and a
+  `TerraformStateS3` statement to operate `terraform/batch/`. These are authored **only** in
+  `terraform/access/main.tf` (never in `serverless.yml`), so the post-reconciliation
+  `terraform plan` shows exactly those two added statements, which `apply` then creates.
+- **Deploy #2 (de-template) is stage-conditional, because `serverless.yml` is shared.** Removing
+  the 6 resource definitions outright would also drop them from un-migrated stages' templates on
+  their next deploy (`Retain` → orphaned). So deploy #2 excludes the 6 **only for the migrating
+  stage** via `serverslessIfElse`, keeping the definitions active for the others until each is
+  migrated. See `MIGRATION_RUNBOOK.md` Step 3.
 - **The base policy's S3 ARNs are stage-incorrect today** (hardcoded to `-test` buckets
   regardless of stage — flagged in toshi-api's ADR-003). This migration imports that bug
   faithfully rather than fixing it in-flight, to keep the custody transfer itself low-risk and
@@ -107,6 +124,18 @@ against `nshm-toshi-api` today.
   whether the User Pool itself, the `toshi-readers`/`toshi-writers` groups (toshi-api's own
   access axis, as opposed to runzi's AWS axis), and the M2M client/secret belong in
   `nzshm-security` or stay with `nshm-toshi-api`. Tracked via a `nzshm-security` issue (see Files).
+- **Per-stage policy definitions (blocks prod).** `main.tf` currently encodes the *test* stage's
+  live (drifted) content. Because prod's console drift may differ, `main.tf` needs to express
+  per-stage policy bodies before prod can be migrated — e.g. a stage-keyed local/`for_each`, a
+  small per-stage module, or per-workspace `.tfvars` driving the statements. Decide the mechanism
+  when planning prod (after capturing a prod baseline snapshot).
+- **Tidy the console-editor Sids.** Once owned by Terraform, rename `VisualEditor0/1` to
+  meaningful Sids (e.g. `BatchComputeAdmin`, `ECRAdmin`) as a deliberate, separately-reviewed
+  change — kept verbatim during the migration only to guarantee a clean import.
+- **`serverless.yml` hygiene (toshi-api).** The admin policy in `serverless.yml` never matched the
+  live test policy (different Sids/ECR glob, no `iam:PassRole`) — moot for migrated stages but
+  worth reconciling; and the `serverslessIfElse` block has a stale `resourcee.Resources.*` typo
+  (the runzi exclusions use the correct `resources.Resources.*` path).
 - **Fix the stage-incorrect S3 ARNs** in the base policy once Terraform owns it.
 - **CI-driven `terraform apply`** for `terraform/access/`, if/when the team wants it automated.
 

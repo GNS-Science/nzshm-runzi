@@ -43,6 +43,12 @@ The validation gates lean on `scripts/snapshot-access-tiers.sh`, which captures 
 the Identity Pool role mapping as normalized JSON so you can `diff` two points in time. It is
 strictly read-only.
 
+> **Namespace snapshots by stage** so test and prod don't overwrite each other: pass an outdir
+> like `SNAPSHOTS/$STAGE/baseline` (the 3rd arg is the literal directory). The examples below
+> write to `baseline`, `after-apply`, etc. for brevity — prefix them with `SNAPSHOTS/$STAGE/` in
+> practice, and `diff` the matching pair (e.g. `diff -ru SNAPSHOTS/$STAGE/baseline
+> SNAPSHOTS/$STAGE/after-apply`).
+
 ---
 
 ## T0 — Baseline (before any change)
@@ -67,11 +73,15 @@ strictly read-only.
   # authenticated -> .../role/toshi-runzi-local-<stage>
   # rules, in order: runzi-admin -> admin role, runzi-batch -> batch role, runzi-local -> local role
   ```
-- **The admin policy does NOT yet contain the queue/state grants** (it gains them only at T2b):
+- **The admin policy does NOT yet contain the queue/state grants** (it gains them only at T2b).
+  Don't assume specific Sids — the live policy may be console-edited (the test stage had
+  `VisualEditor0/1` + `IAMAdmin`, not the `serverless.yml` names). Just confirm the additions are
+  absent:
   ```bash
-  jq '[.. | .Sid? // empty]' baseline/policy-admin.json
-  # expect Sids: BatchAdmin, ECRAdmin  — and NOT TerraformStateS3
   grep -c TerraformStateS3 baseline/policy-admin.json   # expect 0
+  grep -c CreateJobQueue   baseline/policy-admin.json   # expect 0
+  jq '[.. | .Sid? // empty]' baseline/policy-admin.json # eyeball what IS there (it's your
+                                                        # reconciliation source at T2 — see Step 2)
   ```
 - **CloudFormation currently owns all 6:**
   ```bash
@@ -119,21 +129,32 @@ aws cloudformation get-template --stack-name "nzshm22-toshi-api-${STAGE}" \
 
 ## Step 2 → T2 / T2b — Import into Terraform, then apply (`nzshm-runzi`)
 
-**Action (import):** in `terraform/access/`, select the workspace and import the live resources
-(see [`README.md`](README.md) for the full command list):
+**Action (import):** in `terraform/access/`, init the backend, select the workspace, and import
+the live resources (see [`README.md`](README.md) for the full command list). **`terraform init`
+must come first** — workspace commands need the backend initialised — and a stage's **first** run
+needs `workspace new`, not `select`:
 ```bash
-terraform workspace select "$STAGE"
-terraform init
+terraform init                  # initialise the S3 backend FIRST
+terraform workspace new "$STAGE" # first time for this stage (use `select` on later runs)
 # terraform import aws_iam_policy.runzi_base   arn:aws:iam::$ACCOUNT:policy/toshi-runzi-base-$STAGE
 # ... (3 policies, 3 roles) ...
 terraform plan
 ```
 
-**Validate (T2, after import, before apply):**
-- `terraform plan` shows **zero changes EXCEPT** the admin policy gaining
-  `CreateJobQueue`/`UpdateJobQueue`/`DeleteJobQueue` + the `TerraformStateS3` statement. Those live
-  only in Terraform by design (see ADR-0005). Any *other* diff means the HCL doesn't match live —
-  fix the HCL, not the live resource.
+**Validate (T2, after import, before apply) — RECONCILE main.tf TO LIVE:**
+- The goal is a `terraform plan` showing **only** the intended additions: the admin policy
+  gaining a `BatchQueueAdmin` statement (`batch:CreateJobQueue/UpdateJobQueue/DeleteJobQueue`) and
+  a `TerraformStateS3` statement (authored only in Terraform — see ADR-0005).
+- **Expect the first plan to show MORE than that.** The live resources can have **drifted from
+  `serverless.yml`** (the test stage was hand-edited in the console — different Sids, extra
+  `iam:PassRole`, an `nzshm22/*` ECR scope, a `STAGE` tag, and the M2M secret ARN in
+  `ap-southeast-2` not `us-east-1`). `main.tf` was modelled on `serverless.yml`, so it will NOT
+  match.
+- **When it doesn't match, fix `main.tf` to mirror LIVE — never change the live resource to match
+  the HCL.** The authoritative "live" is your **baseline snapshot** (`baseline/policy-*.json`,
+  `role-*-*.json`): reproduce each live statement verbatim, then append only the two intended
+  additions. Re-run `terraform plan` and iterate until the only diff is those two additions. (See
+  the worked example in ADR-0005 "Consequences" — this is per-stage; prod's drift may differ.)
 - Nothing has been applied yet, so the live AWS state is still pristine:
   ```bash
   ./scripts/snapshot-access-tiers.sh "$STAGE" "$POOL_ID" after-import
@@ -149,8 +170,8 @@ terraform apply
 ```bash
 ./scripts/snapshot-access-tiers.sh "$STAGE" "$POOL_ID" after-apply
 diff -ru baseline after-apply
-# expect: the ONLY differences are in policy-admin.json — the added BatchAdmin queue actions
-#         and the new TerraformStateS3 statement. Everything else identical.
+# expect: the ONLY differences are in policy-admin.json — the added BatchQueueAdmin statement
+#         (the queue actions) and the new TerraformStateS3 statement. Everything else identical.
 grep -c TerraformStateS3 after-apply/policy-admin.json    # expect 1 (now present)
 ```
 
@@ -158,10 +179,32 @@ grep -c TerraformStateS3 after-apply/policy-admin.json    # expect 1 (now presen
 
 ## Step 3 → T3 — Deploy #2: De-template (`nshm-toshi-api`) — the Retain proof
 
-**Action:** remove the 6 resource definitions from `serverless.yml` and deploy. (Only do this once
-T1's Retain gate and T2b were green.)
+**Action:** drop the 6 resources from THIS stage's CloudFormation stack and deploy. (Only do this
+once T1's Retain gate and T2b were green.)
+
+⚠️ **`serverless.yml` is shared across stages.** Do **not** delete the 6 resource definitions
+outright — that would also remove them from un-migrated stages' templates, and the next
+`sls deploy --stage <other>` (even for an unrelated change) would drop them from that stack
+(`Retain` → orphaned, since that stage isn't Terraform-managed yet). Instead, exclude them **only
+for this stage**, keeping the definitions for the others. Use the existing `serverlessIfElse`
+block:
+```yaml
+  serverlessIfElse:
+      - If: '"${self:custom.stage}" == "test"'   # the stage being migrated
+        Exclude:
+          # ... existing entries ...
+          - resources.Resources.ToshiRunziBaseManagedPolicy
+          - resources.Resources.ToshiRunziBatchManagedPolicy
+          - resources.Resources.ToshiRunziAdminManagedPolicy
+          - resources.Resources.ToshiRunziLocalRole
+          - resources.Resources.ToshiRunziBatchRole
+          - resources.Resources.ToshiRunziAdminRole
+```
+(Note: use the correct `resources.Resources.` path — an existing entry has a stale `resourcee`
+typo. The `ToshiIdentityPool*` / groups are NOT excluded; the role attachment already references
+the role ARNs by `Fn::Sub` string, so excluding the role resources leaves no dangling `!Ref`.)
 ```bash
-# in the nshm-toshi-api repo, after deleting the 6 ToshiRunzi* resources from serverless.yml
+# in the nshm-toshi-api repo, with the stage-conditional exclusions added:
 sls deploy --stage "$STAGE"
 ```
 
