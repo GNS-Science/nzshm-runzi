@@ -10,11 +10,12 @@
 # nshm-toshi-api/serverless.yml at migration/import time for each stage - the success criterion
 # is `terraform plan` showing zero changes after import.
 #
-# ONE INTENTIONAL EXCEPTION: aws_iam_policy.runzi_admin below includes the
-# CreateJobQueue/UpdateJobQueue/DeleteJobQueue actions and the TerraformStateS3 statement, which
-# are authored ONLY here (never deployed via serverless - removed from nshm-toshi-api). So the
-# admin policy's import will NOT be zero-diff: `terraform plan` will show exactly those additions,
-# which `terraform apply` then creates. That is expected. See ADR-0005 "Consequences".
+# ONE INTENTIONAL EXCEPTION: aws_iam_policy.runzi_admin keeps its three LIVE statements verbatim
+# (the console-edited VisualEditor0/1 + IAMAdmin, preserved exactly so they import zero-diff) and
+# appends two NEW statements authored only here - BatchQueueAdmin and TerraformStateS3 - which
+# runzi-admin needs to operate terraform/batch/. So the admin policy's import will NOT be
+# zero-diff: `terraform plan` shows exactly those two added statements, which apply then creates.
+# (The live test policy diverged from serverless.yml - hand-edited; see ADR-0005 "Consequences".)
 
 data "aws_caller_identity" "current" {}
 
@@ -62,10 +63,12 @@ resource "aws_iam_policy" "runzi_base" {
         ]
       },
       {
-        Sid      = "M2MSecretRead"
-        Effect   = "Allow"
-        Action   = "secretsmanager:GetSecretValue"
-        Resource = "arn:aws:secretsmanager:${data.aws_region.current.name}:${local.account_id}:secret:toshi-m2m-*"
+        Sid    = "M2MSecretRead"
+        Effect = "Allow"
+        Action = "secretsmanager:GetSecretValue"
+        # The toshi-m2m secret lives in the Cognito/toshi-api region (ap-southeast-2), NOT this
+        # root's IAM provider region (us-east-1). This matches the live policy.
+        Resource = "arn:aws:secretsmanager:ap-southeast-2:${local.account_id}:secret:toshi-m2m-*"
       },
     ]
   })
@@ -103,35 +106,61 @@ resource "aws_iam_policy" "runzi_admin" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # ── Three statements below mirror the LIVE policy verbatim (console-edited; hence the
+      #    VisualEditor* Sids). They are preserved exactly so the import is zero-diff for them.
+      #    The live admin policy carries hand-applied permissions the serverless.yml never had —
+      #    notably iam:PassRole and ECR scoped to nzshm22/* (the real repo) — kept intentionally.
       {
-        Sid    = "BatchAdmin"
+        Sid    = "VisualEditor0"
         Effect = "Allow"
         Action = [
+          "batch:DeregisterJobDefinition",
           "batch:CreateComputeEnvironment",
-          "batch:UpdateComputeEnvironment",
           "batch:DeleteComputeEnvironment",
           "batch:RegisterJobDefinition",
-          "batch:DeregisterJobDefinition",
+          "batch:UpdateComputeEnvironment",
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "VisualEditor1"
+        Effect = "Allow"
+        Action = [
+          "ecr:CreateRepository",
+          "ecr:BatchGetImage",
+          "ecr:CompleteLayerUpload",
+          "ecr:BatchDeleteImage",
+          "ecr:UploadLayerPart",
+          "ecr:InitiateLayerUpload",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:PutImage",
+        ]
+        Resource = [
+          "arn:aws:ecr:*:*:repository/nzshm22/*",
+        ]
+      },
+      {
+        Sid    = "IAMAdmin"
+        Effect = "Allow"
+        Action = [
+          "iam:PassRole",
+        ]
+        Resource = [
+          "arn:aws:iam::${local.account_id}:role/toshi_batch_ECS_TaskExecution",
+        ]
+      },
+      # ── Two statements below are the intended Terraform-era additions (authored only here,
+      #    never in serverless). They are what `terraform plan` should show being ADDED.
+      {
+        # runzi-admin manages the Batch job queue via terraform/batch/.
+        Sid    = "BatchQueueAdmin"
+        Effect = "Allow"
+        Action = [
           "batch:CreateJobQueue",
           "batch:UpdateJobQueue",
           "batch:DeleteJobQueue",
         ]
         Resource = "*"
-      },
-      {
-        Sid    = "ECRAdmin"
-        Effect = "Allow"
-        Action = [
-          "ecr:CreateRepository",
-          "ecr:PutImage",
-          "ecr:InitiateLayerUpload",
-          "ecr:UploadLayerPart",
-          "ecr:CompleteLayerUpload",
-          "ecr:BatchDeleteImage",
-        ]
-        Resource = [
-          "arn:aws:ecr:*:*:repository/nshm-runzi-*",
-        ]
       },
       {
         # Terraform state for terraform/batch/ in nzshm-runzi (S3 backend + native S3 locking,
@@ -152,8 +181,6 @@ resource "aws_iam_policy" "runzi_admin" {
     ]
   })
 }
-
-data "aws_region" "current" {}
 
 # ── Roles (assumed via the Cognito Identity Pool after login) ─────────────────────────────
 #
@@ -195,6 +222,8 @@ resource "aws_iam_role" "runzi_local" {
   managed_policy_arns = [
     aws_iam_policy.runzi_base.arn,
   ]
+
+  tags = { STAGE = var.stage }
 }
 
 resource "aws_iam_role" "runzi_batch" {
@@ -207,6 +236,8 @@ resource "aws_iam_role" "runzi_batch" {
     aws_iam_policy.runzi_base.arn,
     aws_iam_policy.runzi_batch.arn,
   ]
+
+  tags = { STAGE = var.stage }
 }
 
 resource "aws_iam_role" "runzi_admin" {
@@ -220,4 +251,6 @@ resource "aws_iam_role" "runzi_admin" {
     aws_iam_policy.runzi_batch.arn,
     aws_iam_policy.runzi_admin.arn,
   ]
+
+  tags = { STAGE = var.stage }
 }
