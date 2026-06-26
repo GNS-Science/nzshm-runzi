@@ -161,10 +161,14 @@ terraform plan
   diff -ru baseline after-import        # expect: NO differences
   ```
 
-**Action (apply):**
+**Action (apply) — apply the saved, reviewed plan:**
 ```bash
-terraform apply
+terraform plan -out=tfplan   # same result as the review plan above, saved to a file
+terraform apply tfplan       # applies EXACTLY that plan — no re-evaluation in between
+rm tfplan                    # gitignored, but clean it up
 ```
+For an auth-critical change, applying a saved plan guarantees `apply` does exactly what you
+reviewed (nothing can drift between plan and apply).
 
 **Validate (T2b, after apply) — exactly one expected change:**
 ```bash

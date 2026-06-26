@@ -57,8 +57,8 @@ to snapshot-and-`diff` at each checkpoint). Do `test` first and validate before 
 The short version: deploy #1 (Retain + de-reference) in `nshm-toshi-api` → `terraform import` the
 6 resources here and confirm a clean `plan` (one expected exception: the admin policy gains the
 `CreateJobQueue`/`UpdateJobQueue`/`DeleteJobQueue` + `TerraformStateS3` grants that live only in
-Terraform) → `terraform apply` → deploy #2 (de-template) in `nshm-toshi-api`. Order matters —
-reversing it deletes live IAM resources used for active logins.
+Terraform) → `terraform apply tfplan` (a saved `plan -out`) → deploy #2 (de-template) in
+`nshm-toshi-api`. Order matters — reversing it deletes live IAM resources used for active logins.
 
 ## Day-to-day workflow (after migration)
 
