@@ -50,7 +50,7 @@ class RupsetReportTask:
         rupture_set_id = self.user_args.source_solution_id
 
         # download the file
-        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
+        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
         file_generator = get_output_file_id(self.toshi_api, rupture_set_id)  # for file by file ID
         solutions = download_files(self.toshi_api, file_generator, str(WORK_PATH), overwrite=False)
         rupture_set_info = solutions[rupture_set_id]

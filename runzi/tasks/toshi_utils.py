@@ -7,7 +7,7 @@ from runzi.automation.toshi_api import ToshiApi
 
 
 def get_toshi_api() -> ToshiApi:
-    return ToshiApi(API_URL, None, None, with_schema_validation=True, **get_auth_kwargs())
+    return ToshiApi(API_URL, None, None, with_schema_validation=False, **get_auth_kwargs())
 
 
 def get_solution_ids_from_id(toshi_id):

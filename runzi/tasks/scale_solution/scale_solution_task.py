@@ -55,8 +55,8 @@ class ScaleSolutionTask:
         self.output_folder = WORK_PATH
 
         if self.use_api:
-            self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
-            self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
+            self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
+            self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=False, **get_auth_kwargs())
 
     def run(self):
         # Run the task....

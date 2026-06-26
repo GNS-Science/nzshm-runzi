@@ -45,10 +45,10 @@ class RuptureSetBuilderTask:
 
         if self.use_api:
             self._ruptgen_api = RuptureGenerationTask(
-                API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs()
+                API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs()
             )
-            self._general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
+            self._general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
+            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=False, **get_auth_kwargs())
 
     def ruptureSetMetrics(self):
         metrics = {}

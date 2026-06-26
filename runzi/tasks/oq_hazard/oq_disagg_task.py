@@ -87,8 +87,8 @@ class OQDisaggTask:
         self.system_args = system_args
 
         if self.use_api:
-            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
+            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
+            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=False, **get_auth_kwargs())
 
     def set_disaggregation_params(self):
         self.model.hazard_config.set_parameter("general", "calculation_mode", "disaggregation")

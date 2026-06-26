@@ -53,7 +53,7 @@ class InversionReportTask:
     def run(self):
 
         # download the file
-        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
+        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
         file_generator = get_output_file_id(self.toshi_api, self.solution_id)  # for file by file ID
         solutions = download_files(self.toshi_api, file_generator, str(WORK_PATH), overwrite=False)
         self.solution_info = solutions[self.solution_id]

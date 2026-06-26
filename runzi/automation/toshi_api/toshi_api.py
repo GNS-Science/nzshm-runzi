@@ -17,7 +17,7 @@ from .time_dependent_inversion_solution import TimeDependentInversionSolution
 
 
 class ToshiApi(ToshiClientBase):
-    def __init__(self, url, s3_url, auth_token, with_schema_validation=True, headers=None):
+    def __init__(self, url, s3_url, auth_token, with_schema_validation=False, headers=None):
         super().__init__(url, auth_token, with_schema_validation, headers)
         self._s3_url = s3_url
 
