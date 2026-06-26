@@ -189,7 +189,7 @@ def build_manual_index(
     UPLOAD_FOLDER = "./DATA"
     TUI = "http://simple-toshi-ui.s3-website-ap-southeast-2.amazonaws.com/"
 
-    general_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
+    general_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
 
     try:
         node = general_api.get_general_task_subtask_files(general_task_id)

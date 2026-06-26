@@ -55,7 +55,7 @@ def process_one_file(dry_run: bool, filepath: str | Path, tag: str | None = None
         log.info('archived %s in %s.', filepath, archive_path)
 
     if archive_path:
-        toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
+        toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
         filename = Path(filepath).name
         meta = dict(filename=filename)
         if tag:

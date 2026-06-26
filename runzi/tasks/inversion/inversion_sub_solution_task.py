@@ -35,10 +35,10 @@ class BuilderTask:
         if self.use_api:
             # self._ruptgen_api = RuptureGenerationTask(
             #   API_URL, S3_URL,
-            #   None, with_schema_validation=True, **get_auth_kwargs()
+            #   None, with_schema_validation=False, **get_auth_kwargs()
             # )
-            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
+            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
+            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=False, **get_auth_kwargs())
 
     def run(self, task_arguments, job_arguments):
         raise NotImplementedError("inversion sub solution uses removed solvis functions and does not work.")

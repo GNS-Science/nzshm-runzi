@@ -64,8 +64,8 @@ class TimeDependentSolutionTask:
         self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=self.system_args.java_gateway_port))
         self.time_dependent_generator = self.gateway.entry_point.getTimeDependentRatesGenerator()
 
-        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
-        self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
+        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
+        self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=False, **get_auth_kwargs())
 
     def run(self):
         # Run the task....

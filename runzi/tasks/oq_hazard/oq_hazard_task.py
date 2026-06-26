@@ -67,7 +67,7 @@ def get_locations_from_file(
     vs30s: list[int] = []
     with tempfile.TemporaryDirectory() as temp_dir:
         if locations_file_id:
-            file_api = ToshiFile(API_URL, None, None, with_schema_validation=True, **get_auth_kwargs())
+            file_api = ToshiFile(API_URL, None, None, with_schema_validation=False, **get_auth_kwargs())
             file_api.download_file(locations_file_id, target_dir=temp_dir, target_name="sites.csv")
             locations_file = Path(temp_dir) / "sites.csv"
         else:
@@ -90,8 +90,8 @@ class OQHazardTask:
         self.system_args = system_args
 
         if self.use_api:
-            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
+            self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
+            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=False, **get_auth_kwargs())
 
     def _setup_automation_task(self) -> str:
 

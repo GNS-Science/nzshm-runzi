@@ -19,7 +19,7 @@ from runzi.tasks.oq_hazard.oq_hazard_task import get_locations_from_file
 
 
 def _upload_file(file_path: Path) -> str:
-    toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
+    toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
     file_id, post_url = toshi_api.file.create_file(file_path)
     toshi_api.file.upload_content(post_url, file_path)
     return file_id

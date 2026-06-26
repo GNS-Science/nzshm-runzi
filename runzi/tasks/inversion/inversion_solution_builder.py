@@ -217,8 +217,8 @@ class InversionSolutionBuilder(ABC):
         # repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
         # self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
         self.output_folder = WORK_PATH
-        self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
-        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
+        self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=False, **get_auth_kwargs())
+        self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
         self.inversion_runner: JavaObject
 
     # the purpose of this method is simply to be explicit about creating the runner object.

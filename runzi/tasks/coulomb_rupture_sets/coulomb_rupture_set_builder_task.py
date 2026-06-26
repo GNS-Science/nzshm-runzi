@@ -33,7 +33,7 @@ logging.getLogger('git.cmd').setLevel(loglevel)
 
 
 def get_fault_model_file(fault_model_file_id) -> Path:
-    toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
+    toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
     file_generator = get_output_file_id(toshi_api, fault_model_file_id)
     fault_model_file_info = download_files(toshi_api, file_generator, str(WORK_PATH), overwrite=False)
     fault_model_archive_file_path = fault_model_file_info[fault_model_file_id]['filepath']
@@ -121,10 +121,10 @@ class CoulombRuptureSetBuilderTask:
 
         if self.use_api:
             self._ruptgen_api = RuptureGenerationTask(
-                API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs()
+                API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs()
             )
-            self._general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=True, **get_auth_kwargs())
-            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=True, **get_auth_kwargs())
+            self._general_api = GeneralTask(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
+            self._task_relation_api = TaskRelation(API_URL, None, with_schema_validation=False, **get_auth_kwargs())
 
     def ruptureSetMetrics(self):
         metrics = {}
