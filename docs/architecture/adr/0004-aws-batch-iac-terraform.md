@@ -92,6 +92,11 @@ Because this is Phase 1, the following are explicit, tracked gaps rather than ov
   bootstrap stack.
 - **No CI apply.** All `terraform apply` runs are manual, from an operator's machine, until a
   follow-up decision adds automation.
+- **Run with deployer-level credentials, not the federated `runzi-admin` session.** Provisioning
+  the compute environment + queue is a deployer/devops activity — same posture as
+  `terraform/access/`. The `runzi-admin` access tier does **not** hold Terraform-state access
+  (removed in PR #315 per ADR-0005's least-privilege followup), so it cannot run this root in any
+  case. Use the same deployer credentials that run `sls deploy` / `terraform/access/`.
 
 ## Followups not blocking this decision
 

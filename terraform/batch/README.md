@@ -10,8 +10,11 @@ Run everything in this directory (`terraform/batch/`) — it's a standalone Terr
 ## Prerequisites
 
 - Terraform >= 1.10 (for native S3 state locking via `use_lockfile`).
-- AWS credentials with read access to Batch (for discovery/import) and write access to Batch,
-  matching whatever account/role you use to operate runzi's AWS Batch resources today.
+- **Deployer-level AWS credentials** — read+write to Batch (for discovery/import/apply) *and*
+  read/write to the `nzshm22-runzi-tfstate` state bucket. Run this with the same deployer
+  credentials used for `terraform/access/` / `sls deploy`, **not** the federated `runzi-admin`
+  session (which no longer holds Terraform-state access — see ADR-0005). Provisioning Batch infra
+  is a deployer/devops activity, not a runzi access-tier one.
 
 ## One-time: state bucket bootstrap
 
