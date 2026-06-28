@@ -72,11 +72,13 @@ not recreated).
 
 ### Who runs `terraform/access/`
 
-Unlike `terraform/batch/` (run under the federated `runzi-admin` session, which has Batch/ECR/S3
-write), `terraform/access/` provisions IAM resources — `iam:CreateRole`, `iam:CreatePolicy`, etc.
-— which the `runzi-admin` tier does not (and should not) grant itself. Applying this root
-requires **deployer-level AWS credentials**, the same credentials used to run `sls deploy`
-against `nshm-toshi-api` today.
+`terraform/access/` provisions IAM resources — `iam:CreateRole`, `iam:CreatePolicy`, etc. — which
+the `runzi-admin` tier does not (and should not) grant itself. Applying this root requires
+**deployer-level AWS credentials**, the same credentials used to run `sls deploy` against
+`nshm-toshi-api` today. The same applies to `terraform/batch/`: provisioning infrastructure is a
+deployer/devops activity, not a federated-`runzi-admin` one — and since this ADR removes the
+`runzi-admin` role's Terraform-state access (see Consequences), that role can no longer run either
+root.
 
 ## Consequences / deferred obligations
 
