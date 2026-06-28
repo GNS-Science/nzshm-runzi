@@ -73,13 +73,12 @@ strictly read-only.
   # authenticated -> .../role/toshi-runzi-local-<stage>
   # rules, in order: runzi-admin -> admin role, runzi-batch -> batch role, runzi-local -> local role
   ```
-- **The admin policy does NOT yet contain the queue/state grants** (it gains them only at T2b).
-  Don't assume specific Sids — the live policy may be console-edited (the test stage had
-  `VisualEditor0/1` + `IAMAdmin`, not the `serverless.yml` names). Just confirm the additions are
+- **The admin policy does NOT yet contain the queue grant** (it gains `BatchQueueAdmin` only at
+  T2b). Don't assume specific Sids — the live policy may be console-edited (the test stage had
+  `VisualEditor0/1` + `IAMAdmin`, not the `serverless.yml` names). Just confirm the addition is
   absent:
   ```bash
-  grep -c TerraformStateS3 baseline/policy-admin.json   # expect 0
-  grep -c CreateJobQueue   baseline/policy-admin.json   # expect 0
+  grep -c CreateJobQueue baseline/policy-admin.json   # expect 0
   jq '[.. | .Sid? // empty]' baseline/policy-admin.json # eyeball what IS there (it's your
                                                         # reconciliation source at T2 — see Step 2)
   ```
@@ -142,9 +141,9 @@ terraform plan
 ```
 
 **Validate (T2, after import, before apply) — RECONCILE main.tf TO LIVE:**
-- The goal is a `terraform plan` showing **only** the intended additions: the admin policy
-  gaining a `BatchQueueAdmin` statement (`batch:CreateJobQueue/UpdateJobQueue/DeleteJobQueue`) and
-  a `TerraformStateS3` statement (authored only in Terraform — see ADR-0005).
+- The goal is a `terraform plan` showing **only** the intended addition: the admin policy
+  gaining a `BatchQueueAdmin` statement (`batch:CreateJobQueue/UpdateJobQueue/DeleteJobQueue`),
+  authored only in Terraform — see ADR-0005.
 - **Expect the first plan to show MORE than that.** The live resources can have **drifted from
   `serverless.yml`** (the test stage was hand-edited in the console — different Sids, extra
   `iam:PassRole`, an `nzshm22/*` ECR scope, a `STAGE` tag, and the M2M secret ARN in
@@ -153,7 +152,7 @@ terraform plan
 - **When it doesn't match, fix `main.tf` to mirror LIVE — never change the live resource to match
   the HCL.** The authoritative "live" is your **baseline snapshot** (`baseline/policy-*.json`,
   `role-*-*.json`): reproduce each live statement verbatim, then append only the two intended
-  additions. Re-run `terraform plan` and iterate until the only diff is those two additions. (See
+  addition. Re-run `terraform plan` and iterate until the only diff is that one addition. (See
   the worked example in ADR-0005 "Consequences" — this is per-stage; prod's drift may differ.)
 - Nothing has been applied yet, so the live AWS state is still pristine:
   ```bash
@@ -174,9 +173,9 @@ reviewed (nothing can drift between plan and apply).
 ```bash
 ./scripts/snapshot-access-tiers.sh "$STAGE" "$POOL_ID" after-apply
 diff -ru baseline after-apply
-# expect: the ONLY differences are in policy-admin.json — the added BatchQueueAdmin statement
-#         (the queue actions) and the new TerraformStateS3 statement. Everything else identical.
-grep -c TerraformStateS3 after-apply/policy-admin.json    # expect 1 (now present)
+# expect: the ONLY difference is in policy-admin.json — the added BatchQueueAdmin statement
+#         (the queue actions). Everything else identical.
+grep -c BatchQueueAdmin after-apply/policy-admin.json    # expect 1 (now present)
 ```
 
 ---

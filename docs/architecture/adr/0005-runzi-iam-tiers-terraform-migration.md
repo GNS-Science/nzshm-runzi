@@ -95,11 +95,17 @@ against `nshm-toshi-api` today.
   (`baseline/policy-*.json`, `role-*-*.json`), not `serverless.yml`. **Prod must be reconciled to
   its OWN baseline snapshot** — its console drift may differ from test's, so a single static
   `main.tf` will not fit both stages unchanged (see Followups: per-stage definitions).
-- **The intended additions are the one *deliberate* non-zero-diff.** `runzi-admin` needs
-  `batch:CreateJobQueue/UpdateJobQueue/DeleteJobQueue` (a `BatchQueueAdmin` statement) and a
-  `TerraformStateS3` statement to operate `terraform/batch/`. These are authored **only** in
+- **The intended addition is the *deliberate* non-zero-diff.** A `BatchQueueAdmin` statement
+  (`batch:CreateJobQueue/UpdateJobQueue/DeleteJobQueue`) is authored **only** in
   `terraform/access/main.tf` (never in `serverless.yml`), so the post-reconciliation
-  `terraform plan` shows exactly those two added statements, which `apply` then creates.
+  `terraform plan` shows that added statement, which `apply` then creates.
+- **No Terraform-state access on the federated roles.** An earlier `TerraformStateS3` grant
+  (`s3:*` on `nzshm22-runzi-tfstate`) was **removed**: `terraform/batch/` is run with **deployer
+  credentials** (the same way `terraform/access/` is — see "Who runs"), so the Cognito-federated
+  `runzi-admin` role must not hold write/delete on the Terraform state bucket. The Batch
+  compute-env/queue admin perms (`BatchAdmin` + `BatchQueueAdmin`) are the same class of
+  *provisioning* power and are flagged for the same review (see Followups) — they remain on the
+  role for now only because slimming them is a broader access-model change.
 - **Deploy #2 (de-template) is stage-conditional, because `serverless.yml` is shared.** Removing
   the 6 resource definitions outright would also drop them from un-migrated stages' templates on
   their next deploy (`Retain` → orphaned). So deploy #2 excludes the 6 **only for the migrating
@@ -124,11 +130,20 @@ against `nshm-toshi-api` today.
   whether the User Pool itself, the `toshi-readers`/`toshi-writers` groups (toshi-api's own
   access axis, as opposed to runzi's AWS axis), and the M2M client/secret belong in
   `nzshm-security` or stay with `nshm-toshi-api`. Tracked via a `nzshm-security` issue (see Files).
-- **Per-stage policy definitions (blocks prod).** `main.tf` currently encodes the *test* stage's
-  live (drifted) content. Because prod's console drift may differ, `main.tf` needs to express
-  per-stage policy bodies before prod can be migrated — e.g. a stage-keyed local/`for_each`, a
-  small per-stage module, or per-workspace `.tfvars` driving the statements. Decide the mechanism
-  when planning prod (after capturing a prod baseline snapshot).
+- **Prod was migrated by ALIGNING to test, not per-stage faithfully.** The prod baseline snapshot
+  showed prod's admin policy was the *clean serverless original* (`BatchAdmin`/`ECRAdmin`,
+  `nshm-runzi-*`, no `iam:PassRole`) while test had been hand-patched. Rather than encode both
+  stages' drift via per-stage `main.tf` definitions, the team chose to **bring prod up to test's
+  patched admin policy** — a deliberate prod privilege expansion (gains `iam:PassRole`, ECR
+  `nzshm22/*`, extra ECR reads). So `main.tf` stays single-bodied and prod's import is an
+  intentional admin-policy change, not a clean custody transfer. (If anyone later needs the
+  stages to genuinely diverge, the per-stage mechanism — stage-keyed locals — is the fallback.)
+- **Move provisioning perms off the federated runzi roles.** `TerraformStateS3` was already
+  removed (state access → deployer creds; `terraform/batch/` runs with deployer creds). The Batch
+  compute-env/queue admin perms (`BatchAdmin`, `BatchQueueAdmin`) and arguably `ECRAdmin` image
+  push are also *provisioning/build* powers, not *job-running* powers — the runzi-* tiers exist to
+  **use** the system, not provision it. A focused pass should move these to the deployer side and
+  reconsider what the `runzi-admin` tier is actually for (touches ADR-003 / ADR-0004).
 - **Tidy the console-editor Sids.** Once owned by Terraform, rename `VisualEditor0/1` to
   meaningful Sids (e.g. `BatchComputeAdmin`, `ECRAdmin`) as a deliberate, separately-reviewed
   change — kept verbatim during the migration only to guarantee a clean import.

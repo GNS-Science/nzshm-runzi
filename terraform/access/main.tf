@@ -12,10 +12,11 @@
 #
 # ONE INTENTIONAL EXCEPTION: aws_iam_policy.runzi_admin keeps its three LIVE statements verbatim
 # (the console-edited VisualEditor0/1 + IAMAdmin, preserved exactly so they import zero-diff) and
-# appends two NEW statements authored only here - BatchQueueAdmin and TerraformStateS3 - which
-# runzi-admin needs to operate terraform/batch/. So the admin policy's import will NOT be
-# zero-diff: `terraform plan` shows exactly those two added statements, which apply then creates.
+# appends ONE NEW statement authored only here - BatchQueueAdmin - so the admin policy's import is
+# not zero-diff: `terraform plan` shows that added statement, which apply then creates.
 # (The live test policy diverged from serverless.yml - hand-edited; see ADR-0005 "Consequences".)
+# A `TerraformStateS3` grant was removed - terraform/batch/ runs with deployer creds, so the
+# federated runzi-admin role should not hold Terraform-state access (see ADR-0005 followups).
 
 data "aws_caller_identity" "current" {}
 
@@ -149,10 +150,14 @@ resource "aws_iam_policy" "runzi_admin" {
           "arn:aws:iam::${local.account_id}:role/toshi_batch_ECS_TaskExecution",
         ]
       },
-      # ── Two statements below are the intended Terraform-era additions (authored only here,
-      #    never in serverless). They are what `terraform plan` should show being ADDED.
+      # ── One NEW statement below is a Terraform-era addition (authored only here, never in
+      #    serverless). LEAST-PRIVILEGE NOTE: terraform/batch/ is run with DEPLOYER creds (like
+      #    terraform/access/), NOT the federated runzi-admin session — so a `TerraformStateS3`
+      #    grant (s3 on nzshm22-runzi-tfstate) was deliberately REMOVED here: Terraform-state
+      #    access belongs to the deployer, not a Cognito-federated role. The Batch compute-env /
+      #    queue admin perms (`BatchAdmin` + this `BatchQueueAdmin`) are the same kind of
+      #    provisioning power and are pending the same review (see ADR-0005 followups).
       {
-        # runzi-admin manages the Batch job queue via terraform/batch/.
         Sid    = "BatchQueueAdmin"
         Effect = "Allow"
         Action = [
@@ -161,22 +166,6 @@ resource "aws_iam_policy" "runzi_admin" {
           "batch:DeleteJobQueue",
         ]
         Resource = "*"
-      },
-      {
-        # Terraform state for terraform/batch/ in nzshm-runzi (S3 backend + native S3 locking,
-        # which writes/deletes a "<key>.tflock" object).
-        Sid    = "TerraformStateS3"
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject",
-          "s3:ListBucket",
-        ]
-        Resource = [
-          "arn:aws:s3:::nzshm22-runzi-tfstate",
-          "arn:aws:s3:::nzshm22-runzi-tfstate/*",
-        ]
       },
     ]
   })
