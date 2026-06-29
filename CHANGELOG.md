@@ -2,8 +2,16 @@
 
 ## [Unreleased]
 
+### Added
+ - Terraform IaC for the AWS Batch Fargate compute environment and `BasicFargate_Q` job queue (`terraform/batch/`); the hand-created resources are adopted via `terraform import`, with `terraform plan` as the drift detector. The job definition stays CLI-managed. See `docs/architecture/adr/0004-aws-batch-iac-terraform.md`.
+ - Terraform IaC for runzi's IAM access tiers (`terraform/access/`), migrating the federated Cognito roles to code. See `docs/architecture/adr/0005-runzi-iam-tiers-terraform-migration.md`.
+
 ### Changed
  - Consolidated AWS Batch compute config: tasks now inherit a single default Fargate job definition/queue instead of each hardcoding their own, and `get_ecs_job_config` validates memory/vcpu against the real Fargate size matrix (up to 16 vCPU) via `validate_fargate_resources`, replacing the inline assert table. See `docs/architecture/adr/0003-aws-batch-compute-consolidation.md`.
+ - Removed Terraform state (S3) access from the federated `runzi-admin` role (least privilege); Terraform roots run with deployer credentials. See `docs/architecture/adr/0005-runzi-iam-tiers-terraform-migration.md`.
+
+### Fixed
+ - Disabled gql client schema fetching to avoid a `DirectiveLocation` crash against the Toshi API.
 
 ## [0.11.0] 2026-10-06
 
