@@ -8,8 +8,8 @@
 # variables above, not created or imported here - they belong to other systems/owners.
 
 resource "aws_batch_compute_environment" "fargate" {
-  name = var.compute_environment_name
-  type = "MANAGED"
+  compute_environment_name = var.compute_environment_name
+  type                     = "MANAGED"
 
   compute_resources {
     type               = "FARGATE"
