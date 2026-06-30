@@ -22,7 +22,7 @@ from runzi.automation.local_config import (
 )
 from runzi.automation.opensha_task_factory import get_factory
 from runzi.automation.toshi_api import ModelType
-from runzi.aws import get_ecs_job_config
+from runzi.aws import get_ecs_job_config, resolve_job_definition_digest
 from runzi.protocols import ModuleWithDefaultSysArgs
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
@@ -53,6 +53,13 @@ def build_tasks(
         jvm_heap_start=JVM_HEAP_START,
     )
 
+    # The job definitions track a floating image tag, so resolve the concrete digest the selected
+    # job definition currently points at for honest toshi provenance; fall back to the configured
+    # NZSHM22_RUNZI_ECR_DIGEST if it can't be resolved (e.g. no AWS access).
+    ecr_digest = ECR_DIGEST
+    if local_config.CLUSTER_MODE is ClusterModeEnum.AWS:
+        ecr_digest = resolve_job_definition_digest(system_args.ecs_job_definition) or ECR_DIGEST
+
     for task_count, task_args in enumerate(user_args.get_tasks(), start=1):
         task_system_args = system_args.model_copy()
         task_system_args.task_count = task_count
@@ -74,7 +81,7 @@ def build_tasks(
                 toshi_report_bucket=S3_REPORT_BUCKET,
                 ths_rlz_db=THS_RLZ_DB,
                 ths_disagg_rlz_db=THS_DISAGG_RLZ_DB,
-                ecr_digest=ECR_DIGEST,
+                ecr_digest=ecr_digest,
                 task_module=task_module.__name__,
                 time_minutes=system_args.ecs_max_job_time_min,
                 memory=system_args.ecs_memory,

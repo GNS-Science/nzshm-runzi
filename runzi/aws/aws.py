@@ -6,6 +6,7 @@ import base64
 import collections
 import io
 import json
+import logging
 import os
 import urllib.parse
 import zipfile
@@ -16,6 +17,8 @@ from botocore.exceptions import ClientError
 from runzi.automation.task_config import get_task_config
 from runzi.automation.toshi_api.general_task import ModelType
 from runzi.aws.session import get_session
+
+log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
@@ -136,6 +139,45 @@ def get_secret(secret_name, region_name):
             return json.loads(get_secret_value_response['SecretString'])
         else:
             return base64.b64decode(get_secret_value_response['SecretBinary'])
+
+
+def resolve_job_definition_digest(job_definition: str, region_name: str | None = None) -> str | None:
+    """Resolve the concrete image digest the named job definition currently points at.
+
+    The Terraform-owned job definitions track a floating ECR tag (``:prod`` / ``:experimental``), so
+    the digest that actually runs changes as images are published or promoted. Resolving it at
+    submit time keeps toshi provenance (``NZSHM22_RUNZI_ECR_DIGEST``) honest about which image a job
+    ran. Returns ``None`` if it can't be resolved (e.g. no AWS access, missing tag) so the caller can
+    fall back to a configured digest.
+    """
+    region_name = region_name or os.getenv('AWS_DEFAULT_REGION', 'us-east-1')
+    try:
+        session = get_session()
+        batch_client = session.client(service_name='batch', region_name=region_name)
+        response = batch_client.describe_job_definitions(
+            jobDefinitionName=job_definition, status='ACTIVE', maxResults=1
+        )
+        job_defs = response.get('jobDefinitions')
+        if not job_defs:
+            return None
+
+        image = job_defs[0]['containerProperties']['image']  # e.g. <registry>/nzshm22/runzi:prod
+        ref = image.split('/', 1)[1] if '/' in image else image
+        if '@' in ref:
+            return ref.split('@', 1)[1]  # job definition already pins a digest
+
+        repository, _, tag = ref.rpartition(':')
+        if not tag:
+            return None
+
+        ecr_client = session.client(service_name='ecr', region_name=region_name)
+        images = ecr_client.batch_get_image(repositoryName=repository, imageIds=[{'imageTag': tag}]).get('images', [])
+        if not images:
+            return None
+        return images[0]['imageId'].get('imageDigest')
+    except Exception as exc:  # noqa: BLE001 - provenance resolution must never block submission
+        log.warning("Could not resolve image digest for job definition '%s': %s", job_definition, exc)
+        return None
 
 
 def compress_config(config):

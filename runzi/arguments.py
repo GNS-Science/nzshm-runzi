@@ -27,9 +27,14 @@ class ComputeEnvironment(Enum):
     EC2 = 'ec2'
 
 
-# Canonical AWS Batch compute target. All tasks share a single Fargate compute environment,
-# job definition, and queue (see docs/architecture/adr/0003-aws-batch-compute-consolidation.md).
-DEFAULT_JOB_DEFINITION = "Fargate-runzi-opensha-JD"
+# Canonical AWS Batch compute target. All tasks share a single Fargate compute environment and
+# queue (see docs/architecture/adr/0003-aws-batch-compute-consolidation.md). The job definitions are
+# Terraform-owned and track stable image tags (:prod / :experimental); the default resolves to the
+# prod definition. Override ecs_job_definition (e.g. via sys_arg_overrides) with
+# EXPERIMENTAL_JOB_DEFINITION to run the experimental image
+# (see docs/architecture/adr/0007-job-definition-terraform-tag-publish.md).
+DEFAULT_JOB_DEFINITION = "runzi-fargate-JD"
+EXPERIMENTAL_JOB_DEFINITION = "runzi-fargate-experimental-JD"
 DEFAULT_JOB_QUEUE = "BasicFargate_Q"
 
 

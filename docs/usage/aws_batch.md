@@ -12,10 +12,12 @@ asks otherwise.
 - **Compute environment**: Fargate, backing the queue below. `maxvCpus` must be high enough for
   the desired concurrency at up to 8 vCPU/job (the largest current task size, used by the OQ
   hazard/disagg tasks).
-- **Job definition**: `Fargate-runzi-opensha-JD`
+- **Job definition**: `runzi-fargate-JD` (the default/prod definition). A second
+  `runzi-fargate-experimental-JD` is identical but tracks the `:experimental` image tag — see
+  ["Publishing images & the two job definitions"](#publishing-images--the-two-job-definitions).
   - `platformCapabilities: ["FARGATE"]`
-  - Container image: the `nzshm22/runzi` image built and pushed by
-    `runzi utils docker-build` (`runzi/cli/build_and_deploy_container.py`)
+  - Container image: the `nzshm22/runzi` image at a floating tag (`:prod` for the default
+    definition, `:experimental` for the experimental one) — not a pinned digest
   - IAM role: the task execution/job role used to pull the image and run the container
   - Job-definition-owned env vars (not forwarded by runzi; see
     [`environment_variables.md`](environment_variables.md#aws-batch-job-definition-env-vars)):
@@ -55,26 +57,43 @@ environment can actually allocate, the job won't error at submission — it will
 than its advertised RAM (the OS, ECS agent, and Docker daemon reserve some), so size EC2 jobs
 with margin below your largest instance's total memory, not right up against it.
 
-# Updating the job definition
+# Publishing images & the two job definitions
 
-`runzi utils docker-build` builds the image, pushes it to ECR, and re-registers
-`Fargate-runzi-opensha-JD` with the new image (`update_job_definition()` in
-`runzi/cli/build_and_deploy_container.py`). It carries forward the existing definition's
-`platformCapabilities`, `parameters`, and `containerProperties` (with the image swapped) — AWS
-defaults `platformCapabilities` to `EC2` when omitted, which would silently break Fargate's
-fractional vCPU values, so this must always be forwarded explicitly.
+The job definitions track **floating image tags**, not pinned digests, so publishing a new image
+never re-registers a job definition (see
+[`docs/architecture/adr/0007-job-definition-terraform-tag-publish.md`](../architecture/adr/0007-job-definition-terraform-tag-publish.md)):
+
+- `runzi utils docker-build` builds the image, pushes it to ECR, and moves the `:experimental`
+  tag onto it. `runzi-fargate-experimental-JD` tracks `:experimental`, so the new image is live for
+  experimental submissions on their next run — without touching the shared prod surface.
+- `runzi utils promote` moves the `:prod` tag onto an already-published image. `runzi-fargate-JD`
+  (the default) tracks `:prod`, so this — and only this — changes the image default submissions run.
+  It is a deliberate, confirmed, CloudTrail-audited step.
+
+To run an experimental image deliberately, override the job definition in a config file's
+`sys_arg_overrides`:
+
+```json
+"sys_arg_overrides": {
+  "ecs_job_definition": "runzi-fargate-experimental-JD"
+}
+```
+
+runzi resolves whichever job definition you submit to back to a concrete image digest at submit
+time and records it (`NZSHM22_RUNZI_ECR_DIGEST`) in toshi provenance, so a run pins exactly which
+image it used even though the definition names only a tag.
 
 # Infrastructure-as-code
 
-The **compute environment and `BasicFargate_Q` job queue** are managed by Terraform in
-[`terraform/batch/`](../../terraform/batch/) — see that directory's `README.md` for the operator
-runbook (discovery, state bucket, import, day-to-day `plan`/`apply`) and
+The **compute environment, `BasicFargate_Q` job queue, and both job definitions** are managed by
+Terraform in [`terraform/batch/`](../../terraform/batch/) — see that directory's `README.md` for
+the operator runbook (discovery, state bucket, import/create, day-to-day `plan`/`apply`),
 [`docs/architecture/adr/0004-aws-batch-iac-terraform.md`](../architecture/adr/0004-aws-batch-iac-terraform.md)
-for why.
+(compute env + queue), and
+[`docs/architecture/adr/0007-job-definition-terraform-tag-publish.md`](../architecture/adr/0007-job-definition-terraform-tag-publish.md)
+(job definitions via floating tags).
 
-The **`Fargate-runzi-opensha-JD` job definition is still hand/CLI-managed**, not Terraform —
-it's re-registered with a new image digest on every `runzi utils docker-build` (see "Updating the
-job definition" above), which would conflict with Terraform ownership. Its IAM role,
-`platformCapabilities`, and the M2M env vars remain console-set and documented only here until a
-follow-up decision brings it under IaC too. Any change to the job definition must still be made
-manually/via the CLI and reflected back into this doc.
+The Terraform owns each definition's **shape** (IAM role, `platformCapabilities`, sizing, M2M env
+vars, and which tag it tracks); the **image content** under a tag is published self-serve via
+`docker-build` / `promote` above. Changing a definition's shape is a `terraform apply`; changing
+the image it runs is a tag move, not a Terraform change.

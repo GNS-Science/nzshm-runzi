@@ -353,13 +353,14 @@ $ runzi utils [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `docker-build`: Build runzi-opensha Docker image, push to...
+* `docker-build`: Build the runzi image, push it to ECR,...
+* `promote`: Promote an already-published image to :prod...
 * `save-file`: Zip a file and save as a ToshiAPI File...
 * `index-inv`: Add inversions to the index (static web...
 
 ### `utils docker-build`
 
-Build runzi-opensha Docker image, push to ECR, update Batch job definition.
+Build the runzi image, push it to ECR, and move the :experimental tag onto it. Does not touch the prod job definition; use `runzi utils promote` to publish to prod.
 
 **Usage**:
 
@@ -374,14 +375,31 @@ $ runzi utils docker-build [OPTIONS]
 * `--python-version TEXT`: Python version  [default: 3.11]
 * `--oq-version TEXT`: OpenQuake version  [default: 3.23.4]
 * `--install-converter / --no-install-converter`: Set to install UCERF converter  [default: no-install-converter]
+* `--dev / --no-dev`: Build dev image (editable install, local-only; skips ECR push)  [default: no-dev]
 * `--region TEXT`: AWS region  [default: us-east-1]
 * `--aws-account-id TEXT`: AWS account ID  [default: 461564345538]
 * `--ecr-repo TEXT`: ECR repository  [default: nzshm22/runzi]
-* `--job-definition TEXT`: Batch job definition  [default: runzi_32GB_8VCPU_JD]
 * `--dockerfile TEXT`: Path to Dockerfile  [default: docker/Dockerfile]
 * `--skip-build / --no-skip-build`: Skip Docker build  [default: no-skip-build]
 * `--skip-push / --no-skip-push`: Skip ECR push  [default: no-skip-push]
-* `--skip-job-update / --no-skip-job-update`: Skip job definition update  [default: no-skip-job-update]
+* `--help`: Show this message and exit.
+
+### `utils promote`
+
+Promote an already-published image to :prod — changing the shared prod job definition's image. Moves the :prod tag onto an existing image manifest in ECR (no rebuild).
+
+**Usage**:
+
+```console
+$ runzi utils promote [OPTIONS]
+```
+
+**Options**:
+
+* `--source TEXT`: Source tag to promote to :prod — the current :experimental image, or a specific runzi-<hash>... version tag.  [default: experimental]
+* `--region TEXT`: AWS region  [default: us-east-1]
+* `--ecr-repo TEXT`: ECR repository  [default: nzshm22/runzi]
+* `--yes / --no-yes`, `-y`: Skip the confirmation prompt  [default: no-yes]
 * `--help`: Show this message and exit.
 
 ### `utils save-file`

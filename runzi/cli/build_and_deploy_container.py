@@ -1,4 +1,11 @@
-"""Deploy docker image to AWS ECR and update Batch job definition."""
+"""Build the runzi image, push it to ECR, and manage the experimental/prod floating tags.
+
+The Batch job definitions are owned by Terraform (`terraform/batch/`) and track stable image
+**tags** (`:experimental`, `:prod`), not image digests, so publishing never re-registers a job
+definition. `docker-build` moves `:experimental` onto a freshly-pushed image (self-serve); `promote`
+moves `:prod` onto an already-published digest (a deliberate, audited change to the shared prod
+surface). See `docs/architecture/adr/0007-job-definition-terraform-tag-publish.md`.
+"""
 
 import subprocess
 from pathlib import Path
@@ -8,11 +15,13 @@ import typer
 from dotenv import load_dotenv
 from rich import print as rich_print
 
-from runzi.arguments import DEFAULT_JOB_DEFINITION
-
 load_dotenv()
 
 app = typer.Typer()
+
+#: Floating ECR tags the Terraform-owned job definitions resolve to.
+EXPERIMENTAL_TAG = "experimental"
+PROD_TAG = "prod"
 
 
 def get_git_hash(gitref: str, cwd: Path | None = None) -> str:
@@ -109,22 +118,28 @@ def tag_and_push_image(
     fatjar_tag: str,
     oq_version: str,
 ) -> tuple[str, str]:
-    """Tag and push image to ECR. Returns the new image URI."""
+    """Tag and push the image to ECR under the immutable version tag and the :experimental tag.
+
+    The immutable ``runzi-<hash>_py..._oq-...`` tag is the audit anchor (it shares the digest with
+    whatever floating tag points at it); ``:experimental`` is the floating tag the experimental job
+    definition tracks. ``:prod`` is moved separately by ``promote``, never here. Returns the version
+    image URI and its digest.
+    """
     registry = f"{aws_account_id}.dkr.ecr.{region}.amazonaws.com"
 
     version_tag = f"runzi-{git_hash}_py{python_version}_opensha-{fatjar_tag}_oq-{oq_version}"
     image_uri = f"{registry}/{ecr_repo}:{version_tag}"
-    latest_uri = f"{registry}/{ecr_repo}:latest"
+    experimental_uri = f"{registry}/{ecr_repo}:{EXPERIMENTAL_TAG}"
 
-    print(f"Tagging image as {version_tag}...")
+    print(f"Tagging image as {version_tag} and :{EXPERIMENTAL_TAG}...")
     subprocess.run(["docker", "tag", "runzi-build:latest", image_uri], check=True)
-    subprocess.run(["docker", "tag", "runzi-build:latest", latest_uri], check=True)
+    subprocess.run(["docker", "tag", "runzi-build:latest", experimental_uri], check=True)
 
     print("Pushing to ECR...")
     subprocess.run(["docker", "push", image_uri], check=True)
-    subprocess.run(["docker", "push", latest_uri], check=True)
+    subprocess.run(["docker", "push", experimental_uri], check=True)
 
-    print(f"Image pushed: {image_uri}")
+    print(f"Image pushed: {image_uri} (also tagged :{EXPERIMENTAL_TAG})")
 
     result = subprocess.run(
         ["docker", "inspect", image_uri, "--format={{.RepoDigests}}"],
@@ -137,52 +152,43 @@ def tag_and_push_image(
     return image_uri, image_digest
 
 
-def update_job_definition(
-    job_definition: str,
-    image_uri: str,
+def retag_image(
+    ecr_repo: str,
     region: str,
+    source_tag: str,
+    target_tag: str,
 ) -> str:
-    """Update existing job definition with new image. Returns new job definition ARN."""
-    print(f"Updating job definition '{job_definition}' with new image...")
+    """Move ``target_tag`` onto the image manifest already tagged ``source_tag`` in ECR.
 
-    batch_client = boto3.client("batch", region_name=region)
+    This is a manifest re-tag inside ECR (no pull/rebuild): it copies the existing image's manifest
+    under a new tag, so ``source_tag`` and ``target_tag`` end up on the same digest. Returns the
+    digest the target tag now points at.
+    """
+    ecr_client = boto3.client("ecr", region_name=region)
 
-    response = batch_client.describe_job_definitions(
-        jobDefinitionName=job_definition,
-        status="ACTIVE",
-        maxResults=1,
+    response = ecr_client.batch_get_image(
+        repositoryName=ecr_repo,
+        imageIds=[{"imageTag": source_tag}],
     )
+    images = response.get("images", [])
+    if not images:
+        raise RuntimeError(f"No image tagged '{source_tag}' in repository '{ecr_repo}'")
 
-    if not response.get("jobDefinitions"):
-        raise RuntimeError(f"No active job definition found: {job_definition}")
+    image = images[0]
+    manifest = image["imageManifest"]
+    source_digest = image["imageId"].get("imageDigest", "unknown")
 
-    current_def = response["jobDefinitions"][0]
-    current_revision = current_def["revision"]
-    current_arn = current_def["jobDefinitionArn"]
-    current_parameters = current_def["parameters"]
-    current_platform_capabilities = current_def["platformCapabilities"]
+    try:
+        ecr_client.put_image(
+            repositoryName=ecr_repo,
+            imageManifest=manifest,
+            imageTag=target_tag,
+        )
+    except ecr_client.exceptions.ImageAlreadyExistsException:
+        # :target_tag already points at this exact manifest — nothing to move.
+        print(f":{target_tag} already points at {source_digest}; no change.")
 
-    print(f"Current revision: {current_revision}")
-    print(f"Current ARN: {current_arn}")
-
-    container_props = current_def["containerProperties"]
-    container_props["image"] = image_uri
-
-    response = batch_client.register_job_definition(
-        jobDefinitionName=job_definition,
-        type="container",
-        parameters=current_parameters,
-        containerProperties=container_props,
-        platformCapabilities=current_platform_capabilities,
-    )
-
-    new_arn = response["jobDefinitionArn"]
-    new_revision = response.get("revision", "?")
-
-    print(f"New job definition: {new_arn}")
-    print(f"New revision: {new_revision}")
-
-    return new_arn
+    return source_digest
 
 
 @app.command()
@@ -198,18 +204,18 @@ def build_and_deploy_container(
     region: str = typer.Option("us-east-1", envvar="AWS_REGION", help="AWS region"),
     aws_account_id: str = typer.Option("461564345538", envvar="AWS_ACCOUNT_ID", help="AWS account ID"),
     ecr_repo: str = typer.Option("nzshm22/runzi", envvar="ECR_REPO", help="ECR repository"),
-    job_definition: str = typer.Option(DEFAULT_JOB_DEFINITION, envvar="JOB_DEFINITION", help="Batch job definition"),
     dockerfile: str = typer.Option("docker/Dockerfile", envvar="DOCKERFILE", help="Path to Dockerfile"),
     skip_build: bool = typer.Option(default=False, help="Skip Docker build"),
     skip_push: bool = typer.Option(default=False, help="Skip ECR push"),
-    skip_job_update: bool = typer.Option(default=False, help="Skip job definition update"),
 ):
-    """Build runzi-opensha Docker image, push to ECR, update Batch job definition."""
+    """Build the runzi image, push it to ECR, and move the :experimental tag onto it.
+
+    Does NOT touch the prod job definition: the experimental Batch job definition tracks the
+    :experimental tag, so the new image goes live for experimental submissions on its next run.
+    Use `runzi utils promote` to publish a tested image to the shared prod surface.
+    """
     if dev:
         skip_push = True
-        skip_job_update = True
-    if skip_push:
-        skip_job_update = True
 
     rich_print("[bold]runzi-opensha Docker Deployment[/bold]")
     print()
@@ -223,11 +229,9 @@ def build_and_deploy_container(
     print(f"  region: {region}")
     print(f"  aws_account_id: {aws_account_id}")
     print(f"  ecr_repo: {ecr_repo}")
-    print(f"  job_definition: {job_definition}")
     print(f"  dockerfile: {dockerfile}")
     print(f"  skip_build: {skip_build}")
     print(f"  skip_push: {skip_push}")
-    print(f"  skip_job_update: {skip_job_update}")
     print()
 
     dockerfile_path = Path(dockerfile)
@@ -269,28 +273,62 @@ def build_and_deploy_container(
         else:
             image_uri, image_digest = local_image_tag, "sha256:skipped"
 
-        if not skip_job_update:
-            new_job_def_arn = update_job_definition(
-                job_definition,
-                image_uri,
-                region,
-            )
-
         print()
         stages = [
             ("Build", not skip_build),
-            ("Push image to ECR", not skip_push),
-            ("Update job definition", not skip_job_update),
+            (f"Push image to ECR (:{EXPERIMENTAL_TAG})", not skip_push),
         ]
         completed = [name for name, done in stages if done]
         rich_print(f"[bold green]Completed {', '.join(completed)}![/bold green]")
         print(f"Image: {local_image_tag if dev else image_uri}")
         if not dev:
             print(f"Image digest: {image_digest}")
-        if not skip_job_update:
-            print(f"Job Definition: {new_job_def_arn}")
+            rich_print(
+                "[yellow]Experimental submissions now resolve this image. "
+                "Run `runzi utils promote` to publish it to prod.[/yellow]"
+            )
         print()
 
+    except Exception as e:
+        rich_print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(1) from e
+
+
+@app.command()
+def promote(
+    source: str = typer.Option(
+        EXPERIMENTAL_TAG,
+        help="Source tag to promote to :prod — the current :experimental image, or a specific "
+        "runzi-<hash>... version tag.",
+    ),
+    region: str = typer.Option("us-east-1", envvar="AWS_REGION", help="AWS region"),
+    ecr_repo: str = typer.Option("nzshm22/runzi", envvar="ECR_REPO", help="ECR repository"),
+    yes: bool = typer.Option(False, "--yes", "-y", help="Skip the confirmation prompt"),
+):
+    """Promote an already-published image to :prod — changing the shared prod job definition's image.
+
+    This is the only command that touches the prod surface. It moves the :prod tag onto an existing
+    image manifest in ECR (no rebuild); the Terraform-owned prod job definition tracks :prod, so the
+    promoted image goes live for default submissions on their next run.
+    """
+    rich_print("[bold]runzi image promotion[/bold]")
+    print(f"  ecr_repo: {ecr_repo}")
+    print(f"  source tag: {source}")
+    print(f"  target tag: {PROD_TAG}")
+    print()
+
+    if not yes:
+        typer.confirm(
+            f"Promote ':{source}' to ':{PROD_TAG}' in {ecr_repo}? "
+            f"This changes the image every default (prod) submission runs.",
+            abort=True,
+        )
+
+    try:
+        promoted_digest = retag_image(ecr_repo, region, source, PROD_TAG)
+        rich_print(f"[bold green]Promoted :{source} -> :{PROD_TAG}[/bold green]")
+        print(f"Prod now resolves to: {promoted_digest}")
+        print()
     except Exception as e:
         rich_print(f"[red]Error: {e}[/red]")
         raise typer.Exit(1) from e

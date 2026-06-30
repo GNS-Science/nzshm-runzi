@@ -1,5 +1,10 @@
 # AWS Batch IaC: Terraform for the compute environment and queue (Phase 1)
 
+> **Status:** the job-definition deferral below is **superseded by
+> [0007](0007-job-definition-terraform-tag-publish.md)**, which brings the job definitions under
+> Terraform by pointing them at a floating image *tag* (removing the per-deploy mutation this ADR
+> cited as the blocker). The compute-environment + queue decision stands.
+
 ## Decision
 
 **runzi adopts Terraform, in this repo, to manage the two genuinely static AWS Batch

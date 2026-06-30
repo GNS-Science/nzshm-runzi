@@ -6,12 +6,13 @@ from typing import Annotated
 import typer
 from rich import print as rich_print
 
-from runzi.cli.build_and_deploy_container import build_and_deploy_container
+from runzi.cli.build_and_deploy_container import build_and_deploy_container, promote
 from runzi.tasks.utils import VALID_ROW, build_manual_index, run_save_file_archive
 
 app = typer.Typer()
 
 app.command("docker-build")(build_and_deploy_container)
+app.command("promote")(promote)
 
 
 @app.command()

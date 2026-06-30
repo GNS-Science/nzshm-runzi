@@ -14,13 +14,17 @@ drift below a lower one:
 |---|---|---|---|
 | `local` | `toshi-runzi-local-<stage>` | base | ECR pull, S3 report read/write |
 | `batch` | `toshi-runzi-batch-<stage>` | base + batch | + AWS Batch submit/describe/terminate |
-| `admin` | `toshi-runzi-admin-<stage>` | base + batch + admin | + publish: ECR image push, register job definition (`iam:PassRole`). **Not** infra provisioning — compute environments and queues are deployer/Terraform-only. |
+| `admin` | `toshi-runzi-admin-<stage>` | base + batch + admin | + publish: ECR image push (to `nzshm22/*`). **Not** infra provisioning or job-definition registration — compute environments, queues, and the job definitions are deployer/Terraform-only. |
 
 The split follows a **substrate-vs-code** model (see
-[ADR-0006](../architecture/adr/0006-runzi-access-tier-least-privilege.md)): scientists self-serve
-*code* (image + job definition) via the federated tiers, while *substrate* (compute environments,
-queues, IAM, state, capacity) is provisioned only by the deployer via Terraform. The M2M secret is
-read by the Batch container's own task role, not these federated user roles.
+[ADR-0006](../architecture/adr/0006-runzi-access-tier-least-privilege.md) and
+[ADR-0007](../architecture/adr/0007-job-definition-terraform-tag-publish.md)): scientists self-serve
+*code* by pushing the runzi **image** via the federated tiers, while *substrate* (compute
+environments, queues, the job definitions, IAM, state, capacity) is provisioned only by the deployer
+via Terraform. Publishing is tag-based — `runzi utils docker-build` moves the `:experimental` tag and
+`runzi utils promote` moves `:prod`, and the Terraform-owned job definitions track those tags — so
+`runzi-admin` no longer needs `batch:RegisterJobDefinition` or `iam:PassRole` (removed in ADR-0007).
+The M2M secret is read by the Batch container's own task role, not these federated user roles.
 
 If a user is in more than one `runzi-*` group, the **highest tier wins** — see
 [ADR-0001](../architecture/adr/0001-cognito-identity-pool-role-mapping.md) for the role-mapping

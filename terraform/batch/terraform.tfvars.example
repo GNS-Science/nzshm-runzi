@@ -7,3 +7,20 @@ max_vcpus                = 0 # TODO
 subnets                  = ["subnet-TODO"]
 security_group_ids       = ["sg-TODO"]
 job_queue_priority       = 1 # TODO - confirm against live queue
+
+# ── Job definitions (ADR-0007) ──
+# Discover from the live Fargate-runzi-opensha-JD with:
+#   aws batch describe-job-definitions --job-definition-name Fargate-runzi-opensha-JD \
+#     --status ACTIVE --region us-east-1
+# The new definitions must match its containerProperties apart from the image (which becomes a tag).
+image_repository   = "TODO-account.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi" # no tag
+execution_role_arn = "arn:aws:iam::TODO-account:role/toshi_batch_ECS_TaskExecution"
+job_role_arn       = ""        # TODO - the live JD's jobRoleArn, or "" to omit
+default_vcpu       = "8"       # TODO - the live JD's default VCPU
+default_memory     = "30720"   # TODO - the live JD's default MEMORY (MiB)
+assign_public_ip   = "ENABLED" # TODO - confirm against live JD
+job_definition_environment = {
+  # TODO - copy the live JD's static environment entries, e.g.:
+  # NZSHM22_TOSHI_M2M_SECRET_ARN = "arn:aws:secretsmanager:ap-southeast-2:TODO:secret:toshi-m2m-..."
+  # NZSHM22_TOSHI_COGNITO_DOMAIN = "https://TODO.auth.ap-southeast-2.amazoncognito.com"
+}
