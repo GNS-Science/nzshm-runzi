@@ -23,8 +23,12 @@ locals {
 # ── Managed policies (the increments) ──────────────────────────────────────────────────────
 
 resource "aws_iam_policy" "runzi_base" {
-  name        = "toshi-runzi-base-${var.stage}"
-  description = "Base runzi permissions (ECR pull, S3 read/write) shared by all runzi tiers"
+  name = "toshi-runzi-base-${var.stage}"
+  # Description kept verbatim (it still says "M2M secret read") on purpose: aws_iam_policy.description
+  # is ForceNew, so changing it would destroy+recreate this policy — which is attached to all three
+  # runzi roles. The M2MSecretRead *statement* is removed from the document below (see ADR-0006);
+  # the stale word in the description is the lesser evil vs. a replace of a live, attached policy.
+  description = "Base runzi permissions (ECR pull, S3 read/write, M2M secret read) shared by all runzi tiers"
 
   policy = jsonencode({
     Version = "2012-10-17"
