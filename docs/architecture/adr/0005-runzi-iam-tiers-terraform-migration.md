@@ -113,10 +113,12 @@ root.
   their next deploy (`Retain` → orphaned). So deploy #2 excludes the 6 **only for the migrating
   stage** via `serverslessIfElse`, keeping the definitions active for the others until each is
   migrated. See `MIGRATION_RUNBOOK.md` Step 3.
-- **The base policy's S3 ARNs are stage-incorrect today** (hardcoded to `-test` buckets
-  regardless of stage — flagged in toshi-api's ADR-003). This migration imports that bug
+- **The base policy's S3 ARNs were stage-incorrect at migration time** (hardcoded to `-test`
+  buckets regardless of stage — flagged in toshi-api's ADR-003). This migration imported that bug
   faithfully rather than fixing it in-flight, to keep the custody transfer itself low-risk and
-  verifiable by a zero-diff plan. Fixing it is a deliberate follow-up.
+  verifiable by a zero-diff plan. **Fixed as a deliberate follow-up in #321** via stage-keyed
+  locals (`local.s3_data_buckets`); prod now targets `ths-dataset-prod` / `nzshm22-static-reports`
+  while `test` stays zero-diff.
 - **Two coordination tickets are required** (one per repo) because the toshi-api side of the
   handoff (`sls deploy` retain/de-reference, then later de-template) is run by the team, not by
   this repo's tooling. See Files for the issues opened.
@@ -153,7 +155,8 @@ root.
   live test policy (different Sids/ECR glob, no `iam:PassRole`) — moot for migrated stages but
   worth reconciling; and the `serverslessIfElse` block has a stale `resourcee.Resources.*` typo
   (the runzi exclusions use the correct `resources.Resources.*` path).
-- **Fix the stage-incorrect S3 ARNs** in the base policy once Terraform owns it.
+- ~~**Fix the stage-incorrect S3 ARNs** in the base policy once Terraform owns it.~~ Done in #321
+  (stage-keyed `local.s3_data_buckets` in `terraform/access/main.tf`).
 - **CI-driven `terraform apply`** for `terraform/access/`, if/when the team wants it automated.
 
 ## Files
