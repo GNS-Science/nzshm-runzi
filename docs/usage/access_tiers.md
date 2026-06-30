@@ -12,9 +12,15 @@ drift below a lower one:
 
 | Tier | Role | Managed policies attached | Grants |
 |---|---|---|---|
-| `local` | `toshi-runzi-local-<stage>` | base | ECR pull, S3 report read/write, M2M secret read |
+| `local` | `toshi-runzi-local-<stage>` | base | ECR pull, S3 report read/write |
 | `batch` | `toshi-runzi-batch-<stage>` | base + batch | + AWS Batch submit/describe/terminate |
-| `admin` | `toshi-runzi-admin-<stage>` | base + batch + admin | + Batch/ECR/Terraform-state administration |
+| `admin` | `toshi-runzi-admin-<stage>` | base + batch + admin | + publish: ECR image push, register job definition (`iam:PassRole`). **Not** infra provisioning — compute environments and queues are deployer/Terraform-only. |
+
+The split follows a **substrate-vs-code** model (see
+[ADR-0006](../architecture/adr/0006-runzi-access-tier-least-privilege.md)): scientists self-serve
+*code* (image + job definition) via the federated tiers, while *substrate* (compute environments,
+queues, IAM, state, capacity) is provisioned only by the deployer via Terraform. The M2M secret is
+read by the Batch container's own task role, not these federated user roles.
 
 If a user is in more than one `runzi-*` group, the **highest tier wins** — see
 [ADR-0001](../architecture/adr/0001-cognito-identity-pool-role-mapping.md) for the role-mapping
