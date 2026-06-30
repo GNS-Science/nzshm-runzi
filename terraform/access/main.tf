@@ -28,7 +28,7 @@ locals {
 
 resource "aws_iam_policy" "runzi_base" {
   name        = "toshi-runzi-base-${var.stage}"
-  description = "Base runzi permissions (ECR pull, S3 read/write, M2M secret read) shared by all runzi tiers"
+  description = "Base runzi permissions (ECR pull, S3 read/write) shared by all runzi tiers"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -62,14 +62,6 @@ resource "aws_iam_policy" "runzi_base" {
           "arn:aws:s3:::nzshm22-static-reports-test",
           "arn:aws:s3:::nzshm22-static-reports-test/*",
         ]
-      },
-      {
-        Sid    = "M2MSecretRead"
-        Effect = "Allow"
-        Action = "secretsmanager:GetSecretValue"
-        # The toshi-m2m secret lives in the Cognito/toshi-api region (ap-southeast-2), NOT this
-        # root's IAM provider region (us-east-1). This matches the live policy.
-        Resource = "arn:aws:secretsmanager:ap-southeast-2:${local.account_id}:secret:toshi-m2m-*"
       },
     ]
   })
