@@ -12,6 +12,7 @@
  - Tightened runzi access-tier IAM to least-privilege (substrate vs code): dropped the M2M secret read from the base policy and removed Batch compute-environment/queue provisioning from the federated `runzi-admin` role (now deployer/Terraform-only), keeping image push + job-definition publish self-serve. See `docs/architecture/adr/0006-runzi-access-tier-least-privilege.md`.
 
 ### Fixed
+ - Stage-incorrect S3 ARNs in the `terraform/access/` base policy: the runzi tiers' data-bucket grant was hardcoded to the `-test` buckets regardless of stage, so the `prod` roles targeted the test buckets. Now resolved per stage via stage-keyed `local.s3_data_buckets` (`prod` → `ths-dataset-prod` / `nzshm22-static-reports`; `test` unchanged). See `docs/architecture/adr/0005-runzi-iam-tiers-terraform-migration.md` (#321).
  - Disabled gql client schema fetching to avoid a `DirectiveLocation` crash against the Toshi API.
 
 ## [0.11.0] 2026-10-06

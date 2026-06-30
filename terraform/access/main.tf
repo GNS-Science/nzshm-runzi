@@ -18,6 +18,19 @@ data "aws_caller_identity" "current" {}
 
 locals {
   account_id = data.aws_caller_identity.current.account_id
+
+  # Data buckets the runzi tiers read/write. Names do NOT follow a <root>-<stage> convention
+  # (standardizing them has a large blast radius — out of scope, see #321), so encode them per
+  # stage explicitly rather than interpolating var.stage. This is the stage-keyed-locals fallback
+  # blessed by ADR-0005.
+  s3_data_buckets = {
+    test = ["ths-poc-arrow-test", "nzshm22-static-reports-test"]
+    prod = ["ths-dataset-prod", "nzshm22-static-reports"]
+  }
+  s3_data_bucket_arns = flatten([
+    for b in local.s3_data_buckets[var.stage] :
+    ["arn:aws:s3:::${b}", "arn:aws:s3:::${b}/*"]
+  ])
 }
 
 # ── Managed policies (the increments) ──────────────────────────────────────────────────────
@@ -54,14 +67,9 @@ resource "aws_iam_policy" "runzi_base" {
           "s3:ListBucket",
           "s3:PutObjectAcl",
         ]
-        # NOTE: hardcoded to the -test buckets regardless of stage - migrated faithfully from
-        # the live (buggy) policy. See ADR 0005 "Fix the stage-incorrect S3 ARNs" followup.
-        Resource = [
-          "arn:aws:s3:::ths-poc-arrow-test",
-          "arn:aws:s3:::ths-poc-arrow-test/*",
-          "arn:aws:s3:::nzshm22-static-reports-test",
-          "arn:aws:s3:::nzshm22-static-reports-test/*",
-        ]
+        # Stage-correct data-bucket ARNs (see local.s3_data_buckets). Fixes the previously
+        # hardcoded -test buckets (#321 / ADR-0005 deferred obligation).
+        Resource = local.s3_data_bucket_arns
       },
     ]
   })
