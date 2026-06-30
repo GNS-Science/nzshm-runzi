@@ -9,6 +9,7 @@
 ### Changed
  - Consolidated AWS Batch compute config: tasks now inherit a single default Fargate job definition/queue instead of each hardcoding their own, and `get_ecs_job_config` validates memory/vcpu against the real Fargate size matrix (up to 16 vCPU) via `validate_fargate_resources`, replacing the inline assert table. See `docs/architecture/adr/0003-aws-batch-compute-consolidation.md`.
  - Removed Terraform state (S3) access from the federated `runzi-admin` role (least privilege); Terraform roots run with deployer credentials. See `docs/architecture/adr/0005-runzi-iam-tiers-terraform-migration.md`.
+ - Tightened runzi access-tier IAM to least-privilege (substrate vs code): dropped the M2M secret read from the base policy and removed Batch compute-environment/queue provisioning from the federated `runzi-admin` role (now deployer/Terraform-only), keeping image push + job-definition publish self-serve. See `docs/architecture/adr/0006-runzi-access-tier-least-privilege.md`.
 
 ### Fixed
  - Disabled gql client schema fetching to avoid a `DirectiveLocation` crash against the Toshi API.
