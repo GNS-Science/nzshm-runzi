@@ -1,22 +1,18 @@
 # Runzi's own AWS access-tier IAM policies and roles - a cumulative ladder (local ⊂ batch ⊂
 # admin) granting STS credentials for ECR pull, S3 report read/write, and AWS Batch
-# submit/admin. Faithfully migrated from nshm-toshi-api/serverless.yml
+# submit + code publish. Originally migrated from nshm-toshi-api/serverless.yml
 # (ToshiRunzi{Base,Batch,Admin}ManagedPolicy / ToshiRunzi{Local,Batch,Admin}Role) - see
 # docs/architecture/adr/0005-runzi-iam-tiers-terraform-migration.md for why only these 6
-# resources move here, and why the Cognito Identity Pool + its role attachment stay in
+# resources live here, and why the Cognito Identity Pool + its role attachment stay in
 # nshm-toshi-api.
 #
-# IMPORTANT: keep this file byte-faithful to whatever is actually deployed in
-# nshm-toshi-api/serverless.yml at migration/import time for each stage - the success criterion
-# is `terraform plan` showing zero changes after import.
-#
-# ONE INTENTIONAL EXCEPTION: aws_iam_policy.runzi_admin keeps its three LIVE statements verbatim
-# (the console-edited VisualEditor0/1 + IAMAdmin, preserved exactly so they import zero-diff) and
-# appends ONE NEW statement authored only here - BatchQueueAdmin - so the admin policy's import is
-# not zero-diff: `terraform plan` shows that added statement, which apply then creates.
-# (The live test policy diverged from serverless.yml - hand-edited; see ADR-0005 "Consequences".)
-# A `TerraformStateS3` grant was removed - terraform/batch/ runs with deployer creds, so the
-# federated runzi-admin role should not hold Terraform-state access (see ADR-0005 followups).
+# LEAST-PRIVILEGE MODEL (substrate vs code) - see
+# docs/architecture/adr/0006-runzi-access-tier-least-privilege.md:
+# aws_iam_policy.runzi_admin grants only CODE/PUBLISH powers: register the Batch job definition
+# (JobDefPublish), push the runzi image to ECR (ECRPush), and pass the task-execution role
+# (IAMAdmin). SUBSTRATE provisioning - compute-environment and job-queue admin, and Terraform
+# state - is NOT here: it is done by terraform/batch/ with DEPLOYER creds, never the federated
+# runzi-admin role.
 
 data "aws_caller_identity" "current" {}
 
@@ -99,30 +95,24 @@ resource "aws_iam_policy" "runzi_admin" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      # ── Three statements below mirror the LIVE policy verbatim (console-edited; hence the
-      #    VisualEditor* Sids). They are preserved exactly so the import is zero-diff for them.
-      #    The live admin policy carries hand-applied permissions the serverless.yml never had —
-      #    notably iam:PassRole and ECR scoped to nzshm22/* (the real repo) — kept intentionally.
+      # ── Code/publish powers only (see ADR-0006). JobDefPublish + ECRPush let runzi-admin
+      #    scientists self-serve a new image + job-definition revision; IAMAdmin's iam:PassRole is
+      #    required by RegisterJobDefinition to embed the task-execution role. ECR is scoped to the
+      #    real nzshm22/* repo. Substrate (compute-env/queue/state) is deployer-only, not here.
       {
-        Sid    = "VisualEditor0"
+        Sid    = "JobDefPublish"
         Effect = "Allow"
         Action = [
-          "batch:DeregisterJobDefinition",
-          "batch:CreateComputeEnvironment",
-          "batch:DeleteComputeEnvironment",
           "batch:RegisterJobDefinition",
-          "batch:UpdateComputeEnvironment",
         ]
         Resource = "*"
       },
       {
-        Sid    = "VisualEditor1"
+        Sid    = "ECRPush"
         Effect = "Allow"
         Action = [
-          "ecr:CreateRepository",
           "ecr:BatchGetImage",
           "ecr:CompleteLayerUpload",
-          "ecr:BatchDeleteImage",
           "ecr:UploadLayerPart",
           "ecr:InitiateLayerUpload",
           "ecr:BatchCheckLayerAvailability",
@@ -141,23 +131,6 @@ resource "aws_iam_policy" "runzi_admin" {
         Resource = [
           "arn:aws:iam::${local.account_id}:role/toshi_batch_ECS_TaskExecution",
         ]
-      },
-      # ── One NEW statement below is a Terraform-era addition (authored only here, never in
-      #    serverless). LEAST-PRIVILEGE NOTE: terraform/batch/ is run with DEPLOYER creds (like
-      #    terraform/access/), NOT the federated runzi-admin session — so a `TerraformStateS3`
-      #    grant (s3 on nzshm22-runzi-tfstate) was deliberately REMOVED here: Terraform-state
-      #    access belongs to the deployer, not a Cognito-federated role. The Batch compute-env /
-      #    queue admin perms (`BatchAdmin` + this `BatchQueueAdmin`) are the same kind of
-      #    provisioning power and are pending the same review (see ADR-0005 followups).
-      {
-        Sid    = "BatchQueueAdmin"
-        Effect = "Allow"
-        Action = [
-          "batch:CreateJobQueue",
-          "batch:UpdateJobQueue",
-          "batch:DeleteJobQueue",
-        ]
-        Resource = "*"
       },
     ]
   })
