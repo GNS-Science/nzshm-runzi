@@ -109,3 +109,96 @@ variable "assign_public_ip" {
   type        = string
   default     = ""
 }
+
+# ── EC2 compute environment, queue, and job definitions (ADR-0008) ─────────────────────────────
+# The single On-Demand EC2 compute environment + queue + two EC2 job definitions that complete the
+# one-Fargate-plus-one-EC2 consolidation (#322). Names match runzi.arguments EC2_JOB_DEFINITION /
+# EC2_EXPERIMENTAL_JOB_DEFINITION / EC2_JOB_QUEUE. Instance-type/cost tuning is deferred to #323.
+
+variable "ec2_compute_environment_name" {
+  description = "Name of the EC2 compute environment to create (single source of truth replacing the retired BigLever* EC2 environments)."
+  type        = string
+  default     = "runzi-ec2-CE"
+}
+
+variable "ec2_instance_role_arn" {
+  description = "ECS instance-profile ARN the EC2 container instances run under (e.g. arn:aws:iam::<account>:instance-profile/ecsInstanceRole). Discover from a live EC2 compute environment (`aws batch describe-compute-environments`) before apply."
+  type        = string
+}
+
+variable "ec2_subnets" {
+  description = "Subnets for the EC2 compute environment. EC2 container instances need egress to the ECS/ECR endpoints to register with the cluster (a NAT gateway, or a subnet that auto-assigns public IPs). The Fargate `subnets` (public, no NAT, no auto-assign) do NOT qualify — instances there never register and jobs stick in RUNNABLE. Discover egress-capable subnets from a working EC2 compute environment (`aws batch describe-compute-environments`). Empty falls back to `subnets`."
+  type        = list(string)
+  default     = []
+}
+
+variable "ec2_security_group_ids" {
+  description = "Security group IDs for the EC2 compute environment (must allow outbound 443 to ECS/ECR/STS). Discover from a working EC2 compute environment. Empty falls back to `security_group_ids`."
+  type        = list(string)
+  default     = []
+}
+
+variable "ec2_instance_types" {
+  description = "Instance types/families Batch may launch. \"optimal\" lets Batch choose from the C/M/R families to fit each job. Instance-type optimization is tracked separately in #323."
+  type        = list(string)
+  default     = ["optimal"]
+}
+
+variable "ec2_min_vcpus" {
+  description = "Minimum vCPUs kept running. 0 scales the environment to zero when idle (no standing EC2 cost)."
+  type        = number
+  default     = 0
+}
+
+variable "ec2_max_vcpus" {
+  description = "Maximum vCPUs the EC2 compute environment may scale to. Set from the retired BigLever environment's maxvCpus (or the desired concurrency) before apply."
+  type        = number
+}
+
+variable "ec2_allocation_strategy" {
+  description = "How Batch selects instance types from the pool. BEST_FIT_PROGRESSIVE (recommended for On-Demand) falls back across types so jobs don't stall waiting on one type; BEST_FIT is cheapest-only but can stall."
+  type        = string
+  default     = "BEST_FIT_PROGRESSIVE"
+}
+
+variable "batch_service_role_arn" {
+  description = "Optional Batch service role ARN for the EC2 compute environment. Leave empty (\"\") to use the AWSServiceRoleForBatch service-linked role (the usual choice)."
+  type        = string
+  default     = ""
+}
+
+variable "ec2_job_queue_name" {
+  description = "Name of the EC2 job queue. Matches runzi.arguments.EC2_JOB_QUEUE."
+  type        = string
+  default     = "runzi-ec2-Q"
+}
+
+variable "ec2_job_queue_priority" {
+  description = "Priority of the EC2 job queue."
+  type        = number
+  default     = 1
+}
+
+variable "ec2_prod_job_definition_name" {
+  description = "Prod EC2 Batch job definition name. Matches runzi.arguments.EC2_JOB_DEFINITION."
+  type        = string
+  default     = "runzi-ec2-JD"
+}
+
+variable "ec2_experimental_job_definition_name" {
+  description = "Experimental EC2 Batch job definition name. Matches runzi.arguments.EC2_EXPERIMENTAL_JOB_DEFINITION."
+  type        = string
+  default     = "runzi-ec2-experimental-JD"
+}
+
+variable "ec2_default_vcpu" {
+  description = "Default EC2 vCPU resting value (runzi overrides per-job via containerOverrides). EC2 has no strict Fargate CPU/memory matrix, but the pair must fit a launchable instance."
+  type        = string
+  default     = "8"
+}
+
+variable "ec2_default_memory" {
+  description = "Default EC2 memory (MiB) resting value (runzi overrides per-job). Must fit within a launchable instance alongside ec2_default_vcpu."
+  type        = string
+  default     = "32768"
+}

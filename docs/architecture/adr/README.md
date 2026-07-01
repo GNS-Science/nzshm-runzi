@@ -22,3 +22,4 @@ and leave the file in place.
 | [0005](0005-runzi-iam-tiers-terraform-migration.md) | Migrate runzi's IAM access-tier roles/policies into runzi/Terraform |
 | [0006](0006-runzi-access-tier-least-privilege.md) | Runzi access-tier least-privilege: substrate vs code |
 | [0007](0007-job-definition-terraform-tag-publish.md) | Job definitions under Terraform via floating image tags; tag-based self-serve publish |
+| [0008](0008-aws-batch-ec2-compute-environment.md) | AWS Batch EC2: one On-Demand compute environment + queue + job definitions under Terraform |

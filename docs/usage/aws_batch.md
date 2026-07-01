@@ -33,15 +33,26 @@ CPU/memory matrix before submission, and raises if a job won't fit.
 
 # Targeting EC2
 
-A job can opt into EC2 instead of Fargate by setting `ecs_compute_environment: ec2` in its
-config file's `sys_arg_overrides`, alongside an EC2 job definition and queue (there are no
-canonical EC2 names — runzi has no opinion on which EC2 compute environment you point at):
+There is one canonical EC2 target, mirroring Fargate (see
+[`docs/architecture/adr/0008-aws-batch-ec2-compute-environment.md`](../architecture/adr/0008-aws-batch-ec2-compute-environment.md)):
+
+- **Compute environment**: `runzi-ec2-CE` — a single On-Demand, MANAGED environment that scales to
+  zero when idle and lets Batch pick instance types from the C/M/R families (`instance_type =
+  ["optimal"]`; instance-type tuning is tracked in #323).
+- **Job definitions**: `runzi-ec2-JD` (prod) and `runzi-ec2-experimental-JD`, `platformCapabilities:
+  ["EC2"]`, tracking the *same* `:prod` / `:experimental` image tags as the Fargate definitions.
+- **Job queue**: `runzi-ec2-Q`.
+
+Fargate is still the default for every task. A job opts into EC2 by setting
+`ecs_compute_environment: ec2` in its config file's `sys_arg_overrides`, alongside the EC2 queue
+and definition names (constants `EC2_JOB_QUEUE`, `EC2_JOB_DEFINITION` /
+`EC2_EXPERIMENTAL_JOB_DEFINITION` in `runzi/arguments.py`):
 
 ```json
 "sys_arg_overrides": {
   "ecs_compute_environment": "ec2",
-  "ecs_job_definition": "<your-ec2-job-definition>",
-  "ecs_job_queue": "<your-ec2-job-queue>"
+  "ecs_job_definition": "runzi-ec2-JD",
+  "ecs_job_queue": "runzi-ec2-Q"
 }
 ```
 
@@ -85,13 +96,16 @@ image it used even though the definition names only a tag.
 
 # Infrastructure-as-code
 
-The **compute environment, `BasicFargate_Q` job queue, and both job definitions** are managed by
-Terraform in [`terraform/batch/`](../../terraform/batch/) — see that directory's `README.md` for
-the operator runbook (discovery, state bucket, import/create, day-to-day `plan`/`apply`),
+Both the **Fargate** (compute env, `BasicFargate_Q`, `runzi-fargate-*` definitions) and **EC2**
+(`runzi-ec2-CE`, `runzi-ec2-Q`, `runzi-ec2-*` definitions) surfaces are managed by Terraform in
+[`terraform/batch/`](../../terraform/batch/) — see that directory's `README.md` for the operator
+runbook (discovery, state bucket, import/create, day-to-day `plan`/`apply`),
 [`docs/architecture/adr/0004-aws-batch-iac-terraform.md`](../architecture/adr/0004-aws-batch-iac-terraform.md)
-(compute env + queue), and
+(Fargate compute env + queue),
 [`docs/architecture/adr/0007-job-definition-terraform-tag-publish.md`](../architecture/adr/0007-job-definition-terraform-tag-publish.md)
-(job definitions via floating tags).
+(job definitions via floating tags), and
+[`docs/architecture/adr/0008-aws-batch-ec2-compute-environment.md`](../architecture/adr/0008-aws-batch-ec2-compute-environment.md)
+(EC2 compute env + queue + definitions).
 
 The Terraform owns each definition's **shape** (IAM role, `platformCapabilities`, sizing, M2M env
 vars, and which tag it tracks); the **image content** under a tag is published self-serve via

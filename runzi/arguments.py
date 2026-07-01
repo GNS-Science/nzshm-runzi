@@ -27,7 +27,7 @@ class ComputeEnvironment(Enum):
     EC2 = 'ec2'
 
 
-# Canonical AWS Batch compute target. All tasks share a single Fargate compute environment and
+# Canonical AWS Batch compute targets. All tasks default to a single Fargate compute environment and
 # queue (see docs/architecture/adr/0003-aws-batch-compute-consolidation.md). The job definitions are
 # Terraform-owned and track stable image tags (:prod / :experimental); the default resolves to the
 # prod definition. Override ecs_job_definition (e.g. via sys_arg_overrides) with
@@ -36,6 +36,15 @@ class ComputeEnvironment(Enum):
 DEFAULT_JOB_DEFINITION = "runzi-fargate-JD"
 EXPERIMENTAL_JOB_DEFINITION = "runzi-fargate-experimental-JD"
 DEFAULT_JOB_QUEUE = "BasicFargate_Q"
+
+# The EC2 compute target mirrors Fargate for jobs that opt in via sys_arg_overrides
+# (ecs_compute_environment: ec2, plus ecs_job_queue / ecs_job_definition set to the EC2 names
+# below). One On-Demand EC2 compute environment + queue + two Terraform-owned job definitions that
+# track the same :prod / :experimental tags as their Fargate counterparts
+# (see docs/architecture/adr/0008-aws-batch-ec2-compute-environment.md).
+EC2_JOB_DEFINITION = "runzi-ec2-JD"
+EC2_EXPERIMENTAL_JOB_DEFINITION = "runzi-ec2-experimental-JD"
+EC2_JOB_QUEUE = "runzi-ec2-Q"
 
 
 class SystemArgs(BaseModel):

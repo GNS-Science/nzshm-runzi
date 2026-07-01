@@ -11,7 +11,16 @@ import json
 
 import pytest
 
-from runzi.arguments import DEFAULT_JOB_DEFINITION, DEFAULT_JOB_QUEUE, ComputeEnvironment, SystemArgs, TaskLanguage
+from runzi.arguments import (
+    DEFAULT_JOB_DEFINITION,
+    DEFAULT_JOB_QUEUE,
+    EC2_EXPERIMENTAL_JOB_DEFINITION,
+    EC2_JOB_DEFINITION,
+    EC2_JOB_QUEUE,
+    ComputeEnvironment,
+    SystemArgs,
+    TaskLanguage,
+)
 from runzi.aws import decompress_config, get_ecs_job_config
 from runzi.aws.aws import BatchEnvironmentSetting, validate_ec2_resources, validate_fargate_resources
 
@@ -203,9 +212,7 @@ class TestComputeEnvironmentInJobConfig:
     def test_ec2_accepts_off_fargate_matrix_size(self, mocker):
         """8 vCPU / 30000 MB is invalid for Fargate but fine for EC2 (light check only)."""
         mocker.patch('runzi.aws.aws.get_task_config', return_value={})
-        result = _call_get_ecs_job_config(
-            compute_environment=ComputeEnvironment.EC2, vcpu=8, memory=30000
-        )
+        result = _call_get_ecs_job_config(compute_environment=ComputeEnvironment.EC2, vcpu=8, memory=30000)
         assert result['containerOverrides']['resourceRequirements'] == [
             {"value": "30000", "type": "MEMORY"},
             {"value": "8", "type": "VCPU"},
@@ -222,6 +229,31 @@ class TestComputeEnvironmentInJobConfig:
         mocker.patch('runzi.aws.aws.get_task_config', return_value={})
         result = _call_get_ecs_job_config(compute_environment='ec2', vcpu=8, memory=30000)
         assert result is not None
+
+
+class TestEc2CanonicalNames:
+    """The EC2 side has canonical Terraform-owned names mirroring Fargate (ADR-0008, #322)."""
+
+    def test_ec2_names_distinct_from_fargate(self):
+        assert EC2_JOB_DEFINITION == 'runzi-ec2-JD'
+        assert EC2_EXPERIMENTAL_JOB_DEFINITION == 'runzi-ec2-experimental-JD'
+        assert EC2_JOB_QUEUE == 'runzi-ec2-Q'
+        # EC2 is an opt-in target, never the Fargate default.
+        assert EC2_JOB_DEFINITION != DEFAULT_JOB_DEFINITION
+        assert EC2_JOB_QUEUE != DEFAULT_JOB_QUEUE
+
+    def test_canonical_ec2_target_builds_config(self, mocker):
+        """Submitting to the canonical EC2 def/queue on the EC2 compute env builds a valid config."""
+        mocker.patch('runzi.aws.aws.get_task_config', return_value={})
+        result = _call_get_ecs_job_config(
+            compute_environment=ComputeEnvironment.EC2,
+            job_definition=EC2_JOB_DEFINITION,
+            job_queue=EC2_JOB_QUEUE,
+            vcpu=8,
+            memory=30000,  # off the Fargate matrix; fine on EC2
+        )
+        assert result['jobDefinition'] == EC2_JOB_DEFINITION
+        assert result['jobQueue'] == EC2_JOB_QUEUE
 
 
 class TestCompression:
