@@ -87,10 +87,10 @@ def build_tasks(
                 memory=system_args.ecs_memory,
                 vcpu=system_args.ecs_vcpu,
                 job_definition=system_args.ecs_job_definition,
-                job_queue=system_args.ecs_job_queue,
+                job_queue=system_args.resolved_job_queue,
                 extra_env=system_args.ecs_extra_env,
                 use_compression=True,
-                compute_environment=system_args.ecs_compute_environment,
+                compute_environment=system_args.resolved_compute_environment,
             )
 
         else:

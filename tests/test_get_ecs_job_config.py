@@ -17,6 +17,7 @@ from runzi.arguments import (
     EC2_EXPERIMENTAL_JOB_DEFINITION,
     EC2_JOB_DEFINITION,
     EC2_JOB_QUEUE,
+    EXPERIMENTAL_JOB_DEFINITION,
     ComputeEnvironment,
     SystemArgs,
     TaskLanguage,
@@ -296,26 +297,79 @@ class TestCompression:
             _call_get_ecs_job_config(use_compression=True)
 
 
+def _system_args(**overrides) -> SystemArgs:
+    """A minimal SystemArgs; override any field via kwargs."""
+    kwargs = dict(
+        task_language=TaskLanguage.PYTHON,
+        use_api=False,
+        ecs_max_job_time_min=10,
+        ecs_memory=2048,
+        ecs_vcpu=1,
+    )
+    kwargs.update(overrides)
+    return SystemArgs(**kwargs)  # type: ignore[arg-type]
+
+
 class TestSystemArgsComputeDefaults:
-    """SystemArgs supplies the single canonical Fargate def/queue by default."""
+    """SystemArgs defaults to the prod Fargate job definition; queue/compute-env are derived."""
 
-    def test_job_def_and_queue_default_to_fargate(self):
-        args = SystemArgs(
-            task_language=TaskLanguage.PYTHON,
-            use_api=False,
-            ecs_max_job_time_min=10,
-            ecs_memory=2048,
-            ecs_vcpu=1,
-        )
-        assert args.ecs_job_definition == DEFAULT_JOB_DEFINITION
-        assert args.ecs_job_queue == DEFAULT_JOB_QUEUE
+    def test_job_definition_defaults_to_prod_fargate(self):
+        assert _system_args().ecs_job_definition == DEFAULT_JOB_DEFINITION
 
-    def test_compute_environment_defaults_to_fargate(self):
-        args = SystemArgs(
-            task_language=TaskLanguage.PYTHON,
-            use_api=False,
-            ecs_max_job_time_min=10,
-            ecs_memory=2048,
-            ecs_vcpu=1,
-        )
-        assert args.ecs_compute_environment == ComputeEnvironment.FARGATE
+    def test_queue_and_compute_are_unset_until_resolved(self):
+        """The raw override inputs are None ('derive from the job definition')."""
+        args = _system_args()
+        assert args.ecs_job_queue is None
+        assert args.ecs_compute_environment is None
+
+    def test_default_resolves_to_fargate(self):
+        args = _system_args()
+        assert args.resolved_job_queue == DEFAULT_JOB_QUEUE
+        assert args.resolved_compute_environment == ComputeEnvironment.FARGATE
+
+
+class TestBatchTargetResolution:
+    """The queue + compute-environment type derive from the chosen job definition, so a user picks
+    only the job definition (ADR-0008 addendum). Explicit overrides still win."""
+
+    @pytest.mark.parametrize(
+        'job_definition, expected_queue, expected_compute',
+        [
+            (DEFAULT_JOB_DEFINITION, DEFAULT_JOB_QUEUE, ComputeEnvironment.FARGATE),
+            (EXPERIMENTAL_JOB_DEFINITION, DEFAULT_JOB_QUEUE, ComputeEnvironment.FARGATE),
+            (EC2_JOB_DEFINITION, EC2_JOB_QUEUE, ComputeEnvironment.EC2),
+            (EC2_EXPERIMENTAL_JOB_DEFINITION, EC2_JOB_QUEUE, ComputeEnvironment.EC2),
+        ],
+    )
+    def test_canonical_job_definition_selects_its_target(self, job_definition, expected_queue, expected_compute):
+        args = _system_args(ecs_job_definition=job_definition)
+        assert args.resolved_job_queue == expected_queue
+        assert args.resolved_compute_environment == expected_compute
+
+    def test_picking_ec2_job_definition_alone_targets_ec2(self):
+        """The friction fix: set only the job definition, queue + type follow."""
+        args = _system_args(ecs_job_definition=EC2_JOB_DEFINITION)
+        assert args.resolved_job_queue == EC2_JOB_QUEUE
+        assert args.resolved_compute_environment == ComputeEnvironment.EC2
+
+    def test_explicit_queue_override_is_respected(self):
+        args = _system_args(ecs_job_definition=EC2_JOB_DEFINITION, ecs_job_queue='my-special-Q')
+        assert args.resolved_job_queue == 'my-special-Q'
+
+    def test_explicit_compute_override_is_respected(self):
+        args = _system_args(ecs_job_definition=DEFAULT_JOB_DEFINITION, ecs_compute_environment=ComputeEnvironment.EC2)
+        assert args.resolved_compute_environment == ComputeEnvironment.EC2
+
+    def test_unknown_job_definition_falls_back_to_fargate(self):
+        args = _system_args(ecs_job_definition='some-custom-JD')
+        assert args.resolved_job_queue == DEFAULT_JOB_QUEUE
+        assert args.resolved_compute_environment == ComputeEnvironment.FARGATE
+
+    def test_derivation_follows_post_construction_override(self):
+        """Mirrors JobRunner.set_system_args, which applies overrides by assignment after
+        construction: the resolved properties must reflect the new job definition (never stale)."""
+        args = _system_args()  # default prod Fargate JD
+        assert args.resolved_job_queue == DEFAULT_JOB_QUEUE
+        args.ecs_job_definition = EC2_JOB_DEFINITION
+        assert args.resolved_job_queue == EC2_JOB_QUEUE
+        assert args.resolved_compute_environment == ComputeEnvironment.EC2

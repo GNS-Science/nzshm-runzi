@@ -3,7 +3,7 @@ import json
 from collections.abc import Generator, Sequence
 from enum import Enum
 from pathlib import Path
-from typing import Any, Self
+from typing import Any, NamedTuple, Self
 
 from pydantic import BaseModel
 
@@ -47,6 +47,27 @@ EC2_EXPERIMENTAL_JOB_DEFINITION = "runzi-ec2-experimental-JD"
 EC2_JOB_QUEUE = "runzi-ec2-Q"
 
 
+class BatchTarget(NamedTuple):
+    """The job queue and compute-environment type a given job definition must run on."""
+
+    job_queue: str
+    compute_environment: ComputeEnvironment
+
+
+# Each canonical job definition has exactly one correct queue + compute-environment type, so a user
+# only needs to pick the job definition; the queue and type are derived from it (see
+# SystemArgs.resolved_job_queue / resolved_compute_environment). An unknown/custom job definition
+# falls back to DEFAULT_BATCH_TARGET (Fargate), so behaviour is unchanged unless a config explicitly
+# sets ecs_job_queue / ecs_compute_environment.
+JOB_DEFINITION_TARGETS: dict[str, BatchTarget] = {
+    DEFAULT_JOB_DEFINITION: BatchTarget(DEFAULT_JOB_QUEUE, ComputeEnvironment.FARGATE),
+    EXPERIMENTAL_JOB_DEFINITION: BatchTarget(DEFAULT_JOB_QUEUE, ComputeEnvironment.FARGATE),
+    EC2_JOB_DEFINITION: BatchTarget(EC2_JOB_QUEUE, ComputeEnvironment.EC2),
+    EC2_EXPERIMENTAL_JOB_DEFINITION: BatchTarget(EC2_JOB_QUEUE, ComputeEnvironment.EC2),
+}
+DEFAULT_BATCH_TARGET = BatchTarget(DEFAULT_JOB_QUEUE, ComputeEnvironment.FARGATE)
+
+
 class SystemArgs(BaseModel):
     task_language: TaskLanguage
     general_task_id: str | None = None
@@ -61,9 +82,29 @@ class SystemArgs(BaseModel):
     ecs_memory: int
     ecs_vcpu: int
     ecs_job_definition: str = DEFAULT_JOB_DEFINITION
-    ecs_job_queue: str = DEFAULT_JOB_QUEUE
-    ecs_compute_environment: ComputeEnvironment = ComputeEnvironment.FARGATE
+    # None means "derive from ecs_job_definition"; set explicitly (e.g. via sys_arg_overrides) only
+    # to override the queue/compute-environment the job definition would otherwise select.
+    ecs_job_queue: str | None = None
+    ecs_compute_environment: ComputeEnvironment | None = None
     ecs_extra_env: list[BatchEnvironmentSetting] | None = None
+
+    @property
+    def resolved_job_queue(self) -> str:
+        """The job queue to submit to: the explicit override, else the one the job definition selects."""
+        if self.ecs_job_queue is not None:
+            return self.ecs_job_queue
+        return JOB_DEFINITION_TARGETS.get(self.ecs_job_definition, DEFAULT_BATCH_TARGET).job_queue
+
+    @property
+    def resolved_compute_environment(self) -> 'ComputeEnvironment | str':
+        """The compute-environment type: the explicit override, else the one the job definition selects.
+
+        May be a raw string when set via sys_arg_overrides' setattr path (which bypasses pydantic
+        coercion); get_ecs_job_config tolerates both the enum and the string.
+        """
+        if self.ecs_compute_environment is not None:
+            return self.ecs_compute_environment
+        return JOB_DEFINITION_TARGETS.get(self.ecs_job_definition, DEFAULT_BATCH_TARGET).compute_environment
 
 
 class ArgSweeper:
