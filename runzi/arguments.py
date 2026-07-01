@@ -5,7 +5,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, NamedTuple, Self
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from runzi.aws import BatchEnvironmentSetting
 
@@ -83,9 +83,13 @@ class SystemArgs(BaseModel):
     ecs_vcpu: int
     ecs_job_definition: str = DEFAULT_JOB_DEFINITION
     # None means "derive from ecs_job_definition"; set explicitly (e.g. via sys_arg_overrides) only
-    # to override the queue/compute-environment the job definition would otherwise select.
+    # to override the queue/compute-environment the job definition would otherwise select. (str is
+    # allowed on ecs_compute_environment because sys_arg_overrides' setattr path can leave a raw
+    # string, and freeze_batch_target writes the resolved value back.)
     ecs_job_queue: str | None = None
-    ecs_compute_environment: ComputeEnvironment | None = None
+    # left_to_right so a valid value (e.g. "ec2" from a serialized config) coerces to the enum rather
+    # than staying a bare string; an unrecognised override string is still tolerated as str.
+    ecs_compute_environment: ComputeEnvironment | str | None = Field(default=None, union_mode='left_to_right')
     ecs_extra_env: list[BatchEnvironmentSetting] | None = None
 
     @property
@@ -105,6 +109,17 @@ class SystemArgs(BaseModel):
         if self.ecs_compute_environment is not None:
             return self.ecs_compute_environment
         return JOB_DEFINITION_TARGETS.get(self.ecs_job_definition, DEFAULT_BATCH_TARGET).compute_environment
+
+    def freeze_batch_target(self) -> None:
+        """Write the resolved queue + compute-environment onto the fields, in place.
+
+        Call before serializing SystemArgs (the AWS Batch worker rebuilds it from the shipped config):
+        this replaces the None "derive from the job definition" sentinels with concrete values, so the
+        serialized form always carries a real queue/compute-environment rather than nulls a worker
+        would reject or be unable to re-derive.
+        """
+        self.ecs_job_queue = self.resolved_job_queue
+        self.ecs_compute_environment = self.resolved_compute_environment
 
 
 class ArgSweeper:

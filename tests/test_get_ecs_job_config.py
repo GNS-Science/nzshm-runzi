@@ -373,3 +373,40 @@ class TestBatchTargetResolution:
         args.ecs_job_definition = EC2_JOB_DEFINITION
         assert args.resolved_job_queue == EC2_JOB_QUEUE
         assert args.resolved_compute_environment == ComputeEnvironment.EC2
+
+
+class TestBatchTargetSerialization:
+    """build_tasks freezes the derived target onto the per-task args before serialization; the AWS
+    worker rebuilds SystemArgs from that config, so it must carry concrete values, not the None
+    'derive' sentinels (regression: shipping None broke SystemArgs(**config) on the worker)."""
+
+    def test_freeze_fills_derived_values_in_place(self):
+        args = _system_args(ecs_job_definition=EC2_JOB_DEFINITION)
+        assert args.ecs_job_queue is None and args.ecs_compute_environment is None
+        args.freeze_batch_target()
+        assert args.ecs_job_queue == EC2_JOB_QUEUE
+        assert args.ecs_compute_environment == ComputeEnvironment.EC2
+
+    def test_frozen_args_round_trip_through_worker_serialization(self):
+        """Reproduces the worker path: model_dump(mode='json') then SystemArgs(**dumped)."""
+        args = _system_args(ecs_job_definition=EC2_JOB_DEFINITION)
+        args.freeze_batch_target()
+        dumped = args.model_dump(mode='json')
+        assert dumped['ecs_job_queue'] == EC2_JOB_QUEUE
+        assert dumped['ecs_compute_environment'] == 'ec2'
+        rebuilt = SystemArgs(**dumped)  # must not raise
+        assert rebuilt.ecs_job_queue == EC2_JOB_QUEUE
+        assert rebuilt.ecs_compute_environment == ComputeEnvironment.EC2
+
+    def test_default_fargate_round_trips(self):
+        args = _system_args()  # default prod Fargate JD, queue/compute unset
+        args.freeze_batch_target()
+        rebuilt = SystemArgs(**args.model_dump(mode='json'))
+        assert rebuilt.ecs_job_queue == DEFAULT_JOB_QUEUE
+        assert rebuilt.ecs_compute_environment == ComputeEnvironment.FARGATE
+
+    def test_freeze_preserves_explicit_override(self):
+        args = _system_args(ecs_job_definition=EC2_JOB_DEFINITION, ecs_job_queue='custom-Q')
+        args.freeze_batch_target()
+        assert args.ecs_job_queue == 'custom-Q'
+        assert args.ecs_compute_environment == ComputeEnvironment.EC2

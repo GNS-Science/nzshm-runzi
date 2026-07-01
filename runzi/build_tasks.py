@@ -64,6 +64,10 @@ def build_tasks(
         task_system_args = system_args.model_copy()
         task_system_args.task_count = task_count
         task_system_args.java_gateway_port = task_factory.get_next_port()
+        # The AWS worker rebuilds SystemArgs from the serialized task_system_args, so freeze the
+        # derived queue + compute-environment onto it — the shipped config must carry concrete values,
+        # not the None "derive from the job definition" sentinels.
+        task_system_args.freeze_batch_target()
 
         if local_config.CLUSTER_MODE is ClusterModeEnum.AWS:
             container_task = task_factory.get_container_task()
