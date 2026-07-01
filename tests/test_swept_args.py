@@ -1,3 +1,4 @@
+import json
 from math import prod
 from typing import Self
 
@@ -76,3 +77,31 @@ def test_get_tasks_still_works_after_validate_all_tasks():
     sweeper.validate_all_tasks()
     # Generator is recreated each call — full iteration still works
     assert len(list(sweeper.get_tasks())) == 3
+
+
+def _write_config(tmp_path, **extra) -> str:
+    config = {
+        "title": "t",
+        "description": "d",
+        "param_a": 1,
+        "param_b": 0.1,
+        "param_c": "foo",
+        "param_d": {"a": 1, "b": "x"},
+        **extra,
+    }
+    path = tmp_path / "config.json"
+    path.write_text(json.dumps(config))
+    return str(path)
+
+
+def test_from_config_file_parses_submission_arg_overrides(tmp_path):
+    path = _write_config(tmp_path, submission_arg_overrides={"ecs_memory": 2048})
+    sweeper = ArgSweeper.from_config_file(path, SimpleArgs)
+    assert sweeper.submission_arg_overrides == {"ecs_memory": 2048}
+
+
+def test_from_config_file_rejects_renamed_sys_arg_overrides(tmp_path):
+    """The old key was renamed; a config that still uses it gets a clear migration error."""
+    path = _write_config(tmp_path, sys_arg_overrides={"ecs_memory": 2048})
+    with pytest.raises(ValueError, match="submission_arg_overrides"):
+        ArgSweeper.from_config_file(path, SimpleArgs)

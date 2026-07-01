@@ -48,7 +48,7 @@ class JobRunner(ABC):
     def set_submission_args(self) -> SubmissionArgs:
         # make a copy here only to make it clear that we have modified it
         submission_args = self.default_submission_args.model_copy(deep=True)
-        for name, value in self.argument_sweeper.sys_arg_overrides.items():
+        for name, value in self.argument_sweeper.submission_arg_overrides.items():
             setattr(submission_args, name, value)
         return submission_args
 

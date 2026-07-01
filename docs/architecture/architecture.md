@@ -29,9 +29,9 @@ classDiagram
         - swept_args: dict[str, Sequence]
         - title: str
         - description: str
-        - sys_arg_overrides: dict[str, Any]
+        - submission_arg_overrides: dict[str, Any]
         
-        + __init__(prototype_args, swept_args, title, description, sys_arg_overrides)
+        + __init__(prototype_args, swept_args, title, description, submission_arg_overrides)
         + from_config_file(config_file, args_class)* ArgSweeper
         + get_tasks() Generator[BaseModel]
     }

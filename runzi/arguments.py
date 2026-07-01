@@ -19,7 +19,7 @@ class ComputeEnvironment(Enum):
     """Which AWS Batch compute target a job runs on.
 
     Fargate is the default for every task; EC2 is an explicit per-job opt-in (set via a config
-    file's sys_arg_overrides) for jobs that need a size or instance feature Fargate can't
+    file's submission_arg_overrides) for jobs that need a size or instance feature Fargate can't
     provide. See docs/usage/aws_batch.md.
     """
 
@@ -30,14 +30,14 @@ class ComputeEnvironment(Enum):
 # Canonical AWS Batch compute targets. All tasks default to a single Fargate compute environment and
 # queue (see docs/architecture/adr/0003-aws-batch-compute-consolidation.md). The job definitions are
 # Terraform-owned and track stable image tags (:prod / :experimental); the default resolves to the
-# prod definition. Override ecs_job_definition (e.g. via sys_arg_overrides) with
+# prod definition. Override ecs_job_definition (e.g. via submission_arg_overrides) with
 # EXPERIMENTAL_JOB_DEFINITION to run the experimental image
 # (see docs/architecture/adr/0007-job-definition-terraform-tag-publish.md).
 DEFAULT_JOB_DEFINITION = "runzi-fargate-JD"
 EXPERIMENTAL_JOB_DEFINITION = "runzi-fargate-experimental-JD"
 DEFAULT_JOB_QUEUE = "BasicFargate_Q"
 
-# The EC2 compute target mirrors Fargate for jobs that opt in via sys_arg_overrides
+# The EC2 compute target mirrors Fargate for jobs that opt in via submission_arg_overrides
 # (ecs_compute_environment: ec2, plus ecs_job_queue / ecs_job_definition set to the EC2 names
 # below). One On-Demand EC2 compute environment + queue + two Terraform-owned job definitions that
 # track the same :prod / :experimental tags as their Fargate counterparts
@@ -89,9 +89,9 @@ class SubmissionArgs(BaseModel):
     ecs_vcpu: int
     ecs_job_definition: str = DEFAULT_JOB_DEFINITION
     # None on ecs_job_queue / ecs_compute_environment means "derive from ecs_job_definition"; set
-    # explicitly (e.g. via sys_arg_overrides) only to override the queue/compute-environment the job
+    # explicitly (e.g. via submission_arg_overrides) only to override the queue/compute-environment the job
     # definition would otherwise select. Read the resolved values via resolved_job_queue /
-    # resolved_compute_environment. (sys_arg_overrides' setattr path can leave a raw string on
+    # resolved_compute_environment. (submission_arg_overrides' setattr path can leave a raw string on
     # ecs_compute_environment; resolved_compute_environment and get_ecs_job_config tolerate that.)
     ecs_job_queue: str | None = None
     ecs_compute_environment: ComputeEnvironment | None = None
@@ -108,7 +108,7 @@ class SubmissionArgs(BaseModel):
     def resolved_compute_environment(self) -> 'ComputeEnvironment | str':
         """The compute-environment type: the explicit override, else the one the job definition selects.
 
-        May be a raw string when set via sys_arg_overrides' setattr path (which bypasses pydantic
+        May be a raw string when set via submission_arg_overrides' setattr path (which bypasses pydantic
         coercion); get_ecs_job_config tolerates both the enum and the string.
         """
         if self.ecs_compute_environment is not None:
@@ -141,7 +141,7 @@ class ArgSweeper:
         swept_args: dict[str, Sequence[Any]],
         title: str,
         description: str,
-        sys_arg_overrides: dict[str, Any] | None = None,
+        submission_arg_overrides: dict[str, Any] | None = None,
     ):
         """Initialize a SweptArgs instance.
 
@@ -150,14 +150,14 @@ class ArgSweeper:
             swept_args: A dictionary of argument names to lists of values to be swept.
             title: The title for the job.
             description: The description for the job.
-            sys_arg_overrides: System arguments to override from the default of the JobRunner.
+            submission_arg_overrides: SubmissionArgs fields to override from the JobRunner default.
         """
 
         self.prototype_args = prototype_args
         self.swept_args = swept_args
         self.title = title
         self.description = description
-        self.sys_arg_overrides = sys_arg_overrides or {}
+        self.submission_arg_overrides = submission_arg_overrides or {}
 
     @classmethod
     def from_config_file(cls, config_file: Path | str, args_class: type[BaseModel]) -> Self:
@@ -181,7 +181,12 @@ class ArgSweeper:
         title = data.pop("title")
         description = data.pop("description")
         swept_args = data.pop("swept_args", {})
-        sys_arg_overrides = data.pop("sys_arg_overrides", {})
+        submission_arg_overrides = data.pop("submission_arg_overrides", {})
+        if "sys_arg_overrides" in data:
+            raise ValueError(
+                "'sys_arg_overrides' was renamed to 'submission_arg_overrides' (it overrides "
+                "SubmissionArgs fields); please update your config file."
+            )
 
         if swept_args:
             for k, v in swept_args.items():
@@ -196,7 +201,7 @@ class ArgSweeper:
             data, extra='forbid', context={"base_path": Path(config_file).parent.resolve()}
         )
 
-        return cls(prototype, swept_args, title, description, sys_arg_overrides)
+        return cls(prototype, swept_args, title, description, submission_arg_overrides)
 
     def get_tasks(self) -> Generator[BaseModel, None, None]:
         """Generate all combinations of swept arguments as job argument objects.

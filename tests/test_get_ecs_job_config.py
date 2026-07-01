@@ -227,7 +227,7 @@ class TestComputeEnvironmentInJobConfig:
             _call_get_ecs_job_config(compute_environment=ComputeEnvironment.FARGATE, vcpu=8, memory=30000)
 
     def test_string_compute_environment_is_coerced(self, mocker):
-        """sys_arg_overrides uses setattr, which can leave a raw string instead of the enum."""
+        """submission_arg_overrides uses setattr, which can leave a raw string instead of the enum."""
         mocker.patch('runzi.aws.aws.get_task_config', return_value={})
         result = _call_get_ecs_job_config(compute_environment='ec2', vcpu=8, memory=30000)
         assert result is not None

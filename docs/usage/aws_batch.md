@@ -49,7 +49,7 @@ the job definition (each canonical definition has exactly one correct target), s
 accidentally submit an EC2 definition to the Fargate queue:
 
 ```json
-"sys_arg_overrides": {
+"submission_arg_overrides": {
   "ecs_job_definition": "runzi-ec2-JD"
 }
 ```
@@ -86,10 +86,10 @@ never re-registers a job definition (see
   It is a deliberate, confirmed, CloudTrail-audited step.
 
 To run an experimental image deliberately, override just the job definition in a config file's
-`sys_arg_overrides` (the queue and compute-environment type follow the definition automatically):
+`submission_arg_overrides` (the queue and compute-environment type follow the definition automatically):
 
 ```json
-"sys_arg_overrides": {
+"submission_arg_overrides": {
   "ecs_job_definition": "runzi-fargate-experimental-JD"
 }
 ```

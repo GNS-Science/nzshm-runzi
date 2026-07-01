@@ -230,7 +230,7 @@ def get_ecs_job_config(
     ths_disagg_rlz_db = ths_disagg_rlz_db or '/WORKING/THS_DISAGG_RLZ'
     ecr_digest = ecr_digest or "sha256:NOT_SET"
     task_config = get_task_config(task_args, task_runtime_args, model_type)
-    # compute_environment may be the ComputeEnvironment enum or a raw string (sys_arg_overrides
+    # compute_environment may be the ComputeEnvironment enum or a raw string (submission_arg_overrides
     # applies config-file overrides via setattr, which bypasses pydantic coercion).
     compute_target = getattr(compute_environment, 'value', compute_environment)
     if compute_target == 'ec2':

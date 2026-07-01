@@ -74,7 +74,7 @@ The core execution pipeline is:
 
 **Task-specific `*Args`** classes: Pydantic models for user-provided job parameters (e.g., `OQHazardArgs` in `runzi/tasks/oq_hazard/hazard_args.py`).
 
-**`ArgSweeper`**: Parses JSON config files with optional `swept_args` dict, generating all combinations as separate tasks. Config files have `title`, `description`, optional `swept_args`, and optional `sys_arg_overrides` fields alongside the task args.
+**`ArgSweeper`**: Parses JSON config files with optional `swept_args` dict, generating all combinations as separate tasks. Config files have `title`, `description`, optional `swept_args`, and optional `submission_arg_overrides` fields alongside the task args.
 
 **Task Factory pattern** (`runzi/automation/opensha_task_factory.py`, `python_task_factory.py`): Produces bash scripts (LOCAL), PBS scripts (CLUSTER), or AWS Batch configs (AWS) depending on the `--cluster-mode` CLI flag. Java-based tasks use `OpenshaTaskFactory`; Python-only tasks use `PythonTaskFactory`.
 

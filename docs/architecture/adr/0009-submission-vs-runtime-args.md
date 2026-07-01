@@ -38,13 +38,15 @@ by `build_tasks` (it's the one worker-read field that originates from a module's
   image can't parse the new (trimmed) config, and a new image can't parse an old one. This lands
   with #330, whose cutover rebuilds/promotes the image anyway; deploy the image built from this
   branch before submitting with the new code.
-- **`sys_arg_overrides` now targets `SubmissionArgs` only.** Overriding a runtime field (e.g.
-  `use_api`) via `sys_arg_overrides` was already meaningless (`use_api` is forced from
-  `local_config.USE_API` at submit time) and now has no field to bind to; runtime context is
-  assembled in `build_tasks`, not overridden by config.
+- **The config override key is renamed `sys_arg_overrides` → `submission_arg_overrides`** for
+  consistency: it overrides `SubmissionArgs` fields. This is a **breaking config-schema change** (a
+  clean break — the old key errors with a migration message, no alias). Overriding a runtime field
+  (e.g. `use_api`) was already meaningless (`use_api` is forced from `local_config.USE_API` at submit
+  time) and now has no field to bind to; runtime context is assembled in `build_tasks`.
 - `ComputeEnvironment | None` on `SubmissionArgs.ecs_compute_environment` reverts the `| str` union
-  hack (ADR-0008's serialization workaround) — the raw-string setattr path from `sys_arg_overrides`
-  is still tolerated by `resolved_compute_environment` and `get_ecs_job_config`.
+  hack (ADR-0008's serialization workaround) — the raw-string setattr path from
+  `submission_arg_overrides` is still tolerated by `resolved_compute_environment` and
+  `get_ecs_job_config`.
 
 ## Files
 
