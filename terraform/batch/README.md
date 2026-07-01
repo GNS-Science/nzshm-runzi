@@ -66,17 +66,25 @@ From the output, note:
 - Job queue **priority** → `job_queue_priority`
 
 For the job definitions, capture the live `Fargate-runzi-opensha-JD` shape — the new definitions
-must behave identically apart from the tagged image:
+must behave identically apart from the tagged image. This query surfaces every value you need:
 
 ```bash
 aws batch describe-job-definitions --job-definition-name Fargate-runzi-opensha-JD \
-  --status ACTIVE --region us-east-1
+  --status ACTIVE --region us-east-1 \
+  --query 'jobDefinitions[0].containerProperties.{resourceRequirements:resourceRequirements, networkConfiguration:networkConfiguration, executionRoleArn:executionRoleArn, jobRoleArn:jobRoleArn, environment:environment}'
 ```
 
-From its `containerProperties`, note → `execution_role_arn` (`executionRoleArn`), `job_role_arn`
-(`jobRoleArn`), `default_vcpu` / `default_memory` (`resourceRequirements`), `assign_public_ip`
-(`networkConfiguration.assignPublicIp`), and the static `environment` entries →
-`job_definition_environment`. Set `image_repository` to the ECR repo URI **without** a tag.
+Map the `containerProperties` fields to variables:
+- `executionRoleArn` → `execution_role_arn`; `jobRoleArn` → `job_role_arn` (or `""` to omit).
+- `resourceRequirements` → the `VCPU` entry is `default_vcpu`, the `MEMORY` entry (MiB) is
+  `default_memory`. These are **resting defaults** (runzi overrides vCPU/memory per-job via
+  `containerOverrides`), but they must still form a **valid Fargate pair** or registration fails —
+  see `FARGATE_VCPU_MEMORY_MB` in `runzi/aws/aws.py`.
+- `networkConfiguration.assignPublicIp` → `assign_public_ip`. If the output has **no**
+  `networkConfiguration` block, set `assign_public_ip = ""` so the new definitions omit it too (AWS
+  treats absent as `DISABLED`).
+- static `environment` entries → `job_definition_environment`.
+- `image_repository` → the ECR repo URI **without** a tag.
 
 Copy `terraform.tfvars.example` to `terraform.tfvars` and fill these in (gitignored — it's
 environment-specific).

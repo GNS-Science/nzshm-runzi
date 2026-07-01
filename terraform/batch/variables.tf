@@ -87,15 +87,15 @@ variable "job_role_arn" {
 }
 
 variable "default_vcpu" {
-  description = "Default Fargate vCPU in the job definition. runzi overrides this per-job via containerOverrides at submit time; this is the resting default. Discover from the live JD."
+  description = "Default Fargate vCPU — the VCPU entry under the live JD's containerProperties.resourceRequirements. runzi overrides this per-job via containerOverrides, so it is only a resting default, but must form a valid Fargate pair with default_memory (see FARGATE_VCPU_MEMORY_MB in runzi/aws/aws.py) or registration fails."
   type        = string
   default     = "8"
 }
 
 variable "default_memory" {
-  description = "Default Fargate memory (MiB) in the job definition. Overridden per-job by runzi at submit time. Discover from the live JD."
+  description = "Default Fargate memory (MiB) — the MEMORY entry under the live JD's containerProperties.resourceRequirements. Overridden per-job by runzi; must be valid for default_vcpu on Fargate (e.g. 8 vCPU allows 16384-61440 in 4096 steps). Default 32768 = the historical 32GB_8VCPU size."
   type        = string
-  default     = "30720"
+  default     = "32768"
 }
 
 variable "job_definition_environment" {
@@ -105,7 +105,7 @@ variable "job_definition_environment" {
 }
 
 variable "assign_public_ip" {
-  description = "Fargate network assignPublicIp (ENABLED/DISABLED). Discover from the live JD."
+  description = "Fargate networkConfiguration.assignPublicIp. Set to ENABLED or DISABLED to match the live JD's containerProperties.networkConfiguration.assignPublicIp. Leave empty (\"\") to omit networkConfiguration entirely — the correct choice when the live JD has no networkConfiguration block (AWS treats absent as DISABLED)."
   type        = string
-  default     = "ENABLED"
+  default     = ""
 }

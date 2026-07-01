@@ -39,11 +39,20 @@ resource "aws_batch_job_queue" "fargate" {
 # submit time (runzi/aws/aws.py). container_properties must replicate the live Fargate-runzi-opensha-JD
 # apart from the tagged image — discover and reconcile it before apply (README.md).
 locals {
-  base_container_properties = {
+  # Only emit networkConfiguration when assign_public_ip is set; an empty value omits the block
+  # entirely, matching a live JD that has no networkConfiguration (AWS treats absent as DISABLED).
+  # It is not overridable per-job, so the JD-level value governs at runtime — keep it faithful.
+  network_configuration = var.assign_public_ip != "" ? {
+    networkConfiguration = { assignPublicIp = var.assign_public_ip }
+  } : {}
+
+  base_container_properties = merge({
     image            = "${var.image_repository}:PLACEHOLDER" # overridden per-definition below
     executionRoleArn = var.execution_role_arn
     jobRoleArn       = var.job_role_arn != "" ? var.job_role_arn : null
 
+    # Resting defaults only — runzi overrides VCPU/MEMORY per-job via containerOverrides. They must
+    # still be a valid Fargate pair or registration fails (see FARGATE_VCPU_MEMORY_MB in aws.py).
     resourceRequirements = [
       { type = "VCPU", value = var.default_vcpu },
       { type = "MEMORY", value = var.default_memory },
@@ -52,11 +61,9 @@ locals {
     # runzi always overrides command at submit time; a non-empty default keeps the definition valid.
     command = ["--help"]
 
-    environment = [for k, v in var.job_definition_environment : { name = k, value = v }]
-
-    networkConfiguration         = { assignPublicIp = var.assign_public_ip }
+    environment                  = [for k, v in var.job_definition_environment : { name = k, value = v }]
     fargatePlatformConfiguration = { platformVersion = "LATEST" }
-  }
+  }, local.network_configuration)
 }
 
 resource "aws_batch_job_definition" "prod" {
