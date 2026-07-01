@@ -107,8 +107,14 @@ resource "aws_batch_compute_environment" "ec2" {
     max_vcpus           = var.ec2_max_vcpus
     instance_type       = var.ec2_instance_types
     instance_role       = var.ec2_instance_role_arn
-    subnets             = var.subnets
-    security_group_ids  = var.security_group_ids
+    # EC2 instances need egress to ECS/ECR to register with the cluster, so they use their own
+    # subnets/SG — NOT the Fargate ones. The Fargate subnet is public with no NAT and no auto-assign
+    # public IP, which works for Fargate (assign_public_ip=ENABLED gives each ENI a public IP) but
+    # leaves EC2 instances with no route out, so they never register and jobs stick in RUNNABLE.
+    # Discover egress-capable subnets from a working EC2 compute environment (README.md). Empty
+    # falls back to the Fargate values.
+    subnets            = length(var.ec2_subnets) > 0 ? var.ec2_subnets : var.subnets
+    security_group_ids = length(var.ec2_security_group_ids) > 0 ? var.ec2_security_group_ids : var.security_group_ids
   }
 
   # Batch autoscales desired_vcpus at runtime; ignore it so scaling activity doesn't drift state.

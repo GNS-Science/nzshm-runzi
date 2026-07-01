@@ -98,9 +98,9 @@ environment-specific).
 
 ### EC2 discovery (ADR-0008, #322)
 
-The EC2 compute environment is **created fresh**, but two values should be read from a live EC2
-environment (e.g. the `BigLeverOnDemandEC2` one being retired) so the new one is sized and
-permissioned like the workload expects:
+The EC2 compute environment is **created fresh**, but several values should be **copied from a
+working EC2 compute environment** (e.g. `BigLeverOnDemandEC2` / `ToshiHazardPost_*`) so the new one
+is sized, permissioned, and — critically — **networked** like a config that already runs jobs:
 
 ```bash
 aws batch describe-compute-environments --region us-east-1 \
@@ -110,7 +110,12 @@ aws batch describe-compute-environments --region us-east-1 \
 Map:
 - `instanceRole` → `ec2_instance_role_arn` (the ECS instance-profile ARN the container instances run under).
 - `maxvCpus` (or the desired concurrency) → `ec2_max_vcpus`.
-- `subnets` / `securityGroupIds` are shared with the Fargate `subnets` / `security_group_ids` values.
+- `subnets` → `ec2_subnets` and `securityGroupIds` → `ec2_security_group_ids`. **Do NOT reuse the
+  Fargate `subnets` / `security_group_ids`.** The Fargate subnet is public with no NAT and works for
+  Fargate only because `assign_public_ip = ENABLED` gives each task ENI a public IP. EC2 instances
+  get no public IP there, so they can't reach the ECS/ECR endpoints, never register, and jobs stick
+  in `RUNNABLE` (see Troubleshooting). Use the subnets/SG a working EC2 environment uses — those have
+  egress (NAT or auto-assigned public IPs).
 
 The EC2 job definitions reuse the same `image_repository`, `execution_role_arn`, `job_role_arn`,
 and `job_definition_environment` as the Fargate ones. Instance types (`ec2_instance_types`,
@@ -157,9 +162,33 @@ terraform apply
 ```
 
 Smoke-test before retiring anything: submit a small job with a config whose `sys_arg_overrides`
-sets `ecs_compute_environment: ec2`, `ecs_job_queue: runzi-ec2-Q`, `ecs_job_definition: runzi-ec2-JD`,
-and confirm it reaches `RUNNING` on EC2 (an oversized EC2 job sits in `RUNNABLE` forever — see
-`docs/usage/aws_batch.md`).
+sets `ecs_job_definition: runzi-ec2-JD` (the queue and compute-environment type derive from it), and
+confirm it reaches `RUNNING` on EC2.
+
+### Troubleshooting: jobs stuck in RUNNABLE
+
+`RUNNABLE` means Batch accepted the job but no compute instance is available to place it — it waits
+indefinitely, it does not time out. Cold start from `min_vcpus = 0` is ~2–5 min; longer means a
+problem. Diagnose with:
+
+```bash
+# Is the CE scaling, and did any instance join the ECS cluster?
+CLUSTER=$(aws batch describe-compute-environments --compute-environments runzi-ec2-CE --region us-east-1 \
+  --query 'computeEnvironments[0].ecsClusterArn' --output text)
+aws batch describe-compute-environments --compute-environments runzi-ec2-CE --region us-east-1 \
+  --query 'computeEnvironments[0].computeResources.{desired:desiredvCpus,max:maxvCpus}'
+aws ecs list-container-instances --cluster "$CLUSTER" --region us-east-1
+```
+
+- **`desiredvCpus > 0` but `containerInstanceArns` is empty** → instances launch but never register:
+  a **networking** problem. Almost always the subnets lack egress to ECS/ECR (the original #322 bug
+  was reusing the Fargate public/no-NAT subnet). Fix by pointing `ec2_subnets` / `ec2_security_group_ids`
+  at a working EC2 environment's egress-capable subnets/SG. Confirm instances have no public IP and
+  the subnet has no NAT route with `aws ec2 describe-instances` / `describe-route-tables`.
+- **`desiredvCpus` stays 0** → CE `INVALID`/`DISABLED`, queue not mapped, or the job's vCPU exceeds
+  `ec2_max_vcpus`.
+- **instances present but job still RUNNABLE** → the job's memory exceeds the instance's *allocatable*
+  memory (less than advertised RAM). See `docs/usage/aws_batch.md`.
 
 ## Day-to-day workflow
 

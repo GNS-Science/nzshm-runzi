@@ -83,6 +83,13 @@ partly deployer-credentialed (same posture as ADR-0004/0007):
 - **Permissions.** Per ADR-0006/0007 the task-execution/job role lives on the job definition
   (Terraform substrate); the EC2 JDs reuse the same `execution_role_arn` / `job_role_arn` as the
   Fargate JDs, so no new access-tier IAM is required for this change.
+- **EC2 needs its own egress-capable subnets (found during smoke test).** EC2 container instances
+  must reach the ECS/ECR endpoints to register, so they need a NAT gateway or auto-assigned public
+  IPs — unlike Fargate, whose ENIs get a public IP via `assign_public_ip = ENABLED` in the shared
+  public/no-NAT subnet. Reusing the Fargate subnet leaves EC2 instances with no egress; they never
+  register and jobs stick in `RUNNABLE`. The EC2 CE therefore has its own `ec2_subnets` /
+  `ec2_security_group_ids` (falling back to the Fargate values if unset), set to the subnets/SG a
+  working EC2 compute environment already uses.
 
 ## Followups not blocking this decision
 

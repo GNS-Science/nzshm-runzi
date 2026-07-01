@@ -126,6 +126,18 @@ variable "ec2_instance_role_arn" {
   type        = string
 }
 
+variable "ec2_subnets" {
+  description = "Subnets for the EC2 compute environment. EC2 container instances need egress to the ECS/ECR endpoints to register with the cluster (a NAT gateway, or a subnet that auto-assigns public IPs). The Fargate `subnets` (public, no NAT, no auto-assign) do NOT qualify — instances there never register and jobs stick in RUNNABLE. Discover egress-capable subnets from a working EC2 compute environment (`aws batch describe-compute-environments`). Empty falls back to `subnets`."
+  type        = list(string)
+  default     = []
+}
+
+variable "ec2_security_group_ids" {
+  description = "Security group IDs for the EC2 compute environment (must allow outbound 443 to ECS/ECR/STS). Discover from a working EC2 compute environment. Empty falls back to `security_group_ids`."
+  type        = list(string)
+  default     = []
+}
+
 variable "ec2_instance_types" {
   description = "Instance types/families Batch may launch. \"optimal\" lets Batch choose from the C/M/R families to fit each job. Instance-type optimization is tracked separately in #323."
   type        = list(string)
