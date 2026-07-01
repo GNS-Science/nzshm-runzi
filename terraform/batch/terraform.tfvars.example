@@ -27,3 +27,17 @@ job_definition_environment = {
   # NZSHM22_TOSHI_M2M_SECRET_ARN = "arn:aws:secretsmanager:ap-southeast-2:TODO:secret:toshi-m2m-..."
   # NZSHM22_TOSHI_COGNITO_DOMAIN = "https://TODO.auth.ap-southeast-2.amazoncognito.com"
 }
+
+# ── EC2 compute environment, queue, and job definitions (ADR-0008, #322) ──
+# Discover instance_role/maxvCpus from a live EC2 compute environment before apply:
+#   aws batch describe-compute-environments --region us-east-1 \
+#     --query 'computeEnvironments[?computeResources.type==`EC2`].{name:computeEnvironmentName, instanceRole:computeResources.instanceRole, maxvCpus:computeResources.maxvCpus, subnets:computeResources.subnets, sgs:computeResources.securityGroupIds}'
+# subnets/security_group_ids are shared with the Fargate settings above.
+ec2_instance_role_arn = "arn:aws:iam::TODO-account:instance-profile/ecsInstanceRole" # TODO
+ec2_max_vcpus         = 0                                                             # TODO - from the retired BigLever env's maxvCpus, or desired concurrency
+# ec2_instance_types      = ["optimal"]              # default; instance-type tuning is #323
+# ec2_min_vcpus           = 0                         # default; scale to zero when idle
+# ec2_allocation_strategy = "BEST_FIT_PROGRESSIVE"    # default
+# batch_service_role_arn  = ""                        # default: AWSServiceRoleForBatch service-linked role
+# ec2_default_vcpu        = "8"                        # default resting value
+# ec2_default_memory      = "32768"                   # default resting value (MiB)

@@ -1,12 +1,19 @@
 # runzi AWS Batch Terraform
 
-Manages the **Fargate compute environment**, the **`BasicFargate_Q` job queue**, and the two
-**job definitions** (`runzi-fargate-JD`, `runzi-fargate-experimental-JD`) that runzi submits AWS
-Batch jobs to. See
+Manages the consolidated **one-Fargate-plus-one-EC2** Batch surface that runzi submits jobs to:
+
+- **Fargate** (default for every task): the compute environment, the `BasicFargate_Q` queue, and
+  the two job definitions `runzi-fargate-JD` / `runzi-fargate-experimental-JD`.
+- **EC2** (explicit per-job opt-in): the `runzi-ec2-CE` compute environment, the `runzi-ec2-Q`
+  queue, and the two job definitions `runzi-ec2-JD` / `runzi-ec2-experimental-JD`.
+
+See
 [`docs/architecture/adr/0004-aws-batch-iac-terraform.md`](../../docs/architecture/adr/0004-aws-batch-iac-terraform.md)
-(compute env + queue) and
+(Fargate compute env + queue),
 [`docs/architecture/adr/0007-job-definition-terraform-tag-publish.md`](../../docs/architecture/adr/0007-job-definition-terraform-tag-publish.md)
-(job definitions via floating image tags) for the decision records.
+(job definitions via floating image tags), and
+[`docs/architecture/adr/0008-aws-batch-ec2-compute-environment.md`](../../docs/architecture/adr/0008-aws-batch-ec2-compute-environment.md)
+(EC2 compute env + queue + definitions, #322) for the decision records.
 
 The job definitions track floating ECR tags (`:prod` / `:experimental`) rather than pinned
 digests, so they are static — they are **not** re-registered on a code deploy. Image content
@@ -89,6 +96,27 @@ Map the `containerProperties` fields to variables:
 Copy `terraform.tfvars.example` to `terraform.tfvars` and fill these in (gitignored — it's
 environment-specific).
 
+### EC2 discovery (ADR-0008, #322)
+
+The EC2 compute environment is **created fresh**, but two values should be read from a live EC2
+environment (e.g. the `BigLeverOnDemandEC2` one being retired) so the new one is sized and
+permissioned like the workload expects:
+
+```bash
+aws batch describe-compute-environments --region us-east-1 \
+  --query 'computeEnvironments[?computeResources.type==`EC2`].{name:computeEnvironmentName, instanceRole:computeResources.instanceRole, maxvCpus:computeResources.maxvCpus, subnets:computeResources.subnets, sgs:computeResources.securityGroupIds}'
+```
+
+Map:
+- `instanceRole` → `ec2_instance_role_arn` (the ECS instance-profile ARN the container instances run under).
+- `maxvCpus` (or the desired concurrency) → `ec2_max_vcpus`.
+- `subnets` / `securityGroupIds` are shared with the Fargate `subnets` / `security_group_ids` values.
+
+The EC2 job definitions reuse the same `image_repository`, `execution_role_arn`, `job_role_arn`,
+and `job_definition_environment` as the Fargate ones. Instance types (`ec2_instance_types`,
+default `["optimal"]`), `min_vcpus` (default 0), and allocation strategy default sensibly —
+instance-type tuning is tracked in #323.
+
 ## Adopting the compute env + queue, creating the job definitions
 
 The compute environment and queue already exist and are **imported**; the two job definitions are
@@ -113,7 +141,25 @@ The job definitions reference `${image_repository}:prod` / `:experimental`, so t
 exist in ECR before the definitions are usable. Seed them once from the current live image (the
 digest `Fargate-runzi-opensha-JD` points at), e.g. with `runzi utils promote --source <version-tag>`
 for `:prod` and a `runzi utils docker-build` (or a manual retag) for `:experimental`. After apply,
-re-running `terraform plan` should show zero changes.
+re-running `terraform plan` should show zero changes. (The EC2 job definitions track the *same*
+`:prod` / `:experimental` tags, so no extra seeding is needed for them.)
+
+## Creating the EC2 compute env + queue + job definitions (ADR-0008, #322)
+
+Unlike the Fargate compute env/queue (imported), the EC2 resources are **all created fresh** — the
+legacy EC2 environments are slated for deletion and we don't import resources we're about to
+retire. With the EC2 discovery values filled into `terraform.tfvars`:
+
+```bash
+terraform plan   # should add: aws_batch_compute_environment.ec2, aws_batch_job_queue.ec2,
+                 #             aws_batch_job_definition.ec2_prod, aws_batch_job_definition.ec2_experimental
+terraform apply
+```
+
+Smoke-test before retiring anything: submit a small job with a config whose `sys_arg_overrides`
+sets `ecs_compute_environment: ec2`, `ecs_job_queue: runzi-ec2-Q`, `ecs_job_definition: runzi-ec2-JD`,
+and confirm it reaches `RUNNING` on EC2 (an oversized EC2 job sits in `RUNNABLE` forever — see
+`docs/usage/aws_batch.md`).
 
 ## Day-to-day workflow
 
@@ -132,6 +178,14 @@ The old `Fargate-runzi-opensha-JD` is replaced by `runzi-fargate-JD`. Once nothi
 (runzi's default is repointed and any in-flight submissions have drained), deregister it by hand —
 the same manual cleanup ADR-0004 uses for deleted Batch resources. It is not Terraform-managed, so
 there is nothing to remove from state.
+
+## Retiring the legacy EC2 environments (ADR-0008, #322)
+
+Once the new `runzi-ec2-*` resources are applied and smoke-tested, retire the superseded EC2
+compute environments and queues — `BigLever_*`, `BigLeverOnDemandEC2`, `ToshiHazardPost_*` — **by
+hand in the console** (disable → drain running jobs → delete queue → delete compute environment).
+They are not Terraform-managed (never imported, since they're slated for deletion), so there's
+nothing to remove from state. After retirement, `terraform plan` must remain clean.
 
 ## What this root does NOT manage
 

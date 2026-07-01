@@ -114,6 +114,13 @@ a tag.
   option is coming). Until they settle, experimental submission uses the existing
   `sys_arg_overrides.ecs_job_definition` override; add a top-level `--experimental` flag on the run
   commands once the JD/compute-env set is stable (flags over subcommands, per existing CLI design).
+- **EC2 job definition.** This ADR Terraform-manages only the two *Fargate* JDs. The coming EC2
+  compute environment needs its own JD (`platformCapabilities: EC2`) following the same
+  tag-based pattern — a `runzi-ec2-JD` under `terraform/batch/`. This is the EC2 instance of the
+  now-settled ownership pattern, not a reopening of it, and is tracked with the compute-env
+  consolidation in #322.
+  - **Status: actioned** by [0008](0008-aws-batch-ec2-compute-environment.md) — `runzi-ec2-JD` and
+    `runzi-ec2-experimental-JD` join the EC2 compute environment + queue under Terraform.
 - **Deployer coordination for cutover.** The `terraform apply` of the two new JDs, the
   `terraform/access/` IAM tightening, and the retirement of the old JD are deployer-credentialed
   steps (same posture as ADR-0004/0005) run alongside the runzi merge — tracked in #320/#324.
