@@ -22,11 +22,11 @@ from typing import Protocol, TypeVar
 
 from pydantic import BaseModel
 
-from runzi.arguments import SystemArgs, TaskLanguage
+from runzi.arguments import TaskLanguage, TaskRuntimeArgs
 from runzi.automation.python_task_factory import PythonTaskFactory, get_factory as get_python_factory
 from runzi.automation.task_config import get_task_config
 from runzi.automation.toshi_api import ModelType
-from runzi.protocols import ModuleWithDefaultSysArgs
+from runzi.protocols import ModuleWithDefaultSubmissionArgs
 
 from .local_config import ClusterModeEnum
 
@@ -39,7 +39,9 @@ OpenshaTaskFactoryType = TypeVar("OpenshaTaskFactoryType", bound="OpenshaTaskFac
 
 
 class TaskFactory(Protocol):
-    def write_task_config(self, task_args: BaseModel, task_system_args: SystemArgs, model_type: ModelType) -> None: ...
+    def write_task_config(
+        self, task_args: BaseModel, task_runtime_args: TaskRuntimeArgs, model_type: ModelType
+    ) -> None: ...
 
     def get_container_task(self) -> str: ...
 
@@ -56,7 +58,7 @@ class OpenshaTaskFactory:
         self,
         root_path: Path | PurePath | str,
         working_path: Path | PurePath | str,
-        python_script_module: ModuleWithDefaultSysArgs,
+        python_script_module: ModuleWithDefaultSubmissionArgs,
         jre_path: Path | PurePath | str,
         app_jar_path: Path | PurePath | str,
         task_config_path: Path | PurePath | str | None = None,
@@ -102,9 +104,9 @@ class OpenshaTaskFactory:
     def get_container_task(self) -> str:
         return ""
 
-    def write_task_config(self, task_args: BaseModel, task_system_args: SystemArgs, model_type: ModelType):
+    def write_task_config(self, task_args: BaseModel, task_runtime_args: TaskRuntimeArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_port}.json"
-        task_config = get_task_config(task_args, task_system_args, model_type)
+        task_config = get_task_config(task_args, task_runtime_args, model_type)
         fname.write_text(json.dumps(task_config, indent=4), encoding="utf-8")
 
     def get_task_script(self) -> str:
@@ -167,7 +169,7 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
         self,
         root_path: Path | PurePath | str,
         working_path: Path | PurePath | str,
-        python_script_module: ModuleWithDefaultSysArgs,
+        python_script_module: ModuleWithDefaultSubmissionArgs,
         **kwargs,
     ):
 
@@ -180,12 +182,13 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
     def get_container_task(self) -> str:
         return ""
 
-    def write_task_config(self, task_args: BaseModel, task_system_args: SystemArgs, model_type: ModelType):
+    def write_task_config(self, task_args: BaseModel, task_runtime_args: TaskRuntimeArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_port}.json"
-        self._pbs_wall_hours = int(task_system_args.ecs_max_job_time_min / 60) + 1
-        self._pbs_ppn = task_system_args.java_threads
+        # PBS mode is unsupported; _pbs_wall_hours / _pbs_ppn keep their __init__ defaults (job timing
+        # is submission-only and no longer on the per-task runtime args).
+        self._pbs_ppn = task_runtime_args.java_threads or self._pbs_ppn
 
-        task_config = get_task_config(task_args, task_system_args, model_type)
+        task_config = get_task_config(task_args, task_runtime_args, model_type)
         fname.write_text(json.dumps(task_config, indent=4), encoding="utf-8")
 
     def get_task_script(self) -> str:

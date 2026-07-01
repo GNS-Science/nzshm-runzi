@@ -21,14 +21,13 @@ from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 from toshi_hazard_store.scripts.ths_disagg_import import store_disagg
 
-from runzi.arguments import SystemArgs, TaskLanguage
+from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.local_config import (
     API_URL,
     ECR_DIGEST,
     S3_URL,
     SPOOF,
     THS_DISAGG_RLZ_DB,
-    USE_API,
     WORK_PATH,
     get_auth_kwargs,
 )
@@ -55,9 +54,8 @@ logging.getLogger("gql.transport").setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
 
-default_system_args = SystemArgs(
+default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.PYTHON,
-    use_api=USE_API,
     ecs_max_job_time_min=30,
     ecs_memory=32768,
     ecs_vcpu=8,
@@ -81,10 +79,10 @@ def get_target_level(
 
 
 class OQDisaggTask:
-    def __init__(self, user_args: OQDisaggArgs, system_args: SystemArgs):
-        self.use_api = system_args.use_api
+    def __init__(self, user_args: OQDisaggArgs, runtime_args: TaskRuntimeArgs):
+        self.use_api = runtime_args.use_api
         self.user_args = user_args
-        self.system_args = system_args
+        self.runtime_args = runtime_args
 
         if self.use_api:
             self._toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
@@ -150,11 +148,11 @@ class OQDisaggTask:
         )
 
         # link OpenquakeHazardTask to the parent GT
-        gt_conn = self._task_relation_api.create_task_relation(self.system_args.general_task_id, automation_task_id)
+        gt_conn = self._task_relation_api.create_task_relation(self.runtime_args.general_task_id, automation_task_id)
         print(
             f"created task_relationship: {gt_conn} "
             f"for at: {automation_task_id} "
-            f"on GT: {self.system_args.general_task_id}"
+            f"on GT: {self.runtime_args.general_task_id}"
         )
 
         return automation_task_id
@@ -260,7 +258,7 @@ class OQDisaggTask:
         # SETUP openquake CONFIG FOLDER
         #################################
         work_folder = WORK_PATH
-        task_no = self.system_args.task_count
+        task_no = self.runtime_args.task_count
         config_folder = work_folder / f"config_{task_no}"
 
         description = f"disaggregation task: {task_no}"
@@ -283,7 +281,7 @@ class OQDisaggTask:
         ##############
         oq_result = execute_openquake(
             job_file,
-            self.system_args.task_count,
+            self.runtime_args.task_count,
             automation_task_id,
             HazardTaskType.HAZARD,
         )
@@ -332,10 +330,10 @@ if __name__ == "__main__":
 
     # print(config)
     user_args = OQDisaggArgs(**config['task_args'])
-    system_args = SystemArgs(**config['task_system_args'])
-    task = OQDisaggTask(user_args, system_args)
+    runtime_args = TaskRuntimeArgs(**config['task_runtime_args'])
+    task = OQDisaggTask(user_args, runtime_args)
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(system_args.task_count)
+    time.sleep(runtime_args.task_count)
 
     task.run()

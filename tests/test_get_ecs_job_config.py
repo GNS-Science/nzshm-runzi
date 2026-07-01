@@ -19,8 +19,9 @@ from runzi.arguments import (
     EC2_JOB_QUEUE,
     EXPERIMENTAL_JOB_DEFINITION,
     ComputeEnvironment,
-    SystemArgs,
+    SubmissionArgs,
     TaskLanguage,
+    TaskRuntimeArgs,
 )
 from runzi.aws import decompress_config, get_ecs_job_config
 from runzi.aws.aws import BatchEnvironmentSetting, validate_ec2_resources, validate_fargate_resources
@@ -33,7 +34,6 @@ def _call_get_ecs_job_config(**overrides):
         container_task='run_task.sh',
         model_type=None,
         task_args=None,
-        task_system_args=None,
         toshi_api_url='https://api.example.com/graphql',
         toshi_s3_url='https://s3.example.com',
         toshi_report_bucket='my-report-bucket',
@@ -46,6 +46,7 @@ def _call_get_ecs_job_config(**overrides):
         vcpu=2,
         job_definition='BasicEC2-job-definition',
         job_queue='BasicEC2-job-queue',
+        task_runtime_args=None,
     )
     kwargs.update(overrides)
     return get_ecs_job_config(**kwargs)  # type: ignore[arg-type]
@@ -104,7 +105,7 @@ class TestContainerEnvContents:
             assert required in names, f'{required} missing from container environment'
 
     def test_extra_env_appended(self, mocker):
-        """Extra env entries (from SystemArgs.ecs_extra_env) are appended correctly."""
+        """Extra env entries (from SubmissionArgs.ecs_extra_env) are appended correctly."""
         mocker.patch('runzi.aws.aws.get_task_config', return_value={})
         extra = [BatchEnvironmentSetting('MY_CUSTOM_VAR', 'hello')]
 
@@ -263,7 +264,7 @@ class TestCompression:
 
     def test_use_compression_round_trips(self, mocker):
         """With use_compression=True, TASK_CONFIG_JSON_QUOTED decodes back via decompress_config."""
-        task_config = {"task_args": {"a": 1}, "task_system_args": {"b": 2}, "model_type": "X"}
+        task_config = {"task_args": {"a": 1}, "task_runtime_args": {"b": 2}, "model_type": "X"}
         mocker.patch('runzi.aws.aws.get_task_config', return_value=task_config)
 
         result = _call_get_ecs_job_config(use_compression=True)
@@ -297,33 +298,32 @@ class TestCompression:
             _call_get_ecs_job_config(use_compression=True)
 
 
-def _system_args(**overrides) -> SystemArgs:
-    """A minimal SystemArgs; override any field via kwargs."""
+def _submission_args(**overrides) -> SubmissionArgs:
+    """A minimal SubmissionArgs; override any field via kwargs."""
     kwargs = dict(
         task_language=TaskLanguage.PYTHON,
-        use_api=False,
         ecs_max_job_time_min=10,
         ecs_memory=2048,
         ecs_vcpu=1,
     )
     kwargs.update(overrides)
-    return SystemArgs(**kwargs)  # type: ignore[arg-type]
+    return SubmissionArgs(**kwargs)  # type: ignore[arg-type]
 
 
-class TestSystemArgsComputeDefaults:
-    """SystemArgs defaults to the prod Fargate job definition; queue/compute-env are derived."""
+class TestSubmissionArgsComputeDefaults:
+    """SubmissionArgs defaults to the prod Fargate job definition; queue/compute-env are derived."""
 
     def test_job_definition_defaults_to_prod_fargate(self):
-        assert _system_args().ecs_job_definition == DEFAULT_JOB_DEFINITION
+        assert _submission_args().ecs_job_definition == DEFAULT_JOB_DEFINITION
 
     def test_queue_and_compute_are_unset_until_resolved(self):
         """The raw override inputs are None ('derive from the job definition')."""
-        args = _system_args()
+        args = _submission_args()
         assert args.ecs_job_queue is None
         assert args.ecs_compute_environment is None
 
     def test_default_resolves_to_fargate(self):
-        args = _system_args()
+        args = _submission_args()
         assert args.resolved_job_queue == DEFAULT_JOB_QUEUE
         assert args.resolved_compute_environment == ComputeEnvironment.FARGATE
 
@@ -342,71 +342,77 @@ class TestBatchTargetResolution:
         ],
     )
     def test_canonical_job_definition_selects_its_target(self, job_definition, expected_queue, expected_compute):
-        args = _system_args(ecs_job_definition=job_definition)
+        args = _submission_args(ecs_job_definition=job_definition)
         assert args.resolved_job_queue == expected_queue
         assert args.resolved_compute_environment == expected_compute
 
     def test_picking_ec2_job_definition_alone_targets_ec2(self):
         """The friction fix: set only the job definition, queue + type follow."""
-        args = _system_args(ecs_job_definition=EC2_JOB_DEFINITION)
+        args = _submission_args(ecs_job_definition=EC2_JOB_DEFINITION)
         assert args.resolved_job_queue == EC2_JOB_QUEUE
         assert args.resolved_compute_environment == ComputeEnvironment.EC2
 
     def test_explicit_queue_override_is_respected(self):
-        args = _system_args(ecs_job_definition=EC2_JOB_DEFINITION, ecs_job_queue='my-special-Q')
+        args = _submission_args(ecs_job_definition=EC2_JOB_DEFINITION, ecs_job_queue='my-special-Q')
         assert args.resolved_job_queue == 'my-special-Q'
 
     def test_explicit_compute_override_is_respected(self):
-        args = _system_args(ecs_job_definition=DEFAULT_JOB_DEFINITION, ecs_compute_environment=ComputeEnvironment.EC2)
+        args = _submission_args(
+            ecs_job_definition=DEFAULT_JOB_DEFINITION, ecs_compute_environment=ComputeEnvironment.EC2
+        )
         assert args.resolved_compute_environment == ComputeEnvironment.EC2
 
     def test_unknown_job_definition_falls_back_to_fargate(self):
-        args = _system_args(ecs_job_definition='some-custom-JD')
+        args = _submission_args(ecs_job_definition='some-custom-JD')
         assert args.resolved_job_queue == DEFAULT_JOB_QUEUE
         assert args.resolved_compute_environment == ComputeEnvironment.FARGATE
 
     def test_derivation_follows_post_construction_override(self):
-        """Mirrors JobRunner.set_system_args, which applies overrides by assignment after
+        """Mirrors JobRunner.set_submission_args, which applies overrides by assignment after
         construction: the resolved properties must reflect the new job definition (never stale)."""
-        args = _system_args()  # default prod Fargate JD
+        args = _submission_args()  # default prod Fargate JD
         assert args.resolved_job_queue == DEFAULT_JOB_QUEUE
         args.ecs_job_definition = EC2_JOB_DEFINITION
         assert args.resolved_job_queue == EC2_JOB_QUEUE
         assert args.resolved_compute_environment == ComputeEnvironment.EC2
 
 
-class TestBatchTargetSerialization:
-    """build_tasks freezes the derived target onto the per-task args before serialization; the AWS
-    worker rebuilds SystemArgs from that config, so it must carry concrete values, not the None
-    'derive' sentinels (regression: shipping None broke SystemArgs(**config) on the worker)."""
+class TestSubmissionArgsNotShipped:
+    """SubmissionArgs is submitter-only; only TaskRuntimeArgs crosses to the worker (ADR-0009)."""
 
-    def test_freeze_fills_derived_values_in_place(self):
-        args = _system_args(ecs_job_definition=EC2_JOB_DEFINITION)
-        assert args.ecs_job_queue is None and args.ecs_compute_environment is None
-        args.freeze_batch_target()
-        assert args.ecs_job_queue == EC2_JOB_QUEUE
-        assert args.ecs_compute_environment == ComputeEnvironment.EC2
+    def test_submission_args_has_no_runtime_fields(self):
+        fields = set(SubmissionArgs.model_fields)
+        assert {'general_task_id', 'task_count', 'use_api', 'java_gateway_port'} & fields == set()
 
-    def test_frozen_args_round_trip_through_worker_serialization(self):
-        """Reproduces the worker path: model_dump(mode='json') then SystemArgs(**dumped)."""
-        args = _system_args(ecs_job_definition=EC2_JOB_DEFINITION)
-        args.freeze_batch_target()
-        dumped = args.model_dump(mode='json')
-        assert dumped['ecs_job_queue'] == EC2_JOB_QUEUE
-        assert dumped['ecs_compute_environment'] == 'ec2'
-        rebuilt = SystemArgs(**dumped)  # must not raise
-        assert rebuilt.ecs_job_queue == EC2_JOB_QUEUE
-        assert rebuilt.ecs_compute_environment == ComputeEnvironment.EC2
+    def test_runtime_args_has_no_submission_fields(self):
+        fields = set(TaskRuntimeArgs.model_fields)
+        assert {
+            'ecs_job_queue',
+            'ecs_compute_environment',
+            'ecs_job_definition',
+            'ecs_memory',
+            'ecs_vcpu',
+            'ecs_max_job_time_min',
+            'task_language',
+            'ecs_extra_env',
+        } & fields == set()
 
-    def test_default_fargate_round_trips(self):
-        args = _system_args()  # default prod Fargate JD, queue/compute unset
-        args.freeze_batch_target()
-        rebuilt = SystemArgs(**args.model_dump(mode='json'))
-        assert rebuilt.ecs_job_queue == DEFAULT_JOB_QUEUE
-        assert rebuilt.ecs_compute_environment == ComputeEnvironment.FARGATE
 
-    def test_freeze_preserves_explicit_override(self):
-        args = _system_args(ecs_job_definition=EC2_JOB_DEFINITION, ecs_job_queue='custom-Q')
-        args.freeze_batch_target()
-        assert args.ecs_job_queue == 'custom-Q'
-        assert args.ecs_compute_environment == ComputeEnvironment.EC2
+class TestTaskRuntimeArgsSerialization:
+    """The only args model shipped to the worker; it must round-trip through the config the worker
+    rebuilds it from (regression: the old single-class model shipped submission fields the worker
+    then had to validate)."""
+
+    def test_round_trips_through_worker_serialization(self):
+        """Reproduces the worker path: model_dump(mode='json') then TaskRuntimeArgs(**dumped)."""
+        args = TaskRuntimeArgs(
+            general_task_id='GT-1', task_count=3, use_api=True, java_gateway_port=26000, java_threads=16
+        )
+        rebuilt = TaskRuntimeArgs(**args.model_dump(mode='json'))
+        assert rebuilt == args
+
+    def test_carries_no_submission_keys(self):
+        dumped = TaskRuntimeArgs(use_api=True).model_dump(mode='json')
+        assert 'ecs_job_queue' not in dumped
+        assert 'ecs_compute_environment' not in dumped
+        assert set(dumped) == {'general_task_id', 'task_count', 'use_api', 'java_gateway_port', 'java_threads'}

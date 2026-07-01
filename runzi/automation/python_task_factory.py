@@ -16,10 +16,10 @@ from pathlib import Path, PurePath
 
 from pydantic import BaseModel
 
-from runzi.arguments import SystemArgs
+from runzi.arguments import TaskRuntimeArgs
 from runzi.automation.task_config import get_task_config
 from runzi.automation.toshi_api import ModelType
-from runzi.protocols import ModuleWithDefaultSysArgs
+from runzi.protocols import ModuleWithDefaultSubmissionArgs
 
 from .local_config import ClusterModeEnum
 
@@ -28,7 +28,7 @@ class PythonTaskFactory:
     def __init__(
         self,
         working_path: Path | PurePath | str,
-        python_script_module: ModuleWithDefaultSysArgs,
+        python_script_module: ModuleWithDefaultSubmissionArgs,
         task_config_path: Path | PurePath | str | None = None,
         python: str = "python3",
     ):
@@ -54,9 +54,9 @@ class PythonTaskFactory:
     def get_next_port(self) -> int:
         return self._next_task
 
-    def write_task_config(self, task_arguments: BaseModel, task_system_args: SystemArgs, model_type: ModelType):
+    def write_task_config(self, task_arguments: BaseModel, task_runtime_args: TaskRuntimeArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_task}.json"
-        task_config = get_task_config(task_arguments, task_system_args, model_type)
+        task_config = get_task_config(task_arguments, task_runtime_args, model_type)
         fname.write_text(json.dumps(task_config, indent=4), encoding="utf-8")
 
     def get_task_script(self) -> str:
@@ -81,7 +81,7 @@ class PythonAWSTaskFactory(PythonTaskFactory):
     def __init__(
         self,
         working_path: Path | PurePath | str,
-        python_script_module: ModuleWithDefaultSysArgs,
+        python_script_module: ModuleWithDefaultSubmissionArgs,
         **kwargs,
     ):
         super().__init__(working_path, python_script_module, **kwargs)
@@ -95,7 +95,7 @@ class PythonPBSTaskFactory(PythonTaskFactory):
         self,
         # root_path: Path | PurePath | str,
         working_path: Path | PurePath | str,
-        python_script_module: ModuleWithDefaultSysArgs,
+        python_script_module: ModuleWithDefaultSubmissionArgs,
         **kwargs,
     ):
 
@@ -108,7 +108,7 @@ class PythonPBSTaskFactory(PythonTaskFactory):
     def get_container_task(self) -> str:
         return ""
 
-    def write_task_config(self, task_args: BaseModel, task_system_args: BaseModel, model_type: ModelType):
+    def write_task_config(self, task_args: BaseModel, task_runtime_args: TaskRuntimeArgs, model_type: ModelType):
         raise NotImplementedError("PythonPBSTaskFactory.write_task_config not implemented. Need to fix wall hours")
         # fname = self._config_path / f"config.{self._next_port}.json"
         # if isinstance(task_args, InversionArgs):
@@ -116,7 +116,7 @@ class PythonPBSTaskFactory(PythonTaskFactory):
         #     self._pbs_wall_hours = int(max_inversion_time / 60) + 1
         #     self._pbs_ppn = task_args.general.java_threads
 
-        # task_config = get_task_config(task_args, task_system_args)
+        # task_config = get_task_config(task_args, task_runtime_args)
         # fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')
 
     # TODO: what is the correct path to activate the venv?

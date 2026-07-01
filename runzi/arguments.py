@@ -5,7 +5,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, NamedTuple, Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from runzi.aws import BatchEnvironmentSetting
 
@@ -56,7 +56,7 @@ class BatchTarget(NamedTuple):
 
 # Each canonical job definition has exactly one correct queue + compute-environment type, so a user
 # only needs to pick the job definition; the queue and type are derived from it (see
-# SystemArgs.resolved_job_queue / resolved_compute_environment). An unknown/custom job definition
+# SubmissionArgs.resolved_job_queue / resolved_compute_environment). An unknown/custom job definition
 # falls back to DEFAULT_BATCH_TARGET (Fargate), so behaviour is unchanged unless a config explicitly
 # sets ecs_job_queue / ecs_compute_environment.
 JOB_DEFINITION_TARGETS: dict[str, BatchTarget] = {
@@ -68,28 +68,33 @@ JOB_DEFINITION_TARGETS: dict[str, BatchTarget] = {
 DEFAULT_BATCH_TARGET = BatchTarget(DEFAULT_JOB_QUEUE, ComputeEnvironment.FARGATE)
 
 
-class SystemArgs(BaseModel):
-    task_language: TaskLanguage
-    general_task_id: str | None = None
-    task_count: int = 0
-    use_api: bool
+class SubmissionArgs(BaseModel):
+    """Config the local submitter uses to shape and submit the AWS Batch job.
 
-    java_threads: int | None = None  # only used for pbs mode, which is not supported anymore
+    Declared per task module (see each module's ``default_submission_args``) and read only on the
+    submitter side (build_tasks / job_runner / the task factories / get_ecs_job_config). It is NOT
+    serialized to the worker — the worker gets a TaskRuntimeArgs instead. Splitting these apart keeps
+    submission-only fields out of the worker's validation surface (see
+    docs/architecture/adr/0009-submission-vs-runtime-args.md).
+    """
+
+    task_language: TaskLanguage
+
+    # Declared per Java task module; the worker reads it, so build_tasks copies it into TaskRuntimeArgs.
+    java_threads: int | None = None
     jvm_heap_max: int | None = None
-    java_gateway_port: int | None = None
 
     ecs_max_job_time_min: int
     ecs_memory: int
     ecs_vcpu: int
     ecs_job_definition: str = DEFAULT_JOB_DEFINITION
-    # None means "derive from ecs_job_definition"; set explicitly (e.g. via sys_arg_overrides) only
-    # to override the queue/compute-environment the job definition would otherwise select. (str is
-    # allowed on ecs_compute_environment because sys_arg_overrides' setattr path can leave a raw
-    # string, and freeze_batch_target writes the resolved value back.)
+    # None on ecs_job_queue / ecs_compute_environment means "derive from ecs_job_definition"; set
+    # explicitly (e.g. via sys_arg_overrides) only to override the queue/compute-environment the job
+    # definition would otherwise select. Read the resolved values via resolved_job_queue /
+    # resolved_compute_environment. (sys_arg_overrides' setattr path can leave a raw string on
+    # ecs_compute_environment; resolved_compute_environment and get_ecs_job_config tolerate that.)
     ecs_job_queue: str | None = None
-    # left_to_right so a valid value (e.g. "ec2" from a serialized config) coerces to the enum rather
-    # than staying a bare string; an unrecognised override string is still tolerated as str.
-    ecs_compute_environment: ComputeEnvironment | str | None = Field(default=None, union_mode='left_to_right')
+    ecs_compute_environment: ComputeEnvironment | None = None
     ecs_extra_env: list[BatchEnvironmentSetting] | None = None
 
     @property
@@ -110,16 +115,21 @@ class SystemArgs(BaseModel):
             return self.ecs_compute_environment
         return JOB_DEFINITION_TARGETS.get(self.ecs_job_definition, DEFAULT_BATCH_TARGET).compute_environment
 
-    def freeze_batch_target(self) -> None:
-        """Write the resolved queue + compute-environment onto the fields, in place.
 
-        Call before serializing SystemArgs (the AWS Batch worker rebuilds it from the shipped config):
-        this replaces the None "derive from the job definition" sentinels with concrete values, so the
-        serialized form always carries a real queue/compute-environment rather than nulls a worker
-        would reject or be unable to re-derive.
-        """
-        self.ecs_job_queue = self.resolved_job_queue
-        self.ecs_compute_environment = self.resolved_compute_environment
+class TaskRuntimeArgs(BaseModel):
+    """Per-task context the worker needs at execution time.
+
+    Assembled by the submitter (build_tasks) and serialized to the worker under the
+    ``task_runtime_args`` config key; the worker rebuilds it in each task module's ``__main__``. This
+    is the only args model that crosses the submitter->worker boundary, so it must stay small and
+    evolve compatibly with deployed images (see docs/architecture/adr/0009-submission-vs-runtime-args.md).
+    """
+
+    general_task_id: str | None = None
+    task_count: int = 0
+    use_api: bool
+    java_gateway_port: int | None = None
+    java_threads: int | None = None
 
 
 class ArgSweeper:

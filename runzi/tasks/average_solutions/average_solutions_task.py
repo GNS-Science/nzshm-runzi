@@ -10,15 +10,14 @@ from nshm_toshi_client.task_relation import TaskRelation
 from pydantic import BaseModel
 from solvis import InversionSolution
 
-from runzi.arguments import SystemArgs, TaskLanguage
+from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.file_utils import download_files, get_output_file_id
-from runzi.automation.local_config import API_URL, S3_URL, SPOOF, USE_API, WORK_PATH, get_auth_kwargs
+from runzi.automation.local_config import API_URL, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ModelType, SubtaskType, ToshiApi
 from runzi.tasks.get_config import get_config
 
-default_system_args = SystemArgs(
+default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.PYTHON,
-    use_api=USE_API,
     ecs_max_job_time_min=10,
     ecs_memory=30720,
     ecs_vcpu=4,
@@ -94,11 +93,11 @@ def is_rupture_set(file_id: str) -> bool:
 class AverageSolutionsTask:
     """The python client for solution rate averaging."""
 
-    def __init__(self, user_args: AverageSolutionsArgs, system_args: SystemArgs, model_type: ModelType):
+    def __init__(self, user_args: AverageSolutionsArgs, runtime_args: TaskRuntimeArgs, model_type: ModelType):
 
         self.user_args = user_args
-        self.system_args = system_args
-        self.use_api = system_args.use_api
+        self.runtime_args = runtime_args
+        self.use_api = runtime_args.use_api
         self.output_folder = WORK_PATH
         self.model_type = model_type
 
@@ -125,7 +124,7 @@ class AverageSolutionsTask:
             )
 
             # link automation task to the parent general task
-            self.task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
+            self.task_relation_api.create_task_relation(self.runtime_args.general_task_id, task_id)
 
         else:
             task_id = str(uuid.uuid4())
@@ -166,7 +165,7 @@ class AverageSolutionsTask:
             self.toshi_api.automation_task.complete_task(done_args, result['metrics'])
 
             # add the log files
-            # pyth_log_file = self._output_folder.joinpath(f"python_script.{self.system_args.task_count}.log")
+            # pyth_log_file = self._output_folder.joinpath(f"python_script.{self.runtime_args.task_count}.log")
             # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
             # get the predecessors
@@ -228,12 +227,12 @@ if __name__ == "__main__":
     config = get_config()
 
     user_args = AverageSolutionsArgs(**config['task_args'])
-    system_args = SystemArgs(**config['task_system_args'])
+    runtime_args = TaskRuntimeArgs(**config['task_runtime_args'])
     model_type = ModelType(config['model_type'])
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(system_args.task_count)
+    time.sleep(runtime_args.task_count)
 
     # print(config)
-    task = AverageSolutionsTask(user_args, system_args, model_type)
+    task = AverageSolutionsTask(user_args, runtime_args, model_type)
     task.run()

@@ -3,4 +3,4 @@
       show_source: false
       inherited_members: true
 
-::: runzi.tasks.scale_solution.scale_solution_task.default_system_args
+::: runzi.tasks.scale_solution.scale_solution_task.default_submission_args

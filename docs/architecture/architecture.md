@@ -7,10 +7,10 @@ classDiagram
         - job_name: str
         - argument_sweeper: ArgSweeper
         - task_module: ModuleType
-        - default_sys_args: SystemArgs
+        - default_submission_args: SubmissionArgs
         
         + __init__(argument_sweeper: ArgSweeper, task_module: ModuleType)
-        + set_system_args(general_task_id: str | None) SystemArgs
+        + set_submission_args() SubmissionArgs
         + get_model_type()* ModelType
         - _build_argument_list() list
         + run_jobs() str | None
@@ -36,20 +36,29 @@ classDiagram
         + get_tasks() Generator[BaseModel]
     }
     
-    class SystemArgs {
+    class SubmissionArgs {
+        note "submitter-only; NOT serialized to the worker"
         - task_language: TaskLanguage
-        - general_task_id: str | None
-        - task_count: int
-        - use_api: bool
         - java_threads: int | None
         - jvm_heap_max: int | None
-        - java_gateway_port: int | None
         - ecs_max_job_time_min: int
         - ecs_memory: int
         - ecs_vcpu: int
         - ecs_job_definition: str
-        - ecs_job_queue: str
+        - ecs_job_queue: str | None
+        - ecs_compute_environment: ComputeEnvironment | None
         - ecs_extra_env: list | None
+        + resolved_job_queue() str
+        + resolved_compute_environment() ComputeEnvironment
+    }
+    
+    class TaskRuntimeArgs {
+        note "the only args model shipped to the worker"
+        - general_task_id: str | None
+        - task_count: int
+        - use_api: bool
+        - java_gateway_port: int | None
+        - java_threads: int | None
     }
     
     class ScaleSolutionArgs {
@@ -61,23 +70,23 @@ classDiagram
     
     class ScaleSolutionTask {
         - user_args: ScaleSolutionArgs
-        - system_args: SystemArgs
+        - runtime_args: TaskRuntimeArgs
         - model_type: ModelType
         - use_api: bool
         - output_folder: Path
         - toshi_api: ToshiApi
         - task_relation_api: TaskRelation
         
-        + __init__(user_args, system_args, model_type)
+        + __init__(user_args, runtime_args, model_type)
         + run()
         - scaleRuptureRates(filepath, task_id, scale, polygon_scale, polygon_max_mag) dict
     }
     
     JobRunner <|-- ScaleSolutionJobRunner
     JobRunner --> ArgSweeper
-    JobRunner --> SystemArgs
+    JobRunner --> SubmissionArgs
     ArgSweeper --> ScaleSolutionArgs : contains as prototype_args
     ScaleSolutionTask --> ScaleSolutionArgs
-    ScaleSolutionTask --> SystemArgs
+    ScaleSolutionTask --> TaskRuntimeArgs
     ScaleSolutionJobRunner --> ScaleSolutionTask : executes via task_module
 ```

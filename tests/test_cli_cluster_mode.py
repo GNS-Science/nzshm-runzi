@@ -71,36 +71,45 @@ def test_non_aws_cluster_mode_does_not_change_use_api():
     assert local_config.USE_API == original
 
 
-def test_set_system_args_uses_runtime_use_api(monkeypatch):
-    """set_system_args must reflect local_config.USE_API, not the import-time snapshot."""
-    from unittest.mock import MagicMock
+def test_build_tasks_uses_runtime_use_api(monkeypatch):
+    """The TaskRuntimeArgs shipped to the worker must carry the runtime local_config.USE_API, not an
+    import-time snapshot (use_api is set fresh in build_tasks, ADR-0009)."""
+    from unittest.mock import MagicMock, patch
 
-    from runzi.arguments import SystemArgs, TaskLanguage
-    from runzi.automation.toshi_api import ModelType, SubtaskType
-    from runzi.job_runner import JobRunner
+    from runzi import build_tasks as bt
+    from runzi.arguments import SubmissionArgs, TaskLanguage
+    from runzi.automation.local_config import ClusterModeEnum
+    from runzi.automation.toshi_api import ModelType
 
-    monkeypatch.setattr(local_config, 'USE_API', True)
+    monkeypatch.setattr(bt.local_config, 'USE_API', True)
+    monkeypatch.setattr(bt.local_config, 'CLUSTER_MODE', ClusterModeEnum.AWS)
 
-    baked_in_sys_args = SystemArgs(
-        task_language=TaskLanguage.PYTHON,
-        use_api=False,
-        ecs_max_job_time_min=30,
-        ecs_memory=1024,
-        ecs_vcpu=1,
-        ecs_job_definition='test-job-def',
-        ecs_job_queue='test-queue',
+    submission_args = SubmissionArgs(
+        task_language=TaskLanguage.PYTHON, ecs_max_job_time_min=30, ecs_memory=1024, ecs_vcpu=1
     )
-    mock_module = MagicMock()
-    mock_module.default_system_args = baked_in_sys_args
+
     mock_sweeper = MagicMock()
-    mock_sweeper.sys_arg_overrides = {}
+    mock_sweeper.get_tasks.return_value = [MagicMock()]
+    mock_module = MagicMock()
+    mock_module.__name__ = 'runzi.tasks.example'
 
-    class ConcreteRunner(JobRunner):
-        subtask_type = SubtaskType.INVERSION
-        job_name = 'test'
+    fake_factory = MagicMock()
+    fake_factory.get_next_port.return_value = 26000
+    fake_factory.get_container_task.return_value = 'run.sh'
+    fake_factory_class = MagicMock()
+    fake_factory_class.create.return_value = fake_factory
 
-        def get_model_type(self):
-            return ModelType.CRUSTAL
+    captured = {}
 
-    result = ConcreteRunner(mock_sweeper, mock_module).set_system_args()
-    assert result.use_api is True
+    def _capture(**kwargs):
+        captured.update(kwargs)
+        return {}
+
+    with (
+        patch.object(bt, 'get_factory', return_value=fake_factory_class),
+        patch.object(bt, 'resolve_job_definition_digest', return_value='sha256:x'),
+        patch.object(bt, 'get_ecs_job_config', side_effect=_capture),
+    ):
+        list(bt.build_tasks(mock_sweeper, submission_args, mock_module, ModelType.CRUSTAL, 'job'))
+
+    assert captured['task_runtime_args'].use_api is True

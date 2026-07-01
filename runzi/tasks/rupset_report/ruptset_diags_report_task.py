@@ -6,16 +6,15 @@ import git
 from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel
 
-from runzi.arguments import SystemArgs, TaskLanguage
+from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.file_utils import download_files, get_output_file_id
-from runzi.automation.local_config import API_URL, S3_REPORT_BUCKET, S3_URL, SPOOF, USE_API, WORK_PATH, get_auth_kwargs
+from runzi.automation.local_config import API_URL, S3_REPORT_BUCKET, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ToshiApi
 from runzi.aws.s3_folder_upload import upload_to_bucket
 from runzi.tasks.get_config import get_config
 
-default_system_args = SystemArgs(
+default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
-    use_api=USE_API,
     java_threads=16,
     jvm_heap_max=32,
     ecs_max_job_time_min=60,
@@ -36,13 +35,13 @@ class RupsetReportArgs(BaseModel):
 class RupsetReportTask:
     """The python client for a Diagnostics Report."""
 
-    def __init__(self, user_args: RupsetReportArgs, system_args: SystemArgs):
+    def __init__(self, user_args: RupsetReportArgs, runtime_args: TaskRuntimeArgs):
 
         self.user_args = user_args
-        self.system_args = system_args
+        self.runtime_args = runtime_args
 
         # setup the java gateway binding
-        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=system_args.java_gateway_port))
+        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=runtime_args.java_gateway_port))
         self.page_gen = self.gateway.entry_point.getReportPageGen()
         self.output_folder = PurePath(WORK_PATH)
 
@@ -64,7 +63,7 @@ class RupsetReportTask:
             json.dump(
                 dict(
                     user_args=self.user_args.model_dump(mode='json'),
-                    system_args=self.system_args.model_dump(mode='json'),
+                    runtime_args=self.runtime_args.model_dump(mode='json'),
                 ),
                 write_file,
                 indent=4,
@@ -83,7 +82,7 @@ class RupsetReportTask:
 
         if not SPOOF:
             self.page_gen.generateRupSetPage()
-            if self.system_args.use_api:
+            if self.runtime_args.use_api:
                 upload_to_bucket(user_args.source_solution_id, S3_REPORT_BUCKET, force_upload=True)
 
 
@@ -101,12 +100,12 @@ if __name__ == "__main__":
 
     # print(config)
     user_args = RupsetReportArgs(**config['task_args'])
-    system_args = SystemArgs(**config['task_system_args'])
-    task = RupsetReportTask(user_args, system_args)
+    runtime_args = TaskRuntimeArgs(**config['task_runtime_args'])
+    task = RupsetReportTask(user_args, runtime_args)
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(5)
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(system_args.task_count)
+    time.sleep(runtime_args.task_count)
 
     task.run()

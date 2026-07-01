@@ -25,7 +25,7 @@ asks otherwise.
     - `NZSHM22_TOSHI_COGNITO_DOMAIN`
 - **Job queue**: `BasicFargate_Q`
 
-`SystemArgs.ecs_job_definition` / `ecs_job_queue` (`runzi/arguments.py`) default to these two
+`SubmissionArgs.ecs_job_definition` / `ecs_job_queue` (`runzi/arguments.py`) default to these two
 names (`DEFAULT_JOB_DEFINITION` / `DEFAULT_JOB_QUEUE`), so task modules only need to set
 `ecs_memory` / `ecs_vcpu` / `ecs_max_job_time_min`. `get_ecs_job_config()`
 (`runzi/aws/aws.py`) validates every `vcpu`/`memory` pair against AWS's published Fargate
