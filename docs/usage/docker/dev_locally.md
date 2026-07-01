@@ -11,7 +11,7 @@ runzi utils docker-build --dev \
   --runzi-gitref <branch-or-commit>
 ```
 
-This builds `runzi-build:dev` locally. It does **not** push to ECR or update the AWS Batch job definition. The `FATJAR_TAG`, `OQ_VERSION`, and `PYTHON_VERSION` values from your `.env` are picked up automatically if present.
+This builds `runzi-build:dev` locally. It does **not** push to ECR or move any image tag. The `FATJAR_TAG`, `OQ_VERSION`, and `PYTHON_VERSION` values from your `.env` are picked up automatically if present.
 
 Rebuild whenever you change a dependency (openquake version, fatjar, nzshm-model, etc.). Pure Python changes to the `runzi/` source do **not** require a rebuild.
 

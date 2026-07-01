@@ -39,8 +39,11 @@ scientists publish code without holding deployer/god-admin credentials.
   removed provisioning actions (see the implementation plan's pre-apply verification gate).
 - Resource-scoping refinements (ECR push to `nzshm22/runzi`; `RegisterJobDefinition`/`SubmitJob`
   to specific ARNs) are deferred — some intersect the publish-workflow hardening (#324).
-- S3 stage-incorrect ARNs remain (#321); job-def ownership remains CLI-managed and self-serve,
-  which this ADR reinforces (#320).
+- S3 stage-incorrect ARNs are fixed (#321, PR #327 — stage-keyed `local.s3_data_buckets`). Job-def
+  ownership: this ADR reinforced CLI-managed self-serve, but
+  [0007](0007-job-definition-terraform-tag-publish.md) later moves the JD under Terraform via
+  floating tags and **drops `RegisterJobDefinition` + `iam:PassRole` from `runzi-admin`**
+  (#320/#324) — publishing stays self-serve as image-push, not JD-register.
 
 ## Files
 

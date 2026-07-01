@@ -1,9 +1,17 @@
-# runzi AWS Batch Terraform (Phase 1)
+# runzi AWS Batch Terraform
 
-Manages the **Fargate compute environment** and **`BasicFargate_Q` job queue** that runzi
-submits AWS Batch jobs to. See
+Manages the **Fargate compute environment**, the **`BasicFargate_Q` job queue**, and the two
+**job definitions** (`runzi-fargate-JD`, `runzi-fargate-experimental-JD`) that runzi submits AWS
+Batch jobs to. See
 [`docs/architecture/adr/0004-aws-batch-iac-terraform.md`](../../docs/architecture/adr/0004-aws-batch-iac-terraform.md)
-for the decision record, including why the job definition is deliberately **not** managed here.
+(compute env + queue) and
+[`docs/architecture/adr/0007-job-definition-terraform-tag-publish.md`](../../docs/architecture/adr/0007-job-definition-terraform-tag-publish.md)
+(job definitions via floating image tags) for the decision records.
+
+The job definitions track floating ECR tags (`:prod` / `:experimental`) rather than pinned
+digests, so they are static — they are **not** re-registered on a code deploy. Image content
+changes by moving the tag in ECR (`runzi utils docker-build` moves `:experimental`,
+`runzi utils promote` moves `:prod`), never by a `terraform apply`.
 
 Run everything in this directory (`terraform/batch/`) — it's a standalone Terraform root.
 
@@ -57,10 +65,34 @@ From the output, note:
 - Compute environment **name**, `maxvCpus`, `subnets`, `securityGroupIds` → `compute_environment_name`, `max_vcpus`, `subnets`, `security_group_ids`
 - Job queue **priority** → `job_queue_priority`
 
+For the job definitions, capture the live `Fargate-runzi-opensha-JD` shape — the new definitions
+must behave identically apart from the tagged image. This query surfaces every value you need:
+
+```bash
+aws batch describe-job-definitions --job-definition-name Fargate-runzi-opensha-JD \
+  --status ACTIVE --region us-east-1 \
+  --query 'jobDefinitions[0].containerProperties.{resourceRequirements:resourceRequirements, networkConfiguration:networkConfiguration, executionRoleArn:executionRoleArn, jobRoleArn:jobRoleArn, environment:environment}'
+```
+
+Map the `containerProperties` fields to variables:
+- `executionRoleArn` → `execution_role_arn`; `jobRoleArn` → `job_role_arn` (or `""` to omit).
+- `resourceRequirements` → the `VCPU` entry is `default_vcpu`, the `MEMORY` entry (MiB) is
+  `default_memory`. These are **resting defaults** (runzi overrides vCPU/memory per-job via
+  `containerOverrides`), but they must still form a **valid Fargate pair** or registration fails —
+  see `FARGATE_VCPU_MEMORY_MB` in `runzi/aws/aws.py`.
+- `networkConfiguration.assignPublicIp` → `assign_public_ip`. If the output has **no**
+  `networkConfiguration` block, set `assign_public_ip = ""` so the new definitions omit it too (AWS
+  treats absent as `DISABLED`).
+- static `environment` entries → `job_definition_environment`.
+- `image_repository` → the ECR repo URI **without** a tag.
+
 Copy `terraform.tfvars.example` to `terraform.tfvars` and fill these in (gitignored — it's
 environment-specific).
 
-## Adopting the existing resources
+## Adopting the compute env + queue, creating the job definitions
+
+The compute environment and queue already exist and are **imported**; the two job definitions are
+**new** (ADR-0007) and are **created** by apply.
 
 ```bash
 terraform init
@@ -69,10 +101,19 @@ terraform import aws_batch_job_queue.fargate <BasicFargate_Q-arn>
 terraform plan
 ```
 
-**`terraform plan` must show zero changes after import.** That's the proof the HCL faithfully
-describes the live resources — nothing will be destroyed or recreated. If it shows a diff, adjust
-`main.tf`/`terraform.tfvars` to match the live config (not the other way around) and re-plan
-until it's clean.
+**After import, `terraform plan` must show only the two `aws_batch_job_definition` resources to
+create** (and zero changes to the imported compute env + queue). That clean diff is the proof the
+HCL faithfully describes the live compute env/queue. If it shows changes to the imported resources,
+adjust `main.tf`/`terraform.tfvars` to match the live config (not the other way around) and re-plan
+until only the two creates remain.
+
+### Seed the tags first
+
+The job definitions reference `${image_repository}:prod` / `:experimental`, so those tags must
+exist in ECR before the definitions are usable. Seed them once from the current live image (the
+digest `Fargate-runzi-opensha-JD` points at), e.g. with `runzi utils promote --source <version-tag>`
+for `:prod` and a `runzi utils docker-build` (or a manual retag) for `:experimental`. After apply,
+re-running `terraform plan` should show zero changes.
 
 ## Day-to-day workflow
 
@@ -85,9 +126,18 @@ Running jobs are unaffected by `plan`/`import` (state-only operations) and by a 
 (no actual change to apply). Treat any non-empty `plan` on this root as worth understanding
 before applying — these resources back live job submission.
 
+## Retiring the old job definition
+
+The old `Fargate-runzi-opensha-JD` is replaced by `runzi-fargate-JD`. Once nothing resolves it
+(runzi's default is repointed and any in-flight submissions have drained), deregister it by hand —
+the same manual cleanup ADR-0004 uses for deleted Batch resources. It is not Terraform-managed, so
+there is nothing to remove from state.
+
 ## What this root does NOT manage
 
-- The job definition (`Fargate-runzi-opensha-JD`) — see the ADR for why.
+- The **image content** the job definitions run — that's published via `runzi utils docker-build`
+  / `runzi utils promote` moving the `:experimental` / `:prod` ECR tags (ADR-0007). This root owns
+  the definition *shape* and which tag it tracks, not the image.
 - IAM roles, VPC/subnets/security groups, the ECR repo, Secrets Manager secrets, Cognito — these
   are referenced by ID/name via variables, not created or imported here.
 - The Terraform state bucket itself (bootstrapped manually, above).

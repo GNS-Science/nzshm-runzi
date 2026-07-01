@@ -7,18 +7,16 @@
 # nshm-toshi-api.
 #
 # LEAST-PRIVILEGE MODEL (substrate vs code) - see
-# docs/architecture/adr/0006-runzi-access-tier-least-privilege.md:
-# aws_iam_policy.runzi_admin grants only CODE/PUBLISH powers: register the Batch job definition
-# (JobDefPublish), push the runzi image to ECR (ECRPush), and pass the task-execution role
-# (IAMAdmin). SUBSTRATE provisioning - compute-environment and job-queue admin, and Terraform
-# state - is NOT here: it is done by terraform/batch/ with DEPLOYER creds, never the federated
-# runzi-admin role.
-
-data "aws_caller_identity" "current" {}
+# docs/architecture/adr/0006-runzi-access-tier-least-privilege.md and
+# docs/architecture/adr/0007-job-definition-terraform-tag-publish.md:
+# aws_iam_policy.runzi_admin grants only CODE/PUBLISH power: push the runzi image to ECR (ECRPush).
+# Publishing is tag-based - docker-build moves the :experimental tag, promote moves :prod - so
+# scientists no longer register job definitions; ADR-0007 removed batch:RegisterJobDefinition
+# (JobDefPublish) and the iam:PassRole (IAMAdmin) it only existed to support. The job definitions
+# themselves are SUBSTRATE: owned by terraform/batch/ (DEPLOYER creds), tracking floating tags.
+# Compute-environment/job-queue admin and Terraform state are likewise NOT here.
 
 locals {
-  account_id = data.aws_caller_identity.current.account_id
-
   # Data buckets the runzi tiers read/write. Names do NOT follow a <root>-<stage> convention
   # (standardizing them has a large blast radius — out of scope, see #321), so encode them per
   # stage explicitly rather than interpolating var.stage. This is the stage-keyed-locals fallback
@@ -107,18 +105,10 @@ resource "aws_iam_policy" "runzi_admin" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      # ── Code/publish powers only (see ADR-0006). JobDefPublish + ECRPush let runzi-admin
-      #    scientists self-serve a new image + job-definition revision; IAMAdmin's iam:PassRole is
-      #    required by RegisterJobDefinition to embed the task-execution role. ECR is scoped to the
-      #    real nzshm22/* repo. Substrate (compute-env/queue/state) is deployer-only, not here.
-      {
-        Sid    = "JobDefPublish"
-        Effect = "Allow"
-        Action = [
-          "batch:RegisterJobDefinition",
-        ]
-        Resource = "*"
-      },
+      # ── Code/publish power only (see ADR-0006, ADR-0007). Publishing is tag-based: docker-build
+      #    pushes the image + moves :experimental, promote moves :prod (both ECR PutImage). The
+      #    Terraform-owned job definitions track those tags, so runzi-admin no longer needs
+      #    batch:RegisterJobDefinition or the iam:PassRole it required. ECR is scoped to nzshm22/*.
       {
         Sid    = "ECRPush"
         Effect = "Allow"
@@ -132,16 +122,6 @@ resource "aws_iam_policy" "runzi_admin" {
         ]
         Resource = [
           "arn:aws:ecr:*:*:repository/nzshm22/*",
-        ]
-      },
-      {
-        Sid    = "IAMAdmin"
-        Effect = "Allow"
-        Action = [
-          "iam:PassRole",
-        ]
-        Resource = [
-          "arn:aws:iam::${local.account_id}:role/toshi_batch_ECS_TaskExecution",
         ]
       },
     ]
