@@ -135,3 +135,6 @@ audit.txt
 
 # llm-logging-convention
 .llm/.session
+
+# scratch
+scratch/
