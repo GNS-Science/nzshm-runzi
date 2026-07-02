@@ -9,6 +9,7 @@ from typer.core import TyperGroup
 from runzi.automation import local_config
 from runzi.automation.local_config import ClusterModeEnum
 from runzi.cli import (
+    batch_cli,
     docker_wrapper,
     hazard_cli,
     inversion_cli,
@@ -125,6 +126,7 @@ app.add_typer(inversion_post_process_cli.app, name="ipp", help="inversion post p
 app.add_typer(rupture_sets_cli.app, name="rupset", help="create rupture sets", no_args_is_help=True)
 app.add_typer(reports_cli.app, name="reports", help="create inversion and rupture set reports", no_args_is_help=True)
 app.add_typer(utils_cli.app, name="utils", help="utilities", no_args_is_help=True)
+app.add_typer(batch_cli.app, name="batch", help="inspect AWS Batch jobs for a general task", no_args_is_help=True)
 
 
 if __name__ == "__main__":

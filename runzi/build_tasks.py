@@ -23,6 +23,7 @@ from runzi.automation.local_config import (
 from runzi.automation.opensha_task_factory import get_factory
 from runzi.automation.toshi_api import ModelType
 from runzi.aws import get_ecs_job_config, resolve_job_definition_digest
+from runzi.aws.batch_query import batch_job_name
 from runzi.protocols import ModuleWithDefaultSubmissionArgs
 
 INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
@@ -75,12 +76,15 @@ def build_tasks(
         if local_config.CLUSTER_MODE is ClusterModeEnum.AWS:
             container_task = task_factory.get_container_task()
 
-            job_name = f"{job_name}-{task_count}"
+            # Encode the general_task_id into the job name so `runzi batch` can find this task's jobs
+            # via a list_jobs JOB_NAME prefix filter (issue #326). Derive from the base `job_name` each
+            # iteration — never reassign it, or the base would compound across tasks (job-1, job-1-2, …).
+            task_job_name = batch_job_name(general_task_id, job_name, task_count)
 
             yield get_ecs_job_config(
                 container_task=container_task,
                 model_type=model_type,
-                job_name=job_name,
+                job_name=task_job_name,
                 task_args=task_args,
                 task_runtime_args=task_runtime_args,
                 toshi_api_url=API_URL,
