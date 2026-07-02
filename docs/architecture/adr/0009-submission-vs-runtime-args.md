@@ -40,10 +40,12 @@ by `build_tasks` (it's the one worker-read field that originates from a module's
   branch before submitting with the new code.
 - **The config override key is renamed `sys_arg_overrides` → `submission_arg_overrides`** for
   consistency: it overrides `SubmissionArgs` fields. This is a **breaking config-schema change** (a
-  clean break, no alias — a config still using the old key is rejected as an unknown field by the
-  task-args `extra='forbid'` validation). Overriding a runtime field
-  (e.g. `use_api`) was already meaningless (`use_api` is forced from `local_config.USE_API` at submit
-  time) and now has no field to bind to; runtime context is assembled in `build_tasks`.
+  clean break, no alias). `ArgSweeper.from_config_file` (not itself a pydantic model — it does no
+  validation) pops only the new key, so a leftover `sys_arg_overrides` stays in the config dict that
+  is then handed to the *task-args* model via `args_class.model_validate(data, extra='forbid')`; that
+  pydantic validation rejects it as an unknown field. Overriding a runtime field (e.g. `use_api`) was
+  already meaningless (`use_api` is forced from `local_config.USE_API` at submit time) and now has no
+  field to bind to; runtime context is assembled in `build_tasks`.
 - `ComputeEnvironment | None` on `SubmissionArgs.ecs_compute_environment` reverts the `| str` union
   hack (ADR-0008's serialization workaround) — the raw-string setattr path from
   `submission_arg_overrides` is still tolerated by `resolved_compute_environment` and
