@@ -6,9 +6,9 @@ from zipfile import ZipFile
 import git
 from pydantic import BaseModel, model_validator
 
-from runzi.arguments import SystemArgs, TaskLanguage
+from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.file_utils import download_files, get_output_file_id
-from runzi.automation.local_config import USE_API, WORK_PATH
+from runzi.automation.local_config import WORK_PATH
 from runzi.automation.toshi_api import ModelType
 from runzi.tasks.get_config import get_config
 from runzi.tasks.inversion.inversion_solution_builder import InversionArgs, InversionSolutionBuilder
@@ -17,9 +17,8 @@ from runzi.tasks.validators import all_or_none
 if TYPE_CHECKING:
     from py4j.java_gateway import JavaObject
 
-default_system_args = SystemArgs(
+default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
-    use_api=USE_API,
     # java_threads is only used for pbs mode, which is not supported anymore.
     # It should be set to selector_threads * averaging_threads, but this would need to be done task by task if they
     # are swept args. It would be possible to add some inversion specific code to the build_tasks function or find the
@@ -192,12 +191,12 @@ if __name__ == "__main__":
 
     # print(config)
     user_args = CrustalInversionArgs(**config['task_args'])
-    system_args = SystemArgs(**config['task_system_args'])
-    task = CrustalInversionSolutionBuilder(user_args, system_args, ModelType.CRUSTAL)
+    runtime_args = TaskRuntimeArgs(**config['task_runtime_args'])
+    task = CrustalInversionSolutionBuilder(user_args, runtime_args, ModelType.CRUSTAL)
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(3)
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(system_args.task_count)
+    time.sleep(runtime_args.task_count)
 
     task.run()

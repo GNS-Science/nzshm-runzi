@@ -3,4 +3,4 @@
       show_source: false
       inherited_members: true
 
-::: runzi.tasks.average_solutions.average_solutions_task.default_system_args
+::: runzi.tasks.average_solutions.average_solutions_task.default_submission_args

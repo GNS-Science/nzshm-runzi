@@ -70,15 +70,15 @@ The core execution pipeline is:
 
 ### Key Abstractions
 
-**`SystemArgs`** (`runzi/arguments.py`): Pydantic model for environment/runtime config (ECS sizing, API toggles, gateway port). Each task module defines a module-level `default_system_args` instance.
+**`SubmissionArgs` / `TaskRuntimeArgs`** (`runzi/arguments.py`): the submission↔worker arg split (ADR-0009). `SubmissionArgs` is the submitter-only config (ECS sizing, job definition, queue/compute env, task language) that each task module declares as a module-level `default_submission_args` instance and is **not** serialized to the worker. `TaskRuntimeArgs` is the small per-task context the worker needs (`general_task_id`, `task_count`, `use_api`, `java_gateway_port`, `java_threads`); it's assembled in `build_tasks` and is the only args model shipped to the container.
 
 **Task-specific `*Args`** classes: Pydantic models for user-provided job parameters (e.g., `OQHazardArgs` in `runzi/tasks/oq_hazard/hazard_args.py`).
 
-**`ArgSweeper`**: Parses JSON config files with optional `swept_args` dict, generating all combinations as separate tasks. Config files have `title`, `description`, optional `swept_args`, and optional `sys_arg_overrides` fields alongside the task args.
+**`ArgSweeper`**: Parses JSON config files with optional `swept_args` dict, generating all combinations as separate tasks. Config files have `title`, `description`, optional `swept_args`, and optional `submission_arg_overrides` fields alongside the task args.
 
 **Task Factory pattern** (`runzi/automation/opensha_task_factory.py`, `python_task_factory.py`): Produces bash scripts (LOCAL), PBS scripts (CLUSTER), or AWS Batch configs (AWS) depending on the `--cluster-mode` CLI flag. Java-based tasks use `OpenshaTaskFactory`; Python-only tasks use `PythonTaskFactory`.
 
-**`ModuleWithDefaultSysArgs` protocol** (`runzi/protocols.py`): Task modules must expose a `default_system_args: SystemArgs` attribute and `__name__`, so the factory can locate the task script file and obtain ECS defaults.
+**`ModuleWithDefaultSubmissionArgs` protocol** (`runzi/protocols.py`): Task modules must expose a `default_submission_args: SubmissionArgs` attribute and `__name__`, so the factory can locate the task script file and obtain ECS defaults.
 
 ### Directory Structure
 
@@ -92,7 +92,7 @@ runzi/
 ├── automation/       # Task factories, toshi API client wrappers, scheduling
 │   └── toshi_api/    # GraphQL API clients for general tasks, hazard tasks, solutions
 ├── aws/              # AWS ECS job config builder and S3 utilities
-├── arguments.py      # SystemArgs, ArgSweeper
+├── arguments.py      # SubmissionArgs, TaskRuntimeArgs, ArgSweeper
 ├── build_tasks.py    # Iterates ArgSweeper, dispatches to task factory
 ├── job_runner.py     # Abstract JobRunner base class
 └── protocols.py      # ModuleWithDefaultSysArgs protocol
@@ -135,7 +135,7 @@ Runtime configuration is via environment variables (loaded from `.env` by python
 
 1. Create a directory under `runzi/tasks/<task_name>/`
 2. Define a Pydantic `*Args` model for user parameters
-3. Implement the task module with a `default_system_args` module-level instance and `if __name__ == "__main__":` entry point that calls `get_config()` then runs the task
+3. Implement the task module with a `default_submission_args` module-level instance (a `SubmissionArgs`) and `if __name__ == "__main__":` entry point that calls `get_config()`, rebuilds a `TaskRuntimeArgs` from `config['task_runtime_args']`, then runs the task
 4. Create a `*Runner` subclass of `JobRunner` that sets `subtask_type`, `job_name`, and implements `get_model_type()`
 5. Wire up a CLI command in `runzi/cli/` using Typer
 

@@ -1,10 +1,10 @@
 from typing import Protocol
 
-from runzi.arguments import SystemArgs
+from runzi.arguments import SubmissionArgs
 
 
-class ModuleWithDefaultSysArgs(Protocol):
-    """Protocol for task modules that provide default system arguments."""
+class ModuleWithDefaultSubmissionArgs(Protocol):
+    """Protocol for task modules that provide default submission arguments."""
 
-    default_system_args: SystemArgs
+    default_submission_args: SubmissionArgs
     __name__: str

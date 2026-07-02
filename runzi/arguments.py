@@ -3,7 +3,7 @@ import json
 from collections.abc import Generator, Sequence
 from enum import Enum
 from pathlib import Path
-from typing import Any, Self
+from typing import Any, NamedTuple, Self
 
 from pydantic import BaseModel
 
@@ -19,7 +19,7 @@ class ComputeEnvironment(Enum):
     """Which AWS Batch compute target a job runs on.
 
     Fargate is the default for every task; EC2 is an explicit per-job opt-in (set via a config
-    file's sys_arg_overrides) for jobs that need a size or instance feature Fargate can't
+    file's submission_arg_overrides) for jobs that need a size or instance feature Fargate can't
     provide. See docs/usage/aws_batch.md.
     """
 
@@ -30,14 +30,14 @@ class ComputeEnvironment(Enum):
 # Canonical AWS Batch compute targets. All tasks default to a single Fargate compute environment and
 # queue (see docs/architecture/adr/0003-aws-batch-compute-consolidation.md). The job definitions are
 # Terraform-owned and track stable image tags (:prod / :experimental); the default resolves to the
-# prod definition. Override ecs_job_definition (e.g. via sys_arg_overrides) with
+# prod definition. Override ecs_job_definition (e.g. via submission_arg_overrides) with
 # EXPERIMENTAL_JOB_DEFINITION to run the experimental image
 # (see docs/architecture/adr/0007-job-definition-terraform-tag-publish.md).
 DEFAULT_JOB_DEFINITION = "runzi-fargate-JD"
 EXPERIMENTAL_JOB_DEFINITION = "runzi-fargate-experimental-JD"
 DEFAULT_JOB_QUEUE = "BasicFargate_Q"
 
-# The EC2 compute target mirrors Fargate for jobs that opt in via sys_arg_overrides
+# The EC2 compute target mirrors Fargate for jobs that opt in via submission_arg_overrides
 # (ecs_compute_environment: ec2, plus ecs_job_queue / ecs_job_definition set to the EC2 names
 # below). One On-Demand EC2 compute environment + queue + two Terraform-owned job definitions that
 # track the same :prod / :experimental tags as their Fargate counterparts
@@ -47,23 +47,89 @@ EC2_EXPERIMENTAL_JOB_DEFINITION = "runzi-ec2-experimental-JD"
 EC2_JOB_QUEUE = "runzi-ec2-Q"
 
 
-class SystemArgs(BaseModel):
-    task_language: TaskLanguage
-    general_task_id: str | None = None
-    task_count: int = 0
-    use_api: bool
+class BatchTarget(NamedTuple):
+    """The job queue and compute-environment type a given job definition must run on."""
 
-    java_threads: int | None = None  # only used for pbs mode, which is not supported anymore
+    job_queue: str
+    compute_environment: ComputeEnvironment
+
+
+# Each canonical job definition has exactly one correct queue + compute-environment type, so a user
+# only needs to pick the job definition; the queue and type are derived from it (see
+# SubmissionArgs.resolved_job_queue / resolved_compute_environment). An unknown/custom job definition
+# falls back to DEFAULT_BATCH_TARGET (Fargate), so behaviour is unchanged unless a config explicitly
+# sets ecs_job_queue / ecs_compute_environment.
+JOB_DEFINITION_TARGETS: dict[str, BatchTarget] = {
+    DEFAULT_JOB_DEFINITION: BatchTarget(DEFAULT_JOB_QUEUE, ComputeEnvironment.FARGATE),
+    EXPERIMENTAL_JOB_DEFINITION: BatchTarget(DEFAULT_JOB_QUEUE, ComputeEnvironment.FARGATE),
+    EC2_JOB_DEFINITION: BatchTarget(EC2_JOB_QUEUE, ComputeEnvironment.EC2),
+    EC2_EXPERIMENTAL_JOB_DEFINITION: BatchTarget(EC2_JOB_QUEUE, ComputeEnvironment.EC2),
+}
+DEFAULT_BATCH_TARGET = BatchTarget(DEFAULT_JOB_QUEUE, ComputeEnvironment.FARGATE)
+
+
+class SubmissionArgs(BaseModel):
+    """Config the local submitter uses to shape and submit the AWS Batch job.
+
+    Declared per task module (see each module's ``default_submission_args``) and read only on the
+    submitter side (build_tasks / job_runner / the task factories / get_ecs_job_config). It is NOT
+    serialized to the worker — the worker gets a TaskRuntimeArgs instead. Splitting these apart keeps
+    submission-only fields out of the worker's validation surface (see
+    docs/architecture/adr/0009-submission-vs-runtime-args.md).
+    """
+
+    task_language: TaskLanguage
+
+    # Declared per Java task module; the worker reads it, so build_tasks copies it into TaskRuntimeArgs.
+    java_threads: int | None = None
     jvm_heap_max: int | None = None
-    java_gateway_port: int | None = None
 
     ecs_max_job_time_min: int
     ecs_memory: int
     ecs_vcpu: int
     ecs_job_definition: str = DEFAULT_JOB_DEFINITION
-    ecs_job_queue: str = DEFAULT_JOB_QUEUE
-    ecs_compute_environment: ComputeEnvironment = ComputeEnvironment.FARGATE
+    # None on ecs_job_queue / ecs_compute_environment means "derive from ecs_job_definition"; set
+    # explicitly (e.g. via submission_arg_overrides) only to override the queue/compute-environment the job
+    # definition would otherwise select. Read the resolved values via resolved_job_queue /
+    # resolved_compute_environment. (submission_arg_overrides' setattr path can leave a raw string on
+    # ecs_compute_environment; resolved_compute_environment and get_ecs_job_config tolerate that.)
+    ecs_job_queue: str | None = None
+    ecs_compute_environment: ComputeEnvironment | None = None
     ecs_extra_env: list[BatchEnvironmentSetting] | None = None
+
+    @property
+    def resolved_job_queue(self) -> str:
+        """The job queue to submit to: the explicit override, else the one the job definition selects."""
+        if self.ecs_job_queue is not None:
+            return self.ecs_job_queue
+        return JOB_DEFINITION_TARGETS.get(self.ecs_job_definition, DEFAULT_BATCH_TARGET).job_queue
+
+    @property
+    def resolved_compute_environment(self) -> 'ComputeEnvironment | str':
+        """The compute-environment type: the explicit override, else the one the job definition selects.
+
+        May be a raw string when set via submission_arg_overrides' setattr path (which bypasses pydantic
+        coercion); get_ecs_job_config tolerates both the enum and the string.
+        """
+        if self.ecs_compute_environment is not None:
+            return self.ecs_compute_environment
+        return JOB_DEFINITION_TARGETS.get(self.ecs_job_definition, DEFAULT_BATCH_TARGET).compute_environment
+
+
+class TaskRuntimeArgs(BaseModel):
+    """Per-task context the worker needs at execution time.
+
+    Assembled by the submitter (build_tasks) and serialized to the worker under the
+    ``task_runtime_args`` config key; the worker rebuilds it in each task module's ``__main__``. This
+    is the only args model that crosses the submitter->worker boundary, so it must stay small and
+    evolve compatibly with deployed images (see docs/architecture/adr/0009-submission-vs-runtime-args.md).
+    """
+
+    general_task_id: str | None = None
+    task_count: int = 0
+    use_api: bool
+    java_gateway_port: int | None = None
+    java_threads: int | None = None
 
 
 class ArgSweeper:
@@ -75,7 +141,7 @@ class ArgSweeper:
         swept_args: dict[str, Sequence[Any]],
         title: str,
         description: str,
-        sys_arg_overrides: dict[str, Any] | None = None,
+        submission_arg_overrides: dict[str, Any] | None = None,
     ):
         """Initialize a SweptArgs instance.
 
@@ -84,14 +150,14 @@ class ArgSweeper:
             swept_args: A dictionary of argument names to lists of values to be swept.
             title: The title for the job.
             description: The description for the job.
-            sys_arg_overrides: System arguments to override from the default of the JobRunner.
+            submission_arg_overrides: SubmissionArgs fields to override from the JobRunner default.
         """
 
         self.prototype_args = prototype_args
         self.swept_args = swept_args
         self.title = title
         self.description = description
-        self.sys_arg_overrides = sys_arg_overrides or {}
+        self.submission_arg_overrides = submission_arg_overrides or {}
 
     @classmethod
     def from_config_file(cls, config_file: Path | str, args_class: type[BaseModel]) -> Self:
@@ -115,7 +181,7 @@ class ArgSweeper:
         title = data.pop("title")
         description = data.pop("description")
         swept_args = data.pop("swept_args", {})
-        sys_arg_overrides = data.pop("sys_arg_overrides", {})
+        submission_arg_overrides = data.pop("submission_arg_overrides", {})
 
         if swept_args:
             for k, v in swept_args.items():
@@ -130,7 +196,7 @@ class ArgSweeper:
             data, extra='forbid', context={"base_path": Path(config_file).parent.resolve()}
         )
 
-        return cls(prototype, swept_args, title, description, sys_arg_overrides)
+        return cls(prototype, swept_args, title, description, submission_arg_overrides)
 
     def get_tasks(self) -> Generator[BaseModel, None, None]:
         """Generate all combinations of swept arguments as job argument objects.

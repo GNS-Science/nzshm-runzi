@@ -9,9 +9,9 @@ from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel
 
-from runzi.arguments import SystemArgs, TaskLanguage
+from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.file_utils import download_files, get_output_file_id
-from runzi.automation.local_config import API_URL, S3_URL, SPOOF, USE_API, WORK_PATH, get_auth_kwargs
+from runzi.automation.local_config import API_URL, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ModelType, SubtaskType, ToshiApi
 from runzi.tasks.get_config import get_config
 
@@ -28,9 +28,8 @@ logging.getLogger('gql.transport').setLevel(logging.WARN)
 
 log = logging.getLogger(__name__)
 
-default_system_args = SystemArgs(
+default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
-    use_api=USE_API,
     java_threads=16,
     jvm_heap_max=32,
     ecs_max_job_time_min=10,
@@ -52,16 +51,16 @@ class TimeDependentSolutionArgs(BaseModel):
 class TimeDependentSolutionTask:
     """The python client for time dependent rate scaling."""
 
-    def __init__(self, user_args: TimeDependentSolutionArgs, system_args: SystemArgs, model_type: ModelType):
+    def __init__(self, user_args: TimeDependentSolutionArgs, runtime_args: TaskRuntimeArgs, model_type: ModelType):
 
-        self.use_api = system_args.use_api
+        self.use_api = runtime_args.use_api
         self.output_folder = WORK_PATH
-        self.system_args = system_args
+        self.runtime_args = runtime_args
         self.user_args = user_args
         self.model_type = model_type
 
         # setup the java gateway binding
-        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=self.system_args.java_gateway_port))
+        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=self.runtime_args.java_gateway_port))
         self.time_dependent_generator = self.gateway.entry_point.getTimeDependentRatesGenerator()
 
         self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
@@ -88,7 +87,7 @@ class TimeDependentSolutionTask:
             )
 
             # link automation task to the parent general task
-            self.task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
+            self.task_relation_api.create_task_relation(self.runtime_args.general_task_id, task_id)
 
             # link task to the input solution
             input_file_id = self.user_args.source_solution_id
@@ -128,10 +127,10 @@ class TimeDependentSolutionTask:
             self.toshi_api.automation_task.complete_task(done_args)
 
             # add the log files
-            # pyth_log_file = self.output_folder.joinpath(f"python_script.{self.system_args.java_gateway_port}.log")
+            # pyth_log_file = self.output_folder.joinpath(f"python_script.{self.runtime_args.java_gateway_port}.log")
             # self.toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
-            java_log_file = self.output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
+            java_log_file = self.output_folder.joinpath(f"java_app.{self.runtime_args.java_gateway_port}.log")
             self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
 
             # get the predecessors
@@ -163,14 +162,14 @@ if __name__ == "__main__":
     config = get_config()
 
     user_args = TimeDependentSolutionArgs(**config['task_args'])
-    system_args = SystemArgs(**config['task_system_args'])
+    runtime_args = TaskRuntimeArgs(**config['task_runtime_args'])
     model_type = ModelType(config['model_type'])
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(3)
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(system_args.task_count)
+    time.sleep(runtime_args.task_count)
 
     # print(config)
-    task = TimeDependentSolutionTask(user_args, system_args, model_type)
+    task = TimeDependentSolutionTask(user_args, runtime_args, model_type)
     task.run()

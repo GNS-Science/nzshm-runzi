@@ -161,7 +161,7 @@ terraform plan   # should add: aws_batch_compute_environment.ec2, aws_batch_job_
 terraform apply
 ```
 
-Smoke-test before retiring anything: submit a small job with a config whose `sys_arg_overrides`
+Smoke-test before retiring anything: submit a small job with a config whose `submission_arg_overrides`
 sets `ecs_job_definition: runzi-ec2-JD` (the queue and compute-environment type derive from it), and
 confirm it reaches `RUNNING` on EC2.
 

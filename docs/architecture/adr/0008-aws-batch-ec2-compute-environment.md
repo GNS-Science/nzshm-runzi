@@ -100,6 +100,26 @@ partly deployer-credentialed (same posture as ADR-0004/0007):
 - **Ergonomic EC2/`--experimental` submission flag** — still deferred (ADR-0007); EC2 opt-in uses
   `sys_arg_overrides` until the JD/compute-env set is confirmed stable, which this ADR advances.
 
+## Addendum: queue + compute-environment derive from the job definition
+
+Smoke-testing the EC2 target showed that requiring a user to set `ecs_job_definition`,
+`ecs_job_queue`, **and** `ecs_compute_environment` consistently is friction and a foot-gun (an EC2
+job definition submitted to the Fargate queue sits in `RUNNABLE` forever). Each canonical job
+definition has exactly one correct queue + compute-environment type, so **the user now picks only
+the job definition; the queue and compute-environment type derive from it.** A `JOB_DEFINITION_TARGETS`
+registry in `runzi/arguments.py` maps each canonical job definition to its `BatchTarget(job_queue,
+compute_environment)`; `ecs_job_queue` / `ecs_compute_environment` become `None`-default *override
+inputs*, and `SystemArgs.resolved_job_queue` / `resolved_compute_environment` return the explicit
+override if set, else the job definition's target. An unknown/custom job definition falls back to
+the Fargate target, so behaviour is unchanged unless a config explicitly sets those fields.
+
+The derivation lives on the model as **compute-on-read properties**, not a `model_validator`,
+because `sys_arg_overrides` are applied by `setattr` after construction (`runzi/job_runner.py`) and
+pydantic doesn't re-run validators on assignment — a stored/validated value would go stale when the
+job definition is overridden. A pure read-time resolver is never stale and needs no cooperation from
+callers. This refines ADR-0003's addendum further: EC2 is still opt-in, but no longer
+"fully config-driven" — the canonical names carry their own routing.
+
 ## Files
 
 - `terraform/batch/main.tf` — `aws_batch_compute_environment.ec2`, `aws_batch_job_queue.ec2`,
@@ -108,7 +128,10 @@ partly deployer-credentialed (same posture as ADR-0004/0007):
 - `terraform/batch/variables.tf`, `outputs.tf`, `terraform.tfvars.example` — the EC2 variables
   (instance role, max vCPUs, instance types, allocation strategy, names, resting sizing), the four
   EC2 ARN outputs, and the `TODO`-marked discovery section.
-- `runzi/arguments.py` — `EC2_JOB_DEFINITION`, `EC2_EXPERIMENTAL_JOB_DEFINITION`, `EC2_JOB_QUEUE`.
+- `runzi/arguments.py` — `EC2_JOB_DEFINITION`, `EC2_EXPERIMENTAL_JOB_DEFINITION`, `EC2_JOB_QUEUE`;
+  the `BatchTarget` / `JOB_DEFINITION_TARGETS` registry and `SystemArgs.resolved_job_queue` /
+  `resolved_compute_environment` properties (addendum). `runzi/build_tasks.py` reads the resolved
+  properties.
 - `docs/usage/aws_batch.md` — EC2 target, canonical names, when to use EC2 vs Fargate.
 - `terraform/batch/README.md` — EC2 discovery + apply-order + legacy-retirement runbook.
 - [0003](0003-aws-batch-compute-consolidation.md) — its addendum's "no canonical EC2 names" point is

@@ -11,15 +11,14 @@ from nshm_toshi_client.task_relation import TaskRelation  # TODO deprecate
 from pydantic import BaseModel
 
 import runzi
-from runzi.arguments import SystemArgs, TaskLanguage
+from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.file_utils import download_files, get_output_file_id
-from runzi.automation.local_config import API_URL, OQ_VENV, S3_URL, SPOOF, USE_API, WORK_PATH, get_auth_kwargs
+from runzi.automation.local_config import API_URL, OQ_VENV, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ModelType, SubtaskType, ToshiApi
 from runzi.tasks.get_config import get_config
 
-default_system_args = SystemArgs(
+default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.PYTHON,
-    use_api=USE_API,
     ecs_max_job_time_min=30,
     ecs_memory=30720,
     ecs_vcpu=4,
@@ -35,12 +34,12 @@ class OQConvertArgs(BaseModel):
 
 
 class OQConvertTask:
-    def __init__(self, user_args: OQConvertArgs, system_args: SystemArgs, model_type: ModelType):
+    def __init__(self, user_args: OQConvertArgs, runtime_args: TaskRuntimeArgs, model_type: ModelType):
 
         self.user_args = user_args
-        self.system_args = system_args
+        self.runtime_args = runtime_args
         self.model_type = model_type
-        self.use_api = system_args.use_api
+        self.use_api = runtime_args.use_api
 
         self.toshi_api = ToshiApi(API_URL, S3_URL, None, with_schema_validation=False, **get_auth_kwargs())
         self.task_relation_api = TaskRelation(API_URL, None, with_schema_validation=False, **get_auth_kwargs())
@@ -122,7 +121,7 @@ class OQConvertTask:
             )
 
             # link task to the parent task
-            self.task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
+            self.task_relation_api.create_task_relation(self.runtime_args.general_task_id, task_id)
 
             # link task to the input solution
             if self.user_args.source_solution_id:
@@ -199,12 +198,12 @@ if __name__ == "__main__":
     config = get_config()
 
     user_args = OQConvertArgs(**config['task_args'])
-    system_args = SystemArgs(**config['task_system_args'])
+    runtime_args = TaskRuntimeArgs(**config['task_runtime_args'])
     model_type = ModelType(config['model_type'])
 
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(system_args.task_count)
+    time.sleep(runtime_args.task_count)
 
     # print(config)
-    task = OQConvertTask(user_args, system_args, model_type)
+    task = OQConvertTask(user_args, runtime_args, model_type)
     task.run()

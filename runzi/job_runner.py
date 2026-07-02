@@ -7,13 +7,13 @@ from abc import ABC, abstractmethod
 from multiprocessing.dummy import Pool
 from subprocess import check_call
 
-from runzi.arguments import ArgSweeper, SystemArgs
+from runzi.arguments import ArgSweeper, SubmissionArgs
 from runzi.automation import local_config
 from runzi.automation.local_config import WORKER_POOL_SIZE, ClusterModeEnum
 from runzi.automation.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType
 from runzi.aws.session import get_session
 from runzi.build_tasks import build_tasks
-from runzi.protocols import ModuleWithDefaultSysArgs
+from runzi.protocols import ModuleWithDefaultSubmissionArgs
 
 from .tasks.toshi_utils import get_toshi_api
 
@@ -34,7 +34,7 @@ class JobRunner(ABC):
     subtask_type: SubtaskType
     job_name: str
 
-    def __init__(self, argument_sweeper: ArgSweeper, task_module: ModuleWithDefaultSysArgs):
+    def __init__(self, argument_sweeper: ArgSweeper, task_module: ModuleWithDefaultSubmissionArgs):
         """Initialize the JobRunner.
 
         Args:
@@ -43,16 +43,14 @@ class JobRunner(ABC):
         """
         self.argument_sweeper = argument_sweeper
         self.task_module = task_module
-        self.default_sys_args: SystemArgs = task_module.default_system_args
+        self.default_submission_args: SubmissionArgs = task_module.default_submission_args
 
-    def set_system_args(self, general_task_id: str | None = None) -> SystemArgs:
+    def set_submission_args(self) -> SubmissionArgs:
         # make a copy here only to make it clear that we have modified it
-        system_args = self.default_sys_args.model_copy(deep=True)
-        system_args.general_task_id = general_task_id
-        system_args.use_api = local_config.USE_API
-        for name, value in self.argument_sweeper.sys_arg_overrides.items():
-            setattr(system_args, name, value)
-        return system_args
+        submission_args = self.default_submission_args.model_copy(deep=True)
+        for name, value in self.argument_sweeper.submission_arg_overrides.items():
+            setattr(submission_args, name, value)
+        return submission_args
 
     @abstractmethod
     def get_model_type(self) -> ModelType:
@@ -95,12 +93,12 @@ class JobRunner(ABC):
             general_task_id = get_toshi_api().general_task.create_task(gt_args)
 
         print("GENERAL_TASK_ID:", general_task_id)
-        system_args = self.set_system_args(general_task_id)
+        submission_args = self.set_submission_args()
 
         scripts = [
             script_file
             for script_file in build_tasks(
-                self.argument_sweeper, system_args, self.task_module, model_type, self.job_name
+                self.argument_sweeper, submission_args, self.task_module, model_type, self.job_name, general_task_id
             )
         ]
         if local_config.USE_API:

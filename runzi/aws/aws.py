@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from pydantic import BaseModel
 
-    from runzi.arguments import ComputeEnvironment, SystemArgs
+    from runzi.arguments import ComputeEnvironment, TaskRuntimeArgs
 
 BatchEnvironmentSetting = collections.namedtuple('BatchEnvironmentSetting', 'name value')
 
@@ -208,7 +208,7 @@ def get_ecs_job_config(
     container_task: str,
     model_type: 'ModelType',
     task_args: 'BaseModel',
-    task_system_args: 'SystemArgs',
+    task_runtime_args: 'TaskRuntimeArgs',
     toshi_api_url: str,
     toshi_s3_url: str,
     toshi_report_bucket: str,
@@ -229,8 +229,8 @@ def get_ecs_job_config(
     ths_rlz_db = ths_rlz_db or '/WORKING/THS_RLZ'
     ths_disagg_rlz_db = ths_disagg_rlz_db or '/WORKING/THS_DISAGG_RLZ'
     ecr_digest = ecr_digest or "sha256:NOT_SET"
-    task_config = get_task_config(task_args, task_system_args, model_type)
-    # compute_environment may be the ComputeEnvironment enum or a raw string (sys_arg_overrides
+    task_config = get_task_config(task_args, task_runtime_args, model_type)
+    # compute_environment may be the ComputeEnvironment enum or a raw string (submission_arg_overrides
     # applies config-file overrides via setattr, which bypasses pydantic coercion).
     compute_target = getattr(compute_environment, 'value', compute_environment)
     if compute_target == 'ec2':

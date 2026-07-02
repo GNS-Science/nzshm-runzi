@@ -14,7 +14,7 @@ from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway, JavaObject
 from pydantic import BaseModel, model_validator
 
-from runzi.arguments import SystemArgs
+from runzi.arguments import TaskRuntimeArgs
 from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import API_URL, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ModelType, ToshiApi
@@ -206,14 +206,14 @@ class InversionSolutionBuilder(ABC):
     Configure the python client for a InversionTask
     """
 
-    def __init__(self, user_args: InversionArgs, system_args: SystemArgs, model_type: ModelType):
+    def __init__(self, user_args: InversionArgs, runtime_args: TaskRuntimeArgs, model_type: ModelType):
 
         self.user_args = user_args
-        self.system_args = system_args
+        self.runtime_args = runtime_args
         self.model_type = model_type
 
         # setup the java gateway binding
-        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=system_args.java_gateway_port))
+        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=runtime_args.java_gateway_port))
         # repos = ["opensha", "nzshm-opensha", "nzshm-runzi"]
         # self._repoheads = get_repo_heads(PurePath(job_args['root_folder']), repos)
         self.output_folder = WORK_PATH
@@ -304,7 +304,7 @@ class InversionSolutionBuilder(ABC):
         time.sleep(0.2)
 
         # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-        time.sleep(self.system_args.task_count * 0.01)
+        time.sleep(self.runtime_args.task_count * 0.01)
         self.inversion_runner = self._get_runner()
 
         rupture_set_id = self.user_args.rupture_set.rupture_set_id
@@ -322,8 +322,8 @@ class InversionSolutionBuilder(ABC):
 
         environment = {"host": platform.node(), "nzshm-opensha.version": API_GitVersion}
 
-        if self.system_args.use_api:
-            general_task_id = self.system_args.general_task_id
+        if self.runtime_args.use_api:
+            general_task_id = self.runtime_args.general_task_id
             # create new task in toshi_api
             task_id = self.toshi_api.automation_task.create_task(
                 dict(
@@ -399,7 +399,7 @@ class InversionSolutionBuilder(ABC):
             table_rows_v1 = table_rows_v2 = []
             mfd_table_rows = {"MFD_CURVES": table_rows_v1, "MFD_CURVES_V2": table_rows_v2}
 
-        if self.system_args.use_api:
+        if self.runtime_args.use_api:
             # record the completed task
             done_args = {
                 'task_id': task_id,
@@ -410,7 +410,7 @@ class InversionSolutionBuilder(ABC):
             self.toshi_api.automation_task.complete_task(done_args, metrics)
 
             # and the log files, why not
-            java_log_file = self.output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
+            java_log_file = self.output_folder.joinpath(f"java_app.{self.runtime_args.java_gateway_port}.log")
             # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
             self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
             # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')

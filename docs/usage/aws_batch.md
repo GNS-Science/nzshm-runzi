@@ -25,7 +25,7 @@ asks otherwise.
     - `NZSHM22_TOSHI_COGNITO_DOMAIN`
 - **Job queue**: `BasicFargate_Q`
 
-`SystemArgs.ecs_job_definition` / `ecs_job_queue` (`runzi/arguments.py`) default to these two
+`SubmissionArgs.ecs_job_definition` / `ecs_job_queue` (`runzi/arguments.py`) default to these two
 names (`DEFAULT_JOB_DEFINITION` / `DEFAULT_JOB_QUEUE`), so task modules only need to set
 `ecs_memory` / `ecs_vcpu` / `ecs_max_job_time_min`. `get_ecs_job_config()`
 (`runzi/aws/aws.py`) validates every `vcpu`/`memory` pair against AWS's published Fargate
@@ -43,18 +43,22 @@ There is one canonical EC2 target, mirroring Fargate (see
   ["EC2"]`, tracking the *same* `:prod` / `:experimental` image tags as the Fargate definitions.
 - **Job queue**: `runzi-ec2-Q`.
 
-Fargate is still the default for every task. A job opts into EC2 by setting
-`ecs_compute_environment: ec2` in its config file's `sys_arg_overrides`, alongside the EC2 queue
-and definition names (constants `EC2_JOB_QUEUE`, `EC2_JOB_DEFINITION` /
-`EC2_EXPERIMENTAL_JOB_DEFINITION` in `runzi/arguments.py`):
+Fargate is still the default for every task. A job opts into EC2 by choosing an EC2 job
+definition — **that's the only key you need**. The queue and compute-environment type derive from
+the job definition (each canonical definition has exactly one correct target), so you can't
+accidentally submit an EC2 definition to the Fargate queue:
 
 ```json
-"sys_arg_overrides": {
-  "ecs_compute_environment": "ec2",
-  "ecs_job_definition": "runzi-ec2-JD",
-  "ecs_job_queue": "runzi-ec2-Q"
+"submission_arg_overrides": {
+  "ecs_job_definition": "runzi-ec2-JD"
 }
 ```
+
+If you ever need a non-standard pairing, `ecs_job_queue` and `ecs_compute_environment` remain
+available as explicit overrides and take precedence over the derived values. The derivation is a
+registry (`JOB_DEFINITION_TARGETS` in `runzi/arguments.py`) mapping each canonical job definition
+to its `(queue, compute-environment)`; an unknown/custom job definition falls back to the Fargate
+target.
 
 **Validation is light on purpose.** Unlike Fargate, EC2 has no fixed CPU/memory matrix —
 `resourceRequirements` are minimums that the Batch scheduler bin-packs onto whatever instance
@@ -81,11 +85,11 @@ never re-registers a job definition (see
   (the default) tracks `:prod`, so this — and only this — changes the image default submissions run.
   It is a deliberate, confirmed, CloudTrail-audited step.
 
-To run an experimental image deliberately, override the job definition in a config file's
-`sys_arg_overrides`:
+To run an experimental image deliberately, override just the job definition in a config file's
+`submission_arg_overrides` (the queue and compute-environment type follow the definition automatically):
 
 ```json
-"sys_arg_overrides": {
+"submission_arg_overrides": {
   "ecs_job_definition": "runzi-fargate-experimental-JD"
 }
 ```

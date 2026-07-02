@@ -6,4 +6,4 @@ See the [base class](inversion.md) for inherited parameters and a description of
       inherited_members: true
 
 
-::: runzi.tasks.inversion.crustal_inversion_solution_task.default_system_args
+::: runzi.tasks.inversion.crustal_inversion_solution_task.default_submission_args

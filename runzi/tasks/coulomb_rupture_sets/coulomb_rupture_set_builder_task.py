@@ -14,9 +14,9 @@ from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel, model_validator
 
-from runzi.arguments import SystemArgs, TaskLanguage
+from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.file_utils import download_files, get_output_file_id
-from runzi.automation.local_config import API_URL, S3_URL, SPOOF, USE_API, WORK_PATH, get_auth_kwargs
+from runzi.automation.local_config import API_URL, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ToshiApi
 from runzi.tasks.get_config import get_config
 from runzi.tasks.validators import exactly_one
@@ -46,9 +46,8 @@ def get_fault_model_file(fault_model_file_id) -> Path:
     return Path(fault_model_archive_file_path).parent / fault_model_file
 
 
-default_system_args = SystemArgs(
+default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
-    use_api=USE_API,
     java_threads=16,
     jvm_heap_max=32,
     ecs_max_job_time_min=60,
@@ -100,20 +99,20 @@ class CoulombRuptureSetArgs(BaseModel):
 class CoulombRuptureSetBuilderTask:
     """Class for building Coulomb rupture sets."""
 
-    def __init__(self, user_args: CoulombRuptureSetArgs, system_args: SystemArgs):
+    def __init__(self, user_args: CoulombRuptureSetArgs, runtime_args: TaskRuntimeArgs):
         """im a doc string
 
         Args:
             user_args: a thing
-            system_args: another thing
+            runtime_args: another thing
         """
 
         self.user_args = user_args
-        self.system_args = system_args
-        self.use_api = system_args.use_api
+        self.runtime_args = runtime_args
+        self.use_api = runtime_args.use_api
 
         # setup the java gateway binding
-        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=self.system_args.java_gateway_port))
+        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(port=self.runtime_args.java_gateway_port))
         app = self.gateway.entry_point
         self.builder = app.getCoulombRuptureSetBuilder()
 
@@ -142,9 +141,9 @@ class CoulombRuptureSetBuilderTask:
             # "gitref_opensha":self._repoheads['opensha'],
             # "gitref_nzshm-opensha":self._repoheads['nzshm-opensha'],
             # "gitref_nzshm-runzi":self._repoheads['nzshm-runzi'],
-            "java_threads": self.system_args.java_threads,
-            "proc_count": self.system_args.java_threads,
-            # "jvm_heap_max": self.system_args.jvm_heap_max,
+            "java_threads": self.runtime_args.java_threads,
+            "proc_count": self.runtime_args.java_threads,
+            # "jvm_heap_max": self.runtime_args.jvm_heap_max,
         }
 
         if self.use_api:
@@ -160,7 +159,7 @@ class CoulombRuptureSetBuilderTask:
             )
 
             # link task tp the parent task
-            self._task_relation_api.create_task_relation(self.system_args.general_task_id, task_id)
+            self._task_relation_api.create_task_relation(self.runtime_args.general_task_id, task_id)
 
         else:
             task_id = None
@@ -230,7 +229,7 @@ class CoulombRuptureSetBuilderTask:
             outputfile = outputfile.with_suffix('.spoof')
             Path(outputfile).touch()
         else:
-            self.builder.setNumThreads(self.system_args.java_threads).buildRuptureSet()
+            self.builder.setNumThreads(self.runtime_args.java_threads).buildRuptureSet()
             metrics = self.ruptureSetMetrics()
             self.builder.writeRuptureSet(str(outputfile))
 
@@ -257,7 +256,7 @@ class CoulombRuptureSetBuilderTask:
             )
 
             # and the log files, why not
-            java_log_file = self.output_folder.joinpath(f"java_app.{self.system_args.java_gateway_port}.log")
+            java_log_file = self.output_folder.joinpath(f"java_app.{self.runtime_args.java_gateway_port}.log")
             self._ruptgen_api.upload_task_file(task_id, java_log_file, 'WRITE')
             # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
             # self._ruptgen_api.upload_task_file(task_id, pyth_log_file, 'WRITE')
@@ -279,12 +278,12 @@ if __name__ == "__main__":
 
     # print(config)
     user_args = CoulombRuptureSetArgs(**config['task_args'])
-    system_args = SystemArgs(**config['task_system_args'])
-    task = CoulombRuptureSetBuilderTask(user_args, system_args)
+    runtime_args = TaskRuntimeArgs(**config['task_runtime_args'])
+    task = CoulombRuptureSetBuilderTask(user_args, runtime_args)
 
     # maybe the JVM App is a little slow to get listening
     time.sleep(3)
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
-    time.sleep(system_args.task_count)
+    time.sleep(runtime_args.task_count)
 
     task.run()
