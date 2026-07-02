@@ -101,7 +101,7 @@ def test_from_config_file_parses_submission_arg_overrides(tmp_path):
 
 
 def test_from_config_file_rejects_renamed_sys_arg_overrides(tmp_path):
-    """The old key was renamed; a config that still uses it gets a clear migration error."""
+    """The old key was renamed; a config that still uses it is rejected as an unknown field."""
     path = _write_config(tmp_path, sys_arg_overrides={"ecs_memory": 2048})
-    with pytest.raises(ValueError, match="submission_arg_overrides"):
+    with pytest.raises(ValidationError, match="sys_arg_overrides"):
         ArgSweeper.from_config_file(path, SimpleArgs)

@@ -182,11 +182,6 @@ class ArgSweeper:
         description = data.pop("description")
         swept_args = data.pop("swept_args", {})
         submission_arg_overrides = data.pop("submission_arg_overrides", {})
-        if "sys_arg_overrides" in data:
-            raise ValueError(
-                "'sys_arg_overrides' was renamed to 'submission_arg_overrides' (it overrides "
-                "SubmissionArgs fields); please update your config file."
-            )
 
         if swept_args:
             for k, v in swept_args.items():

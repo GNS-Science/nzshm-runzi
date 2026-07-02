@@ -40,7 +40,8 @@ by `build_tasks` (it's the one worker-read field that originates from a module's
   branch before submitting with the new code.
 - **The config override key is renamed `sys_arg_overrides` → `submission_arg_overrides`** for
   consistency: it overrides `SubmissionArgs` fields. This is a **breaking config-schema change** (a
-  clean break — the old key errors with a migration message, no alias). Overriding a runtime field
+  clean break, no alias — a config still using the old key is rejected as an unknown field by the
+  task-args `extra='forbid'` validation). Overriding a runtime field
   (e.g. `use_api`) was already meaningless (`use_api` is forced from `local_config.USE_API` at submit
   time) and now has no field to bind to; runtime context is assembled in `build_tasks`.
 - `ComputeEnvironment | None` on `SubmissionArgs.ecs_compute_environment` reverts the `| str` union
