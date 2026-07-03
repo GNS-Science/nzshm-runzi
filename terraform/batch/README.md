@@ -90,7 +90,12 @@ Map the `containerProperties` fields to variables:
 - `networkConfiguration.assignPublicIp` → `assign_public_ip`. If the output has **no**
   `networkConfiguration` block, set `assign_public_ip = ""` so the new definitions omit it too (AWS
   treats absent as `DISABLED`).
-- static `environment` entries → `job_definition_environment`.
+- static `environment` entries → split by toshi stage (ADR-0010): stage-agnostic vars (e.g.
+  `NZSHM22_S3_UPLOAD_WORKERS`) go in `job_definition_environment`; the toshi auth pair
+  (`NZSHM22_TOSHI_M2M_SECRET_ARN` + `NZSHM22_TOSHI_COGNITO_DOMAIN`) goes in
+  `prod_job_definition_environment` (PROD toshi, for the `:prod` JDs) and
+  `experimental_job_definition_environment` (TEST toshi, for the `:experimental` JDs). The prod secret
+  ARN must also be readable by the external `toshi_batch_ECS_TaskExecution` role (see ADR-0010).
 - `image_repository` → the ECR repo URI **without** a tag.
 
 Copy `terraform.tfvars.example` to `terraform.tfvars` and fill these in (gitignored — it's
@@ -118,7 +123,8 @@ Map:
   egress (NAT or auto-assigned public IPs).
 
 The EC2 job definitions reuse the same `image_repository`, `execution_role_arn`, `job_role_arn`,
-and `job_definition_environment` as the Fargate ones. Instance types (`ec2_instance_types`,
+and per-stage environment maps as the Fargate ones (`ec2_prod` tracks the prod toshi overlay,
+`ec2_experimental` the test one — ADR-0010). Instance types (`ec2_instance_types`,
 default `["optimal"]`), `min_vcpus` (default 0), and allocation strategy default sensibly —
 instance-type tuning is tracked in #323.
 

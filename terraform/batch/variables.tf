@@ -98,8 +98,25 @@ variable "default_memory" {
   default     = "32768"
 }
 
+# Env baked into the job definitions is split across three maps so the :prod and :experimental
+# definitions can authenticate to different toshi stages (ADR-0010). job_definition_environment holds
+# stage-agnostic vars shared by all four JDs; the two stage overlays below carry the toshi auth pair
+# (NZSHM22_TOSHI_M2M_SECRET_ARN + NZSHM22_TOSHI_COGNITO_DOMAIN) and are merged over the shared base.
+# Per-job runtime env is set by runzi via containerOverrides, not here.
 variable "job_definition_environment" {
-  description = "Static environment variables baked into the job definition (e.g. NZSHM22_TOSHI_M2M_SECRET_ARN, NZSHM22_TOSHI_COGNITO_DOMAIN). Discover from the live JD; per-job runtime env is set by runzi via containerOverrides, not here."
+  description = "Stage-agnostic environment variables baked into every job definition (e.g. NZSHM22_S3_UPLOAD_WORKERS). The toshi auth pair lives in the per-stage overlays below, not here. Discover from the live JD."
+  type        = map(string)
+  default     = {}
+}
+
+variable "prod_job_definition_environment" {
+  description = "Toshi auth env for the :prod job definitions (Fargate + EC2) — the PROD NZSHM22_TOSHI_M2M_SECRET_ARN + NZSHM22_TOSHI_COGNITO_DOMAIN. Merged over job_definition_environment (ADR-0010)."
+  type        = map(string)
+  default     = {}
+}
+
+variable "experimental_job_definition_environment" {
+  description = "Toshi auth env for the :experimental job definitions (Fargate + EC2) — the TEST NZSHM22_TOSHI_M2M_SECRET_ARN + NZSHM22_TOSHI_COGNITO_DOMAIN. Merged over job_definition_environment (ADR-0010)."
   type        = map(string)
   default     = {}
 }

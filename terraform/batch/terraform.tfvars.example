@@ -22,10 +22,23 @@ job_role_arn       = ""      # TODO - the live JD's jobRoleArn, or "" to omit
 default_vcpu       = "8"     # TODO - resourceRequirements VCPU entry
 default_memory     = "32768" # TODO - resourceRequirements MEMORY entry (MiB); must be valid for default_vcpu
 assign_public_ip   = ""      # TODO - networkConfiguration.assignPublicIp (ENABLED/DISABLED), or "" if absent
+# Env is split by toshi stage (ADR-0010): the :prod JDs authenticate to prod toshi, the :experimental
+# JDs to test toshi. job_definition_environment holds only stage-agnostic vars shared by all four JDs;
+# the toshi auth pair goes in the per-stage overlays below (merged over the shared base).
 job_definition_environment = {
-  # TODO - copy the live JD's static environment entries, e.g.:
-  # NZSHM22_TOSHI_M2M_SECRET_ARN = "arn:aws:secretsmanager:ap-southeast-2:TODO:secret:toshi-m2m-..."
-  # NZSHM22_TOSHI_COGNITO_DOMAIN = "https://TODO.auth.ap-southeast-2.amazoncognito.com"
+  # TODO - stage-agnostic entries from the live JD, e.g.:
+  # NZSHM22_S3_UPLOAD_WORKERS = "5"
+}
+# :prod JDs -> PROD toshi. The external toshi_batch_ECS_TaskExecution role must be granted
+# secretsmanager:GetSecretValue on this ARN, or :prod jobs fail auth at runtime.
+prod_job_definition_environment = {
+  # NZSHM22_TOSHI_M2M_SECRET_ARN = "arn:aws:secretsmanager:ap-southeast-2:TODO:secret:toshi-m2m-prod-..."
+  # NZSHM22_TOSHI_COGNITO_DOMAIN = "https://toshi-TODO-prod.auth.ap-southeast-2.amazoncognito.com"
+}
+# :experimental JDs -> TEST toshi.
+experimental_job_definition_environment = {
+  # NZSHM22_TOSHI_M2M_SECRET_ARN = "arn:aws:secretsmanager:ap-southeast-2:TODO:secret:toshi-m2m-test-..."
+  # NZSHM22_TOSHI_COGNITO_DOMAIN = "https://toshi-TODO-test.auth.ap-southeast-2.amazoncognito.com"
 }
 
 # ── EC2 compute environment, queue, and job definitions (ADR-0008, #322) ──
