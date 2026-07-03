@@ -98,6 +98,33 @@ runzi resolves whichever job definition you submit to back to a concrete image d
 time and records it (`NZSHM22_RUNZI_ECR_DIGEST`) in toshi provenance, so a run pins exactly which
 image it used even though the definition names only a tag.
 
+# Inspecting jobs (`runzi batch`)
+
+Federated Cognito users have no AWS console access, so `runzi batch` surfaces the state of the jobs
+a submission produced. When you submit in `--cluster-mode AWS`, runzi prints a `GENERAL_TASK_ID`;
+pass it to:
+
+```bash
+runzi batch status <GENERAL_TASK_ID>
+```
+
+This lists every Batch job for that general task (across both the Fargate and EC2 queues) with its
+status, run duration, and creation time. It is read-only and needs only the `batch:ListJobs` /
+`batch:DescribeJobs` permissions already granted to the `runzi-batch` access tier — log in with
+`toshi-auth login` first.
+
+**How it finds the jobs — a naming contract.** AWS Batch `list_jobs` can filter by queue and by a
+job-name prefix, but not by tags or the container config. So at submit time runzi encodes a
+sanitised `general_task_id` token as the **prefix** of each Batch job name
+(`<gt-token>-<base>-<task_count>`; see `runzi/aws/batch_query.py:batch_job_name`), and `status`
+queries with a `JOB_NAME` `<gt-token>-*` filter. Any future change to job naming **must preserve
+this prefix**, or `runzi batch status` will stop finding jobs.
+
+**Caveats.** AWS Batch retains terminal (SUCCEEDED/FAILED) jobs for only ~24h, so older jobs won't
+appear. The name encoding is also forward-only — jobs submitted before this feature shipped are not
+discoverable. (Terminate, log-fetching, and config decode are intentionally out of scope for this
+read-only version; log-fetching would additionally require a `logs:GetLogEvents` grant.)
+
 # Infrastructure-as-code
 
 Both the **Fargate** (compute env, `BasicFargate_Q`, `runzi-fargate-*` definitions) and **EC2**
