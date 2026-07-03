@@ -39,6 +39,12 @@ resource "aws_batch_job_queue" "fargate" {
 # submit time (runzi/aws/aws.py). container_properties must replicate the live Fargate-runzi-opensha-JD
 # apart from the tagged image — discover and reconcile it before apply (README.md).
 locals {
+  # Per-stage container env (ADR-0010): the :prod definitions authenticate to prod toshi, the
+  # :experimental ones to test toshi. Each is the stage-agnostic base plus the stage's toshi overlay;
+  # deriving both from the shared base keeps a stage-agnostic var from drifting between them.
+  prod_environment         = merge(var.job_definition_environment, var.prod_job_definition_environment)
+  experimental_environment = merge(var.job_definition_environment, var.experimental_job_definition_environment)
+
   # Only emit networkConfiguration when assign_public_ip is set; an empty value omits the block
   # entirely, matching a live JD that has no networkConfiguration (AWS treats absent as DISABLED).
   # It is not overridable per-job, so the JD-level value governs at runtime — keep it faithful.
@@ -61,7 +67,7 @@ locals {
     # runzi always overrides command at submit time; a non-empty default keeps the definition valid.
     command = ["--help"]
 
-    environment                  = [for k, v in var.job_definition_environment : { name = k, value = v }]
+    # environment is set per-definition below (prod vs experimental toshi stage, ADR-0010).
     fargatePlatformConfiguration = { platformVersion = "LATEST" }
   }, local.network_configuration)
 }
@@ -72,7 +78,8 @@ resource "aws_batch_job_definition" "prod" {
   platform_capabilities = ["FARGATE"]
 
   container_properties = jsonencode(merge(local.base_container_properties, {
-    image = "${var.image_repository}:${var.prod_image_tag}"
+    image       = "${var.image_repository}:${var.prod_image_tag}"
+    environment = [for k, v in local.prod_environment : { name = k, value = v }]
   }))
 }
 
@@ -82,7 +89,8 @@ resource "aws_batch_job_definition" "experimental" {
   platform_capabilities = ["FARGATE"]
 
   container_properties = jsonencode(merge(local.base_container_properties, {
-    image = "${var.image_repository}:${var.experimental_image_tag}"
+    image       = "${var.image_repository}:${var.experimental_image_tag}"
+    environment = [for k, v in local.experimental_environment : { name = k, value = v }]
   }))
 }
 
@@ -151,7 +159,7 @@ locals {
 
     command = ["--help"]
 
-    environment = [for k, v in var.job_definition_environment : { name = k, value = v }]
+    # environment is set per-definition below (prod vs experimental toshi stage, ADR-0010).
   }
 }
 
@@ -161,7 +169,8 @@ resource "aws_batch_job_definition" "ec2_prod" {
   platform_capabilities = ["EC2"]
 
   container_properties = jsonencode(merge(local.ec2_container_properties, {
-    image = "${var.image_repository}:${var.prod_image_tag}"
+    image       = "${var.image_repository}:${var.prod_image_tag}"
+    environment = [for k, v in local.prod_environment : { name = k, value = v }]
   }))
 }
 
@@ -171,6 +180,7 @@ resource "aws_batch_job_definition" "ec2_experimental" {
   platform_capabilities = ["EC2"]
 
   container_properties = jsonencode(merge(local.ec2_container_properties, {
-    image = "${var.image_repository}:${var.experimental_image_tag}"
+    image       = "${var.image_repository}:${var.experimental_image_tag}"
+    environment = [for k, v in local.experimental_environment : { name = k, value = v }]
   }))
 }
