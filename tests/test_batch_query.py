@@ -10,6 +10,7 @@ from runzi.aws.batch_query import (
     general_task_id_token,
     job_duration,
     jobs_for_general_task,
+    swept_arg_keys,
     task_args_by_job_id,
 )
 
@@ -173,3 +174,28 @@ class TestTaskArgsByJobId:
         )
         result = task_args_by_job_id(['a', 'b', 'c'], session=_FakeSession(client))
         assert result == {'a': {'rupture_set': 'A'}}
+
+
+class TestSweptArgKeys:
+    def test_returns_only_varying_keys_sorted(self):
+        by_job = {
+            'a': {'rupture_set': 'A', 'deformation_model': 'geologic', 'model_id': 'X'},
+            'b': {'rupture_set': 'A', 'deformation_model': 'geodetic', 'model_id': 'X'},
+            'c': {'rupture_set': 'B', 'deformation_model': 'geologic', 'model_id': 'X'},
+        }
+        assert swept_arg_keys(by_job) == ['deformation_model', 'rupture_set']
+
+    def test_identical_configs_yield_no_keys(self):
+        by_job = {'a': {'rupture_set': 'A'}, 'b': {'rupture_set': 'A'}}
+        assert swept_arg_keys(by_job) == []
+
+    def test_fewer_than_two_jobs_yields_no_keys(self):
+        assert swept_arg_keys({'a': {'rupture_set': 'A'}}) == []
+        assert swept_arg_keys({}) == []
+
+    def test_handles_list_valued_args(self):
+        by_job = {
+            'a': {'vs30s': [200, 300], 'rupture_set': 'A'},
+            'b': {'vs30s': [400, 500], 'rupture_set': 'A'},
+        }
+        assert swept_arg_keys(by_job) == ['vs30s']

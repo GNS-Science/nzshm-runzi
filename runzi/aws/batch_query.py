@@ -132,3 +132,22 @@ def task_args_by_job_id(
             if task_args is not None:
                 result[job['jobId']] = task_args
     return result
+
+
+def swept_arg_keys(task_args_by_job: dict[str, dict[str, Any]]) -> list[str]:
+    """Return the sorted ``task_args`` keys whose value differs across jobs — i.e. the swept ones.
+
+    Each job's ``task_args`` is the prototype with only its swept combination overridden, so the keys
+    that vary across jobs are exactly the swept ones. Values are compared via a canonical JSON form so
+    list/dict-valued args compare correctly. Fewer than two decoded jobs means nothing to disambiguate.
+    """
+    configs = list(task_args_by_job.values())
+    if len(configs) < 2:
+        return []
+    all_keys: set[str] = set().union(*(config.keys() for config in configs))
+    varying = [
+        key
+        for key in all_keys
+        if len({json.dumps(config.get(key), sort_keys=True, default=str) for config in configs}) > 1
+    ]
+    return sorted(varying)
