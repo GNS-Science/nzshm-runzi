@@ -2,6 +2,7 @@
 
 import json
 import re
+import urllib.parse
 
 from runzi.arguments import DEFAULT_JOB_QUEUE, EC2_JOB_QUEUE
 from runzi.aws.aws import compress_config
@@ -129,6 +130,20 @@ def _job_with_config(job_id, task_args):
     }
 
 
+def _job_with_quoted_config(job_id, task_args):
+    """Build a fake job whose TASK_CONFIG_JSON_QUOTED was written with the URL-quoted (non-compressed) form."""
+    config = {
+        'task_args': task_args,
+        'task_runtime_args': {'task_count': 1, 'java_gateway_port': 26533},
+        'model_type': 10,
+    }
+    encoded = urllib.parse.quote(json.dumps(config))
+    return {
+        'jobId': job_id,
+        'container': {'environment': [{'name': 'TASK_CONFIG_JSON_QUOTED', 'value': encoded}]},
+    }
+
+
 class _FakeDescribeClient:
     """Records describe_jobs calls and returns canned job detail by id."""
 
@@ -175,6 +190,20 @@ class TestTaskArgsByJobId:
         result = task_args_by_job_id(['a', 'b', 'c'], session=_FakeSession(client))
         assert result == {'a': {'rupture_set': 'A'}}
 
+    def test_decodes_url_quoted_config(self):
+        """Jobs written with the URL-quoted (non-compressed) form also decode correctly."""
+        client = _FakeDescribeClient(
+            {
+                'a': _job_with_quoted_config('a', {'rupture_set': 'A', 'model_id': 'X'}),
+                'b': _job_with_quoted_config('b', {'rupture_set': 'B', 'model_id': 'X'}),
+            }
+        )
+        result = task_args_by_job_id(['a', 'b'], session=_FakeSession(client))
+        assert result == {
+            'a': {'rupture_set': 'A', 'model_id': 'X'},
+            'b': {'rupture_set': 'B', 'model_id': 'X'},
+        }
+
 
 class TestSweptArgKeys:
     def test_returns_only_varying_keys_sorted(self):
@@ -199,3 +228,10 @@ class TestSweptArgKeys:
             'b': {'vs30s': [400, 500], 'rupture_set': 'A'},
         }
         assert swept_arg_keys(by_job) == ['vs30s']
+
+    def test_handles_dict_valued_args(self):
+        by_job = {
+            'a': {'site_params': {'vs30': 200, 'z1pt0': 0.5}},
+            'b': {'site_params': {'vs30': 400, 'z1pt0': 0.5}},
+        }
+        assert swept_arg_keys(by_job) == ['site_params']

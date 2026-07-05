@@ -8,6 +8,7 @@ without arbitrary tags (which ``list_jobs`` cannot filter on).
 
 import json
 import time
+import urllib.parse
 from typing import TYPE_CHECKING, Any
 
 from runzi.arguments import DEFAULT_JOB_QUEUE, EC2_JOB_QUEUE
@@ -105,8 +106,14 @@ def _decode_task_args(job: dict[str, Any]) -> dict[str, Any] | None:
     if not encoded:
         return None
     try:
-        config = json.loads(decompress_config(encoded))
+        # Mirror the worker's get_config() decode order: URL-quoted first, compressed second.
+        try:
+            config = json.loads(urllib.parse.unquote(encoded))
+        except (json.JSONDecodeError, ValueError):
+            config = json.loads(decompress_config(encoded))
     except Exception:
+        return None
+    if not isinstance(config, dict):
         return None
     return config.get('task_args')
 
