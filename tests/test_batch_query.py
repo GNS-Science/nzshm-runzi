@@ -1,13 +1,16 @@
 """Tests for runzi.aws.batch_query — the read-only AWS Batch inspection primitives (issue #326)."""
 
+import json
 import re
 
 from runzi.arguments import DEFAULT_JOB_QUEUE, EC2_JOB_QUEUE
+from runzi.aws.aws import compress_config
 from runzi.aws.batch_query import (
     batch_job_name,
     general_task_id_token,
     job_duration,
     jobs_for_general_task,
+    task_args_by_job_id,
 )
 
 # Batch job names must match this (letters/numbers/underscore/hyphen, start alphanumeric, <=128).
@@ -110,3 +113,63 @@ class TestJobsForGeneralTask:
     def test_merges_results_sorted_by_created_at(self):
         jobs = jobs_for_general_task(self.GT_ID, session=_FakeSession(self._client()))
         assert [j['jobId'] for j in jobs] == ['b', 'a']  # createdAt 100 before 200
+
+
+def _job_with_config(job_id, task_args):
+    config = {
+        'task_args': task_args,
+        'task_runtime_args': {'task_count': 1, 'java_gateway_port': 26533},
+        'model_type': 10,
+    }
+    encoded = compress_config(json.dumps(config))
+    return {
+        'jobId': job_id,
+        'container': {'environment': [{'name': 'TASK_CONFIG_JSON_QUOTED', 'value': encoded}]},
+    }
+
+
+class _FakeDescribeClient:
+    """Records describe_jobs calls and returns canned job detail by id."""
+
+    def __init__(self, jobs_by_id):
+        self._jobs_by_id = jobs_by_id
+        self.describe_calls = []
+
+    def describe_jobs(self, jobs):
+        self.describe_calls.append(list(jobs))
+        return {'jobs': [self._jobs_by_id[j] for j in jobs if j in self._jobs_by_id]}
+
+
+class TestTaskArgsByJobId:
+    def test_decodes_task_args_for_each_job(self):
+        client = _FakeDescribeClient(
+            {
+                'a': _job_with_config('a', {'rupture_set': 'A', 'model_id': 'X'}),
+                'b': _job_with_config('b', {'rupture_set': 'B', 'model_id': 'X'}),
+            }
+        )
+        result = task_args_by_job_id(['a', 'b'], session=_FakeSession(client))
+        assert result == {
+            'a': {'rupture_set': 'A', 'model_id': 'X'},
+            'b': {'rupture_set': 'B', 'model_id': 'X'},
+        }
+
+    def test_batches_describe_jobs_in_chunks_of_100(self):
+        ids = [str(n) for n in range(150)]
+        client = _FakeDescribeClient({i: _job_with_config(i, {'k': i}) for i in ids})
+        task_args_by_job_id(ids, session=_FakeSession(client))
+        assert [len(call) for call in client.describe_calls] == [100, 50]
+
+    def test_omits_jobs_with_no_decodable_config(self):
+        client = _FakeDescribeClient(
+            {
+                'a': _job_with_config('a', {'rupture_set': 'A'}),
+                'b': {'jobId': 'b', 'container': {'environment': []}},  # no TASK_CONFIG_JSON_QUOTED
+                'c': {
+                    'jobId': 'c',
+                    'container': {'environment': [{'name': 'TASK_CONFIG_JSON_QUOTED', 'value': 'garbage'}]},
+                },
+            }
+        )
+        result = task_args_by_job_id(['a', 'b', 'c'], session=_FakeSession(client))
+        assert result == {'a': {'rupture_set': 'A'}}

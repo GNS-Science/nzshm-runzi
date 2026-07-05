@@ -6,10 +6,12 @@ job-name prefix, so this token makes a general task's jobs discoverable without 
 without arbitrary tags (which ``list_jobs`` cannot filter on).
 """
 
+import json
 import time
 from typing import TYPE_CHECKING, Any
 
 from runzi.arguments import DEFAULT_JOB_QUEUE, EC2_JOB_QUEUE
+from runzi.aws.aws import decompress_config
 from runzi.aws.session import get_session
 
 if TYPE_CHECKING:
@@ -87,3 +89,46 @@ def jobs_for_general_task(
             jobs.extend(page.get('jobSummaryList', []))
     jobs.sort(key=lambda job: job.get('createdAt', 0))
     return jobs
+
+
+_DESCRIBE_JOBS_BATCH = 100  # AWS describe_jobs accepts at most 100 job ids per call.
+
+
+def _decode_task_args(job: dict[str, Any]) -> dict[str, Any] | None:
+    """Decode a job's shipped ``task_args`` from its ``TASK_CONFIG_JSON_QUOTED`` container env var.
+
+    Returns ``None`` if the variable is absent or cannot be decompressed/parsed (e.g. a legacy job),
+    so the caller can render a blank rather than crashing the whole table for one bad job.
+    """
+    environment = job.get('container', {}).get('environment', [])
+    encoded = next((e.get('value') for e in environment if e.get('name') == 'TASK_CONFIG_JSON_QUOTED'), None)
+    if not encoded:
+        return None
+    try:
+        config = json.loads(decompress_config(encoded))
+    except Exception:
+        return None
+    return config.get('task_args')
+
+
+def task_args_by_job_id(
+    job_ids: list[str],
+    session: 'boto3.Session | None' = None,
+) -> dict[str, dict[str, Any]]:
+    """Return ``{job_id: task_args}`` by decoding each job's own shipped config (issue #335).
+
+    Each Batch job carries the exact config it ran in ``TASK_CONFIG_JSON_QUOTED``; this reads it back
+    with ``describe_jobs`` (batched in groups of 100, the AWS limit) rather than reconstructing it.
+    Jobs whose config is missing or undecodable are omitted from the mapping.
+    """
+    client = (session or get_session()).client(
+        service_name='batch', region_name=_BATCH_REGION, endpoint_url=_BATCH_ENDPOINT
+    )
+    result: dict[str, dict[str, Any]] = {}
+    for start in range(0, len(job_ids), _DESCRIBE_JOBS_BATCH):
+        chunk = job_ids[start : start + _DESCRIBE_JOBS_BATCH]
+        for job in client.describe_jobs(jobs=chunk).get('jobs', []):
+            task_args = _decode_task_args(job)
+            if task_args is not None:
+                result[job['jobId']] = task_args
+    return result
