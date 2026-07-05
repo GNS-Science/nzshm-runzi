@@ -37,7 +37,9 @@ SUMMARIES = [
 
 
 def test_status_renders_rows_and_status_counts():
-    with patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES) as mock_jobs:
+    with patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES) as mock_jobs, patch.object(
+        batch_cli, 'task_args_by_job_id', return_value={}
+    ):
         result = runner.invoke(runzi_cli.app, ['batch', 'status', GT_ID])
 
     assert result.exit_code == 0
@@ -64,3 +66,48 @@ def test_status_handles_access_denied():
 
     assert result.exit_code == 1
     assert 'batch:ListJobs' in strip_ansi(result.output)
+
+
+def test_status_shows_a_column_per_swept_key():
+    task_args = {
+        'aaaa-1111': {'rupture_set': 'A', 'deformation_model': 'geologic'},
+        'bbbb-2222': {'rupture_set': 'B', 'deformation_model': 'geologic'},
+    }
+    with patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES), patch.object(
+        batch_cli, 'task_args_by_job_id', return_value=task_args
+    ):
+        result = runner.invoke(runzi_cli.app, ['batch', 'status', GT_ID])
+
+    assert result.exit_code == 0
+    out = strip_ansi(result.output)
+    assert 'rupture_set' in out  # swept -> a column
+    assert 'deformation_model' not in out  # constant -> no column
+    assert 'Job Name' not in out  # dropped
+    # each job's swept value is on its row
+    assert re.search(r'aaaa-1111.*\bA\b', out)
+    assert re.search(r'bbbb-2222.*\bB\b', out)
+
+
+def test_status_has_no_swept_columns_when_nothing_varies():
+    task_args = {
+        'aaaa-1111': {'rupture_set': 'A'},
+        'bbbb-2222': {'rupture_set': 'A'},
+    }
+    with patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES), patch.object(
+        batch_cli, 'task_args_by_job_id', return_value=task_args
+    ):
+        result = runner.invoke(runzi_cli.app, ['batch', 'status', GT_ID])
+
+    assert result.exit_code == 0
+    assert 'rupture_set' not in strip_ansi(result.output)
+
+
+def test_status_handles_describe_access_denied():
+    err = ClientError({'Error': {'Code': 'AccessDeniedException', 'Message': 'not authorized'}}, 'DescribeJobs')
+    with patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES), patch.object(
+        batch_cli, 'task_args_by_job_id', side_effect=err
+    ):
+        result = runner.invoke(runzi_cli.app, ['batch', 'status', GT_ID])
+
+    assert result.exit_code == 1
+    assert 'batch:DescribeJobs' in strip_ansi(result.output)

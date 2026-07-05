@@ -125,6 +125,12 @@ appear. The name encoding is also forward-only — jobs submitted before this fe
 discoverable. (Terminate, log-fetching, and config decode are intentionally out of scope for this
 read-only version; log-fetching would additionally require a `logs:GetLogEvents` grant.)
 
+**Swept-argument columns.** Each swept argument (an argument whose value differs across this
+general task's jobs) is shown as its own column, decoded from each job's own shipped config.
+Because the swept columns are inferred from the jobs still visible in AWS Batch, and Batch retains
+terminal jobs only ~24h, a swept argument that happens to be constant across the surviving jobs
+will not appear as a column.
+
 # Infrastructure-as-code
 
 Both the **Fargate** (compute env, `BasicFargate_Q`, `runzi-fargate-*` definitions) and **EC2**

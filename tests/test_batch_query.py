@@ -1,13 +1,18 @@
 """Tests for runzi.aws.batch_query — the read-only AWS Batch inspection primitives (issue #326)."""
 
+import json
 import re
+import urllib.parse
 
 from runzi.arguments import DEFAULT_JOB_QUEUE, EC2_JOB_QUEUE
+from runzi.aws.aws import compress_config
 from runzi.aws.batch_query import (
     batch_job_name,
     general_task_id_token,
     job_duration,
     jobs_for_general_task,
+    swept_arg_keys,
+    task_args_by_job_id,
 )
 
 # Batch job names must match this (letters/numbers/underscore/hyphen, start alphanumeric, <=128).
@@ -110,3 +115,123 @@ class TestJobsForGeneralTask:
     def test_merges_results_sorted_by_created_at(self):
         jobs = jobs_for_general_task(self.GT_ID, session=_FakeSession(self._client()))
         assert [j['jobId'] for j in jobs] == ['b', 'a']  # createdAt 100 before 200
+
+
+def _job_with_config(job_id, task_args):
+    config = {
+        'task_args': task_args,
+        'task_runtime_args': {'task_count': 1, 'java_gateway_port': 26533},
+        'model_type': 10,
+    }
+    encoded = compress_config(json.dumps(config))
+    return {
+        'jobId': job_id,
+        'container': {'environment': [{'name': 'TASK_CONFIG_JSON_QUOTED', 'value': encoded}]},
+    }
+
+
+def _job_with_quoted_config(job_id, task_args):
+    """Build a fake job whose TASK_CONFIG_JSON_QUOTED was written with the URL-quoted (non-compressed) form."""
+    config = {
+        'task_args': task_args,
+        'task_runtime_args': {'task_count': 1, 'java_gateway_port': 26533},
+        'model_type': 10,
+    }
+    encoded = urllib.parse.quote(json.dumps(config))
+    return {
+        'jobId': job_id,
+        'container': {'environment': [{'name': 'TASK_CONFIG_JSON_QUOTED', 'value': encoded}]},
+    }
+
+
+class _FakeDescribeClient:
+    """Records describe_jobs calls and returns canned job detail by id."""
+
+    def __init__(self, jobs_by_id):
+        self._jobs_by_id = jobs_by_id
+        self.describe_calls = []
+
+    def describe_jobs(self, jobs):
+        self.describe_calls.append(list(jobs))
+        return {'jobs': [self._jobs_by_id[j] for j in jobs if j in self._jobs_by_id]}
+
+
+class TestTaskArgsByJobId:
+    def test_decodes_task_args_for_each_job(self):
+        client = _FakeDescribeClient(
+            {
+                'a': _job_with_config('a', {'rupture_set': 'A', 'model_id': 'X'}),
+                'b': _job_with_config('b', {'rupture_set': 'B', 'model_id': 'X'}),
+            }
+        )
+        result = task_args_by_job_id(['a', 'b'], session=_FakeSession(client))
+        assert result == {
+            'a': {'rupture_set': 'A', 'model_id': 'X'},
+            'b': {'rupture_set': 'B', 'model_id': 'X'},
+        }
+
+    def test_batches_describe_jobs_in_chunks_of_100(self):
+        ids = [str(n) for n in range(150)]
+        client = _FakeDescribeClient({i: _job_with_config(i, {'k': i}) for i in ids})
+        task_args_by_job_id(ids, session=_FakeSession(client))
+        assert [len(call) for call in client.describe_calls] == [100, 50]
+
+    def test_omits_jobs_with_no_decodable_config(self):
+        client = _FakeDescribeClient(
+            {
+                'a': _job_with_config('a', {'rupture_set': 'A'}),
+                'b': {'jobId': 'b', 'container': {'environment': []}},  # no TASK_CONFIG_JSON_QUOTED
+                'c': {
+                    'jobId': 'c',
+                    'container': {'environment': [{'name': 'TASK_CONFIG_JSON_QUOTED', 'value': 'garbage'}]},
+                },
+            }
+        )
+        result = task_args_by_job_id(['a', 'b', 'c'], session=_FakeSession(client))
+        assert result == {'a': {'rupture_set': 'A'}}
+
+    def test_decodes_url_quoted_config(self):
+        """Jobs written with the URL-quoted (non-compressed) form also decode correctly."""
+        client = _FakeDescribeClient(
+            {
+                'a': _job_with_quoted_config('a', {'rupture_set': 'A', 'model_id': 'X'}),
+                'b': _job_with_quoted_config('b', {'rupture_set': 'B', 'model_id': 'X'}),
+            }
+        )
+        result = task_args_by_job_id(['a', 'b'], session=_FakeSession(client))
+        assert result == {
+            'a': {'rupture_set': 'A', 'model_id': 'X'},
+            'b': {'rupture_set': 'B', 'model_id': 'X'},
+        }
+
+
+class TestSweptArgKeys:
+    def test_returns_only_varying_keys_sorted(self):
+        by_job = {
+            'a': {'rupture_set': 'A', 'deformation_model': 'geologic', 'model_id': 'X'},
+            'b': {'rupture_set': 'A', 'deformation_model': 'geodetic', 'model_id': 'X'},
+            'c': {'rupture_set': 'B', 'deformation_model': 'geologic', 'model_id': 'X'},
+        }
+        assert swept_arg_keys(by_job) == ['deformation_model', 'rupture_set']
+
+    def test_identical_configs_yield_no_keys(self):
+        by_job = {'a': {'rupture_set': 'A'}, 'b': {'rupture_set': 'A'}}
+        assert swept_arg_keys(by_job) == []
+
+    def test_fewer_than_two_jobs_yields_no_keys(self):
+        assert swept_arg_keys({'a': {'rupture_set': 'A'}}) == []
+        assert swept_arg_keys({}) == []
+
+    def test_handles_list_valued_args(self):
+        by_job = {
+            'a': {'vs30s': [200, 300], 'rupture_set': 'A'},
+            'b': {'vs30s': [400, 500], 'rupture_set': 'A'},
+        }
+        assert swept_arg_keys(by_job) == ['vs30s']
+
+    def test_handles_dict_valued_args(self):
+        by_job = {
+            'a': {'site_params': {'vs30': 200, 'z1pt0': 0.5}},
+            'b': {'site_params': {'vs30': 400, 'z1pt0': 0.5}},
+        }
+        assert swept_arg_keys(by_job) == ['site_params']
