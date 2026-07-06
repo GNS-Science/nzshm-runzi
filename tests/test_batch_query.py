@@ -125,7 +125,7 @@ class TestJobsForGeneralTask:
 def _job_with_config(job_id, task_args):
     config = {
         'task_args': task_args,
-        'task_runtime_args': {'task_count': 1, 'java_gateway_port': 26533},
+        'task_runtime_args': {'task_count': 1},
         'model_type': 10,
     }
     encoded = compress_config(json.dumps(config))
@@ -139,7 +139,7 @@ def _job_with_quoted_config(job_id, task_args):
     """Build a fake job whose TASK_CONFIG_JSON_QUOTED was written with the URL-quoted (non-compressed) form."""
     config = {
         'task_args': task_args,
-        'task_runtime_args': {'task_count': 1, 'java_gateway_port': 26533},
+        'task_runtime_args': {'task_count': 1},
         'model_type': 10,
     }
     encoded = urllib.parse.quote(json.dumps(config))

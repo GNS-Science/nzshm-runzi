@@ -94,7 +94,6 @@ def test_build_tasks_uses_runtime_use_api(monkeypatch):
     mock_module.__name__ = 'runzi.tasks.example'
 
     fake_factory = MagicMock()
-    fake_factory.get_next_port.return_value = 26000
     fake_factory.get_container_task.return_value = 'run.sh'
     fake_factory_class = MagicMock()
     fake_factory_class.create.return_value = fake_factory

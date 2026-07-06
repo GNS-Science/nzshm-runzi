@@ -26,8 +26,6 @@ from runzi.aws import get_ecs_job_config, resolve_job_definition_digest
 from runzi.aws.batch_query import batch_job_name
 from runzi.protocols import ModuleWithDefaultSubmissionArgs
 
-INITIAL_GATEWAY_PORT = 26533  # set this to ensure that concurrent scheduled tasks won't clash
-
 
 def build_tasks(
     user_args: ArgSweeper,
@@ -47,7 +45,6 @@ def build_tasks(
         root_path=OPENSHA_ROOT,
         working_path=WORK_PATH,
         python_script_module=task_module,
-        initial_gateway_port=INITIAL_GATEWAY_PORT,
         jre_path=OPENSHA_JRE,
         app_jar_path=FATJAR,
         task_config_path=WORK_PATH,
@@ -69,7 +66,6 @@ def build_tasks(
             general_task_id=general_task_id,
             use_api=local_config.USE_API,
             task_count=task_count,
-            java_gateway_port=task_factory.get_next_port(),
             java_threads=submission_args.java_threads,
         )
 
