@@ -15,8 +15,12 @@ export NZSHM22_APP_PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind((
 
 # TODO: we can do away with PYTHON_PREP_MODULE
 python3 -m ${PYTHON_TASK_MODULE} ${TASK_CONFIG_JSON_QUOTED} > ${NZSHM22_SCRIPT_WORK_PATH}/python_script.${NZSHM22_APP_PORT}.log
+status=$?
 
 #Kill the Java gateway server
-kill -9 $!
+kill -9 $! 2>/dev/null
+
+#Exit with the python task's status so AWS Batch sees failures (issue #333)
+exit $status
 
 #END_OF_SCRIPT

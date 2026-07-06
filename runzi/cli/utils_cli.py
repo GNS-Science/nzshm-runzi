@@ -6,13 +6,25 @@ from typing import Annotated
 import typer
 from rich import print as rich_print
 
+from runzi.arguments import ArgSweeper
 from runzi.cli.build_and_deploy_container import build_and_deploy_container, promote
+from runzi.tasks.faildemo import FailDemoArgs, FailDemoJobRunner
 from runzi.tasks.utils import VALID_ROW, build_manual_index, run_save_file_archive
 
 app = typer.Typer()
 
 app.command("docker-build")(build_and_deploy_container)
 app.command("promote")(promote)
+
+
+@app.command("fail-demo")
+def fail_demo(input_filepath: Path):
+    """Submit a task that intentionally exits non-zero, to verify AWS Batch reports FAILED (issue #333)."""
+    rich_print("[yellow]Submitting intentional-failure task (expect the Batch job to end FAILED).")
+    job_input = ArgSweeper.from_config_file(input_filepath, FailDemoArgs)
+    runner = FailDemoJobRunner(job_input)
+    gt_id = runner.run_jobs()
+    rich_print(f"General Task ID: [bold green]{gt_id}")
 
 
 @app.command()

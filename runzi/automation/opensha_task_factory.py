@@ -127,8 +127,11 @@ class OpenshaTaskFactory:
             f"{self._working_path}/java_app.${{NZSHM22_APP_PORT}}.log &\n"
             f"{self._python} {self._python_script} {self._config_path}/config.{self._next_task}.json > "
             f"{self._working_path}/python_script.{self._next_task}.log\n"
+            "status=$?\n"
             # Kill the Java gateway server
-            "kill -9 $!"
+            "kill -9 $! 2>/dev/null\n"
+            # Propagate the python task's exit status so callers see failures (issue #333)
+            "exit $status"
         )
         self._next_task += 1
         return script
