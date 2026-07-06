@@ -1,5 +1,6 @@
 import copy
 import json
+import os
 from collections.abc import Generator, Sequence
 from enum import Enum
 from pathlib import Path
@@ -128,8 +129,24 @@ class TaskRuntimeArgs(BaseModel):
     general_task_id: str | None = None
     task_count: int = 0
     use_api: bool
-    java_gateway_port: int | None = None
     java_threads: int | None = None
+
+    @property
+    def java_gateway_port(self) -> int:
+        """The py4j gateway port, read from NZSHM22_APP_PORT at runtime.
+
+        The port belongs to the JVM process, not the submitter: whichever launcher starts the
+        gateway exports NZSHM22_APP_PORT (a free port per container on AWS Batch, where forced host
+        networking makes a fixed port collide across concurrent jobs; the per-task port in the
+        generated bash script on LOCAL/CLUSTER). Reading it here — rather than shipping it in the
+        config — keeps the JVM and the Python client on the same port with a single source of truth.
+        """
+        port = os.environ.get('NZSHM22_APP_PORT')
+        if port is None:
+            raise RuntimeError(
+                "NZSHM22_APP_PORT is not set; the task launcher must export it before the JVM gateway starts"
+            )
+        return int(port)
 
 
 class ArgSweeper:

@@ -51,9 +51,6 @@ class PythonTaskFactory:
     def get_container_task(self) -> str:
         return ""
 
-    def get_next_port(self) -> int:
-        return self._next_task
-
     def write_task_config(self, task_arguments: BaseModel, task_runtime_args: TaskRuntimeArgs, model_type: ModelType):
         fname = self._config_path / f"config.{self._next_task}.json"
         task_config = get_task_config(task_arguments, task_runtime_args, model_type)

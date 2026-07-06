@@ -47,8 +47,6 @@ class TaskFactory(Protocol):
 
     def get_task_script(self) -> str: ...
 
-    def get_next_port(self) -> int: ...
-
     @classmethod
     def create(cls, **kwargs) -> "TaskFactory": ...
 
@@ -111,9 +109,6 @@ class OpenshaTaskFactory:
 
     def get_task_script(self) -> str:
         return self._get_bash_script()
-
-    def get_next_port(self) -> int:
-        return self._next_port
 
     def _get_bash_script(self) -> str:
         """

@@ -70,7 +70,7 @@ The core execution pipeline is:
 
 ### Key Abstractions
 
-**`SubmissionArgs` / `TaskRuntimeArgs`** (`runzi/arguments.py`): the submission↔worker arg split (ADR-0009). `SubmissionArgs` is the submitter-only config (ECS sizing, job definition, queue/compute env, task language) that each task module declares as a module-level `default_submission_args` instance and is **not** serialized to the worker. `TaskRuntimeArgs` is the small per-task context the worker needs (`general_task_id`, `task_count`, `use_api`, `java_gateway_port`, `java_threads`); it's assembled in `build_tasks` and is the only args model shipped to the container.
+**`SubmissionArgs` / `TaskRuntimeArgs`** (`runzi/arguments.py`): the submission↔worker arg split (ADR-0009). `SubmissionArgs` is the submitter-only config (ECS sizing, job definition, queue/compute env, task language) that each task module declares as a module-level `default_submission_args` instance and is **not** serialized to the worker. `TaskRuntimeArgs` is the small per-task context the worker needs (`general_task_id`, `task_count`, `use_api`, `java_threads`); it's assembled in `build_tasks` and is the only args model shipped to the container. Its `java_gateway_port` is a compute-on-read property (not a shipped field): the launcher that starts the JVM exports `NZSHM22_APP_PORT` (a free port per container on AWS Batch, where forced host networking makes a fixed port collide across concurrent jobs; the per-task port in the generated bash script on LOCAL/CLUSTER) and the property reads it, keeping the JVM and Python client on one port.
 
 **Task-specific `*Args`** classes: Pydantic models for user-provided job parameters (e.g., `OQHazardArgs` in `runzi/tasks/oq_hazard/hazard_args.py`).
 
