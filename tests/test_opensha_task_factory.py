@@ -7,6 +7,9 @@ runtime port because inversion_solution_builder uploads that file by name.
 """
 
 import subprocess
+import sys
+
+import pytest
 
 import runzi.build_tasks as a_module
 from runzi.automation.opensha_task_factory import OpenshaTaskFactory
@@ -44,6 +47,11 @@ def test_config_filename_uses_task_index_starting_at_one(tmp_path):
     assert 'config.2.json' in second
 
 
+@pytest.mark.skipif(
+    sys.platform == 'win32',
+    reason="generated script targets unix launchers (LOCAL/CLUSTER) and the linux AWS container; "
+    "Windows has no real bash (the `bash` shim is the WSL installer stub)",
+)
 def test_generated_script_is_valid_bash(tmp_path):
     script = _factory(tmp_path).get_task_script()
     proc = subprocess.run(['bash', '-n'], input=script, text=True, capture_output=True)
