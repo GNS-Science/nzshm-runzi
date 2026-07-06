@@ -60,15 +60,13 @@ class OpenshaTaskFactory:
         jre_path: Path | PurePath | str,
         app_jar_path: Path | PurePath | str,
         task_config_path: Path | PurePath | str | None = None,
-        initial_gateway_port: int = 25333,
         python: str = "python3",
         jvm_heap_start: int = 3,
         jvm_heap_max: int = 10,
     ):
-        """
-        initial_gateway_port: what port to start incrementing from
-        """
-        self._next_port = initial_gateway_port
+        # Per-task index used only for config/log filenames; the gateway port is chosen at runtime by
+        # the generated bash script (a free port, like the AWS container script), not seeded here.
+        self._next_task = 1
 
         self._jre_path = jre_path
         self._app_jar_path = app_jar_path
@@ -93,7 +91,6 @@ class OpenshaTaskFactory:
             jre_path=kwargs["jre_path"],
             app_jar_path=kwargs["app_jar_path"],
             task_config_path=kwargs.get("task_config_path"),
-            initial_gateway_port=kwargs.get("initial_gateway_port", 25333),
             python=kwargs.get("python", "python3"),
             jvm_heap_start=kwargs.get("jvm_heap_start", 3),
             jvm_heap_max=kwargs.get("jvm_heap_max", 10),
@@ -103,7 +100,7 @@ class OpenshaTaskFactory:
         return ""
 
     def write_task_config(self, task_args: BaseModel, task_runtime_args: TaskRuntimeArgs, model_type: ModelType):
-        fname = self._config_path / f"config.{self._next_port}.json"
+        fname = self._config_path / f"config.{self._next_task}.json"
         task_config = get_task_config(task_args, task_runtime_args, model_type)
         fname.write_text(json.dumps(task_config, indent=4), encoding="utf-8")
 
@@ -115,20 +112,25 @@ class OpenshaTaskFactory:
         get the bash for the next task
         """
 
+        # Pick a free gateway port at runtime (same approach as docker/java_container_task.sh) and
+        # export it for both the JVM and the Python client. The java log is named by the runtime port
+        # so inversion_solution_builder can upload java_app.<port>.log; config/logs otherwise use the
+        # per-task index.
         script = (
             f"export PATH={self._jre_path}:$PATH\n"
             f"export JAVA_CLASSPATH={self._app_jar_path}\n"
             "export CLASSNAME=nz.cri.gns.NZSHM22.opensha.util.NZSHM22_PythonGateway\n"
-            f"export NZSHM22_APP_PORT={self._next_port}\n"
+            'export NZSHM22_APP_PORT=$(python3 -c \'import socket; s=socket.socket(); '
+            's.bind(("127.0.0.1", 0)); print(s.getsockname()[1]); s.close()\')\n'
             f"java -Xms{self._jvm_heap_start_gb}G -Xmx{self._jvm_heap_max_gb}G"
             f" -classpath ${{JAVA_CLASSPATH}} ${{CLASSNAME}} > "
-            f"{self._working_path}/java_app.{self._next_port}.log &\n"
-            f"{self._python} {self._python_script} {self._config_path}/config.{self._next_port}.json > "
-            f"{self._working_path}/python_script.{self._next_port}.log\n"
+            f"{self._working_path}/java_app.${{NZSHM22_APP_PORT}}.log &\n"
+            f"{self._python} {self._python_script} {self._config_path}/config.{self._next_task}.json > "
+            f"{self._working_path}/python_script.{self._next_task}.log\n"
             # Kill the Java gateway server
             "kill -9 $!"
         )
-        self._next_port += 1
+        self._next_task += 1
         return script
 
 
@@ -178,7 +180,7 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
         return ""
 
     def write_task_config(self, task_args: BaseModel, task_runtime_args: TaskRuntimeArgs, model_type: ModelType):
-        fname = self._config_path / f"config.{self._next_port}.json"
+        fname = self._config_path / f"config.{self._next_task}.json"
         # PBS mode is unsupported; _pbs_wall_hours / _pbs_ppn keep their __init__ defaults (job timing
         # is submission-only and no longer on the per-task runtime args).
         self._pbs_ppn = task_runtime_args.java_threads or self._pbs_ppn

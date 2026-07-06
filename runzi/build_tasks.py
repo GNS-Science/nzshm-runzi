@@ -26,13 +26,6 @@ from runzi.aws import get_ecs_job_config, resolve_job_definition_digest
 from runzi.aws.batch_query import batch_job_name
 from runzi.protocols import ModuleWithDefaultSubmissionArgs
 
-# Base for the LOCAL/CLUSTER per-task index used as the py4j gateway port and the config/log file
-# suffix; the generated bash script increments it per task so co-located tasks get distinct ports and
-# filenames. AWS Batch doesn't use it: the gateway port is chosen at runtime by java_container_task.sh
-# (a free port per container, since forced host networking makes a fixed port collide across concurrent
-# jobs) and read back via TaskRuntimeArgs.java_gateway_port (NZSHM22_APP_PORT).
-INITIAL_GATEWAY_PORT = 26533
-
 
 def build_tasks(
     user_args: ArgSweeper,
@@ -52,7 +45,6 @@ def build_tasks(
         root_path=OPENSHA_ROOT,
         working_path=WORK_PATH,
         python_script_module=task_module,
-        initial_gateway_port=INITIAL_GATEWAY_PORT,
         jre_path=OPENSHA_JRE,
         app_jar_path=FATJAR,
         task_config_path=WORK_PATH,
