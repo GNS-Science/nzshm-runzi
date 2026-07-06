@@ -9,6 +9,7 @@ without arbitrary tags (which ``list_jobs`` cannot filter on).
 import json
 import time
 import urllib.parse
+from collections.abc import Iterator
 from typing import TYPE_CHECKING, Any
 
 from runzi.arguments import DEFAULT_JOB_QUEUE, EC2_JOB_QUEUE
@@ -139,6 +140,72 @@ def task_args_by_job_id(
             if task_args is not None:
                 result[job['jobId']] = task_args
     return result
+
+
+_DEFAULT_LOG_GROUP = '/aws/batch/job'  # our Batch job defs set no custom logConfiguration.
+
+
+class JobNotFound(Exception):
+    """Raised when ``describe_jobs`` returns no job for the requested id."""
+
+
+class LogStreamNotAvailable(Exception):
+    """Raised when a job exists but has no CloudWatch log stream yet (e.g. never started)."""
+
+
+def _log_group_and_stream(job: dict[str, Any]) -> tuple[str, str] | None:
+    """Return ``(log_group, log_stream)`` for a Batch job, or ``None`` if it has no stream yet.
+
+    The stream name comes straight from ``container.logStreamName`` (set once the job starts). The
+    group is read from the job's ``awslogs`` driver options, defaulting to ``/aws/batch/job`` — the
+    group our job definitions use, since they set no custom ``logConfiguration``.
+    """
+    container = job.get('container', {})
+    stream = container.get('logStreamName')
+    if not stream:
+        return None
+    options = container.get('logConfiguration', {}).get('options', {})
+    return options.get('awslogs-group', _DEFAULT_LOG_GROUP), stream
+
+
+def job_log_events(job_id: str, session: 'boto3.Session | None' = None) -> Iterator[str]:
+    """Yield the CloudWatch log lines for a single Batch job (issue #337).
+
+    Resolves the job's log group + stream via ``describe_jobs`` then pages ``get_log_events`` from
+    the head of the stream, yielding each event's message. Raises ``JobNotFound`` if the id matches
+    no job, or ``LogStreamNotAvailable`` if the job has not produced a log stream yet. Both are raised
+    lazily on first iteration (this is a generator).
+    """
+    session = session or get_session()
+    batch = session.client(
+        service_name='batch', region_name=_BATCH_REGION, endpoint_url=_BATCH_ENDPOINT
+    )
+    jobs = batch.describe_jobs(jobs=[job_id]).get('jobs', [])
+    if not jobs:
+        raise JobNotFound(job_id)
+    location = _log_group_and_stream(jobs[0])
+    if location is None:
+        raise LogStreamNotAvailable(job_id)
+    log_group, log_stream = location
+
+    logs = session.client(service_name='logs', region_name=_BATCH_REGION)
+    kwargs: dict[str, Any] = {
+        'logGroupName': log_group,
+        'logStreamName': log_stream,
+        'startFromHead': True,
+    }
+    token: str | None = None
+    while True:
+        if token is not None:
+            kwargs['nextToken'] = token
+        response = logs.get_log_events(**kwargs)
+        events = response.get('events', [])
+        for event in events:
+            yield event.get('message', '')
+        next_token = response.get('nextForwardToken')
+        if not events or next_token is None or next_token == token:
+            break
+        token = next_token
 
 
 def swept_arg_keys(task_args_by_job: dict[str, dict[str, Any]]) -> list[str]:
