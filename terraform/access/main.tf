@@ -94,6 +94,14 @@ resource "aws_iam_policy" "runzi_batch" {
         ]
         Resource = "*"
       },
+      {
+        Sid    = "BatchLogsRead"
+        Effect = "Allow"
+        Action = [
+          "logs:GetLogEvents",
+        ]
+        Resource = "arn:aws:logs:*:*:log-group:/aws/batch/job:*"
+      },
     ]
   })
 }

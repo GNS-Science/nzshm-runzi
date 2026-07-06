@@ -1,15 +1,20 @@
-"""Tests for runzi.aws.batch_query — the read-only AWS Batch inspection primitives (issue #326)."""
+"""Tests for runzi.aws.batch_query — the read-only AWS Batch inspection primitives (issues #326, #337)."""
 
 import json
 import re
 import urllib.parse
 
+import pytest
+
 from runzi.arguments import DEFAULT_JOB_QUEUE, EC2_JOB_QUEUE
 from runzi.aws.aws import compress_config
 from runzi.aws.batch_query import (
+    JobNotFound,
+    LogStreamNotAvailable,
     batch_job_name,
     general_task_id_token,
     job_duration,
+    job_log_events,
     jobs_for_general_task,
     swept_arg_keys,
     task_args_by_job_id,
@@ -235,3 +240,86 @@ class TestSweptArgKeys:
             'b': {'site_params': {'vs30': 400, 'z1pt0': 0.5}},
         }
         assert swept_arg_keys(by_job) == ['site_params']
+
+
+def _job_with_stream(job_id, stream='oq/default/abc', log_group=None):
+    container = {'logStreamName': stream}
+    if log_group is not None:
+        container['logConfiguration'] = {'options': {'awslogs-group': log_group}}
+    return {'jobId': job_id, 'container': container}
+
+
+class _FakeLogsClient:
+    """Returns canned get_log_events pages in order; records the kwargs of each call."""
+
+    def __init__(self, pages):
+        self._pages = pages
+        self.calls = []
+
+    def get_log_events(self, **kwargs):
+        page = self._pages[len(self.calls)]
+        self.calls.append(kwargs)
+        return page
+
+
+class _FakeLogSession:
+    def __init__(self, batch_client, logs_client=None):
+        self._batch = batch_client
+        self._logs = logs_client
+
+    def client(self, service_name, **kwargs):
+        if service_name == 'batch':
+            return self._batch
+        if service_name == 'logs':
+            return self._logs
+        raise AssertionError(service_name)
+
+
+class TestJobLogEvents:
+    def test_yields_messages_across_paginated_pages(self):
+        batch = _FakeDescribeClient({'j1': _job_with_stream('j1')})
+        logs = _FakeLogsClient(
+            [
+                {'events': [{'message': 'line1'}, {'message': 'line2'}], 'nextForwardToken': 't1'},
+                {'events': [{'message': 'line3'}], 'nextForwardToken': 't2'},
+                {'events': [], 'nextForwardToken': 't2'},  # token unchanged -> stop
+            ]
+        )
+        lines = list(job_log_events('j1', session=_FakeLogSession(batch, logs)))
+        assert lines == ['line1', 'line2', 'line3']
+
+    def test_first_call_has_no_next_token_then_pages_with_token(self):
+        batch = _FakeDescribeClient({'j1': _job_with_stream('j1')})
+        logs = _FakeLogsClient(
+            [
+                {'events': [{'message': 'a'}], 'nextForwardToken': 't1'},
+                {'events': [], 'nextForwardToken': 't1'},
+            ]
+        )
+        list(job_log_events('j1', session=_FakeLogSession(batch, logs)))
+        assert 'nextToken' not in logs.calls[0]
+        assert logs.calls[1]['nextToken'] == 't1'
+
+    def test_defaults_to_aws_batch_job_log_group(self):
+        batch = _FakeDescribeClient({'j1': _job_with_stream('j1', stream='s')})
+        logs = _FakeLogsClient([{'events': [], 'nextForwardToken': 't0'}])
+        list(job_log_events('j1', session=_FakeLogSession(batch, logs)))
+        assert logs.calls[0]['logGroupName'] == '/aws/batch/job'
+        assert logs.calls[0]['logStreamName'] == 's'
+        assert logs.calls[0]['startFromHead'] is True
+
+    def test_uses_custom_log_group_from_job_config(self):
+        batch = _FakeDescribeClient({'j1': _job_with_stream('j1', log_group='/custom/group')})
+        logs = _FakeLogsClient([{'events': [], 'nextForwardToken': 't0'}])
+        list(job_log_events('j1', session=_FakeLogSession(batch, logs)))
+        assert logs.calls[0]['logGroupName'] == '/custom/group'
+
+    def test_raises_job_not_found_when_describe_returns_nothing(self):
+        batch = _FakeDescribeClient({})
+        with pytest.raises(JobNotFound):
+            list(job_log_events('missing', session=_FakeLogSession(batch)))
+
+    def test_raises_log_stream_not_available_when_job_has_no_stream(self):
+        batch = _FakeDescribeClient({'j1': {'jobId': 'j1', 'container': {}}})
+        with pytest.raises(LogStreamNotAvailable):
+            list(job_log_events('j1', session=_FakeLogSession(batch)))

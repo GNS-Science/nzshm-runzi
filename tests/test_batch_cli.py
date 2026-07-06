@@ -1,11 +1,13 @@
-"""Tests for the `runzi batch status` CLI (issue #326)."""
+"""Tests for the `runzi batch` CLI commands: `status` (issue #326) and `log` (issue #337)."""
 
 import re
+from pathlib import Path
 from unittest.mock import patch
 
 from botocore.exceptions import ClientError
 from typer.testing import CliRunner
 
+from runzi.aws.batch_query import JobNotFound, LogStreamNotAvailable
 from runzi.cli import batch_cli, runzi_cli
 
 runner = CliRunner(env={"NO_COLOR": "1", "LANG": "en_US.UTF-8", "COLUMNS": "200"})
@@ -111,3 +113,41 @@ def test_status_handles_describe_access_denied():
 
     assert result.exit_code == 1
     assert 'batch:DescribeJobs' in strip_ansi(result.output)
+
+
+def test_log_writes_file_and_confirmation():
+    with runner.isolated_filesystem():
+        with patch.object(batch_cli, 'job_log_events', return_value=iter(['line1', 'line2'])):
+            result = runner.invoke(runzi_cli.app, ['batch', 'log', 'aaaa-1111'])
+        assert result.exit_code == 0
+        assert Path('aaaa-1111.log').read_text() == 'line1\nline2\n'
+        out = strip_ansi(result.output)
+        assert 'aaaa-1111.log' in out
+        assert '2' in out  # line count
+
+
+def test_log_reports_job_not_found():
+    with runner.isolated_filesystem():
+        with patch.object(batch_cli, 'job_log_events', side_effect=JobNotFound('nope')):
+            result = runner.invoke(runzi_cli.app, ['batch', 'log', 'nope'])
+        assert result.exit_code == 1
+        assert 'no' in strip_ansi(result.output).lower()
+        assert not Path('nope.log').exists()
+
+
+def test_log_reports_no_log_stream_yet():
+    with runner.isolated_filesystem():
+        with patch.object(batch_cli, 'job_log_events', side_effect=LogStreamNotAvailable('j1')):
+            result = runner.invoke(runzi_cli.app, ['batch', 'log', 'j1'])
+        assert result.exit_code == 0
+        assert 'no log' in strip_ansi(result.output).lower()
+        assert not Path('j1.log').exists()
+
+
+def test_log_handles_access_denied():
+    err = ClientError({'Error': {'Code': 'AccessDeniedException', 'Message': 'x'}}, 'GetLogEvents')
+    with runner.isolated_filesystem():
+        with patch.object(batch_cli, 'job_log_events', side_effect=err):
+            result = runner.invoke(runzi_cli.app, ['batch', 'log', 'j1'])
+        assert result.exit_code == 1
+        assert 'logs:GetLogEvents' in strip_ansi(result.output)

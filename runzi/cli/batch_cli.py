@@ -1,11 +1,13 @@
-"""The `runzi batch` CLI: read-only inspection of a general task's AWS Batch jobs (issue #326).
+"""The `runzi batch` CLI: read-only inspection of a general task's AWS Batch jobs (issues #326, #337).
 
-Federated Cognito users have no AWS console access, so this surfaces the job state they otherwise
-couldn't see. It is deliberately read-only (no terminate / log-fetching in this version).
+Federated Cognito users have no AWS console access, so this surfaces the job state and logs they
+otherwise couldn't see. It is deliberately read-only — it inspects jobs and downloads their logs but
+never mutates them (no terminate in this version).
 """
 
 import datetime as dt
 from collections import Counter
+from pathlib import Path
 from typing import Annotated
 
 import typer
@@ -13,7 +15,15 @@ from botocore.exceptions import ClientError
 from rich.console import Console
 from rich.table import Table
 
-from runzi.aws.batch_query import job_duration, jobs_for_general_task, swept_arg_keys, task_args_by_job_id
+from runzi.aws.batch_query import (
+    JobNotFound,
+    LogStreamNotAvailable,
+    job_duration,
+    job_log_events,
+    jobs_for_general_task,
+    swept_arg_keys,
+    task_args_by_job_id,
+)
 
 app = typer.Typer()
 console = Console()
@@ -95,6 +105,38 @@ def status(
     counts = Counter(job.get('status', 'UNKNOWN') for job in jobs)
     breakdown = "  ".join(f"{name}: {n}" for name, n in sorted(counts.items()))
     console.print(f"[bold]{len(jobs)} job(s)[/bold]  {breakdown}")
+
+
+@app.command()
+def log(
+    job_id: Annotated[str, typer.Argument(help="the Job ID printed by `runzi batch status`")],
+):
+    """Fetch a single Batch job's CloudWatch log and write it to ``<JOB_ID>.log`` in the current dir.
+
+    Find the Job ID with `runzi batch status`. AWS Batch keeps terminal jobs (and their logs) for
+    only ~24h, so a very old job may no longer have retrievable logs.
+    """
+    try:
+        lines = list(job_log_events(job_id))
+    except JobNotFound:
+        console.print(
+            f"[red]No Batch job found with id {job_id}.[/red] Check the id from `runzi batch "
+            "status`; terminal jobs age out of AWS Batch after ~24h."
+        )
+        raise typer.Exit(code=1) from None
+    except LogStreamNotAvailable:
+        console.print(
+            f"[yellow]Job {job_id} has no log stream yet.[/yellow] It has not started running, so "
+            "there are no logs to fetch."
+        )
+        raise typer.Exit(code=0) from None
+    except ClientError as exc:
+        _exit_on_access_denied(exc, 'logs:GetLogEvents')
+        raise
+
+    path = Path(f"{job_id}.log")
+    path.write_text(''.join(f'{line}\n' for line in lines))
+    console.print(f"[green]Wrote {len(lines)} line(s) to {path}.[/green]")
 
 
 if __name__ == "__main__":
