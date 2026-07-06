@@ -1,0 +1,5 @@
+{
+    "title": "Batch fail-signal test (issue #333)",
+    "description": "Intentional-failure diagnostic task; the AWS Batch job should end FAILED, not SUCCEEDED.",
+    "exit_code": 1
+}

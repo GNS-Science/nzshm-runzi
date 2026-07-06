@@ -47,6 +47,20 @@ def test_config_filename_uses_task_index_starting_at_one(tmp_path):
     assert 'config.2.json' in second
 
 
+def test_generated_script_propagates_python_exit_status(tmp_path):
+    """The launcher must exit with the python task's status, not the trailing kill's (issue #333).
+
+    A bare `kill -9 $!` as the final command would always exit 0 (kill succeeds), masking task
+    failures from the LOCAL/CLUSTER caller (`check_call(['bash', script])`)."""
+    script = _factory(tmp_path).get_task_script()
+    # capture python's status right after its invocation, before the kill can clobber $?
+    assert 'python_script.1.log\nstatus=$?\n' in script
+    # the JVM kill must not be the last command...
+    assert not script.rstrip().endswith('kill -9 $!')
+    # ...instead the script ends by re-raising the captured status
+    assert script.rstrip().endswith('exit $status')
+
+
 @pytest.mark.skipif(
     sys.platform == 'win32',
     reason="generated script targets unix launchers (LOCAL/CLUSTER) and the linux AWS container; "
@@ -56,3 +70,17 @@ def test_generated_script_is_valid_bash(tmp_path):
     script = _factory(tmp_path).get_task_script()
     proc = subprocess.run(['bash', '-n'], input=script, text=True, capture_output=True)
     assert proc.returncode == 0, proc.stderr
+
+
+@pytest.mark.skipif(
+    sys.platform == 'win32',
+    reason="exercises real bash exit-status semantics; Windows has no real bash",
+)
+def test_generated_script_exit_status_is_the_python_status(tmp_path):
+    """Functionally confirm a failing task yields a non-zero script exit (would be 0 before the fix)."""
+    script = _factory(tmp_path).get_task_script()
+    # Stub out the real launchers so we can drive exit semantics without java/python: a failing task
+    # (python3 -> exit 7) followed by a successful kill must leave the script exiting 7, not 0.
+    harness = 'python3() { return 7; }\njava() { :; }\nkill() { return 0; }\n' + script
+    proc = subprocess.run(['bash', '-c', harness], capture_output=True, text=True)
+    assert proc.returncode == 7, proc.stderr
