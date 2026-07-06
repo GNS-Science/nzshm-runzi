@@ -1,4 +1,4 @@
-"""Tests for the `runzi batch status` CLI (issue #326)."""
+"""Tests for the `runzi batch` CLI commands: `status` (issue #326) and `log` (issue #337)."""
 
 import re
 from pathlib import Path

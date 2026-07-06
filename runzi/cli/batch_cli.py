@@ -1,7 +1,8 @@
-"""The `runzi batch` CLI: read-only inspection of a general task's AWS Batch jobs (issue #326).
+"""The `runzi batch` CLI: read-only inspection of a general task's AWS Batch jobs (issues #326, #337).
 
-Federated Cognito users have no AWS console access, so this surfaces the job state they otherwise
-couldn't see. It is deliberately read-only (no terminate / log-fetching in this version).
+Federated Cognito users have no AWS console access, so this surfaces the job state and logs they
+otherwise couldn't see. It is deliberately read-only — it inspects jobs and downloads their logs but
+never mutates them (no terminate in this version).
 """
 
 import datetime as dt

@@ -1,4 +1,4 @@
-"""Tests for runzi.aws.batch_query — the read-only AWS Batch inspection primitives (issue #326)."""
+"""Tests for runzi.aws.batch_query — the read-only AWS Batch inspection primitives (issues #326, #337)."""
 
 import json
 import re
