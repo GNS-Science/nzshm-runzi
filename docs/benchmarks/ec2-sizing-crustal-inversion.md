@@ -1,8 +1,13 @@
-# EC2 sizing benchmark — crustal inversion (#323, Phase 1 intermediate results)
+# EC2 sizing benchmark — crustal inversion (#323)
 
-**Status:** intermediate. Phase 1 (job sizing on the shared `"optimal"` EC2 CE) is complete; Phase 2
-(instance-type pinning) is the follow-up. Prices are approximate (see the caveats) so treat absolute
-dollar figures as indicative and rely on *relative* comparisons.
+**Status:** Phase 1 (job sizing) and Phase 2 (instance-type comparison) complete. Prices are
+approximate (see the caveats) so treat absolute dollar figures as indicative and rely on *relative*
+comparisons — the throughput findings are measured and price-independent.
+
+**Headline:** size crustal inversions at **8 vCPU on a compute-optimized instance** (c6a preferred,
+c6i next). Compute-optimized beats memory-optimized by ~50–85% on iterations-per-dollar, and AMD (6a)
+does ~12% more work than Intel (6i) at the same vCPU. The Phase-1 `"optimal"` setting was defaulting
+inversions onto **r6i — the worst family tested**.
 
 ## Method
 
@@ -63,12 +68,47 @@ demand cells catching some `m6i`:
    ~30% cheaper per vCPU and, if the inversion is compute-bound, could improve absolute cost/iteration —
    the open Phase-2 question.
 
-## Recommendation (interim)
+## Phase 2 — instance-type comparison (8 vCPU, exact-fit .2xlarge, one job per instance)
 
-- **Size crustal inversions at ~8 vCPU** for best iterations-per-dollar. If solution *quality* is the
-  goal rather than raw iterations, even 4 vCPU is adequate (energy is near-identical) and cheaper.
-- Defer changing the crustal default `SubmissionArgs` (currently 4 vCPU) until Phase 2 settles the
-  family/absolute-cost question; that change would get its own ADR.
+Each family pinned to its 8-vCPU `.2xlarge` via `terraform/ec2-sizing-benchmark/` (one job per
+instance = no co-tenancy confound), 15 inversions per family, constant memory (14 GB). Aggregated:
+
+| family | mean iters | energy | iters/$ | ~$/10-min inversion |
+|---|---|---|---|---|
+| **c6a** (AMD compute) | 342.7M | 3136 | **6.05e9** | **$0.057** |
+| m6a (AMD general) | 341.4M | 3136 | 5.33e9 | $0.064 |
+| c6i (Intel compute) | 302.7M | 3144 | 4.76e9 | $0.064 |
+| m6i (Intel general) | 303.5M | 3144 | 4.24e9 | $0.072 |
+| r6a (AMD memory) | 337.5M | 3138 | 4.02e9 | $0.084 |
+| r6i (Intel memory) | 306.6M | 3143 | 3.26e9 | $0.094 |
+
+Two robust, largely price-independent findings:
+
+1. **AMD (6a) does ~12% more iterations than Intel (6i)** at the same 8 vCPU (measured throughput).
+2. **Throughput is ~identical across c/m/r within a vendor** — the inversion is not memory-bandwidth-
+   bound, so the family difference is essentially price per vCPU, and compute-optimized wins.
+
+Combined: **c6a is the clear winner** (~27% better iters/$ than c6i, ~46% better than r6i). r6i — the
+family `"optimal"` defaulted to in Phase 1 — is the worst, ~65% more $/inversion than c6a. Energy is
+flat across all families (~3135–3145): solution quality is identical; only cost differs.
+
+## Recommendation
+
+- **Size crustal inversions at 8 vCPU on a compute-optimized instance** — `c6a.2xlarge` preferred,
+  `c6i.2xlarge` if AMD capacity is short. This is ~50–85% better iters/$ than the r6i the shared
+  `"optimal"` CE was choosing. (If solution *quality* is the goal over raw iterations, even 4 vCPU is
+  adequate — energy is near-identical — and cheaper still.)
+- **Steer the shared EC2 CE away from `"optimal"`** for inversion workloads: pin
+  `ec2_instance_types` in `terraform/batch` to compute-optimized families (e.g. `["c6a", "c6i"]`), or
+  run inversions on a compute-optimized queue. Caveat: this CE is shared with OQ hazard/disagg, which
+  may have a different memory profile — validate those before narrowing the shared CE (or give
+  inversions their own compute-optimized target).
+- Applying either — changing the crustal default `SubmissionArgs` (currently 4 vCPU) and/or the CE's
+  `ec2_instance_types` — is an architecture change and gets its own ADR, citing this benchmark.
+
+Memory floor caveat: c6a/c6i `.2xlarge` is 16 GiB (~12–14 GB heap). This rupture set converged fine
+there; a larger rupture set needing more heap would need a bigger compute-optimized size (c6a.4xlarge,
+32 GiB) or a general-purpose instance — re-check the memory floor before committing to c-family.
 
 ## Caveats
 
@@ -79,12 +119,12 @@ demand cells catching some `m6i`:
   cgroup CPU limits. Relative vCPU ranking is stable; absolute iters/$ drifts with packing. Phase 2's
   one-job-per-instance pinning removes this confound.
 
-## Next: Phase 2
+## Reproducing / methodology notes
 
-Compare instance *families* at 8 vCPU by pinning each to its exact-fit `.2xlarge`
-(`c6i`/`m6i`/`r6i` + AMD `c6a`/`m6a`/`r6a`) — one job per instance, so no co-tenancy confound and a
-clean family + absolute-cost comparison. Rather than re-pinning the shared `runzi-ec2-CE` once per
-family, `terraform/ec2-sizing-benchmark/` stands up one throwaway pinned CE + queue **per instance
-type in a single `terraform apply`**, and one `terraform destroy` removes them all (the shared CE is
-never touched). `submit_matrix.py --job-queue <queue> --vcpus 8 --memory-mb 14000` routes each family's
-jobs to its queue; see that module's README for the runbook. Deployer credentials required.
+Phase 2 used `terraform/ec2-sizing-benchmark/` — one throwaway pinned CE + queue per instance type in a
+single `terraform apply` (one `terraform destroy` removes them; the shared `runzi-ec2-CE` is never
+touched). `submit_matrix.py --job-queue <queue> --vcpus 8 --memory-mb 14000` routes each family's jobs
+to its queue; `collect_results.py --queues <queue> --instance-type <type>` prices them. Passing
+`--instance-type` is required once the CEs scale to zero: `min_vcpus = 0` terminates the instances and
+ECS deregisters them, so `describe_container_instances` returns `MISSING` and the type can only come
+from the (known) pin. See that module's README for the full runbook.
