@@ -132,6 +132,19 @@ resource "aws_iam_policy" "runzi_admin" {
           "arn:aws:ecr:*:*:repository/nzshm22/*",
         ]
       },
+      {
+        # Read-only lookup of which EC2 instance a Batch job ran on (#323 cost analysis):
+        # describe_jobs -> containerInstanceArn -> ECS -> ec2InstanceId -> EC2 -> InstanceType.
+        # Both are describe-only; neither supports resource-level scoping for these dynamic ids.
+        # Admin-only: benchmarking/cost analysis is an admin activity, not routine batch submit.
+        Sid    = "BatchInstanceResolve"
+        Effect = "Allow"
+        Action = [
+          "ecs:DescribeContainerInstances",
+          "ec2:DescribeInstances",
+        ]
+        Resource = "*"
+      },
     ]
   })
 }

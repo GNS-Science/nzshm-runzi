@@ -142,6 +142,115 @@ def task_args_by_job_id(
     return result
 
 
+_DESCRIBE_CONTAINER_INSTANCES_BATCH = 100  # ECS describe_container_instances accepts at most 100 per call.
+_DESCRIBE_INSTANCES_BATCH = 100  # keep EC2 describe_instances calls modest; well under any page limit.
+
+
+def _cluster_from_container_instance_arn(arn: str) -> str | None:
+    """Return the ECS cluster name embedded in a long-format container-instance ARN, else ``None``.
+
+    ``describe_container_instances`` is cluster-scoped, so we recover the cluster from the ARN itself.
+    Long-format ARNs (the AWS default since 2018) are
+    ``arn:aws:ecs:<region>:<acct>:container-instance/<cluster>/<id>``; a short-format ARN (no cluster
+    segment) returns ``None`` and that instance is simply skipped.
+    """
+    tail = arn.split(':')[-1]  # 'container-instance/<cluster>/<id>' for long-format ARNs
+    parts = tail.split('/')
+    if len(parts) != 3 or parts[0] != 'container-instance':
+        return None
+    return parts[1]
+
+
+def _container_instance_arn_by_job(batch: Any, job_ids: list[str]) -> dict[str, str]:
+    """Return ``{job_id: containerInstanceArn}`` from ``describe_jobs``, skipping jobs without one.
+
+    Only placed EC2 jobs carry a ``containerInstanceArn`` — Fargate and not-yet-placed jobs are
+    dropped. ``describe_jobs`` is batched in groups of 100 (the AWS limit), like ``task_args_by_job_id``.
+    """
+    result: dict[str, str] = {}
+    for start in range(0, len(job_ids), _DESCRIBE_JOBS_BATCH):
+        chunk = job_ids[start : start + _DESCRIBE_JOBS_BATCH]
+        for job in batch.describe_jobs(jobs=chunk).get('jobs', []):
+            arn = job.get('container', {}).get('containerInstanceArn')
+            if arn:
+                result[job['jobId']] = arn
+    return result
+
+
+def _ec2_id_by_container_instance_arn(ecs: Any, ci_arns: set[str]) -> dict[str, str]:
+    """Return ``{containerInstanceArn: ec2InstanceId}`` via cluster-scoped ``describe_container_instances``.
+
+    ARNs are grouped by the cluster parsed from each ARN (the call is cluster-scoped) and each cluster's
+    ARNs are queried in chunks of 100. Instances whose cluster can't be parsed are skipped.
+    """
+    arns_by_cluster: dict[str, list[str]] = {}
+    for arn in ci_arns:
+        cluster = _cluster_from_container_instance_arn(arn)
+        if cluster is not None:
+            arns_by_cluster.setdefault(cluster, []).append(arn)
+    result: dict[str, str] = {}
+    for cluster, arns in arns_by_cluster.items():
+        for start in range(0, len(arns), _DESCRIBE_CONTAINER_INSTANCES_BATCH):
+            chunk = arns[start : start + _DESCRIBE_CONTAINER_INSTANCES_BATCH]
+            described = ecs.describe_container_instances(cluster=cluster, containerInstances=chunk)
+            for ci in described.get('containerInstances', []):
+                ec2_id = ci.get('ec2InstanceId')
+                if ec2_id:
+                    result[ci['containerInstanceArn']] = ec2_id
+    return result
+
+
+def _type_by_ec2_id(ec2: Any, ec2_ids: set[str]) -> dict[str, str]:
+    """Return ``{ec2InstanceId: InstanceType}`` via ``describe_instances``, batched in groups of 100."""
+    ids = list(ec2_ids)
+    result: dict[str, str] = {}
+    for start in range(0, len(ids), _DESCRIBE_INSTANCES_BATCH):
+        chunk = ids[start : start + _DESCRIBE_INSTANCES_BATCH]
+        described = ec2.describe_instances(InstanceIds=chunk)
+        for reservation in described.get('Reservations', []):
+            for instance in reservation.get('Instances', []):
+                instance_type = instance.get('InstanceType')
+                if instance_type:
+                    result[instance['InstanceId']] = instance_type
+    return result
+
+
+def instance_type_by_job_id(
+    job_ids: list[str],
+    session: 'boto3.Session | None' = None,
+) -> dict[str, str]:
+    """Return ``{job_id: ec2_instance_type}`` for the EC2 instance each Batch job actually ran on (#323).
+
+    Under a ``BEST_FIT_PROGRESSIVE`` / ``["optimal"]`` compute environment, Batch — not the caller —
+    picks the instance type, so cost can only be attributed by reading back which instance ran each
+    job. The chain is: ``batch.describe_jobs`` → ``container.containerInstanceArn`` (present only for
+    placed EC2 jobs) → ECS ``describe_container_instances`` (cluster-scoped) → ``ec2InstanceId`` →
+    EC2 ``describe_instances`` → ``InstanceType``. Jobs that are Fargate, not yet placed, or whose
+    lookups don't resolve are omitted from the mapping rather than raising.
+    """
+    session = session or get_session()
+    batch = session.client(service_name='batch', region_name=_BATCH_REGION, endpoint_url=_BATCH_ENDPOINT)
+    ci_arn_by_job = _container_instance_arn_by_job(batch, job_ids)
+    if not ci_arn_by_job:
+        return {}
+
+    ecs = session.client(service_name='ecs', region_name=_BATCH_REGION)
+    ec2_id_by_ci_arn = _ec2_id_by_container_instance_arn(ecs, set(ci_arn_by_job.values()))
+    if not ec2_id_by_ci_arn:
+        return {}
+
+    ec2 = session.client(service_name='ec2', region_name=_BATCH_REGION)
+    type_by_ec2_id = _type_by_ec2_id(ec2, set(ec2_id_by_ci_arn.values()))
+
+    # Stitch job_id -> instance type, dropping any link that didn't resolve.
+    result: dict[str, str] = {}
+    for job_id, ci_arn in ci_arn_by_job.items():
+        instance_type = type_by_ec2_id.get(ec2_id_by_ci_arn.get(ci_arn, ''))
+        if instance_type is not None:
+            result[job_id] = instance_type
+    return result
+
+
 _DEFAULT_LOG_GROUP = '/aws/batch/job'  # our Batch job defs set no custom logConfiguration.
 
 
@@ -177,9 +286,7 @@ def job_log_events(job_id: str, session: 'boto3.Session | None' = None) -> Itera
     lazily on first iteration (this is a generator).
     """
     session = session or get_session()
-    batch = session.client(
-        service_name='batch', region_name=_BATCH_REGION, endpoint_url=_BATCH_ENDPOINT
-    )
+    batch = session.client(service_name='batch', region_name=_BATCH_REGION, endpoint_url=_BATCH_ENDPOINT)
     jobs = batch.describe_jobs(jobs=[job_id]).get('jobs', [])
     if not jobs:
         raise JobNotFound(job_id)
