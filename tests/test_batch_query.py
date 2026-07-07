@@ -13,6 +13,7 @@ from runzi.aws.batch_query import (
     LogStreamNotAvailable,
     batch_job_name,
     general_task_id_token,
+    instance_type_by_job_id,
     job_duration,
     job_log_events,
     jobs_for_general_task,
@@ -240,6 +241,108 @@ class TestSweptArgKeys:
             'b': {'site_params': {'vs30': 400, 'z1pt0': 0.5}},
         }
         assert swept_arg_keys(by_job) == ['site_params']
+
+
+def _ci_arn(cluster='CE', ci_id='ci-1'):
+    return f'arn:aws:ecs:us-east-1:111122223333:container-instance/{cluster}/{ci_id}'
+
+
+def _job_on_instance(job_id, ci_arn):
+    return {'jobId': job_id, 'container': {'containerInstanceArn': ci_arn}}
+
+
+class _FakeEcsClient:
+    """Maps container-instance ARN -> ec2 instance id, cluster-scoped; records describe calls."""
+
+    def __init__(self, ec2_id_by_ci_arn):
+        self._map = ec2_id_by_ci_arn
+        self.calls = []
+
+    def describe_container_instances(self, cluster, containerInstances):
+        self.calls.append({'cluster': cluster, 'containerInstances': list(containerInstances)})
+        return {
+            'containerInstances': [
+                {'containerInstanceArn': arn, 'ec2InstanceId': self._map[arn]}
+                for arn in containerInstances
+                if arn in self._map
+            ]
+        }
+
+
+class _FakeEc2Client:
+    """Maps ec2 instance id -> instance type; records describe_instances calls."""
+
+    def __init__(self, type_by_instance_id):
+        self._map = type_by_instance_id
+        self.calls = []
+
+    def describe_instances(self, InstanceIds):
+        self.calls.append(list(InstanceIds))
+        return {
+            'Reservations': [
+                {
+                    'Instances': [
+                        {'InstanceId': iid, 'InstanceType': self._map[iid]} for iid in InstanceIds if iid in self._map
+                    ]
+                }
+            ]
+        }
+
+
+class _FakeMultiServiceSession:
+    def __init__(self, batch=None, ecs=None, ec2=None):
+        self._clients = {'batch': batch, 'ecs': ecs, 'ec2': ec2}
+
+    def client(self, service_name, **kwargs):
+        client = self._clients.get(service_name)
+        if client is None:
+            raise AssertionError(service_name)
+        return client
+
+
+class TestInstanceTypeByJobId:
+    def test_maps_ec2_jobs_to_instance_types(self):
+        arn_a, arn_b = _ci_arn(ci_id='ci-a'), _ci_arn(ci_id='ci-b')
+        batch = _FakeDescribeClient({'a': _job_on_instance('a', arn_a), 'b': _job_on_instance('b', arn_b)})
+        ecs = _FakeEcsClient({arn_a: 'i-aaa', arn_b: 'i-bbb'})
+        ec2 = _FakeEc2Client({'i-aaa': 'c4.2xlarge', 'i-bbb': 'r4.2xlarge'})
+        result = instance_type_by_job_id(['a', 'b'], session=_FakeMultiServiceSession(batch, ecs, ec2))
+        assert result == {'a': 'c4.2xlarge', 'b': 'r4.2xlarge'}
+
+    def test_omits_jobs_with_no_container_instance(self):
+        arn_a = _ci_arn(ci_id='ci-a')
+        batch = _FakeDescribeClient(
+            {'a': _job_on_instance('a', arn_a), 'b': {'jobId': 'b', 'container': {}}}  # Fargate / unplaced
+        )
+        ecs = _FakeEcsClient({arn_a: 'i-aaa'})
+        ec2 = _FakeEc2Client({'i-aaa': 'c4.2xlarge'})
+        result = instance_type_by_job_id(['a', 'b'], session=_FakeMultiServiceSession(batch, ecs, ec2))
+        assert result == {'a': 'c4.2xlarge'}
+
+    def test_batches_describe_jobs_in_chunks_of_100(self):
+        ids = [str(n) for n in range(150)]
+        arns = {i: _ci_arn(ci_id=f'ci-{i}') for i in ids}
+        batch = _FakeDescribeClient({i: _job_on_instance(i, arns[i]) for i in ids})
+        ecs = _FakeEcsClient({arns[i]: f'i-{i}' for i in ids})
+        ec2 = _FakeEc2Client({f'i-{i}': 'm4.large' for i in ids})
+        instance_type_by_job_id(ids, session=_FakeMultiServiceSession(batch, ecs, ec2))
+        assert [len(call) for call in batch.describe_calls] == [100, 50]
+
+    def test_groups_container_instance_lookups_by_cluster(self):
+        arn_a, arn_b = _ci_arn(cluster='CE1', ci_id='ci-a'), _ci_arn(cluster='CE2', ci_id='ci-b')
+        batch = _FakeDescribeClient({'a': _job_on_instance('a', arn_a), 'b': _job_on_instance('b', arn_b)})
+        ecs = _FakeEcsClient({arn_a: 'i-aaa', arn_b: 'i-bbb'})
+        ec2 = _FakeEc2Client({'i-aaa': 'c4.xlarge', 'i-bbb': 'c4.xlarge'})
+        instance_type_by_job_id(['a', 'b'], session=_FakeMultiServiceSession(batch, ecs, ec2))
+        assert {call['cluster'] for call in ecs.calls} == {'CE1', 'CE2'}
+
+    def test_omits_job_when_ec2_instance_type_missing(self):
+        arn_a = _ci_arn(ci_id='ci-a')
+        batch = _FakeDescribeClient({'a': _job_on_instance('a', arn_a)})
+        ecs = _FakeEcsClient({arn_a: 'i-aaa'})
+        ec2 = _FakeEc2Client({})  # EC2 returns nothing for the instance
+        result = instance_type_by_job_id(['a'], session=_FakeMultiServiceSession(batch, ecs, ec2))
+        assert result == {}
 
 
 def _job_with_stream(job_id, stream='oq/default/abc', log_group=None):
