@@ -44,6 +44,10 @@ class TestBuildCells:
         assert len(cells) == len(submit.VCPUS) * 2
         assert {c.ratio_label for c in cells} == {'C', 'M'}
 
+    def test_vcpus_filter_selects_only_given_vcpus(self):
+        cells = submit.build_cells(1, ratios=['M'], vcpus=[8])
+        assert [(c.vcpu, c.ratio_label) for c in cells] == [(8, 'M')]
+
 
 class TestLimit:
     def test_limit_one_dry_run_renders_single_cell(self, capsys):
@@ -95,6 +99,20 @@ class TestRenderConfig:
         cell = submit.Cell(vcpu=4, memory_mb=8192, ratio_label='C', replicate=0)
         config = submit.render_config(self._template(), cell, 2.0, 30, 'runzi-ec2-experimental-JD')
         assert config['max_inversion_time'] == 2.0
+
+    def test_memory_and_job_queue_overrides(self):
+        cell = submit.Cell(vcpu=8, memory_mb=65536, ratio_label='R', replicate=0)
+        config = submit.render_config(
+            self._template(), cell, None, 30, 'runzi-ec2-experimental-JD', memory_mb=14000, job_queue='bench-c6i-Q'
+        )
+        overrides = config['submission_arg_overrides']
+        assert overrides['ecs_memory'] == 14000  # ratio-derived 65536 overridden
+        assert overrides['ecs_job_queue'] == 'bench-c6i-Q'
+
+    def test_no_job_queue_override_by_default(self):
+        cell = submit.Cell(vcpu=8, memory_mb=32768, ratio_label='M', replicate=0)
+        config = submit.render_config(self._template(), cell, None, 30, 'runzi-ec2-experimental-JD')
+        assert 'ecs_job_queue' not in config['submission_arg_overrides']  # queue derives from the JD
 
 
 # Real java_app.<port>.log lines from a crustal inversion.

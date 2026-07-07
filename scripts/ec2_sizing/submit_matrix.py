@@ -61,11 +61,12 @@ class Cell:
         return f'v{self.vcpu}-{self.ratio_label}{self.memory_mb}-r{self.replicate}'
 
 
-def build_cells(replicates: int, ratios: list[str] | None = None) -> list[Cell]:
-    """Return the VCPUS x ratios x replicates grid, in a stable order (all ratios unless given)."""
+def build_cells(replicates: int, ratios: list[str] | None = None, vcpus: list[int] | None = None) -> list[Cell]:
+    """Return the vcpus x ratios x replicates grid, in a stable order (all vCPUs/ratios unless given)."""
     ratios = ratios if ratios is not None else list(RATIOS_MB_PER_VCPU)
+    vcpus = vcpus if vcpus is not None else list(VCPUS)
     cells: list[Cell] = []
-    for vcpu in VCPUS:
+    for vcpu in vcpus:
         for label in ratios:
             mb_per_vcpu = RATIOS_MB_PER_VCPU[label]
             for replicate in range(replicates):
@@ -79,21 +80,28 @@ def render_config(
     max_inversion_time: float | None,
     max_job_time_min: int,
     job_definition: str,
+    memory_mb: int | None = None,
+    job_queue: str | None = None,
 ) -> dict[str, Any]:
     """Return a per-cell crustal-inversion config: the template plus this cell's EC2 sizing overrides.
 
-    ``ecs_job_definition`` selects the target: the queue and compute environment derive from it via
+    ``ecs_job_definition`` selects the target and the queue/compute-environment derive from it via
     ``JOB_DEFINITION_TARGETS`` (ADR-0008); JVM heap follows ``ecs_memory`` automatically in ``aws.py``.
+    ``memory_mb`` overrides the cell's ratio-derived memory (Phase 2: a constant that fits every pinned
+    instance). ``job_queue`` overrides the derived queue to route to a specific benchmark CE's queue.
     """
     config = copy.deepcopy(template)
     if max_inversion_time is not None:
         config['max_inversion_time'] = max_inversion_time
-    config['submission_arg_overrides'] = {
+    overrides: dict[str, Any] = {
         'ecs_vcpu': cell.vcpu,
-        'ecs_memory': cell.memory_mb,
+        'ecs_memory': memory_mb if memory_mb is not None else cell.memory_mb,
         'ecs_job_definition': job_definition,
         'ecs_max_job_time_min': max_job_time_min,
     }
+    if job_queue is not None:
+        overrides['ecs_job_queue'] = job_queue
+    config['submission_arg_overrides'] = overrides
     return config
 
 
@@ -146,6 +154,27 @@ def main(argv: list[str] | None = None) -> int:
         help='Which memory:vCPU ratios to include (default all). E.g. --ratios C M drops the 8:1 R cells.',
     )
     parser.add_argument(
+        '--vcpus',
+        nargs='+',
+        type=int,
+        choices=list(VCPUS),
+        default=None,
+        help='Which vCPU counts to include (default all). E.g. --vcpus 8 for a Phase-2 single-size run.',
+    )
+    parser.add_argument(
+        '--memory-mb',
+        type=int,
+        default=None,
+        help='Override ecs_memory (MB) for every cell, ignoring the ratio grid (Phase 2: a constant that '
+        'fits each pinned instance, e.g. 14000 to fit c6i.2xlarge).',
+    )
+    parser.add_argument(
+        '--job-queue',
+        default=None,
+        help='Override the Batch job queue (Phase 2: route to a specific pinned-instance benchmark queue). '
+        'The EC2 job definition is unchanged, so the compute-environment type stays EC2.',
+    )
+    parser.add_argument(
         '--limit',
         type=int,
         default=None,
@@ -172,20 +201,31 @@ def main(argv: list[str] | None = None) -> int:
     job_definition = EC2_JOB_DEFINITION if args.prod else EC2_EXPERIMENTAL_JOB_DEFINITION
 
     template = json.loads(args.template.read_text())
-    cells = build_cells(args.replicates, args.ratios)
+    cells = build_cells(args.replicates, args.ratios, args.vcpus)
     full_grid = len(cells)
     if args.limit is not None:
         cells = cells[: args.limit]
 
     ratios = args.ratios if args.ratios is not None else list(RATIOS_MB_PER_VCPU)
+    vcpus = args.vcpus if args.vcpus is not None else list(VCPUS)
+    target = args.job_queue if args.job_queue is not None else job_definition
     print(
-        f'submitting {len(cells)} of {full_grid} cells to {job_definition} '
-        f'({len(VCPUS)} vCPU x {len(ratios)} ratios {ratios} x {args.replicates} replicates)'
+        f'submitting {len(cells)} of {full_grid} cells to {target} '
+        f'({len(vcpus)} vCPU {vcpus} x {len(ratios)} ratios {ratios} x {args.replicates} replicates'
+        f'{f", memory {args.memory_mb} MB" if args.memory_mb is not None else ""})'
     )
 
     manifest_rows: list[dict[str, Any]] = []
     for cell in cells:
-        config = render_config(template, cell, args.max_inversion_time, args.max_job_time_min, job_definition)
+        config = render_config(
+            template,
+            cell,
+            args.max_inversion_time,
+            args.max_job_time_min,
+            job_definition,
+            memory_mb=args.memory_mb,
+            job_queue=args.job_queue,
+        )
         if args.dry_run:
             print(f'--- {cell.cell_id} (vcpu={cell.vcpu} memory_mb={cell.memory_mb}) ---')
             print(json.dumps(config['submission_arg_overrides']))

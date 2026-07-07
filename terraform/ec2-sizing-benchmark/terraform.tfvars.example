@@ -1,0 +1,11 @@
+# Copy to terraform.tfvars and fill from the live EC2 compute environment (same values as
+# terraform/batch): `aws batch describe-compute-environments --compute-environments runzi-ec2-CE`.
+
+ec2_instance_role_arn = "TODO arn:aws:iam::<account>:instance-profile/<ecsInstanceRole>"
+subnets               = ["TODO subnet-xxxx"] # egress-capable (same as terraform/batch ec2_subnets)
+security_group_ids    = ["TODO sg-xxxx"]      # outbound 443 to ECS/ECR/STS
+
+# Defaults are fine for the Phase 2 family comparison; override to narrow the set:
+# instance_types = ["c6i.2xlarge", "m6i.2xlarge", "r6i.2xlarge"]
+# max_vcpus      = 64
+# batch_service_role_arn = ""   # empty = AWSServiceRoleForBatch

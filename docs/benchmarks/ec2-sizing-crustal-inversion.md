@@ -81,8 +81,10 @@ demand cells catching some `m6i`:
 
 ## Next: Phase 2
 
-Pin `ec2_instance_types` (`terraform/access` → `terraform/batch`) to the 8-vCPU size of each family
-(`c6i.2xlarge` / `m6i.2xlarge` / `r6i.2xlarge`), one at a time, and re-run the 8-vCPU cells. Exact-fit
-sizing gives one job per instance (no co-tenancy confound) and a clean family + absolute-cost
-comparison. Needs a deployer `terraform apply` per family and affects the shared EC2 CE for the run
-window (revert to `["optimal"]` after).
+Compare instance *families* at 8 vCPU by pinning each to its exact-fit `.2xlarge`
+(`c6i`/`m6i`/`r6i` + AMD `c6a`/`m6a`/`r6a`) — one job per instance, so no co-tenancy confound and a
+clean family + absolute-cost comparison. Rather than re-pinning the shared `runzi-ec2-CE` once per
+family, `terraform/ec2-sizing-benchmark/` stands up one throwaway pinned CE + queue **per instance
+type in a single `terraform apply`**, and one `terraform destroy` removes them all (the shared CE is
+never touched). `submit_matrix.py --job-queue <queue> --vcpus 8 --memory-mb 14000` routes each family's
+jobs to its queue; see that module's README for the runbook. Deployer credentials required.
