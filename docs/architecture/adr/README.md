@@ -24,3 +24,5 @@ and leave the file in place.
 | [0007](0007-job-definition-terraform-tag-publish.md) | Job definitions under Terraform via floating image tags; tag-based self-serve publish |
 | [0008](0008-aws-batch-ec2-compute-environment.md) | AWS Batch EC2: one On-Demand compute environment + queue + job definitions under Terraform |
 | [0009](0009-submission-vs-runtime-args.md) | Split SystemArgs into SubmissionArgs (submitter) and TaskRuntimeArgs (worker) |
+| [0010](0010-batch-toshi-stage-per-image-tag.md) | Couple toshi stage (prod/test) to the Batch image-tag axis |
+| [0011](0011-ec2-compute-optimized-for-inversions.md) | EC2 compute target: compute-optimized (AMD-preferred) families for inversions, not `"optimal"` |

@@ -54,7 +54,7 @@ ec2_max_vcpus         = 0                                                       
 # Fargate values.
 ec2_subnets            = ["subnet-TODO"] # TODO - a working EC2 CE's subnets (NAT-capable / public-IP)
 ec2_security_group_ids = ["sg-TODO"]     # TODO - a working EC2 CE's security group
-# ec2_instance_types      = ["optimal"]              # default; instance-type tuning is #323
+# ec2_instance_types      = ["c6a","m6a","c6i","m6i"] # default (ADR-0011, #323); compute-optimized preferred, no r
 # ec2_min_vcpus           = 0                         # default; scale to zero when idle
 # ec2_allocation_strategy = "BEST_FIT_PROGRESSIVE"    # default
 # batch_service_role_arn  = ""                        # default: AWSServiceRoleForBatch service-linked role

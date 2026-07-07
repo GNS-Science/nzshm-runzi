@@ -156,9 +156,9 @@ variable "ec2_security_group_ids" {
 }
 
 variable "ec2_instance_types" {
-  description = "Instance types/families Batch may launch. \"optimal\" lets Batch choose from the C/M/R families to fit each job. Instance-type optimization is tracked separately in #323."
+  description = "Instance families Batch may launch. Compute-optimized preferred, memory-optimized (r) excluded, AMD and Intel both listed so BEST_FIT_PROGRESSIVE takes the cheapest that fits (c when memory allows, m for memory-heavy jobs). Set by #323 (ADR-0011): the crustal-inversion benchmark showed compute-optimized wins ~50-85% on iterations-per-dollar and \"optimal\" was defaulting to r6i, the worst family. Append c5/m5 for capacity if 6* On-Demand is short."
   type        = list(string)
-  default     = ["optimal"]
+  default     = ["c6a", "m6a", "c6i", "m6i"]
 }
 
 variable "ec2_min_vcpus" {
