@@ -74,8 +74,9 @@ ranking above. `"optimal"` resolves to current-gen families (it picked `r6i`/`m6
 ## Followups not blocking this decision
 
 - **EC2 vs Fargate baseline** — benchmark Fargate at 8 vCPU against `c6a` EC2 to decide whether
-  inversions' default *target* (currently Fargate) should change. Only then consider flipping the
-  crustal/subduction module-default `SubmissionArgs`.
+  inversions' default *target* (currently Fargate) should change. The *sizing* half has been applied —
+  the crustal/subduction module-default `SubmissionArgs` are now 8 vCPU / 16384 MB (2:1) — but the
+  *target* stays Fargate pending this baseline.
 - **Durable instance-type capture** — have the container read its instance type from IMDS and log it to
   `java_app.<port>.log`, so provenance survives scale-down (parsed from Toshi like iterations/energy)
   and cost no longer needs the ECS/EC2 lookup or its IAM.

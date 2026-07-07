@@ -18,10 +18,13 @@ default_submission_args = SubmissionArgs(
     # are swept args. It would be possible to add some inversion specific code to the build_tasks function or find the
     # maximum number of threads before hand or find the maximum number of threads that would be needed before hand.
     java_threads=16,
-    jvm_heap_max=32,
+    # 8 vCPU / 16 GB (2:1) per the #323 crustal benchmark (ADR-0011). Subduction was not benchmarked
+    # directly; if a large subduction rupture set OOMs at ~14 GB heap, raise ecs_memory (e.g. 32768).
+    # On AWS the heap derives from ecs_memory (memory/1000-2); jvm_heap_max is the LOCAL/CLUSTER -Xmx.
+    jvm_heap_max=14,
     ecs_max_job_time_min=60,
-    ecs_memory=30720,
-    ecs_vcpu=4,
+    ecs_memory=16384,
+    ecs_vcpu=8,
 )
 
 
