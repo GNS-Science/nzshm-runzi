@@ -9,6 +9,8 @@ terraform {
   }
 }
 
-# Throwaway benchmark module (#323 Phase 2): local state on purpose. Stand up the pinned compute
-# environments with `terraform apply`, run the benchmark, then `terraform destroy` to remove them all.
-# Nothing here is long-lived, so it deliberately does NOT share the terraform/batch S3 backend.
+# Benchmark module (#323 and future instance-type benchmarks). The RESOURCES are ephemeral — stand
+# them up with `terraform apply`, run the benchmark, then `terraform destroy` — but the STATE lives in
+# S3 (see backend.tf) so cleanup never depends on one person's local disk and concurrent runs are
+# lock-safe. Reusable across task types: the module is task-agnostic (a list of instance types); the
+# task-specific workload lives in scripts/ec2_sizing/.

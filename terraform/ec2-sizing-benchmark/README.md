@@ -1,11 +1,16 @@
-# EC2 sizing benchmark — throwaway pinned compute environments (#323 Phase 2)
+# EC2 sizing benchmark — ephemeral pinned compute environments (#323 and future benchmarks)
 
-Stands up **one On-Demand EC2 compute environment + queue per instance type**, so the family
-comparison can run all types from a single `terraform apply` and be removed with one `terraform
-destroy` — instead of re-pinning `terraform/batch`'s shared `runzi-ec2-CE` and applying once per
-family. Each CE is pinned to a single instance type; `min_vcpus = 0` so idle CEs cost nothing.
+Stands up **one On-Demand EC2 compute environment + queue per instance type**, so a family comparison
+can run all types from a single `terraform apply` and be removed with one `terraform destroy` — instead
+of re-pinning `terraform/batch`'s shared `runzi-ec2-CE` and applying once per family. Each CE is pinned
+to a single instance type; `min_vcpus = 0` so idle CEs cost nothing.
 
-This is **throwaway infra with local state** — not part of the managed `terraform/batch` module.
+The **resources are ephemeral** (apply before a benchmark, destroy after), but the **state lives in S3**
+(`backend.tf`, key `benchmark/ec2-sizing.tfstate`, shared bucket with `terraform/batch`/`access`). That
+makes `terraform destroy` reliable even from a different machine and lets concurrent runs lock safely —
+it does **not** mean the resources are long-lived. The module is task-agnostic (just a list of instance
+types), so it's reusable for benchmarking any task type; the workload-specific bits live in
+`scripts/ec2_sizing/`.
 
 ## Stand up
 
@@ -50,4 +55,18 @@ terraform destroy      # removes all benchmark CEs + queues
 ```
 
 Nothing else references these resources, so destroy is clean. (The shared `runzi-ec2-CE` is untouched
-throughout — this module never modifies it.)
+throughout — this module never modifies it.) Because state is in S3, `destroy` works from any machine
+with bucket + deployer access — it doesn't depend on whoever ran `apply` keeping a local state file.
+
+## State & concurrent benchmarks
+
+State lives in S3 (`backend.tf`) under `benchmark/ec2-sizing.tfstate`, lock-protected. To run **two
+benchmarks at once** (e.g. inversions and OQ hazard), don't fork the module — partition state with a
+Terraform **workspace** (same approach `terraform/access` uses for stages):
+
+```bash
+terraform workspace new hazard   # separate state under the same key; `select` to switch back
+terraform apply                  # add e.g. -var 'name_prefix=ec2sizing-haz' to avoid resource-name clashes
+```
+
+Default (`terraform workspace select default`) is fine for a single benchmark at a time.
