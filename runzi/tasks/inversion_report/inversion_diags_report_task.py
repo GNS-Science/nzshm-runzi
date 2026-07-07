@@ -143,8 +143,6 @@ if __name__ == "__main__":
     runtime_args = TaskRuntimeArgs(**config['task_runtime_args'])
     task = InversionReportTask(user_args, runtime_args)
 
-    # maybe the JVM App is a little slow to get listening
-    time.sleep(5)
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(runtime_args.task_count)
 

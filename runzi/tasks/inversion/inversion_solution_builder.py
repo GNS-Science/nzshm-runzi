@@ -300,9 +300,6 @@ class InversionSolutionBuilder(ABC):
     def run(self):
         t0 = dt.datetime.now()
 
-        # maybe the JVM App is a little slow to get listening
-        time.sleep(0.2)
-
         # Wait for some more time, scaled by taskid to avoid S3 consistency issue
         time.sleep(self.runtime_args.task_count * 0.01)
         self.inversion_runner = self._get_runner()

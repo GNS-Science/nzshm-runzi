@@ -3,7 +3,6 @@ import copy
 import datetime as dt
 import itertools
 import json
-import time
 import urllib
 from pathlib import PurePath
 
@@ -259,8 +258,6 @@ if __name__ == "__main__":
         # for AWS this must be a quoted JSON string
         config = json.loads(urllib.parse.unquote(args.config))
 
-    # maybe the JVM App is a little slow to get listening
-    time.sleep(2)
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     # time.sleep(config['job_arguments']['task_id'] )
 

@@ -61,6 +61,22 @@ def test_generated_script_propagates_python_exit_status(tmp_path):
     assert script.rstrip().endswith('exit $status')
 
 
+def test_script_waits_for_gateway_between_java_and_python(tmp_path):
+    """The client must not start until the JVM gateway is listening.
+
+    py4j does a single, non-retrying connect on the client's first call, so launching python before
+    the JVM binds its port fails the whole task with ConnectionRefusedError (the race is worst on a
+    cold JVM/disk cache; e.g. coulomb connects in its __init__). The launcher must run the shared
+    readiness wait after the backgrounded java launch and before the python client. (The wait's own
+    behaviour is covered by tests/test_wait_for_gateway.py.)"""
+    script = _factory(tmp_path).get_task_script()
+    assert 'JAVA_PID=$!' in script
+    assert '-m runzi.automation.wait_for_gateway' in script
+    assert (
+        script.index('JAVA_PID=$!') < script.index('runzi.automation.wait_for_gateway') < script.index('config.1.json')
+    )
+
+
 @pytest.mark.skipif(
     sys.platform == 'win32',
     reason="generated script targets unix launchers (LOCAL/CLUSTER) and the linux AWS container; "

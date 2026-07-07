@@ -35,6 +35,10 @@ from .local_config import ClusterModeEnum
 
 OpenshaTaskFactoryType = TypeVar("OpenshaTaskFactoryType", bound="OpenshaTaskFactory")
 
+# Shared readiness wait, invoked by the generated launcher (and docker/java_container_task.sh) as
+# `<python> -m runzi.automation.wait_for_gateway <port> <pid>`; see that module for why it exists.
+_WAIT_FOR_GATEWAY_MODULE = "runzi.automation.wait_for_gateway"
+
 # import scaling.rupture_set_builder_task
 
 
@@ -125,11 +129,14 @@ class OpenshaTaskFactory:
             f"java -Xms{self._jvm_heap_start_gb}G -Xmx{self._jvm_heap_max_gb}G"
             f" -classpath ${{JAVA_CLASSPATH}} ${{CLASSNAME}} > "
             f"{self._working_path}/java_app.${{NZSHM22_APP_PORT}}.log &\n"
+            "JAVA_PID=$!\n"
+            # Wait for the JVM gateway to be listening before starting the Python client (see the module)
+            f'{self._python} -m {_WAIT_FOR_GATEWAY_MODULE} "$NZSHM22_APP_PORT" "$JAVA_PID"\n'
             f"{self._python} {self._python_script} {self._config_path}/config.{self._next_task}.json > "
             f"{self._working_path}/python_script.{self._next_task}.log\n"
             "status=$?\n"
             # Kill the Java gateway server
-            "kill -9 $! 2>/dev/null\n"
+            "kill -9 $JAVA_PID 2>/dev/null\n"
             # Propagate the python task's exit status so callers see failures (issue #333)
             "exit $status"
         )
