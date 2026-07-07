@@ -248,27 +248,33 @@ def collect_rows(
     iteration_regex: str = DEFAULT_ITERATION_REGEX,
     toshi_api: ToshiApi | None = None,
     queues: tuple[str, ...] = (DEFAULT_JOB_QUEUE, EC2_JOB_QUEUE),
+    instance_type_override: str | None = None,
 ) -> list[dict[str, Any]]:
     """Build one result row per manifest cell, joining Batch/EC2 cost data with Toshi iteration counts.
 
     ``queues`` is the set of Batch job queues to search for each cell's job — must include any custom
     Phase-2 benchmark queue, since those aren't in the standard set.
+
+    ``instance_type_override`` forces the instance type for every row (a pinned Phase-2 run: the type is
+    known from the pinned queue), skipping the ECS/EC2 lookup — which only works while the container
+    instances are still registered, and returns nothing once the compute environment scales to zero.
     """
     if toshi_api is None:
         toshi_api = build_toshi_api()
     rows_by_gt_id = {row['general_task_id']: row for row in manifest['rows']}
 
     # Each cell is its own submit -> one general task -> one Batch job. Fetch each cell's job(s) once,
-    # then price all instance types in a single batched lookup.
+    # then price all instance types in a single batched lookup (unless the type is pinned/overridden).
     jobs_by_gt_id = {gt_id: jobs_for_general_task(gt_id, queues=queues) for gt_id in rows_by_gt_id}
     all_job_ids = [job['jobId'] for jobs in jobs_by_gt_id.values() for job in jobs]
-    try:
-        instance_types = instance_type_by_job_id(all_job_ids)
-    except ClientError as exc:
-        # Resolving instance types needs ecs:DescribeContainerInstances + ec2:DescribeInstances. Without
-        # them we still report iterations/perturbations/energy; only the cost columns go blank.
-        print(f'warning: cannot resolve EC2 instance types, cost columns will be blank: {exc}', file=sys.stderr)
-        instance_types = {}
+    instance_types: dict[str, str] = {}
+    if instance_type_override is None:
+        try:
+            instance_types = instance_type_by_job_id(all_job_ids)
+        except ClientError as exc:
+            # Resolving instance types needs ecs:DescribeContainerInstances + ec2:DescribeInstances.
+            # Without them we still report iterations/perturbations/energy; only cost goes blank.
+            print(f'warning: cannot resolve EC2 instance types, cost columns will be blank: {exc}', file=sys.stderr)
 
     results: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix='ec2_sizing_logs_') as tmp:
@@ -277,7 +283,7 @@ def collect_rows(
             jobs = jobs_by_gt_id[gt_id]
             summary = jobs[0] if jobs else {}  # oldest job; a crustal submit produces exactly one
             job_id = summary.get('jobId')
-            instance_type = instance_types.get(job_id) if job_id else None
+            instance_type = instance_type_override or (instance_types.get(job_id) if job_id else None)
             seconds = duration_seconds(summary)
             try:
                 metrics = metrics_for_general_task(toshi_api, gt_id, iteration_regex, download_dir)
@@ -408,6 +414,12 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help='Batch job queues to search (default: the manifest\'s job_queue plus the standard queues).',
     )
+    parser.add_argument(
+        '--instance-type',
+        default=None,
+        help='Force the instance type for every row (a pinned Phase-2 run). Use this to price runs whose '
+        'compute environment has since scaled to zero, when ECS can no longer resolve the instance.',
+    )
     args = parser.parse_args(argv)
 
     manifest = json.loads(args.manifest.read_text())
@@ -418,7 +430,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         manifest_queue = manifest.get('job_queue')
         queues = tuple(dict.fromkeys([q for q in (manifest_queue, DEFAULT_JOB_QUEUE, EC2_JOB_QUEUE) if q]))
-    rows = collect_rows(manifest, args.iteration_regex, queues=queues)
+    rows = collect_rows(manifest, args.iteration_regex, queues=queues, instance_type_override=args.instance_type)
     write_csv(rows, args.csv)
     print(f'wrote {len(rows)} rows to {args.csv}\n')
 

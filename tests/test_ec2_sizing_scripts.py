@@ -301,6 +301,26 @@ class TestCollectRows:
         assert row['instance_type'] is None and row['cost_usd'] is None and row['iterations_per_usd'] is None
         assert row['iterations'] == 30388979  # metrics still collected without instance/cost
 
+    def test_instance_type_override_prices_without_ecs_lookup(self, monkeypatch):
+        # A pinned run whose instances have scaled down: the ECS lookup would fail, but the type is known.
+        monkeypatch.setattr(
+            collect,
+            'jobs_for_general_task',
+            lambda gt_id, queues=None: [
+                {'jobId': 'j1', 'status': 'SUCCEEDED', 'startedAt': 1_000_000, 'stoppedAt': 1_600_000}
+            ],
+        )
+
+        def _boom(job_ids):
+            raise AssertionError('instance_type_by_job_id must not be called when overridden')
+
+        monkeypatch.setattr(collect, 'instance_type_by_job_id', _boom)
+        toshi = _FakeToshiApi({'gt1': _subtasks_with_java_log('F1')}, {'F1': '\n'.join(SAMPLE_LOG)})
+        rows = collect.collect_rows(self._manifest(), toshi_api=toshi, instance_type_override='c6i.2xlarge')
+        row = rows[0]
+        assert row['instance_type'] == 'c6i.2xlarge'
+        assert row['cost_usd'] is not None and row['iterations_per_usd'] is not None  # priced despite no ECS
+
     def test_searches_the_given_queues(self, monkeypatch):
         # collect_rows must forward its queues to jobs_for_general_task (Phase-2 benchmark queues).
         seen = {}

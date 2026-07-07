@@ -31,13 +31,17 @@ uv run python scripts/ec2_sizing/submit_matrix.py \
     --job-queue ec2sizing-c6i-2xlarge-Q --manifest scratch/c6i.json
 # ...then m6i.2xlarge, r6i.2xlarge, c6a/m6a/r6a queues, each to its own manifest.
 
-# Collect each once its jobs finish:
-uv run python scripts/ec2_sizing/collect_results.py --manifest scratch/c6i.json --csv scratch/c6i.csv
+# Collect each once its jobs finish — pass the pinned type via --instance-type (see note below):
+uv run python scripts/ec2_sizing/collect_results.py --manifest scratch/c6i.json --csv scratch/c6i.csv \
+    --queues ec2sizing-c6i-2xlarge-Q --instance-type c6i.2xlarge
 ```
 
-The collector reads back the actual instance type per job (it will match the pinned type) and prices it
-from `INSTANCE_SPECS` in `collect_results.py` — add any AMD (c6a/m6a/r6a) prices there before trusting
-their cost columns.
+**Always pass `--instance-type` for a pinned run.** The collector's default is to resolve the instance
+type from Batch→ECS→EC2, but that only works while the container instances are still registered — with
+`min_vcpus = 0` the CE scales to zero after the jobs finish and ECS deregisters the instances
+(`describe_container_instances` then returns `MISSING`), so cost would go blank. Since the type is
+*known* (you pinned it), `--instance-type` prices it directly and is immune to scale-down. Prices come
+from `INSTANCE_SPECS` in `collect_results.py` — refresh the AMD (c6a/m6a/r6a) values before trusting them.
 
 ## Tear down
 
