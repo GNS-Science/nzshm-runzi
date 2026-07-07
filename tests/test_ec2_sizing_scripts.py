@@ -259,7 +259,9 @@ class TestCollectRows:
         monkeypatch.setattr(
             collect,
             'jobs_for_general_task',
-            lambda gt_id: [{'jobId': 'j1', 'status': status, 'startedAt': 1_000_000, 'stoppedAt': 1_600_000}],
+            lambda gt_id, queues=None: [
+                {'jobId': 'j1', 'status': status, 'startedAt': 1_000_000, 'stoppedAt': 1_600_000}
+            ],
         )
         monkeypatch.setattr(collect, 'instance_type_by_job_id', lambda job_ids: {'j1': instance} if instance else {})
 
@@ -282,7 +284,9 @@ class TestCollectRows:
         monkeypatch.setattr(
             collect,
             'jobs_for_general_task',
-            lambda gt_id: [{'jobId': 'j1', 'status': 'SUCCEEDED', 'startedAt': 1_000_000, 'stoppedAt': 1_600_000}],
+            lambda gt_id, queues=None: [
+                {'jobId': 'j1', 'status': 'SUCCEEDED', 'startedAt': 1_000_000, 'stoppedAt': 1_600_000}
+            ],
         )
 
         def _deny(job_ids):
@@ -296,6 +300,20 @@ class TestCollectRows:
         row = rows[0]
         assert row['instance_type'] is None and row['cost_usd'] is None and row['iterations_per_usd'] is None
         assert row['iterations'] == 30388979  # metrics still collected without instance/cost
+
+    def test_searches_the_given_queues(self, monkeypatch):
+        # collect_rows must forward its queues to jobs_for_general_task (Phase-2 benchmark queues).
+        seen = {}
+
+        def _jobs(gt_id, queues=None):
+            seen['queues'] = queues
+            return []
+
+        monkeypatch.setattr(collect, 'jobs_for_general_task', _jobs)
+        monkeypatch.setattr(collect, 'instance_type_by_job_id', lambda job_ids: {})
+        toshi = _FakeToshiApi({'gt1': {'children': {'edges': []}}})
+        collect.collect_rows(self._manifest(), toshi_api=toshi, queues=('ec2sizing-c6i-2xlarge-Q',))
+        assert seen['queues'] == ('ec2sizing-c6i-2xlarge-Q',)
 
     def test_missing_java_log_yields_none_iterations(self, monkeypatch):
         self._patch_batch(monkeypatch, instance=None, status='FAILED')

@@ -38,6 +38,7 @@ from typing import TYPE_CHECKING, Any
 
 from botocore.exceptions import ClientError
 
+from runzi.arguments import DEFAULT_JOB_QUEUE, EC2_JOB_QUEUE
 from runzi.aws.batch_query import instance_type_by_job_id, jobs_for_general_task
 
 if TYPE_CHECKING:
@@ -246,15 +247,20 @@ def collect_rows(
     manifest: dict[str, Any],
     iteration_regex: str = DEFAULT_ITERATION_REGEX,
     toshi_api: ToshiApi | None = None,
+    queues: tuple[str, ...] = (DEFAULT_JOB_QUEUE, EC2_JOB_QUEUE),
 ) -> list[dict[str, Any]]:
-    """Build one result row per manifest cell, joining Batch/EC2 cost data with Toshi iteration counts."""
+    """Build one result row per manifest cell, joining Batch/EC2 cost data with Toshi iteration counts.
+
+    ``queues`` is the set of Batch job queues to search for each cell's job — must include any custom
+    Phase-2 benchmark queue, since those aren't in the standard set.
+    """
     if toshi_api is None:
         toshi_api = build_toshi_api()
     rows_by_gt_id = {row['general_task_id']: row for row in manifest['rows']}
 
     # Each cell is its own submit -> one general task -> one Batch job. Fetch each cell's job(s) once,
     # then price all instance types in a single batched lookup.
-    jobs_by_gt_id = {gt_id: jobs_for_general_task(gt_id) for gt_id in rows_by_gt_id}
+    jobs_by_gt_id = {gt_id: jobs_for_general_task(gt_id, queues=queues) for gt_id in rows_by_gt_id}
     all_job_ids = [job['jobId'] for jobs in jobs_by_gt_id.values() for job in jobs]
     try:
         instance_types = instance_type_by_job_id(all_job_ids)
@@ -396,10 +402,23 @@ def main(argv: list[str] | None = None) -> int:
         default=DEFAULT_ITERATION_REGEX,
         help='Regex whose group 1 captures the iteration integer in a log line.',
     )
+    parser.add_argument(
+        '--queues',
+        nargs='+',
+        default=None,
+        help='Batch job queues to search (default: the manifest\'s job_queue plus the standard queues).',
+    )
     args = parser.parse_args(argv)
 
     manifest = json.loads(args.manifest.read_text())
-    rows = collect_rows(manifest, args.iteration_regex)
+    # Search the manifest's own queue (Phase-2 benchmark queues aren't in the standard set) plus the
+    # standard queues, unless --queues overrides. dict.fromkeys de-dupes while keeping order.
+    if args.queues:
+        queues = tuple(args.queues)
+    else:
+        manifest_queue = manifest.get('job_queue')
+        queues = tuple(dict.fromkeys([q for q in (manifest_queue, DEFAULT_JOB_QUEUE, EC2_JOB_QUEUE) if q]))
+    rows = collect_rows(manifest, args.iteration_regex, queues=queues)
     write_csv(rows, args.csv)
     print(f'wrote {len(rows)} rows to {args.csv}\n')
 

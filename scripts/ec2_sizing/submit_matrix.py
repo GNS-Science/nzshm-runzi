@@ -242,6 +242,9 @@ def main(argv: list[str] | None = None) -> int:
         'max_inversion_time': args.max_inversion_time
         if args.max_inversion_time is not None
         else template.get('max_inversion_time'),
+        # Record the queue so collect_results searches it (Phase-2 benchmark queues aren't in the
+        # standard set jobs_for_general_task queries). None = the JD's derived queue (runzi-ec2-Q).
+        'job_queue': args.job_queue,
         'rows': manifest_rows,
     }
     args.manifest.write_text(json.dumps(manifest, indent=2))
