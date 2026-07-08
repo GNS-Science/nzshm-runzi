@@ -11,7 +11,7 @@ finish, and where do extra cores stop paying?*
   `max_sections` 2000). Template: `scripts/ec2_sizing/coulomb_rupture_set.template.json`.
 - **Matrix:** instance family {`c6a`, `m6a`} × vCPU {4, 8, 16, 32, 64} × 2 replicates = 20 jobs. Families
   are **pinned** via per-family Batch queues (`terraform/ec2-sizing-benchmark/`), so the vCPU cost curve
-  isn't polluted by Batch `"optimal"` picking different families per cell. **`java_threads` is pinned to
+  isn't polluted by Batch's allocation strategy picking different families per cell. **`java_threads` is pinned to
   `ecs_vcpu`** per cell (the builder calls `setNumThreads(java_threads)`), so each cell uses every core it
   pays for and the wall-time-vs-cores curve is meaningful. Memory was sized to ~fill each family's per-vCPU
   RAM (c ≈ 1.8, m ≈ 3.8 GB/vCPU).
