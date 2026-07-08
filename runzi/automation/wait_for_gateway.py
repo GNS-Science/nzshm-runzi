@@ -28,8 +28,13 @@ _CONNECT_TIMEOUT_S = 0.5
 
 
 def _process_alive(pid: int | None) -> bool:
-    """True if ``pid`` is still running (or if ``pid`` is None, i.e. liveness unknown/unchecked)."""
-    if pid is None:
+    """True if ``pid`` is still running (or if liveness can't be probed cheaply here).
+
+    Uses the POSIX ``kill(pid, 0)`` probe. The launchers that invoke this module are Unix-only; on
+    Windows ``os.kill(pid, 0)`` is not a liveness check (signal 0 is ``CTRL_C_EVENT`` there), so we
+    skip the early exit and let the timeout bound the wait instead.
+    """
+    if pid is None or sys.platform == "win32":
         return True
     try:
         os.kill(pid, 0)

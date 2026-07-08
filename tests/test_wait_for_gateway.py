@@ -12,7 +12,17 @@ import sys
 import threading
 import time
 
+import pytest
+
 from runzi.automation.wait_for_gateway import main, wait_for_gateway
+
+# The pid-liveness fast-bail uses the POSIX kill(pid, 0) probe; on Windows os.kill(pid, 0) is not a
+# liveness check (signal 0 is CTRL_C_EVENT). The module only ever runs from the Unix bash launchers,
+# so these tests — which assert the dead-pid fast path — are Unix-only.
+_skip_on_windows = pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="pid-liveness fast-bail is POSIX-only (os.kill(pid, 0)); launchers are Unix-only",
+)
 
 
 def _free_port():
@@ -66,6 +76,7 @@ def test_times_out_when_nothing_ever_listens():
     assert time.monotonic() - start >= 0.5
 
 
+@_skip_on_windows
 def test_bails_fast_when_gateway_process_dies():
     """A JVM that exits before binding must make the wait give up quickly, not run to the timeout."""
     port = _free_port()  # nobody ever binds it
@@ -84,6 +95,7 @@ def test_main_returns_zero_when_listening():
         srv.close()
 
 
+@_skip_on_windows
 def test_main_returns_one_when_gateway_dies():
     dead = subprocess.Popen([sys.executable, '-c', 'pass'])
     dead.wait()
