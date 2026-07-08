@@ -159,8 +159,6 @@ if __name__ == "__main__":
     f = open(config_file, encoding='utf-8')
     config = json.load(f)
 
-    # maybe the JVM App is a little slow to get listening
-    time.sleep(5)
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(config['job_arguments']['task_id'] * 5)
 

@@ -24,9 +24,20 @@ def test_script_captures_and_reexports_python_status():
     assert 'status=$?' in text
     assert 'exit $status' in text
     # the exit must come after the kill, so the JVM is still torn down before we return
-    assert text.index('kill -9 $!') < text.index('exit $status')
+    assert text.index('kill -9 $JAVA_PID') < text.index('exit $status')
     # and the kill must not be the last executable statement
-    assert not text.rstrip().endswith('kill -9 $!')
+    assert not text.rstrip().endswith('kill -9 $JAVA_PID')
+
+
+def test_script_waits_for_gateway_via_shared_module():
+    """The container shares one readiness wait with the LOCAL/CLUSTER launcher (no hand-copied poll).
+
+    py4j does a single, non-retrying connect, so the client must not start before the JVM binds its
+    port; both launchers gate on `python3 -m runzi.automation.wait_for_gateway`."""
+    text = _script_text()
+    assert 'python3 -m runzi.automation.wait_for_gateway "$NZSHM22_APP_PORT" "$JAVA_PID"' in text
+    # the wait must sit after the JVM launch and before the python task
+    assert text.index('JAVA_PID=$!') < text.index('wait_for_gateway') < text.index('${PYTHON_TASK_MODULE}')
 
 
 @pytest.mark.skipif(

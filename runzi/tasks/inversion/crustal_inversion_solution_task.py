@@ -198,8 +198,6 @@ if __name__ == "__main__":
     runtime_args = TaskRuntimeArgs(**config['task_runtime_args'])
     task = CrustalInversionSolutionBuilder(user_args, runtime_args, ModelType.CRUSTAL)
 
-    # maybe the JVM App is a little slow to get listening
-    time.sleep(3)
     # Wait for some more time, scaled by taskid to avoid S3 consistency issue
     time.sleep(runtime_args.task_count)
 

@@ -12,13 +12,19 @@ export CLASSNAME=nz.cri.gns.NZSHM22.opensha.util.NZSHM22_PythonGateway
 export NZSHM22_APP_PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1]); s.close()')
 
 /opt/java/bin/java -Xms4G -Xmx${NZSHM22_SCRIPT_JVM_HEAP_MAX}G -XX:ActiveProcessorCount=${NZSHM22_AWS_JAVA_THREADS} -classpath ${JAVA_CLASSPATH} ${CLASSNAME} > ${NZSHM22_SCRIPT_WORK_PATH}/java_app.${NZSHM22_APP_PORT}.log &
+JAVA_PID=$!
+
+# Wait for the JVM gateway to be listening before starting the Python client (shared with the
+# LOCAL/CLUSTER launcher): py4j does a single, non-retrying connect on the client's first call, so
+# starting python before the JVM binds the port fails the whole task (worst on a cold JVM/disk cache).
+python3 -m runzi.automation.wait_for_gateway "$NZSHM22_APP_PORT" "$JAVA_PID"
 
 # TODO: we can do away with PYTHON_PREP_MODULE
 python3 -m ${PYTHON_TASK_MODULE} ${TASK_CONFIG_JSON_QUOTED} > ${NZSHM22_SCRIPT_WORK_PATH}/python_script.${NZSHM22_APP_PORT}.log
 status=$?
 
 #Kill the Java gateway server
-kill -9 $! 2>/dev/null
+kill -9 $JAVA_PID 2>/dev/null
 
 #Exit with the python task's status so AWS Batch sees failures (issue #333)
 exit $status
