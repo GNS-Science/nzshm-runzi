@@ -48,14 +48,16 @@ def get_fault_model_file(fault_model_file_id) -> Path:
 
 # Sizing from the EC2 benchmark (docs/benchmarks/ec2-sizing-coulomb-rupture-set.md): the build is
 # compute-bound and low-memory and scales sub-linearly, so 4 vCPU is the cheapest $/build. Threads track
-# vCPU (16-on-4 oversubscribed); memory is ~2 GB/vCPU (was 30 GB, which steered the shared "optimal" CE
-# onto expensive r-family); the time limit clears the ~62 min 4-vCPU build (was 60 min — it got killed).
+# vCPU (16-on-4 oversubscribed). Memory 7000 MiB (was 30 GB) sits just under the 8 GiB compute-optimized
+# c*.xlarge ceiling — with ECS agent/OS headroom, so the job fits c-family (the cheapest that fits under
+# BEST_FIT_PROGRESSIVE) instead of being bumped to general-purpose m*.xlarge (16 GiB) or expensive r.
+# The time limit clears the ~62 min 4-vCPU build (was 60 min — it got killed).
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
     java_threads=4,
     jvm_heap_max=32,
     ecs_max_job_time_min=90,
-    ecs_memory=8192,
+    ecs_memory=7000,
     ecs_vcpu=4,
 )
 

@@ -27,14 +27,15 @@ logging.getLogger('urllib3').setLevel(loglevel)
 logging.getLogger('git.cmd').setLevel(loglevel)
 
 # Sizing mirrors the coulomb builder (docs/benchmarks/ec2-sizing-coulomb-rupture-set.md): compute-bound,
-# low-memory, sub-linear scaling -> 4 vCPU cheapest, threads track vCPU, memory ~2 GB/vCPU, time limit
-# clears the slow low-vCPU build. Assumed equivalent to coulomb (not independently benchmarked).
+# low-memory, sub-linear scaling -> 4 vCPU cheapest, threads track vCPU, memory 7000 MiB (fits the 8 GiB
+# compute-optimized c*.xlarge with ECS headroom, so BEST_FIT_PROGRESSIVE picks c not m), time limit clears
+# the slow low-vCPU build. Assumed equivalent to coulomb (not independently benchmarked).
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
     java_threads=4,
     jvm_heap_max=32,
     ecs_max_job_time_min=90,
-    ecs_memory=8192,
+    ecs_memory=7000,
     ecs_vcpu=4,
 )
 

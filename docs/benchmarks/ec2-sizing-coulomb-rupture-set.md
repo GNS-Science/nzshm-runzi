@@ -86,11 +86,14 @@ The coulomb and subduction builder `default_submission_args` were re-sized accor
 |-------|----:|----:|-----|
 | `ecs_vcpu` | 4 | 4 | cheapest $/build (unchanged) |
 | `java_threads` | 16 | 4 | track vCPU; 16-on-4 oversubscribed |
-| `ecs_memory` (MiB) | 30720 | 8192 | ~2 GB/vCPU; build is low-memory; avoids r-family on `"optimal"` |
+| `ecs_memory` (MiB) | 30720 | 7000 | fits under the 8 GiB compute-optimized `c*.xlarge` ceiling (with ECS agent/OS headroom) so `BEST_FIT_PROGRESSIVE` places the job on cheap c-family, not the 16 GiB general-purpose `m*.xlarge`; heap ≈ 5 GB is ample |
 | `ecs_max_job_time_min` | 60 | 90 | the 4-vCPU build takes ~62 min — the old limit killed it |
 
-Subduction is assumed equivalent to coulomb (not independently benchmarked). Larger fault models or
-higher `max_sections` may shift the absolute times; re-run the matrix if the workload changes materially.
+The CE pool is `["c6a", "m6a", "c6i", "m6i"]` (ADR-0011, r-family excluded); at 2 GB/vCPU a c-instance is
+8 GiB, so requesting the *full* 8192 MiB would overflow the ECS-reserved headroom and force the job onto a
+16 GiB m-instance — hence 7000. Subduction is assumed equivalent to coulomb (not independently
+benchmarked). Larger fault models or higher `max_sections` may shift the absolute times; re-run the matrix
+if the workload changes materially.
 
 ## Out of scope
 
