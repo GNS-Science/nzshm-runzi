@@ -26,12 +26,15 @@ logging.getLogger('nshm_toshi_client.toshi_file').setLevel(loglevel)
 logging.getLogger('urllib3').setLevel(loglevel)
 logging.getLogger('git.cmd').setLevel(loglevel)
 
+# Sizing mirrors the coulomb builder (docs/benchmarks/ec2-sizing-coulomb-rupture-set.md): compute-bound,
+# low-memory, sub-linear scaling -> 4 vCPU cheapest, threads track vCPU, memory ~2 GB/vCPU, time limit
+# clears the slow low-vCPU build. Assumed equivalent to coulomb (not independently benchmarked).
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
-    java_threads=16,
+    java_threads=4,
     jvm_heap_max=32,
-    ecs_max_job_time_min=60,
-    ecs_memory=30720,
+    ecs_max_job_time_min=90,
+    ecs_memory=8192,
     ecs_vcpu=4,
 )
 
