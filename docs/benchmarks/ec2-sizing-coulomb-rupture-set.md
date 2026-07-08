@@ -98,6 +98,7 @@ if the workload changes materially.
 
 ## Out of scope
 
-Steering the shared compute environment off `"optimal"` (so it stops defaulting to r-family) or pinning
-Graviton/Spot is a deployer/terraform change, a follow-up only if the code-side default proves
-insufficient. Instance-type *pinning* here was only to keep the benchmark's family axis clean.
+Pinning Graviton (arm64) or Spot capacity for these builds is a deployer/terraform change on the shared
+CE — a follow-up only if the code-side default proves insufficient. (The CE is already off `"optimal"` and
+excludes r-family, per ADR-0011, so that steering is done.) The per-family instance *pinning* in this
+benchmark was throwaway, only to keep the family axis clean — not a production CE change.
