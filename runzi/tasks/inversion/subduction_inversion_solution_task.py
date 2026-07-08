@@ -18,16 +18,15 @@ default_submission_args = SubmissionArgs(
     # are swept args. It would be possible to add some inversion specific code to the build_tasks function or find the
     # maximum number of threads before hand or find the maximum number of threads that would be needed before hand.
     java_threads=16,
-    # 8 vCPU / 16 GB (2:1) per the #323 crustal benchmark (ADR-0011). Subduction was not benchmarked
-    # directly; if a large subduction rupture set OOMs at ~14 GB heap, raise ecs_memory (e.g. 32768).
-    # On AWS the heap derives from ecs_memory (memory/1000-2); jvm_heap_max is the LOCAL/CLUSTER -Xmx.
-    # Defaults to EC2 (compute-bound, mirrors crustal). NB: 16384 = the full 16 GiB of c*.2xlarge, so with
-    # ECS overhead the job lands on general-purpose m*.2xlarge; dropping to ~14000 would fit c-family but
-    # cuts the heap to ~12 GB — risky for large subduction rupture sets, so left at 16384.
+    # 8 vCPU / ~14 GB, mirroring the crustal #323 sizing (ADR-0011). Defaults to EC2, and 14000 MiB fits
+    # compute-optimized c*.2xlarge (16 GiB) with ECS headroom, so it lands on cheap c-family rather than
+    # general-purpose m*.2xlarge. Heap = memory/1000-2 ≈ 12 GB — safe because subduction rupture sets are
+    # always smaller than crustal (which ran fine at this heap in #323). On AWS heap derives from
+    # ecs_memory; jvm_heap_max is the LOCAL/CLUSTER -Xmx, kept in step.
     ecs_job_definition=EC2_JOB_DEFINITION,
-    jvm_heap_max=14,
+    jvm_heap_max=12,
     ecs_max_job_time_min=60,
-    ecs_memory=16384,
+    ecs_memory=14000,
     ecs_vcpu=8,
 )
 

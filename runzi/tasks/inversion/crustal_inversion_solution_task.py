@@ -24,16 +24,15 @@ default_submission_args = SubmissionArgs(
     # are swept args. It would be possible to add some inversion specific code to the build_tasks function or find the
     # maximum number of threads before hand or find the maximum number of threads that would be needed before hand.
     java_threads=16,
-    # 8 vCPU / 16 GB (2:1) is the iterations-per-dollar sweet spot from the #323 benchmark (ADR-0011):
-    # the fixed 16-thread anneal saturates ~8 cores, and the inversion converged at ~14 GB heap. On AWS
-    # the heap is derived from ecs_memory (memory/1000-2); jvm_heap_max is the LOCAL/CLUSTER -Xmx, kept
-    # in step. Defaults to EC2 (compute-bound winner, #323). NB: 16384 = the full 16 GiB of c*.2xlarge,
-    # so after the ECS agent/OS reservation the job lands on general-purpose m*.2xlarge; drop to ~14000
-    # to fit compute-optimized c-family (heap ~12 GB, which #323 ran crustal on successfully).
+    # 8 vCPU / ~14 GB is the iterations-per-dollar sweet spot from the #323 benchmark (ADR-0011): the
+    # fixed 16-thread anneal saturates ~8 cores. Defaults to EC2, and 14000 MiB sits just under the 16 GiB
+    # of compute-optimized c*.2xlarge (leaving ECS agent/OS headroom), so BEST_FIT_PROGRESSIVE places it
+    # on cheap c-family rather than general-purpose m*.2xlarge. On AWS heap = memory/1000-2 ≈ 12 GB (what
+    # #323 ran crustal on successfully); jvm_heap_max is the LOCAL/CLUSTER -Xmx, kept in step.
     ecs_job_definition=EC2_JOB_DEFINITION,
-    jvm_heap_max=14,
+    jvm_heap_max=12,
     ecs_max_job_time_min=60,
-    ecs_memory=16384,
+    ecs_memory=14000,
     ecs_vcpu=8,
 )
 
