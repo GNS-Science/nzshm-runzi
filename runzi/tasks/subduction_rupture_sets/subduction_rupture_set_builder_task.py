@@ -12,7 +12,7 @@ from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel
 
-from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.local_config import API_URL, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.tasks.get_config import get_config
 
@@ -29,9 +29,11 @@ logging.getLogger('git.cmd').setLevel(loglevel)
 # Sizing mirrors the coulomb builder (docs/benchmarks/ec2-sizing-coulomb-rupture-set.md): compute-bound,
 # low-memory, sub-linear scaling -> 4 vCPU cheapest, threads track vCPU, memory 7000 MiB (fits the 8 GiB
 # compute-optimized c*.xlarge with ECS headroom, so BEST_FIT_PROGRESSIVE picks c not m), time limit clears
-# the slow low-vCPU build. Assumed equivalent to coulomb (not independently benchmarked).
+# the slow low-vCPU build. Defaults to the EC2 job definition (these Java builds always run on the EC2 CE,
+# and 7000 MiB / 4 vCPU is below Fargate's floor). Assumed equivalent to coulomb (not independently benchmarked).
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
+    ecs_job_definition=EC2_JOB_DEFINITION,
     java_threads=4,
     jvm_heap_max=32,
     ecs_max_job_time_min=90,
