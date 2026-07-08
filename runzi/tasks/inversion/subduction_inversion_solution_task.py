@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, cast
 
 import git
 
-from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.toshi_api import ModelType
 from runzi.tasks.get_config import get_config
 from runzi.tasks.inversion.inversion_solution_builder import InversionArgs, InversionSolutionBuilder
@@ -21,6 +21,10 @@ default_submission_args = SubmissionArgs(
     # 8 vCPU / 16 GB (2:1) per the #323 crustal benchmark (ADR-0011). Subduction was not benchmarked
     # directly; if a large subduction rupture set OOMs at ~14 GB heap, raise ecs_memory (e.g. 32768).
     # On AWS the heap derives from ecs_memory (memory/1000-2); jvm_heap_max is the LOCAL/CLUSTER -Xmx.
+    # Defaults to EC2 (compute-bound, mirrors crustal). NB: 16384 = the full 16 GiB of c*.2xlarge, so with
+    # ECS overhead the job lands on general-purpose m*.2xlarge; dropping to ~14000 would fit c-family but
+    # cuts the heap to ~12 GB — risky for large subduction rupture sets, so left at 16384.
+    ecs_job_definition=EC2_JOB_DEFINITION,
     jvm_heap_max=14,
     ecs_max_job_time_min=60,
     ecs_memory=16384,

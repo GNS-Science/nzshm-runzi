@@ -6,7 +6,7 @@ from zipfile import ZipFile
 import git
 from pydantic import BaseModel, model_validator
 
-from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import WORK_PATH
 from runzi.automation.toshi_api import ModelType
@@ -27,7 +27,10 @@ default_submission_args = SubmissionArgs(
     # 8 vCPU / 16 GB (2:1) is the iterations-per-dollar sweet spot from the #323 benchmark (ADR-0011):
     # the fixed 16-thread anneal saturates ~8 cores, and the inversion converged at ~14 GB heap. On AWS
     # the heap is derived from ecs_memory (memory/1000-2); jvm_heap_max is the LOCAL/CLUSTER -Xmx, kept
-    # in step. 16384 is also the minimum valid Fargate memory at 8 vCPU.
+    # in step. Defaults to EC2 (compute-bound winner, #323). NB: 16384 = the full 16 GiB of c*.2xlarge,
+    # so after the ECS agent/OS reservation the job lands on general-purpose m*.2xlarge; drop to ~14000
+    # to fit compute-optimized c-family (heap ~12 GB, which #323 ran crustal on successfully).
+    ecs_job_definition=EC2_JOB_DEFINITION,
     jvm_heap_max=14,
     ecs_max_job_time_min=60,
     ecs_memory=16384,
