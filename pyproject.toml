@@ -72,6 +72,7 @@ exclude-newer = "1 week"
 "nzshm-hazlab" = false
 "solvis" = false
 "nshm-toshi-client" = false
+"toshi-hazard-post" = false
 
 [tool.uv.build-backend]
 module-name = "runzi"
