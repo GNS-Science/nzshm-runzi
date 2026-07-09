@@ -39,8 +39,9 @@ SUMMARIES = [
 
 
 def test_status_renders_rows_and_status_counts():
-    with patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES) as mock_jobs, patch.object(
-        batch_cli, 'task_args_by_job_id', return_value={}
+    with (
+        patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES) as mock_jobs,
+        patch.object(batch_cli, 'task_args_by_job_id', return_value={}),
     ):
         result = runner.invoke(runzi_cli.app, ['batch', 'status', GT_ID])
 
@@ -75,8 +76,9 @@ def test_status_shows_a_column_per_swept_key():
         'aaaa-1111': {'rupture_set': 'A', 'deformation_model': 'geologic'},
         'bbbb-2222': {'rupture_set': 'B', 'deformation_model': 'geologic'},
     }
-    with patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES), patch.object(
-        batch_cli, 'task_args_by_job_id', return_value=task_args
+    with (
+        patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES),
+        patch.object(batch_cli, 'task_args_by_job_id', return_value=task_args),
     ):
         result = runner.invoke(runzi_cli.app, ['batch', 'status', GT_ID])
 
@@ -95,8 +97,9 @@ def test_status_has_no_swept_columns_when_nothing_varies():
         'aaaa-1111': {'rupture_set': 'A'},
         'bbbb-2222': {'rupture_set': 'A'},
     }
-    with patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES), patch.object(
-        batch_cli, 'task_args_by_job_id', return_value=task_args
+    with (
+        patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES),
+        patch.object(batch_cli, 'task_args_by_job_id', return_value=task_args),
     ):
         result = runner.invoke(runzi_cli.app, ['batch', 'status', GT_ID])
 
@@ -106,8 +109,9 @@ def test_status_has_no_swept_columns_when_nothing_varies():
 
 def test_status_handles_describe_access_denied():
     err = ClientError({'Error': {'Code': 'AccessDeniedException', 'Message': 'not authorized'}}, 'DescribeJobs')
-    with patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES), patch.object(
-        batch_cli, 'task_args_by_job_id', side_effect=err
+    with (
+        patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES),
+        patch.object(batch_cli, 'task_args_by_job_id', side_effect=err),
     ):
         result = runner.invoke(runzi_cli.app, ['batch', 'status', GT_ID])
 
