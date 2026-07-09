@@ -106,9 +106,16 @@ flat across all families (~3135–3145): solution quality is identical; only cos
 - Applying either — changing the crustal default `SubmissionArgs` (currently 4 vCPU) and/or the CE's
   `ec2_instance_types` — is an architecture change and gets its own ADR, citing this benchmark.
 
-Memory floor caveat: c6a/c6i `.2xlarge` is 16 GiB (~12–14 GB heap). This rupture set converged fine
-there; a larger rupture set needing more heap would need a bigger compute-optimized size (c6a.4xlarge,
-32 GiB) or a general-purpose instance — re-check the memory floor before committing to c-family.
+**Applied (ADR-0011 + 2026-07-09):** the CE's `ec2_instance_types` was moved off `"optimal"` to
+`["c6a","m6a","c6i","m6i"]`, and the crustal **and** subduction inversion module defaults are now
+**8 vCPU / 14000 MiB, defaulting to the EC2 job definition** (`runzi-ec2-JD`). 14000 (not 16384) is used
+so the request clears the ECS agent/OS reservation on the 16 GiB `c*.2xlarge` and lands on c-family
+rather than general-purpose `m*.2xlarge`.
+
+Memory floor caveat: c6a/c6i `.2xlarge` is 16 GiB (~12 GB heap at 14000 MiB). This rupture set converged
+fine there, and subduction rupture sets are always smaller than crustal; a substantially larger crustal
+rupture set needing more heap would need a bigger compute-optimized size (c6a.4xlarge, 32 GiB) or a
+general-purpose instance — re-check the memory floor before relying on c-family for an outsized model.
 
 ## Caveats
 
