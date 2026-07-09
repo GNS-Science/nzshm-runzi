@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Dependencies
+ - deps: patch upgrades — 12 pkgs (boto3, botocore, coverage, distlib, filelock, geopandas, joserfc, mkdocstrings-python, pip-audit, python-discovery, ruff, wrapt).
+ - deps: minor upgrades — 25 pkgs (typer 0.17→0.25 [capped for safety compat], matplotlib 3.10→3.11, click 8.2→8.4, pillow, pandera, pyogrio, pyshp, pytest 9.0→9.1, tox, tqdm, griffe*, lance-namespace*, virtualenv, wcmatch, …); msgpack 1.1→1.2 fixes GHSA-6v7p-g79w-8964.
+ - deps: major upgrades — bracex 2→3, chardet 5→7, cryptography 48→49 (fixes GHSA-537c-gmf6-5ccf), pymdown-extensions 10→11, smart-open 7→8.
+ - deps: skipped — numpy 2 / pandas 3 / tzdata 2026 / toshi-hazard-post 0.7.2 / numba 0.66 / llvmlite 0.48 / cartopy 0.25 all blocked by nzshm-hazlab 0.1.4 requiring numpy<2; safety-schemas 0.0.18 and nltk 3.10 (path-traversal fix) blocked by 1-week age cutoff; graphql-core 3.3.0a1 skipped (pre-release only, took stable 3.2.11).
+
 ### Added
  - Terraform IaC for the AWS Batch Fargate compute environment and `BasicFargate_Q` job queue (`terraform/batch/`); the hand-created resources are adopted via `terraform import`, with `terraform plan` as the drift detector. The job definition stays CLI-managed. See `docs/architecture/adr/0004-aws-batch-iac-terraform.md`.
  - Terraform IaC for runzi's IAM access tiers (`terraform/access/`), migrating the federated Cognito roles to code. See `docs/architecture/adr/0005-runzi-iam-tiers-terraform-migration.md`.
