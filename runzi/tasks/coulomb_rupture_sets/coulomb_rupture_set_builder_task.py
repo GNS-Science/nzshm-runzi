@@ -14,7 +14,7 @@ from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel, model_validator
 
-from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import API_URL, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ToshiApi
@@ -46,12 +46,21 @@ def get_fault_model_file(fault_model_file_id) -> Path:
     return Path(fault_model_archive_file_path).parent / fault_model_file
 
 
+# Sizing from the EC2 benchmark (docs/benchmarks/ec2-sizing-coulomb-rupture-set.md): the build is
+# compute-bound and low-memory and scales sub-linearly, so 4 vCPU is the cheapest $/build. Threads track
+# vCPU (16-on-4 oversubscribed). Memory 7000 MiB (was 30 GB) sits just under the 8 GiB compute-optimized
+# c*.xlarge ceiling — with ECS agent/OS headroom, so the job fits c-family (the cheapest that fits under
+# BEST_FIT_PROGRESSIVE) instead of being bumped to general-purpose m*.xlarge (16 GiB) or expensive r.
+# The time limit clears the ~62 min 4-vCPU build (was 60 min — it got killed). Defaults to the EC2 job
+# definition (not Fargate): these Java builds always run on the EC2 CE, and 7000 MiB / 4 vCPU is below
+# Fargate's 8192 MiB floor anyway.
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
-    java_threads=16,
+    ecs_job_definition=EC2_JOB_DEFINITION,
+    java_threads=4,
     jvm_heap_max=32,
-    ecs_max_job_time_min=60,
-    ecs_memory=30720,
+    ecs_max_job_time_min=90,
+    ecs_memory=7000,
     ecs_vcpu=4,
 )
 

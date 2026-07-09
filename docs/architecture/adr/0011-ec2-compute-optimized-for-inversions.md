@@ -1,5 +1,15 @@
 # EC2 compute target: compute-optimized (AMD-preferred) families for inversions, not `"optimal"`
 
+> **Update (2026-07-09):** the deferred *target* switch (see "Followups" below) has since been made.
+> Crustal and subduction inversions now **default to the EC2 job definition** (`runzi-ec2-JD`), not
+> Fargate, and their module sizing was refined to **8 vCPU / 14000 MiB** (down from 16384) so the job
+> fits compute-optimized `c*.2xlarge` after the ECS agent/OS reservation instead of being bumped to
+> general-purpose `m*.2xlarge`. This was prompted by the coulomb rupture-set benchmark
+> (`docs/benchmarks/ec2-sizing-coulomb-rupture-set.md`), which confirmed these Java builds are
+> compute-bound and cheapest on c-family EC2. The EC2-vs-Fargate throughput baseline named below was
+> *not* run; the switch rests on the family/sizing evidence plus EC2's lower per-vCPU price. So the
+> "Fargate remains the default" statements below now hold only for the non-inversion tasks.
+
 ## Decision
 
 **Replace the EC2 compute environment's `instance_type = ["optimal"]` with a compute-optimized-
@@ -73,10 +83,12 @@ ranking above. `"optimal"` resolves to current-gen families (it picked `r6i`/`m6
 
 ## Followups not blocking this decision
 
-- **EC2 vs Fargate baseline** — benchmark Fargate at 8 vCPU against `c6a` EC2 to decide whether
-  inversions' default *target* (currently Fargate) should change. The *sizing* half has been applied —
-  the crustal/subduction module-default `SubmissionArgs` are now 8 vCPU / 16384 MB (2:1) — but the
-  *target* stays Fargate pending this baseline.
+- **EC2 vs Fargate baseline** — ~~benchmark Fargate at 8 vCPU against `c6a` EC2 to decide whether
+  inversions' default *target* (currently Fargate) should change.~~ **Resolved 2026-07-09 (see Update
+  at top):** the target was switched to EC2 without a Fargate baseline, on the strength of the
+  rupture-set benchmark and EC2's lower per-vCPU price; sizing refined to 8 vCPU / 14000 MiB to fit
+  compute-optimized `c*.2xlarge`. A dedicated EC2-vs-Fargate throughput comparison is still worth doing
+  if the cost of inversions ever comes under scrutiny.
 - **Durable instance-type capture** — have the container read its instance type from IMDS and log it to
   `java_app.<port>.log`, so provenance survives scale-down (parsed from Toshi like iterations/energy)
   and cost no longer needs the ECS/EC2 lookup or its IAM.

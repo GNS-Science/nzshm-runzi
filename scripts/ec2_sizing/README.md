@@ -87,3 +87,75 @@ Instance-type *pinning* (Graviton/arm64, Spot vs On-Demand) is the direct #323 "
 question and needs a deployer Terraform apply — a follow-up only if these sizing results are ambiguous.
 Acting on the results (changing the CE's `instance_types` or the crustal default `SubmissionArgs`) is
 an architecture change and gets its own ADR.
+
+---
+
+# EC2 job-sizing benchmark for the coulomb rupture-set builder
+
+Same idea, different task and **different metric**. The coulomb builder (`runzi rupset coulomb`) runs
+**to completion** (~20 min), so wall time is the signal, not throughput: we ask *how fast / how cheaply
+does a build finish, and where do extra cores stop paying?* This is a strict subtraction from the
+inversion collector — wall time comes straight off the Batch job summary, so there is **no Toshi log to
+parse** (no `--iteration-regex`).
+
+## What it measures
+
+- **Cores.** vCPU `{4, 8, 16, 32}` with **`java_threads` pinned to `ecs_vcpu`** per cell (the builder
+  calls `setNumThreads(java_threads)`), so each cell actually uses the cores it pays for and the
+  wall-time-vs-cores curve is meaningful. We do *not* know a priori whether the builder parallelizes —
+  the curve answers it: falling wall time ⇒ it scales (pick the knee); flat ⇒ it doesn't (run smallest).
+- **Instance family.** `c6a` (compute-optimized) vs `m6a` (general purpose), both AMD (cheapest x86),
+  **pinned** via per-family Batch queues from `terraform/ec2-sizing-benchmark/`. `ecs_memory` is sized to
+  ~fill each family's per-vCPU RAM (c ≈ 1.8 GB/vCPU, m ≈ 3.8 GB/vCPU), so a c-family **OOM is the finding**
+  that the build needs more than 2 GB/vCPU and must run on m-family.
+
+Cost is the same fair-share `(instance $/hr / instance vCPU) × job vCPU × wall-hours`, priced from the
+instance Batch placed each job on. The summary ranks cells by **mean cost per build** (cheapest first)
+with **mean wall seconds** alongside, so the cost knee and time knee are visible together.
+
+## Workflow
+
+```bash
+# 0. Dry run — confirm the 16 cells render valid EC2-targeted configs (no AWS calls).
+uv run python scripts/ec2_sizing/submit_coulomb_matrix.py --dry-run --queue-prefix ec2sizing
+
+# 1. Stand up the pinned per-family queues (once): from terraform/ec2-sizing-benchmark/ with
+#    instance_types = ["c6a","m6a"] (bare family names → any size in the family, so vCPU can sweep).
+#    NB: VERIFY AWS Batch accepts bare family names; if a plan/apply rejects them, fall back to
+#    enumerating sizes: ["c6a.xlarge","c6a.2xlarge","c6a.4xlarge","c6a.8xlarge", + the m6a set].
+#    `terraform output queues` prints {family -> queue}; name_prefix defaults to "ec2sizing".
+
+# 2. PILOT (the key risk): ONE cell to confirm the deployed :experimental worker isn't stale (#323 hit a
+#    py4j 127.0.0.1:None from an out-of-date image) AND that the wall-clock path works end-to-end.
+uv run python scripts/ec2_sizing/submit_coulomb_matrix.py \
+    --limit 1 --queue-prefix ec2sizing --manifest scratch/coulomb_pilot.json
+#    ...wait for the job to finish, then:
+uv run python scripts/ec2_sizing/collect_coulomb_results.py \
+    --manifest scratch/coulomb_pilot.json --csv scratch/coulomb_pilot.csv
+#    A real duration_sec (and a priced cost, if you have the ECS/EC2 read perms) proves the pipeline.
+
+# 3. Full matrix — 16 submits (2 families × 4 vCPU × 2 replicates).
+uv run python scripts/ec2_sizing/submit_coulomb_matrix.py \
+    --queue-prefix ec2sizing --manifest scripts/ec2_sizing/coulomb_manifest.json
+
+# 4. Collect + analyse once the jobs finish (terminal Batch jobs age out ~24h — collect promptly).
+uv run python scripts/ec2_sizing/collect_coulomb_results.py \
+    --manifest scripts/ec2_sizing/coulomb_manifest.json --csv scripts/ec2_sizing/coulomb_results.csv
+#    Cost needs no ECS read-back for a pinned run: the instance is derived from family + vCPU, and the
+#    fair-share per-vCPU rate is identical across sizes within a family. So even after the pinned CEs
+#    scale to zero (ECS can no longer resolve the instance), re-running the collector still prices every
+#    cell. (--instance-type is only for an *unpinned* run whose CE has scaled to zero.)
+```
+
+Then `terraform destroy` the benchmark module (the shared `runzi-ec2-CE` is untouched). Each build
+uploads a real rupture set to Toshi (`USE_API` is required to mint the `general_task_id` that links back
+to the Batch job) — note the ~16 throwaway uploads for cleanup.
+
+## Coulomb files
+
+- `coulomb_rupture_set.template.json` — base config (fault model `CFM_1_0A_DOM_SANSTVZ`, `max_sections`
+  2000); `submit_coulomb_matrix.py` injects per-cell `ecs_vcpu` / `java_threads` / `ecs_memory`.
+- `submit_coulomb_matrix.py` — renders + submits the family × vCPU matrix, writes `coulomb_manifest.json`.
+- `collect_coulomb_results.py` — joins the manifest to live Batch/EC2 data → CSV + summary (wall time +
+  cost, no Toshi).
+- `_cost.py` — the EC2 price table + fair-share cost formula, shared with the inversion collector.
