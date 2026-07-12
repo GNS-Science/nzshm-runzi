@@ -892,6 +892,18 @@ def test_parse_env_file_ignores_lines_without_equals():
     assert docker_wrapper._parse_env_file('NOT_A_PAIR\nFOO=bar') == {'FOO': 'bar'}
 
 
+def test_parse_env_file_strips_trailing_inline_comment():
+    assert docker_wrapper._parse_env_file('FOO=bar  # the level\nBAZ=qux') == {'FOO': 'bar', 'BAZ': 'qux'}
+
+
+def test_parse_env_file_keeps_hash_without_preceding_space():
+    assert docker_wrapper._parse_env_file('FOO=bar#baz') == {'FOO': 'bar#baz'}
+
+
+def test_parse_env_file_keeps_hash_inside_quotes():
+    assert docker_wrapper._parse_env_file('FOO="bar # baz" # comment') == {'FOO': 'bar # baz'}
+
+
 def test_load_dotenv_fallback_when_dotenv_absent(tmp_path, monkeypatch):
     """With python-dotenv unavailable, _load_dotenv parses .env itself and does not
     override already-set env vars."""

@@ -22,7 +22,9 @@ def _parse_env_file(text: str) -> dict[str, str]:
     """Parse ``.env`` text into a dict (stdlib fallback for python-dotenv).
 
     Matches python-dotenv defaults for the common cases: skip blank/comment lines,
-    ``KEY=VALUE`` only, strip an optional ``export`` prefix and surrounding quotes.
+    ``KEY=VALUE`` only, strip an optional ``export`` prefix, strip a trailing inline
+    comment from unquoted values, and strip surrounding quotes (a ``#`` inside a
+    quoted value is kept verbatim).
     """
     result: dict[str, str] = {}
     for raw in text.splitlines():
@@ -34,7 +36,15 @@ def _parse_env_file(text: str) -> dict[str, str]:
         if key.startswith('export '):
             key = key[len('export ') :].strip()
         if key:
-            result[key] = value.strip().strip('\'"')
+            value = value.strip()
+            if value[:1] in ('"', "'") and (end := value.find(value[0], 1)) != -1:
+                value = value[1:end]  # quoted: contents verbatim, drop any trailing comment
+            else:
+                hash_index = value.find(' #')  # unquoted: ' #' begins an inline comment
+                if hash_index != -1:
+                    value = value[:hash_index].rstrip()
+                value = value.strip('\'"')
+            result[key] = value
     return result
 
 
