@@ -48,9 +48,16 @@ runzi --docker-shell
 | `--docker-shell` | Drop into an interactive bash session; implies `--docker` |
 | `--docker-dry-run` | Print the docker command without running it; implies `--docker` |
 
+## Can't install runzi?
+
+If you don't want to install runzi at all, use the **standalone launcher** — a
+single dependency-free download that gives you the same `--docker` convenience.
+See [Running the container without installing runzi](run_without_install.md).
+
 ## Fallback: raw `docker run`
 
-If you cannot install runzi on the host, you can still run the container directly. Replace `[COMMAND] [SUBCOMMAND] [OPTIONS]` with the runzi command you wish to run (e.g. `hazard oq-hazard /INPUT_FILES/config.json`).
+If you cannot install runzi on the host and would rather not use the standalone
+launcher, you can run the container directly. Replace `[COMMAND] [SUBCOMMAND] [OPTIONS]` with the runzi command you wish to run (e.g. `hazard oq-hazard /INPUT_FILES/config.json`).
 
 ### With a local THS dataset
 

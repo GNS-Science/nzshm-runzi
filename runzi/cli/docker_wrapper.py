@@ -1,14 +1,66 @@
-"""Helpers for routing a runzi invocation through a local Docker container."""
+#!/usr/bin/env python3
+"""Helpers for routing a runzi invocation through a local Docker container.
+
+This module is also runnable as a standalone script
+(``python3 docker_wrapper.py <runzi args>``) with only ``python3`` + ``docker`` +
+``aws`` on PATH — no runzi install required.  To keep that path dependency-free,
+``rich`` and ``python-dotenv`` are optional and degrade gracefully when absent.
+"""
 
 import os
 import subprocess
 import sys
 from pathlib import Path
 
-from dotenv import load_dotenv
-from rich import print as rich_print
+try:
+    from rich import print as rich_print
+except ImportError:  # standalone use without rich installed
+    rich_print = print  # type: ignore[assignment]
 
-load_dotenv()
+
+def _parse_env_file(text: str) -> dict[str, str]:
+    """Parse ``.env`` text into a dict (stdlib fallback for python-dotenv).
+
+    Matches python-dotenv defaults for the common cases: skip blank/comment lines,
+    ``KEY=VALUE`` only, strip an optional ``export`` prefix and surrounding quotes.
+    """
+    result: dict[str, str] = {}
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        key, _, value = line.partition('=')
+        key = key.strip()
+        if key.startswith('export '):
+            key = key[len('export ') :].strip()
+        if key:
+            result[key] = value.strip().strip('\'"')
+    return result
+
+
+def _load_dotenv() -> None:
+    """Load a ``.env`` from the current directory.
+
+    Uses python-dotenv when available; otherwise falls back to :func:`_parse_env_file`
+    so the standalone launcher needs no third-party dependency.  Does not override
+    variables already set in the environment (matching python-dotenv defaults).
+    """
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        pass
+    else:
+        load_dotenv()
+        return
+
+    env_path = Path('.env')
+    if not env_path.is_file():
+        return
+    for key, value in _parse_env_file(env_path.read_text()).items():
+        os.environ.setdefault(key, value)
+
+
+_load_dotenv()
 
 _ENV_PASSTHROUGH = frozenset(
     [
@@ -56,6 +108,69 @@ _DEFAULT_AWS_REGION = 'us-east-1'
 _INPUT_FILES = '/INPUT_FILES'
 _AWS_CREDS_CONTAINER = '/aws-credentials'
 _WORK_PATH_CONTAINER = '/WORKING'
+
+
+# ── Docker meta-flag parsing ──────────────────────────────────────────────────
+# These flags select/route the Docker execution; they are stripped before the
+# remaining args are passed to runzi inside the container.  runzi_cli.py imports
+# these for its Typer callback; the standalone __main__ below uses
+# _parse_meta_flags.
+
+_DOCKER_BOOL_FLAGS: frozenset[str] = frozenset(['--docker', '--docker-dev', '--docker-shell', '--docker-dry-run'])
+_DOCKER_VALUE_FLAGS: frozenset[str] = frozenset(['--docker-image'])
+
+
+def _strip_docker_flags(args: list[str]) -> list[str]:
+    """Remove --docker-* flags (and their values) from a raw argv list."""
+    result: list[str] = []
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg in _DOCKER_BOOL_FLAGS:
+            pass  # drop boolean flag
+        elif arg in _DOCKER_VALUE_FLAGS:
+            i += 2  # drop --flag VALUE pair
+            continue
+        elif any(arg.startswith(f'{f}=') for f in _DOCKER_VALUE_FLAGS):
+            pass  # drop --flag=value form
+        else:
+            result.append(arg)
+        i += 1
+    return result
+
+
+def _parse_meta_flags(argv: list[str]) -> tuple[list[str], bool, str | None, bool, bool]:
+    """Parse the standalone launcher's docker meta-flags out of ``argv``.
+
+    Returns ``(inner_args, dev, image, shell, dry_run)``, mirroring the ``--docker*``
+    options that ``runzi_cli.py`` exposes so the standalone script has parity with an
+    installed ``runzi --docker...`` invocation.  A redundant ``--docker`` is a no-op
+    here (we are already the docker launcher).
+    """
+    inner: list[str] = []
+    dev = shell = dry_run = False
+    image: str | None = None
+    i = 0
+    while i < len(argv):
+        arg = argv[i]
+        if arg == '--docker':
+            pass  # redundant — this script *is* the docker launcher
+        elif arg == '--docker-dev':
+            dev = True
+        elif arg == '--docker-shell':
+            shell = True
+        elif arg == '--docker-dry-run':
+            dry_run = True
+        elif arg == '--docker-image':
+            image = argv[i + 1] if i + 1 < len(argv) else None
+            i += 2
+            continue
+        elif arg.startswith('--docker-image='):
+            image = arg.split('=', 1)[1]
+        else:
+            inner.append(arg)
+        i += 1
+    return inner, dev, image, shell, dry_run
 
 
 # ── Pure path helpers ─────────────────────────────────────────────────────────
@@ -171,9 +286,15 @@ def _image_exists_locally(image: str) -> bool:
 
 
 def _ecr_login(region: str, aws_account_id: str) -> None:
-    from runzi.cli.build_and_deploy_container import ecr_login
-
-    ecr_login(region, aws_account_id)
+    """Log Docker into ECR using the AWS CLI. Inlined so the standalone launcher
+    has no runzi-internal import (mirrors build_and_deploy_container.ecr_login)."""
+    rich_print('Logging into ECR...')
+    registry = f'{aws_account_id}.dkr.ecr.{region}.amazonaws.com'
+    subprocess.run(
+        f'aws ecr get-login-password --region {region} | docker login --username AWS --password-stdin {registry}',
+        shell=True,
+        check=True,
+    )
 
 
 def _resolve_image(dev: bool, image_override: str | None) -> str:
@@ -352,4 +473,11 @@ def run_in_docker(
 
 
 if __name__ == '__main__':
-    sys.exit(run_in_docker(sys.argv[1:]))
+    _inner, _dev, _image, _shell, _dry_run = _parse_meta_flags(sys.argv[1:])
+    if _dev:
+        rich_print(
+            '[red]--docker-dev requires an installed runzi source tree and is not '
+            'available from the standalone launcher.[/red]'
+        )
+        sys.exit(2)
+    sys.exit(run_in_docker(_inner, dev=_dev, image=_image, shell=_shell, dry_run=_dry_run))

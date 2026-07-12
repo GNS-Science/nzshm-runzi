@@ -20,28 +20,8 @@ from runzi.cli import (
 )
 
 # ── Arg capture helpers ───────────────────────────────────────────────────────
-
-_DOCKER_BOOL_FLAGS: frozenset[str] = frozenset(['--docker', '--docker-dev', '--docker-shell', '--docker-dry-run'])
-_DOCKER_VALUE_FLAGS: frozenset[str] = frozenset(['--docker-image'])
-
-
-def _strip_docker_flags(args: list[str]) -> list[str]:
-    """Remove --docker-* flags (and their values) from a raw argv list."""
-    result: list[str] = []
-    i = 0
-    while i < len(args):
-        arg = args[i]
-        if arg in _DOCKER_BOOL_FLAGS:
-            pass  # drop boolean flag
-        elif arg in _DOCKER_VALUE_FLAGS:
-            i += 2  # drop --flag VALUE pair
-            continue
-        elif any(arg.startswith(f'{f}=') for f in _DOCKER_VALUE_FLAGS):
-            pass  # drop --flag=value form
-        else:
-            result.append(arg)
-        i += 1
-    return result
+# _strip_docker_flags and the flag sets live in docker_wrapper so the standalone
+# launcher (docker_wrapper.py run directly) shares one source of truth with the CLI.
 
 
 class _ArgsCapturingGroup(TyperGroup):
@@ -105,7 +85,7 @@ def main_callback(
     use_docker = docker or docker_dev or docker_shell or docker_dry_run or (docker_image is not None)
     if use_docker:
         raw_args = ctx.meta.get('_raw_args', [])
-        inner_args = _strip_docker_flags(raw_args)
+        inner_args = docker_wrapper._strip_docker_flags(raw_args)
         exit_code = docker_wrapper.run_in_docker(
             inner_args,
             dev=docker_dev,
