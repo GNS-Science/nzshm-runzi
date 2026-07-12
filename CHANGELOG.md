@@ -12,6 +12,7 @@
  - `runzi batch status <GENERAL_TASK_ID>` — a read-only command that lists the AWS Batch jobs for a submitted task, showing each job's status, run time, creation time, and the swept-argument values that make each job unique. Aimed at users who have no AWS console access (#326, #335).
  - `runzi batch log <JOB_ID>` — downloads a single Batch job's log to a local `<JOB_ID>.log` file (#337).
  - EC2 sizing benchmarks, and their tooling under `scripts/ec2_sizing/`, for the crustal inversion and coulomb rupture-set jobs — used to pick instance families and sizes. See `docs/benchmarks/` and `docs/architecture/adr/0011-*` (#323).
+ - `runzi/cli/docker_wrapper.py` now runs as a standalone launcher, so a user can run tasks with only the Docker image + `docker` + `aws` CLI, without installing runzi (`curl` it to `runzi-docker` and run it directly). It is the same file that powers `runzi --docker`; `rich`/`python-dotenv` are optional (with a stdlib `.env` fallback) and `__main__` accepts `--docker-shell` / `--docker-image` / `--docker-dry-run`. Auth uses the lightweight `nshm-toshi-client` (`toshi-auth login` / `aws-creds`). See `docs/usage/docker/run_without_install.md`.
 
 ### Changed
  - Inversion and rupture-set builder jobs now run on EC2 by default instead of Fargate, using compute-optimized instances and benchmark-tuned sizes (inversions 8 vCPU / 14000 MiB; rupture-set builds 4 vCPU / 7000 MiB with a 90-minute time limit, up from 60). Fargate stays available as a per-job override. See `docs/architecture/adr/0011-*` and `docs/benchmarks/` (#323).
