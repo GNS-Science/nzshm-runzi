@@ -8,6 +8,7 @@ This module is also runnable as a standalone script
 """
 
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -313,19 +314,43 @@ def _resolve_image(dev: bool, image_override: str | None) -> str:
     return _DEFAULT_DEV_IMAGE if dev else _DEFAULT_IMAGE
 
 
-def _maybe_pull(image: str) -> None:
-    if _image_exists_locally(image):
-        return
+# <account>.dkr.ecr.<region>.amazonaws.com — used to derive login account/region
+# from a fully-qualified ECR image reference.
+_ECR_HOST_RE = re.compile(r'^(?P<account>\d+)\.dkr\.ecr\.(?P<region>[a-z0-9-]+)\.amazonaws\.com$')
+
+
+def _resolve_pull_source(image: str) -> tuple[str, str | None, str | None]:
+    """Return ``(pull_source, login_region, login_account)`` for an image reference.
+
+    A fully-qualified registry reference (host[:port]/path, per Docker's rule that the
+    component before the first ``/`` contains a ``.`` or ``:``) is pulled verbatim; the
+    ECR account/region are parsed from its host for login (``None`` for a non-ECR host,
+    which skips ECR login).  A bare name/tag is reconstructed against the configured
+    default ECR account/region/repo, keeping only its tag.
+    """
+    head = image.split('/', 1)[0]
+    if '/' in image and ('.' in head or ':' in head):
+        m = _ECR_HOST_RE.match(head)
+        if m:
+            return image, m.group('region'), m.group('account')
+        return image, None, None
     region = os.environ.get('AWS_REGION', _DEFAULT_AWS_REGION)
     account = os.environ.get('AWS_ACCOUNT_ID', _DEFAULT_AWS_ACCOUNT)
     repo = os.environ.get('ECR_REPO', _DEFAULT_ECR_REPO)
-    if ":" not in image:  # guard againt no tag
-        image += ":"
-    ecr_image = f'{account}.dkr.ecr.{region}.amazonaws.com/{repo}:{image.split(":")[-1]}'
-    rich_print(f'[yellow]Image {image!r} not found locally — pulling {ecr_image} from ECR[/yellow]')
-    _ecr_login(region, account)
-    subprocess.run(['docker', 'pull', ecr_image], check=True)
-    subprocess.run(['docker', 'tag', ecr_image, image], check=True)
+    tag = image.split(':', 1)[1] if ':' in image else 'latest'
+    return f'{account}.dkr.ecr.{region}.amazonaws.com/{repo}:{tag}', region, account
+
+
+def _maybe_pull(image: str) -> None:
+    if _image_exists_locally(image):
+        return
+    source, region, account = _resolve_pull_source(image)
+    rich_print(f'[yellow]Image {image!r} not found locally — pulling {source}[/yellow]')
+    if region and account:
+        _ecr_login(region, account)
+    subprocess.run(['docker', 'pull', source], check=True)
+    if source != image:
+        subprocess.run(['docker', 'tag', source, image], check=True)
 
 
 # ── Env resolution ────────────────────────────────────────────────────────────
