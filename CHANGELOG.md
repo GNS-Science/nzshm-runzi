@@ -12,6 +12,7 @@
  - `runzi batch status <GENERAL_TASK_ID>` — a read-only command that lists the AWS Batch jobs for a submitted task, showing each job's status, run time, creation time, and the swept-argument values that make each job unique. Aimed at users who have no AWS console access (#326, #335).
  - `runzi batch log <JOB_ID>` — downloads a single Batch job's log to a local `<JOB_ID>.log` file (#337).
  - EC2 sizing benchmarks, and their tooling under `scripts/ec2_sizing/`, for the crustal inversion and coulomb rupture-set jobs — used to pick instance families and sizes. See `docs/benchmarks/` and `docs/architecture/adr/0011-*` (#323).
+ - `runzi/cli/docker_wrapper.py` now runs as a standalone launcher, so a user can run tasks with only the Docker image + `docker` + `aws` CLI, without installing runzi (`curl` it to `runzi-docker` and run it directly). It is the same file that powers `runzi --docker`; `rich`/`python-dotenv` are optional (with a stdlib `.env` fallback) and `__main__` accepts `--docker-shell` / `--docker-image` / `--docker-dry-run`. Auth uses the lightweight `nshm-toshi-client` (`toshi-auth login` / `aws-creds`). See `docs/usage/docker/run_without_install.md`.
 
 ### Changed
  - Inversion and rupture-set builder jobs now run on EC2 by default instead of Fargate, using compute-optimized instances and benchmark-tuned sizes (inversions 8 vCPU / 14000 MiB; rupture-set builds 4 vCPU / 7000 MiB with a 90-minute time limit, up from 60). Fargate stays available as a per-job override. See `docs/architecture/adr/0011-*` and `docs/benchmarks/` (#323).
@@ -30,6 +31,7 @@
  - Local Java tasks now wait for the Java process to finish starting before connecting to it, fixing occasional connection-refused errors at startup.
  - Stage-incorrect S3 ARNs in the `terraform/access/` base policy: the runzi tiers' data-bucket grant was hardcoded to the `-test` buckets regardless of stage, so the `prod` roles targeted the test buckets. Now resolved per stage via stage-keyed `local.s3_data_buckets` (`prod` → `ths-dataset-prod` / `nzshm22-static-reports`; `test` unchanged). See `docs/architecture/adr/0005-runzi-iam-tiers-terraform-migration.md` (#321).
  - Disabled gql client schema fetching to avoid a `DirectiveLocation` crash against the Toshi API.
+ - `runzi --docker` (and the standalone launcher) no longer default to the retired `:latest` ECR tag — which the deploy pipeline never publishes, so a first-run pull with no local image would fail. The no-override default now pulls the published `:prod` image; use `--docker-image` for `:experimental` or a specific version tag. `_maybe_pull` also now honors a fully-qualified `--docker-image` URI verbatim (pulling from the account/region in the URI, or a non-ECR registry) instead of always reconstructing the default ECR reference.
 
 ## [0.11.0] 2026-10-06
 

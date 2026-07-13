@@ -2,6 +2,7 @@
 
 import os
 import re
+import sys
 
 import pytest
 from typer.testing import CliRunner
@@ -804,3 +805,226 @@ def test_cli_docker_forwards_subcommand_name_in_inner_args(mocker, tmp_path):
     assert inner_args[0] == 'hazard', f'subcommand missing from inner_args: {inner_args}'
     assert 'oq-hazard' in inner_args
     assert str(config) in inner_args
+
+
+# ── _parse_meta_flags (standalone launcher argv parsing) ──────────────────────
+
+
+def test_parse_meta_flags_empty():
+    assert docker_wrapper._parse_meta_flags([]) == ([], False, None, False, False)
+
+
+def test_parse_meta_flags_passes_inner_args_through():
+    inner, dev, image, shell, dry_run = docker_wrapper._parse_meta_flags(['hazard', 'oq-hazard', 'foo.json'])
+    assert inner == ['hazard', 'oq-hazard', 'foo.json']
+    assert (dev, image, shell, dry_run) == (False, None, False, False)
+
+
+def test_parse_meta_flags_shell():
+    inner, dev, image, shell, dry_run = docker_wrapper._parse_meta_flags(['--docker-shell'])
+    assert inner == []
+    assert shell is True
+    assert (dev, image, dry_run) == (False, None, False)
+
+
+def test_parse_meta_flags_dry_run():
+    _, _, _, _, dry_run = docker_wrapper._parse_meta_flags(['--docker-dry-run', 'hazard'])
+    assert dry_run is True
+
+
+def test_parse_meta_flags_dev():
+    _, dev, _, _, _ = docker_wrapper._parse_meta_flags(['--docker-dev', 'hazard'])
+    assert dev is True
+
+
+def test_parse_meta_flags_image_space_form():
+    inner, _, image, _, _ = docker_wrapper._parse_meta_flags(['--docker-image', 'ghcr.io/x:tag', 'hazard'])
+    assert image == 'ghcr.io/x:tag'
+    assert inner == ['hazard']
+
+
+def test_parse_meta_flags_image_equals_form():
+    inner, _, image, _, _ = docker_wrapper._parse_meta_flags(['--docker-image=ghcr.io/x:tag', 'hazard'])
+    assert image == 'ghcr.io/x:tag'
+    assert inner == ['hazard']
+
+
+def test_parse_meta_flags_bare_docker_is_noop():
+    inner, dev, image, shell, dry_run = docker_wrapper._parse_meta_flags(['--docker', 'hazard', 'oq-hazard'])
+    assert inner == ['hazard', 'oq-hazard']
+    assert (dev, image, shell, dry_run) == (False, None, False, False)
+
+
+def test_parse_meta_flags_mixed_ordering():
+    inner, dev, image, shell, dry_run = docker_wrapper._parse_meta_flags(
+        ['--docker-dry-run', 'hazard', '--docker-image', 'img:1', 'oq-hazard', 'foo.json']
+    )
+    assert inner == ['hazard', 'oq-hazard', 'foo.json']
+    assert image == 'img:1'
+    assert dry_run is True
+
+
+def test_parse_meta_flags_and_strip_agree_on_inner_args():
+    """_parse_meta_flags and _strip_docker_flags must produce the same inner args."""
+    argv = ['--docker-dry-run', 'hazard', '--docker-image', 'img:1', 'oq-hazard', 'foo.json']
+    inner, *_ = docker_wrapper._parse_meta_flags(argv)
+    assert inner == docker_wrapper._strip_docker_flags(argv)
+
+
+# ── _parse_env_file (stdlib .env fallback) ────────────────────────────────────
+
+
+def test_parse_env_file_basic():
+    assert docker_wrapper._parse_env_file('FOO=bar\nBAZ=qux') == {'FOO': 'bar', 'BAZ': 'qux'}
+
+
+def test_parse_env_file_skips_blanks_and_comments():
+    text = '# a comment\n\nFOO=bar\n   # indented comment\nBAZ=qux\n'
+    assert docker_wrapper._parse_env_file(text) == {'FOO': 'bar', 'BAZ': 'qux'}
+
+
+def test_parse_env_file_strips_quotes_and_export():
+    text = "export FOO='bar'\nBAZ=\"qux\""
+    assert docker_wrapper._parse_env_file(text) == {'FOO': 'bar', 'BAZ': 'qux'}
+
+
+def test_parse_env_file_ignores_lines_without_equals():
+    assert docker_wrapper._parse_env_file('NOT_A_PAIR\nFOO=bar') == {'FOO': 'bar'}
+
+
+def test_parse_env_file_strips_trailing_inline_comment():
+    assert docker_wrapper._parse_env_file('FOO=bar  # the level\nBAZ=qux') == {'FOO': 'bar', 'BAZ': 'qux'}
+
+
+def test_parse_env_file_keeps_hash_without_preceding_space():
+    assert docker_wrapper._parse_env_file('FOO=bar#baz') == {'FOO': 'bar#baz'}
+
+
+def test_parse_env_file_keeps_hash_inside_quotes():
+    assert docker_wrapper._parse_env_file('FOO="bar # baz" # comment') == {'FOO': 'bar # baz'}
+
+
+# ── _resolve_pull_source / _maybe_pull (image reference resolution) ────────────
+
+
+def test_default_image_pulls_prod_tag(monkeypatch):
+    """The no-override default resolves to the published :prod ECR tag, not :latest.
+
+    :latest is never pushed to ECR (deploy publishes :prod/:experimental/version tags),
+    so the default must map to :prod for a first-run pull to succeed.
+    """
+    for var in ('AWS_REGION', 'AWS_ACCOUNT_ID', 'ECR_REPO'):
+        monkeypatch.delenv(var, raising=False)
+    default = docker_wrapper._resolve_image(dev=False, image_override=None)
+    assert default == 'runzi-build:prod'
+    source, _, _ = docker_wrapper._resolve_pull_source(default)
+    assert source == '461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:prod'
+
+
+def test_resolve_pull_source_bare_tag_reconstructs_default_ecr(monkeypatch):
+    for var in ('AWS_REGION', 'AWS_ACCOUNT_ID', 'ECR_REPO'):
+        monkeypatch.delenv(var, raising=False)
+    source, region, account = docker_wrapper._resolve_pull_source('runzi-build:experimental')
+    assert source == '461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:experimental'
+    assert (region, account) == ('us-east-1', '461564345538')
+
+
+def test_resolve_pull_source_bare_name_defaults_tag_to_latest(monkeypatch):
+    for var in ('AWS_REGION', 'AWS_ACCOUNT_ID', 'ECR_REPO'):
+        monkeypatch.delenv(var, raising=False)
+    source, _, _ = docker_wrapper._resolve_pull_source('runzi-build')
+    assert source.endswith('/nzshm22/runzi:latest')
+
+
+def test_resolve_pull_source_honors_env_overrides(monkeypatch):
+    monkeypatch.setenv('AWS_REGION', 'ap-southeast-2')
+    monkeypatch.setenv('AWS_ACCOUNT_ID', '999999999999')
+    monkeypatch.setenv('ECR_REPO', 'custom/repo')
+    source, region, account = docker_wrapper._resolve_pull_source('runzi-build:v2')
+    assert source == '999999999999.dkr.ecr.ap-southeast-2.amazonaws.com/custom/repo:v2'
+    assert (region, account) == ('ap-southeast-2', '999999999999')
+
+
+def test_resolve_pull_source_full_ecr_uri_pulled_verbatim():
+    uri = '461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:latest'
+    source, region, account = docker_wrapper._resolve_pull_source(uri)
+    assert source == uri  # pulled as-is, not reconstructed
+    assert (region, account) == ('us-east-1', '461564345538')
+
+
+def test_resolve_pull_source_foreign_account_ecr_uri_parsed():
+    uri = '123456789012.dkr.ecr.eu-west-1.amazonaws.com/foo/bar:tag'
+    source, region, account = docker_wrapper._resolve_pull_source(uri)
+    assert source == uri
+    assert (region, account) == ('eu-west-1', '123456789012')
+
+
+def test_resolve_pull_source_non_ecr_registry_skips_login():
+    uri = 'ghcr.io/gns-science/runzi:latest'
+    source, region, account = docker_wrapper._resolve_pull_source(uri)
+    assert source == uri
+    assert (region, account) == (None, None)  # no ECR login for a non-ECR host
+
+
+def test_maybe_pull_full_uri_pulls_verbatim_without_retag(mocker):
+    mocker.patch('runzi.cli.docker_wrapper._image_exists_locally', return_value=False)
+    ecr_login = mocker.patch('runzi.cli.docker_wrapper._ecr_login')
+    run = mocker.patch('runzi.cli.docker_wrapper.subprocess.run')
+    uri = '123456789012.dkr.ecr.eu-west-1.amazonaws.com/foo/bar:tag'
+
+    docker_wrapper._maybe_pull(uri)
+
+    ecr_login.assert_called_once_with('eu-west-1', '123456789012')
+    pulled = [c.args[0] for c in run.call_args_list]
+    assert ['docker', 'pull', uri] in pulled
+    assert not any(c.args[0][:2] == ['docker', 'tag'] for c in run.call_args_list)
+
+
+def test_maybe_pull_non_ecr_registry_skips_ecr_login(mocker):
+    mocker.patch('runzi.cli.docker_wrapper._image_exists_locally', return_value=False)
+    ecr_login = mocker.patch('runzi.cli.docker_wrapper._ecr_login')
+    run = mocker.patch('runzi.cli.docker_wrapper.subprocess.run')
+
+    docker_wrapper._maybe_pull('ghcr.io/gns-science/runzi:latest')
+
+    ecr_login.assert_not_called()
+    assert run.call_args_list[0].args[0] == ['docker', 'pull', 'ghcr.io/gns-science/runzi:latest']
+
+
+def test_maybe_pull_bare_tag_reconstructs_and_retags(mocker, monkeypatch):
+    for var in ('AWS_REGION', 'AWS_ACCOUNT_ID', 'ECR_REPO'):
+        monkeypatch.delenv(var, raising=False)
+    mocker.patch('runzi.cli.docker_wrapper._image_exists_locally', return_value=False)
+    ecr_login = mocker.patch('runzi.cli.docker_wrapper._ecr_login')
+    run = mocker.patch('runzi.cli.docker_wrapper.subprocess.run')
+    expected = '461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:latest'
+
+    docker_wrapper._maybe_pull('runzi-build:latest')
+
+    ecr_login.assert_called_once_with('us-east-1', '461564345538')
+    cmds = [c.args[0] for c in run.call_args_list]
+    assert ['docker', 'pull', expected] in cmds
+    assert ['docker', 'tag', expected, 'runzi-build:latest'] in cmds
+
+
+def test_maybe_pull_skips_when_image_present_locally(mocker):
+    mocker.patch('runzi.cli.docker_wrapper._image_exists_locally', return_value=True)
+    run = mocker.patch('runzi.cli.docker_wrapper.subprocess.run')
+
+    docker_wrapper._maybe_pull('runzi-build:latest')
+
+    run.assert_not_called()
+
+
+def test_load_dotenv_fallback_when_dotenv_absent(tmp_path, monkeypatch):
+    """With python-dotenv unavailable, _load_dotenv parses .env itself and does not
+    override already-set env vars."""
+    monkeypatch.setitem(sys.modules, 'dotenv', None)  # force `import dotenv` -> ImportError
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / '.env').write_text('NZSHM22_FALLBACK_NEW=fresh\nNZSHM22_FALLBACK_EXISTING=fromfile\n')
+    monkeypatch.setenv('NZSHM22_FALLBACK_EXISTING', 'preset')
+
+    docker_wrapper._load_dotenv()
+
+    assert os.environ['NZSHM22_FALLBACK_NEW'] == 'fresh'
+    assert os.environ['NZSHM22_FALLBACK_EXISTING'] == 'preset'  # not overridden

@@ -1,14 +1,77 @@
-"""Helpers for routing a runzi invocation through a local Docker container."""
+#!/usr/bin/env python3
+"""Helpers for routing a runzi invocation through a local Docker container.
+
+This module is also runnable as a standalone script
+(``python3 docker_wrapper.py <runzi args>``) with only ``python3`` + ``docker`` +
+``aws`` on PATH — no runzi install required.  To keep that path dependency-free,
+``rich`` and ``python-dotenv`` are optional and degrade gracefully when absent.
+"""
 
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
 
-from dotenv import load_dotenv
-from rich import print as rich_print
+try:
+    from rich import print as rich_print
+except ImportError:  # standalone use without rich installed
+    rich_print = print  # type: ignore[assignment]
 
-load_dotenv()
+
+def _parse_env_file(text: str) -> dict[str, str]:
+    """Parse ``.env`` text into a dict (stdlib fallback for python-dotenv).
+
+    Matches python-dotenv defaults for the common cases: skip blank/comment lines,
+    ``KEY=VALUE`` only, strip an optional ``export`` prefix, strip a trailing inline
+    comment from unquoted values, and strip surrounding quotes (a ``#`` inside a
+    quoted value is kept verbatim).
+    """
+    result: dict[str, str] = {}
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        key, _, value = line.partition('=')
+        key = key.strip()
+        if key.startswith('export '):
+            key = key[len('export ') :].strip()
+        if key:
+            value = value.strip()
+            if value[:1] in ('"', "'") and (end := value.find(value[0], 1)) != -1:
+                value = value[1:end]  # quoted: contents verbatim, drop any trailing comment
+            else:
+                hash_index = value.find(' #')  # unquoted: ' #' begins an inline comment
+                if hash_index != -1:
+                    value = value[:hash_index].rstrip()
+                value = value.strip('\'"')
+            result[key] = value
+    return result
+
+
+def _load_dotenv() -> None:
+    """Load a ``.env`` from the current directory.
+
+    Uses python-dotenv when available; otherwise falls back to :func:`_parse_env_file`
+    so the standalone launcher needs no third-party dependency.  Does not override
+    variables already set in the environment (matching python-dotenv defaults).
+    """
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        pass
+    else:
+        load_dotenv()
+        return
+
+    env_path = Path('.env')
+    if not env_path.is_file():
+        return
+    for key, value in _parse_env_file(env_path.read_text()).items():
+        os.environ.setdefault(key, value)
+
+
+_load_dotenv()
 
 _ENV_PASSTHROUGH = frozenset(
     [
@@ -47,7 +110,12 @@ _ENV_FORWARDED_NZSHM_VARS: frozenset[str] = frozenset(
 
 _TOSHI_HOME_CONTAINER = '/toshi-home'
 
-_DEFAULT_IMAGE = 'runzi-build:latest'
+# Default local image alias. Its tag (``prod``) doubles as the ECR tag pulled when
+# the image is absent locally (via _resolve_pull_source): the deploy pipeline
+# publishes :prod, :experimental, and immutable version tags but never :latest, so
+# :prod is the only sensible no-override default. Run a different published image with
+# --docker-image (e.g. --docker-image <ecr-uri>/nzshm22/runzi:experimental).
+_DEFAULT_IMAGE = 'runzi-build:prod'
 _DEFAULT_DEV_IMAGE = 'runzi-build:dev'
 _DEFAULT_ECR_REPO = 'nzshm22/runzi'
 _DEFAULT_AWS_ACCOUNT = '461564345538'
@@ -56,6 +124,69 @@ _DEFAULT_AWS_REGION = 'us-east-1'
 _INPUT_FILES = '/INPUT_FILES'
 _AWS_CREDS_CONTAINER = '/aws-credentials'
 _WORK_PATH_CONTAINER = '/WORKING'
+
+
+# ── Docker meta-flag parsing ──────────────────────────────────────────────────
+# These flags select/route the Docker execution; they are stripped before the
+# remaining args are passed to runzi inside the container.  runzi_cli.py imports
+# these for its Typer callback; the standalone __main__ below uses
+# _parse_meta_flags.
+
+_DOCKER_BOOL_FLAGS: frozenset[str] = frozenset(['--docker', '--docker-dev', '--docker-shell', '--docker-dry-run'])
+_DOCKER_VALUE_FLAGS: frozenset[str] = frozenset(['--docker-image'])
+
+
+def _strip_docker_flags(args: list[str]) -> list[str]:
+    """Remove --docker-* flags (and their values) from a raw argv list."""
+    result: list[str] = []
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg in _DOCKER_BOOL_FLAGS:
+            pass  # drop boolean flag
+        elif arg in _DOCKER_VALUE_FLAGS:
+            i += 2  # drop --flag VALUE pair
+            continue
+        elif any(arg.startswith(f'{f}=') for f in _DOCKER_VALUE_FLAGS):
+            pass  # drop --flag=value form
+        else:
+            result.append(arg)
+        i += 1
+    return result
+
+
+def _parse_meta_flags(argv: list[str]) -> tuple[list[str], bool, str | None, bool, bool]:
+    """Parse the standalone launcher's docker meta-flags out of ``argv``.
+
+    Returns ``(inner_args, dev, image, shell, dry_run)``, mirroring the ``--docker*``
+    options that ``runzi_cli.py`` exposes so the standalone script has parity with an
+    installed ``runzi --docker...`` invocation.  A redundant ``--docker`` is a no-op
+    here (we are already the docker launcher).
+    """
+    inner: list[str] = []
+    dev = shell = dry_run = False
+    image: str | None = None
+    i = 0
+    while i < len(argv):
+        arg = argv[i]
+        if arg == '--docker':
+            pass  # redundant — this script *is* the docker launcher
+        elif arg == '--docker-dev':
+            dev = True
+        elif arg == '--docker-shell':
+            shell = True
+        elif arg == '--docker-dry-run':
+            dry_run = True
+        elif arg == '--docker-image':
+            image = argv[i + 1] if i + 1 < len(argv) else None
+            i += 2
+            continue
+        elif arg.startswith('--docker-image='):
+            image = arg.split('=', 1)[1]
+        else:
+            inner.append(arg)
+        i += 1
+    return inner, dev, image, shell, dry_run
 
 
 # ── Pure path helpers ─────────────────────────────────────────────────────────
@@ -171,9 +302,15 @@ def _image_exists_locally(image: str) -> bool:
 
 
 def _ecr_login(region: str, aws_account_id: str) -> None:
-    from runzi.cli.build_and_deploy_container import ecr_login
-
-    ecr_login(region, aws_account_id)
+    """Log Docker into ECR using the AWS CLI. Inlined so the standalone launcher
+    has no runzi-internal import (mirrors build_and_deploy_container.ecr_login)."""
+    rich_print('Logging into ECR...')
+    registry = f'{aws_account_id}.dkr.ecr.{region}.amazonaws.com'
+    subprocess.run(
+        f'aws ecr get-login-password --region {region} | docker login --username AWS --password-stdin {registry}',
+        shell=True,
+        check=True,
+    )
 
 
 def _resolve_image(dev: bool, image_override: str | None) -> str:
@@ -182,19 +319,43 @@ def _resolve_image(dev: bool, image_override: str | None) -> str:
     return _DEFAULT_DEV_IMAGE if dev else _DEFAULT_IMAGE
 
 
-def _maybe_pull(image: str) -> None:
-    if _image_exists_locally(image):
-        return
+# <account>.dkr.ecr.<region>.amazonaws.com — used to derive login account/region
+# from a fully-qualified ECR image reference.
+_ECR_HOST_RE = re.compile(r'^(?P<account>\d+)\.dkr\.ecr\.(?P<region>[a-z0-9-]+)\.amazonaws\.com$')
+
+
+def _resolve_pull_source(image: str) -> tuple[str, str | None, str | None]:
+    """Return ``(pull_source, login_region, login_account)`` for an image reference.
+
+    A fully-qualified registry reference (host[:port]/path, per Docker's rule that the
+    component before the first ``/`` contains a ``.`` or ``:``) is pulled verbatim; the
+    ECR account/region are parsed from its host for login (``None`` for a non-ECR host,
+    which skips ECR login).  A bare name/tag is reconstructed against the configured
+    default ECR account/region/repo, keeping only its tag.
+    """
+    head = image.split('/', 1)[0]
+    if '/' in image and ('.' in head or ':' in head):
+        m = _ECR_HOST_RE.match(head)
+        if m:
+            return image, m.group('region'), m.group('account')
+        return image, None, None
     region = os.environ.get('AWS_REGION', _DEFAULT_AWS_REGION)
     account = os.environ.get('AWS_ACCOUNT_ID', _DEFAULT_AWS_ACCOUNT)
     repo = os.environ.get('ECR_REPO', _DEFAULT_ECR_REPO)
-    if ":" not in image:  # guard againt no tag
-        image += ":"
-    ecr_image = f'{account}.dkr.ecr.{region}.amazonaws.com/{repo}:{image.split(":")[-1]}'
-    rich_print(f'[yellow]Image {image!r} not found locally — pulling {ecr_image} from ECR[/yellow]')
-    _ecr_login(region, account)
-    subprocess.run(['docker', 'pull', ecr_image], check=True)
-    subprocess.run(['docker', 'tag', ecr_image, image], check=True)
+    tag = image.split(':', 1)[1] if ':' in image else 'latest'
+    return f'{account}.dkr.ecr.{region}.amazonaws.com/{repo}:{tag}', region, account
+
+
+def _maybe_pull(image: str) -> None:
+    if _image_exists_locally(image):
+        return
+    source, region, account = _resolve_pull_source(image)
+    rich_print(f'[yellow]Image {image!r} not found locally — pulling {source}[/yellow]')
+    if region and account:
+        _ecr_login(region, account)
+    subprocess.run(['docker', 'pull', source], check=True)
+    if source != image:
+        subprocess.run(['docker', 'tag', source, image], check=True)
 
 
 # ── Env resolution ────────────────────────────────────────────────────────────
@@ -352,4 +513,11 @@ def run_in_docker(
 
 
 if __name__ == '__main__':
-    sys.exit(run_in_docker(sys.argv[1:]))
+    _inner, _dev, _image, _shell, _dry_run = _parse_meta_flags(sys.argv[1:])
+    if _dev:
+        rich_print(
+            '[red]--docker-dev requires an installed runzi source tree and is not '
+            'available from the standalone launcher.[/red]'
+        )
+        sys.exit(2)
+    sys.exit(run_in_docker(_inner, dev=_dev, image=_image, shell=_shell, dry_run=_dry_run))

@@ -48,9 +48,25 @@ runzi --docker-shell
 | `--docker-shell` | Drop into an interactive bash session; implies `--docker` |
 | `--docker-dry-run` | Print the docker command without running it; implies `--docker` |
 
+## Can't install runzi?
+
+If you don't want to install runzi at all, use the **standalone launcher** — a
+single dependency-free download that gives you the same `--docker` convenience.
+See [Running the container without installing runzi](run_without_install.md).
+
 ## Fallback: raw `docker run`
 
-If you cannot install runzi on the host, you can still run the container directly. Replace `[COMMAND] [SUBCOMMAND] [OPTIONS]` with the runzi command you wish to run (e.g. `hazard oq-hazard /INPUT_FILES/config.json`).
+If you cannot install runzi on the host and would rather not use the standalone
+launcher, you can run the container directly. Replace `[COMMAND] [SUBCOMMAND] [OPTIONS]` with the runzi command you wish to run (e.g. `hazard oq-hazard /INPUT_FILES/config.json`).
+
+The examples below reference the published `:prod` image; `docker run` pulls it on
+first use once you have logged Docker in to ECR (the deploy pipeline publishes
+`:prod`, `:experimental`, and immutable version tags — there is no `:latest`):
+
+```console
+aws ecr get-login-password --region us-east-1 \
+  | docker login --username AWS --password-stdin 461564345538.dkr.ecr.us-east-1.amazonaws.com
+```
 
 ### With a local THS dataset
 
@@ -66,7 +82,7 @@ docker run --rm --user "$(id -u):$(id -g)" --entrypoint runzi \
   -e NZSHM22_TOSHI_API_URL \
   -e NZSHM22_TOSHI_API_KEY \
   -e NZSHM22_RUNZI_ECR_DIGEST \
-  runzi-build:latest [COMMAND] [SUBCOMMAND] [OPTIONS]
+  461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:prod [COMMAND] [SUBCOMMAND] [OPTIONS]
 ```
 
 ### With an S3 THS dataset
@@ -86,5 +102,5 @@ docker run --rm --user "$(id -u):$(id -g)" --entrypoint runzi \
   -e NZSHM22_TOSHI_API_URL \
   -e NZSHM22_TOSHI_API_KEY \
   -e NZSHM22_RUNZI_ECR_DIGEST \
-  runzi-build:latest [COMMAND] [SUBCOMMAND] [OPTIONS]
+  461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:prod [COMMAND] [SUBCOMMAND] [OPTIONS]
 ```
