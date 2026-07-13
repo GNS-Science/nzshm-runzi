@@ -110,7 +110,12 @@ _ENV_FORWARDED_NZSHM_VARS: frozenset[str] = frozenset(
 
 _TOSHI_HOME_CONTAINER = '/toshi-home'
 
-_DEFAULT_IMAGE = 'runzi-build:latest'
+# Default local image alias. Its tag (``prod``) doubles as the ECR tag pulled when
+# the image is absent locally (via _resolve_pull_source): the deploy pipeline
+# publishes :prod, :experimental, and immutable version tags but never :latest, so
+# :prod is the only sensible no-override default. Run a different published image with
+# --docker-image (e.g. --docker-image <ecr-uri>/nzshm22/runzi:experimental).
+_DEFAULT_IMAGE = 'runzi-build:prod'
 _DEFAULT_DEV_IMAGE = 'runzi-build:dev'
 _DEFAULT_ECR_REPO = 'nzshm22/runzi'
 _DEFAULT_AWS_ACCOUNT = '461564345538'

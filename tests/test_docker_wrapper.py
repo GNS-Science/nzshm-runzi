@@ -907,11 +907,25 @@ def test_parse_env_file_keeps_hash_inside_quotes():
 # ── _resolve_pull_source / _maybe_pull (image reference resolution) ────────────
 
 
+def test_default_image_pulls_prod_tag(monkeypatch):
+    """The no-override default resolves to the published :prod ECR tag, not :latest.
+
+    :latest is never pushed to ECR (deploy publishes :prod/:experimental/version tags),
+    so the default must map to :prod for a first-run pull to succeed.
+    """
+    for var in ('AWS_REGION', 'AWS_ACCOUNT_ID', 'ECR_REPO'):
+        monkeypatch.delenv(var, raising=False)
+    default = docker_wrapper._resolve_image(dev=False, image_override=None)
+    assert default == 'runzi-build:prod'
+    source, _, _ = docker_wrapper._resolve_pull_source(default)
+    assert source == '461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:prod'
+
+
 def test_resolve_pull_source_bare_tag_reconstructs_default_ecr(monkeypatch):
     for var in ('AWS_REGION', 'AWS_ACCOUNT_ID', 'ECR_REPO'):
         monkeypatch.delenv(var, raising=False)
-    source, region, account = docker_wrapper._resolve_pull_source('runzi-build:latest')
-    assert source == '461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:latest'
+    source, region, account = docker_wrapper._resolve_pull_source('runzi-build:experimental')
+    assert source == '461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:experimental'
     assert (region, account) == ('us-east-1', '461564345538')
 
 

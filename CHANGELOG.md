@@ -31,6 +31,7 @@
  - Local Java tasks now wait for the Java process to finish starting before connecting to it, fixing occasional connection-refused errors at startup.
  - Stage-incorrect S3 ARNs in the `terraform/access/` base policy: the runzi tiers' data-bucket grant was hardcoded to the `-test` buckets regardless of stage, so the `prod` roles targeted the test buckets. Now resolved per stage via stage-keyed `local.s3_data_buckets` (`prod` → `ths-dataset-prod` / `nzshm22-static-reports`; `test` unchanged). See `docs/architecture/adr/0005-runzi-iam-tiers-terraform-migration.md` (#321).
  - Disabled gql client schema fetching to avoid a `DirectiveLocation` crash against the Toshi API.
+ - `runzi --docker` (and the standalone launcher) no longer default to the retired `:latest` ECR tag — which the deploy pipeline never publishes, so a first-run pull with no local image would fail. The no-override default now pulls the published `:prod` image; use `--docker-image` for `:experimental` or a specific version tag. `_maybe_pull` also now honors a fully-qualified `--docker-image` URI verbatim (pulling from the account/region in the URI, or a non-ECR registry) instead of always reconstructing the default ECR reference.
 
 ## [0.11.0] 2026-10-06
 

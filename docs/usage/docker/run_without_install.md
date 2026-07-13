@@ -73,10 +73,12 @@ prefix is unnecessary — this script *is* the docker launcher):
 ./runzi-docker inversion crustal config.json
 ```
 
-The launcher pulls the image from ECR on first use (logging in with your
-`toshi` AWS profile), mounts the config file's parent directory at
-`/INPUT_FILES`, mounts your `~/.aws` and `~/.toshi` credentials, forwards the
-allow-listed env vars, and runs the container as your host user ID.
+By default the launcher pulls the current **`:prod`** image from ECR on first use
+(logging in with your `toshi` AWS profile), mounts the config file's parent
+directory at `/INPUT_FILES`, mounts your `~/.aws` and `~/.toshi` credentials,
+forwards the allow-listed env vars, and runs the container as your host user ID.
+To run a different published image — the pre-release `:experimental` build or a
+specific immutable version tag — pass `--docker-image` (see below).
 
 ### Meta-flags
 
@@ -91,7 +93,7 @@ The same `--docker-*` meta-flags are available (minus the redundant `--docker`):
 ```console
 ./runzi-docker --docker-shell
 ./runzi-docker --docker-dry-run hazard oq-hazard config.json
-./runzi-docker --docker-image 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:latest hazard oq-hazard config.json
+./runzi-docker --docker-image 461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:experimental hazard oq-hazard config.json
 ```
 
 `--docker-dry-run` is the quickest way to see exactly what will run and confirm
