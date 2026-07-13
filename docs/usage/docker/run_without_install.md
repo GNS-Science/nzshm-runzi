@@ -19,10 +19,10 @@ so the container does the real work; the launcher just assembles the `docker run
   Python packages; `rich` and `python-dotenv` are used if present but are
   optional).
 - **`nshm-toshi-client`** for authentication (this is *not* runzi — it is a small,
-  standalone package):
+  standalone package). Be sure to install the `cli` extra:
 
     ```console
-    pip install nshm-toshi-client
+    pip install nshm-toshi-client[cli]
     ```
 
 ## One-time authentication
