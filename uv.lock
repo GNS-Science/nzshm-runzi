@@ -8,7 +8,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-03T00:43:56.313696012Z"
+exclude-newer = "2026-07-07T00:07:10.165720098Z"
 exclude-newer-span = "P1W"
 
 [options.exclude-newer-package]
@@ -3282,7 +3282,7 @@ wheels = [
 
 [[package]]
 name = "runzi"
-version = "0.10.1"
+version = "0.11.0"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
