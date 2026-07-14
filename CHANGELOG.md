@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.12.0] 2026-07-14
 
 ### Added
  - Terraform IaC for the AWS Batch Fargate compute environment and `BasicFargate_Q` job queue (`terraform/batch/`); the hand-created resources are adopted via `terraform import`, with `terraform plan` as the drift detector. The job definition stays CLI-managed. See `docs/architecture/adr/0004-aws-batch-iac-terraform.md`.
@@ -33,7 +33,7 @@
  - Disabled gql client schema fetching to avoid a `DirectiveLocation` crash against the Toshi API.
  - `runzi --docker` (and the standalone launcher) no longer default to the retired `:latest` ECR tag — which the deploy pipeline never publishes, so a first-run pull with no local image would fail. The no-override default now pulls the published `:prod` image; use `--docker-image` for `:experimental` or a specific version tag. `_maybe_pull` also now honors a fully-qualified `--docker-image` URI verbatim (pulling from the account/region in the URI, or a non-ECR registry) instead of always reconstructing the default ECR reference.
 
-## [0.11.0] 2026-10-06
+## [0.11.0] 2026-06-10
 
 ### Added
  - Store disaggregation realizations in toshi-hazard-store dataset
