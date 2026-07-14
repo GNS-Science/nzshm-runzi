@@ -59,7 +59,7 @@ default_submission_args = SubmissionArgs(
     ecs_job_definition=EC2_JOB_DEFINITION,
     java_threads=4,
     jvm_heap_max=32,
-    ecs_max_job_time_min=90,
+    ecs_max_job_time_min=200,
     ecs_memory=7000,
     ecs_vcpu=4,
 )
