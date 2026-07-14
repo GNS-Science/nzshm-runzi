@@ -16,6 +16,10 @@ RUN pip install --upgrade pip
 RUN apt update
 RUN apt install -y git curl
 
+# Install fonts needed for OpenSHA reports (config/env are propagated to the runtime stage)
+RUN apt-get install -y fontconfig libfreetype6 fonts-dejavu-core && rm -rf /var/lib/apt/lists/*
+
+
 WORKDIR /app
 COPY ucerf* /app/ucerf
 
@@ -57,6 +61,10 @@ FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime
 ARG FATJAR_TAG
 COPY --from=build /usr /usr
 COPY --from=build /opt /opt
+# Fonts for OpenSHA report / matplotlib rendering: libs+faces arrive via /usr, but
+# fontconfig's config dir lives in /etc and ENV does not cross stages, so bring both across.
+COPY --from=build /etc/fonts /etc/fonts
+ENV FONTCONFIG_PATH=/etc/fonts
 COPY java_container_task.sh /usr/local/bin/java_container_task.sh
 COPY python_container_task.sh /usr/local/bin/python_container_task.sh
 RUN chmod +x /usr/local/bin/java_container_task.sh
