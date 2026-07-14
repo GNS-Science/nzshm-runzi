@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.12.1] 2026-07-14
+
+## Changed
+- Maximum run time for Coulomb rupture set builder and rupture set diags report set to 200 min (was 90)
+- Default vCPU, threads, and memory, and job definition for rupture set diags
+
 ## [0.12.0] 2026-07-14
 
 ### Added
