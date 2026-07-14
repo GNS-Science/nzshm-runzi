@@ -6,7 +6,7 @@ import git
 from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel
 
-from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import API_URL, S3_REPORT_BUCKET, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ToshiApi
@@ -15,11 +15,12 @@ from runzi.tasks.get_config import get_config
 
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
-    java_threads=16,
+    java_threads=4,
     jvm_heap_max=32,
-    ecs_max_job_time_min=60,
-    ecs_memory=30720,
+    ecs_max_job_time_min=200,
+    ecs_memory=7000,
     ecs_vcpu=4,
+    ecs_job_definition=EC2_JOB_DEFINITION,
 )
 
 
