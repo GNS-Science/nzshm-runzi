@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Fonts in docker build for use by OpenSHA reports
+
 ## [0.12.1] 2026-07-14
 
 ## Changed
