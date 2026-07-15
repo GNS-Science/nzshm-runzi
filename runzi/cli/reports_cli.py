@@ -23,7 +23,8 @@ def rupset(
     prototype = RupsetReportArgs(source_solution_id=toshi_id, build_report_level=None)
     job_input = ArgSweeper(prototype_args=prototype, swept_args={}, title="", description="")
     runner = RupsetReportJobRunner(job_input)
-    runner.run_jobs()
+    gt_id = runner.run_jobs()
+    rich_print(f"General Task ID: [bold green]{gt_id}")
 
 
 @app.command()
@@ -40,7 +41,8 @@ def inversion(general_task_id: str):
     )
     job_input = ArgSweeper(prototype_args=prototype, swept_args={}, title="", description="")
     runner = InversionReportJobRunner(job_input)
-    runner.run_jobs()
+    gt_id = runner.run_jobs()
+    rich_print(f"General Task ID: [bold green]{gt_id}")
 
 
 if __name__ == "__main__":

@@ -6,21 +6,27 @@ import git
 from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel
 
-from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import API_URL, S3_REPORT_BUCKET, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ToshiApi
 from runzi.aws.s3_folder_upload import upload_to_bucket
 from runzi.tasks.get_config import get_config
 
+# Sizing measured with scripts/rupset_report_mem_bench.py: a cold, headless FULL report has a ~16 GB
+# heap floor (OOMs at 12 GB, ~6.6 GB live set but heavy plot-image churn needs ~2.4x that). On AWS the
+# heap is derived from the container memory as -Xmx = ecs_memory/1000 - 2, so ecs_memory is the lever
+# that reaches Batch (jvm_heap_max is LOCAL/CLUSTER only). This job is memory-bound with trivial CPU
+# need, so it runs on Fargate (default job definition) where vCPU and memory are billed separately:
+# 4 vCPU / 30720 MB is the Fargate 4-vCPU max -> -Xmx 28 G (~75% over the floor), with no stranded
+# instance vCPUs. Keep jvm_heap_max in step with the derived -Xmx so the two heaps don't disagree.
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
     java_threads=4,
-    jvm_heap_max=32,
+    jvm_heap_max=28,
     ecs_max_job_time_min=200,
-    ecs_memory=7000,
+    ecs_memory=30720,
     ecs_vcpu=4,
-    ecs_job_definition=EC2_JOB_DEFINITION,
 )
 
 
@@ -84,7 +90,7 @@ class RupsetReportTask:
         if not SPOOF:
             self.page_gen.generateRupSetPage()
             if self.runtime_args.use_api:
-                upload_to_bucket(user_args.source_solution_id, S3_REPORT_BUCKET, force_upload=True)
+                upload_to_bucket(self.user_args.source_solution_id, S3_REPORT_BUCKET, force_upload=True)
 
 
 def get_repo_heads(rootdir, repos):
