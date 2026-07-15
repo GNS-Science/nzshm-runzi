@@ -14,11 +14,16 @@ from runzi.automation.toshi_api import ToshiApi
 from runzi.aws.s3_folder_upload import upload_to_bucket
 from runzi.tasks.get_config import get_config
 
+# Same sizing as the rupture set report (see ruptset_diags_report_task.py): a memory-bound Java report
+# on Fargate, 4 vCPU / 30720 MB -> AWS -Xmx = ecs_memory/1000 - 2 = 28 G. ecs_memory was already 30720
+# here, so this only aligns java_threads / jvm_heap_max / job time. jvm_heap_max is LOCAL/CLUSTER only
+# (AWS -Xmx is derived from ecs_memory); the heap floor was benchmarked for the rupset report, not
+# independently for inversion reports.
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
-    java_threads=16,
-    jvm_heap_max=32,
-    ecs_max_job_time_min=60,
+    java_threads=4,
+    jvm_heap_max=28,
+    ecs_max_job_time_min=200,
     ecs_memory=30720,
     ecs_vcpu=4,
 )
