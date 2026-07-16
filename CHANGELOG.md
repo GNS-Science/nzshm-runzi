@@ -1,9 +1,15 @@
 # Changelog
 
-## [Unreleased]
+## [0.13.0] 2026-07-16
+
+### Changed
+- deps: patch upgrades (19 pkgs), minor upgrades (37 pkgs incl. `typer` 0.17→0.25), major: `chardet` 5→7 (direct); `cryptography` 48→49, `pymdown-extensions` 10→11, `smart-open` 7→8 (transitive). `typer` capped `<0.26` after smoke testing found it breaks `safety scan`. Skipped: `pandas`/`tzdata`/`numpy` (blocked by `solvis`/`toshi-hazard-post` transitive pins), `safety` 3.8.1 (conflicts with `typer`, kept effectively unchanged).
+- Rupture set and inversion report batch defaults: ecs_memory 7000 → 30720, jvm_heap_max 32 → 28: AWS -Xmx becomes 28 G (~75% over the floor, to avoid intermittent OOM).  Move from the EC2 job definition to Fargate (default JD).
 
 ### Added
 - Fonts in docker build for use by OpenSHA reports
+- `runzi reports rupset` and `reports inversion` print General Task ID: <id>, which feeds straight into runzi batch <gt_id> for tracking.
+- `scripts/rupset_report_mem_bench.py` drives the RupsetReportJobRunner → build_tasks path to benchmark memeory requirements for rupture set report task.
 
 ## [0.12.1] 2026-07-14
 
