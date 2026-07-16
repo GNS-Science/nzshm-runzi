@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- deps: patch upgrades (19 pkgs), minor upgrades (37 pkgs incl. `typer` 0.17→0.25), major: `chardet` 5→7 (direct); `cryptography` 48→49, `pymdown-extensions` 10→11, `smart-open` 7→8 (transitive). `typer` capped `<0.26` after smoke testing found it breaks `safety scan`. Skipped: `pandas`/`tzdata`/`numpy` (blocked by `solvis`/`toshi-hazard-post` transitive pins), `safety` 3.8.1 (conflicts with `typer`, kept effectively unchanged).
+
 ### Added
 - Fonts in docker build for use by OpenSHA reports
 
