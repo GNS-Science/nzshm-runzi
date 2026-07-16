@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- deps: patch (boto3 1.43.43→1.43.44, botocore transitive); minor: none landable (typer already at latest allowed under `<0.26` cap; llvmlite/numba/pydantic-core blocked by upstream pins); major: numpy 1.26.4→2.4.6 with numba 0.60→0.66, llvmlite 0.43→0.48, and toshi-hazard-post 0.7.1→0.7.3 upgraded together (entangled pins), tzdata 2025.3→2026.2. Skipped: `safety-schemas` (pinned exactly by `safety==3.8.1`), `pandas` (capped `<3` by `solvis==1.3.4`, already latest solvis release).
+
 ## [0.13.0] 2026-07-16
 
 ### Changed
