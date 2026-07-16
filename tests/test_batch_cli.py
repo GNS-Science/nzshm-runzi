@@ -1,9 +1,6 @@
 """Tests for the `runzi batch` CLI commands: `status` (issue #326) and `log` (issue #337)."""
 
-import os
 import re
-import tempfile
-from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import patch
 
@@ -15,17 +12,6 @@ from runzi.cli import batch_cli, runzi_cli
 
 runner = CliRunner(env={"NO_COLOR": "1", "LANG": "en_US.UTF-8", "COLUMNS": "200"})
 
-
-@contextmanager
-def isolated_filesystem():
-    """typer's CliRunner dropped isolated_filesystem() in 0.26; reimplement the bit we need."""
-    cwd = os.getcwd()
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        os.chdir(tmp_dir)
-        try:
-            yield tmp_dir
-        finally:
-            os.chdir(cwd)
 
 GT_ID = 'R2VuZXJhbFRhc2s6MTAxMjI1'
 
@@ -54,8 +40,9 @@ SUMMARIES = [
 
 
 def test_status_renders_rows_and_status_counts():
-    with patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES) as mock_jobs, patch.object(
-        batch_cli, 'task_args_by_job_id', return_value={}
+    with (
+        patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES) as mock_jobs,
+        patch.object(batch_cli, 'task_args_by_job_id', return_value={}),
     ):
         result = runner.invoke(runzi_cli.app, ['batch', 'status', GT_ID])
 
@@ -90,8 +77,9 @@ def test_status_shows_a_column_per_swept_key():
         'aaaa-1111': {'rupture_set': 'A', 'deformation_model': 'geologic'},
         'bbbb-2222': {'rupture_set': 'B', 'deformation_model': 'geologic'},
     }
-    with patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES), patch.object(
-        batch_cli, 'task_args_by_job_id', return_value=task_args
+    with (
+        patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES),
+        patch.object(batch_cli, 'task_args_by_job_id', return_value=task_args),
     ):
         result = runner.invoke(runzi_cli.app, ['batch', 'status', GT_ID])
 
@@ -110,8 +98,9 @@ def test_status_has_no_swept_columns_when_nothing_varies():
         'aaaa-1111': {'rupture_set': 'A'},
         'bbbb-2222': {'rupture_set': 'A'},
     }
-    with patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES), patch.object(
-        batch_cli, 'task_args_by_job_id', return_value=task_args
+    with (
+        patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES),
+        patch.object(batch_cli, 'task_args_by_job_id', return_value=task_args),
     ):
         result = runner.invoke(runzi_cli.app, ['batch', 'status', GT_ID])
 
@@ -121,8 +110,9 @@ def test_status_has_no_swept_columns_when_nothing_varies():
 
 def test_status_handles_describe_access_denied():
     err = ClientError({'Error': {'Code': 'AccessDeniedException', 'Message': 'not authorized'}}, 'DescribeJobs')
-    with patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES), patch.object(
-        batch_cli, 'task_args_by_job_id', side_effect=err
+    with (
+        patch.object(batch_cli, 'jobs_for_general_task', return_value=SUMMARIES),
+        patch.object(batch_cli, 'task_args_by_job_id', side_effect=err),
     ):
         result = runner.invoke(runzi_cli.app, ['batch', 'status', GT_ID])
 
@@ -131,7 +121,7 @@ def test_status_handles_describe_access_denied():
 
 
 def test_log_writes_file_and_confirmation():
-    with isolated_filesystem():
+    with runner.isolated_filesystem():
         with patch.object(batch_cli, 'job_log_events', return_value=iter(['line1', 'line2'])):
             result = runner.invoke(runzi_cli.app, ['batch', 'log', 'aaaa-1111'])
         assert result.exit_code == 0
@@ -142,7 +132,7 @@ def test_log_writes_file_and_confirmation():
 
 
 def test_log_reports_job_not_found():
-    with isolated_filesystem():
+    with runner.isolated_filesystem():
         with patch.object(batch_cli, 'job_log_events', side_effect=JobNotFound('nope')):
             result = runner.invoke(runzi_cli.app, ['batch', 'log', 'nope'])
         assert result.exit_code == 1
@@ -151,7 +141,7 @@ def test_log_reports_job_not_found():
 
 
 def test_log_reports_no_log_stream_yet():
-    with isolated_filesystem():
+    with runner.isolated_filesystem():
         with patch.object(batch_cli, 'job_log_events', side_effect=LogStreamNotAvailable('j1')):
             result = runner.invoke(runzi_cli.app, ['batch', 'log', 'j1'])
         assert result.exit_code == 0
@@ -161,7 +151,7 @@ def test_log_reports_no_log_stream_yet():
 
 def test_log_handles_access_denied():
     err = ClientError({'Error': {'Code': 'AccessDeniedException', 'Message': 'x'}}, 'GetLogEvents')
-    with isolated_filesystem():
+    with runner.isolated_filesystem():
         with patch.object(batch_cli, 'job_log_events', side_effect=err):
             result = runner.invoke(runzi_cli.app, ['batch', 'log', 'j1'])
         assert result.exit_code == 1
