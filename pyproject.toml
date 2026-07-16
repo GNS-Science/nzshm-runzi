@@ -1,6 +1,6 @@
 [project]
 name = "runzi"
-version = "0.12.1"
+dynamic = ["version"]
 readme = "README.md"
 authors = [
     {name = "Chris DiCaprio", email = "christopher.dicaprio@gmail.com"},
@@ -37,7 +37,6 @@ runzi = 'runzi.cli.runzi_cli:app'
 dev = [
     "pytest",
     "ruff",
-    "bump2version",
     "tox",
     "mypy",
     "pytest-cov",
@@ -75,6 +74,12 @@ exclude-newer = "1 week"
 "nshm-toshi-client" = false
 "toshi-hazard-post" = false
 
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "runzi/_version.py"
+
 [tool.hatch.build.targets.wheel]
 packages = ["runzi"]
 
@@ -101,5 +106,5 @@ combine-as-imports = true
 quote-style = "preserve"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
