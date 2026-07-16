@@ -33,9 +33,10 @@ class _ArgsCapturingGroup(TyperGroup):
     Click's own processing, is the only reliable interception point.
     """
 
-    def parse_args(self, ctx: click.Context, args: list[str]) -> list[str]:
+    # typer>=0.26 type-checks against its internally vendored click fork, not click.Context
+    def parse_args(self, ctx: click.Context, args: list[str]) -> list[str]:  # type: ignore[override]
         ctx.meta['_raw_args'] = list(args)
-        return super().parse_args(ctx, args)
+        return super().parse_args(ctx, args)  # type: ignore[arg-type]
 
 
 # ── Typer app ─────────────────────────────────────────────────────────────────

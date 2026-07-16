@@ -1,6 +1,9 @@
 """Tests for the `runzi batch` CLI commands: `status` (issue #326) and `log` (issue #337)."""
 
+import os
 import re
+import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import patch
 
@@ -11,6 +14,18 @@ from runzi.aws.batch_query import JobNotFound, LogStreamNotAvailable
 from runzi.cli import batch_cli, runzi_cli
 
 runner = CliRunner(env={"NO_COLOR": "1", "LANG": "en_US.UTF-8", "COLUMNS": "200"})
+
+
+@contextmanager
+def isolated_filesystem():
+    """typer's CliRunner dropped isolated_filesystem() in 0.26; reimplement the bit we need."""
+    cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        os.chdir(tmp_dir)
+        try:
+            yield tmp_dir
+        finally:
+            os.chdir(cwd)
 
 GT_ID = 'R2VuZXJhbFRhc2s6MTAxMjI1'
 
@@ -116,7 +131,7 @@ def test_status_handles_describe_access_denied():
 
 
 def test_log_writes_file_and_confirmation():
-    with runner.isolated_filesystem():
+    with isolated_filesystem():
         with patch.object(batch_cli, 'job_log_events', return_value=iter(['line1', 'line2'])):
             result = runner.invoke(runzi_cli.app, ['batch', 'log', 'aaaa-1111'])
         assert result.exit_code == 0
@@ -127,7 +142,7 @@ def test_log_writes_file_and_confirmation():
 
 
 def test_log_reports_job_not_found():
-    with runner.isolated_filesystem():
+    with isolated_filesystem():
         with patch.object(batch_cli, 'job_log_events', side_effect=JobNotFound('nope')):
             result = runner.invoke(runzi_cli.app, ['batch', 'log', 'nope'])
         assert result.exit_code == 1
@@ -136,7 +151,7 @@ def test_log_reports_job_not_found():
 
 
 def test_log_reports_no_log_stream_yet():
-    with runner.isolated_filesystem():
+    with isolated_filesystem():
         with patch.object(batch_cli, 'job_log_events', side_effect=LogStreamNotAvailable('j1')):
             result = runner.invoke(runzi_cli.app, ['batch', 'log', 'j1'])
         assert result.exit_code == 0
@@ -146,7 +161,7 @@ def test_log_reports_no_log_stream_yet():
 
 def test_log_handles_access_denied():
     err = ClientError({'Error': {'Code': 'AccessDeniedException', 'Message': 'x'}}, 'GetLogEvents')
-    with runner.isolated_filesystem():
+    with isolated_filesystem():
         with patch.object(batch_cli, 'job_log_events', side_effect=err):
             result = runner.invoke(runzi_cli.app, ['batch', 'log', 'j1'])
         assert result.exit_code == 1
