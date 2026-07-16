@@ -1,8 +1,9 @@
 # Changelog
 
-## [0.13.0] 2026-07-16
+## [0.13.0] 2026-07-17
 
 ### Changed
+- Migrated from bump2version to hatch-vcs versioning
 - deps: patch (boto3 1.43.43→1.43.44, botocore transitive); minor: none landable (typer already at latest allowed under `<0.26` cap; llvmlite/numba/pydantic-core blocked by upstream pins); major: numpy 1.26.4→2.4.6 with numba 0.60→0.66, llvmlite 0.43→0.48, and toshi-hazard-post 0.7.1→0.7.3 upgraded together (entangled pins), tzdata 2025.3→2026.2. Skipped: `safety-schemas` (pinned exactly by `safety==3.8.1`), `pandas` (capped `<3` by `solvis==1.3.4`, already latest solvis release).
 - deps: patch upgrades (19 pkgs), minor upgrades (37 pkgs incl. `typer` 0.17→0.25), major: `chardet` 5→7 (direct); `cryptography` 48→49, `pymdown-extensions` 10→11, `smart-open` 7→8 (transitive). `typer` capped `<0.26` after smoke testing found it breaks `safety scan`. Skipped: `pandas`/`tzdata`/`numpy` (blocked by `solvis`/`toshi-hazard-post` transitive pins), `safety` 3.8.1 (conflicts with `typer`, kept effectively unchanged).
 - Rupture set and inversion report batch defaults: ecs_memory 7000 → 30720, jvm_heap_max 32 → 28: AWS -Xmx becomes 28 G (~75% over the floor, to avoid intermittent OOM).  Move from the EC2 job definition to Fargate (default JD).
