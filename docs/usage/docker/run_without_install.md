@@ -73,8 +73,11 @@ prefix is unnecessary — this script *is* the docker launcher):
 ./runzi-docker inversion crustal config.json
 ```
 
-By default the launcher pulls the current **`:prod`** image from ECR on first use
-(logging in with your `toshi` AWS profile), mounts the config file's parent
+By default the launcher pulls the current **`:prod`** image from ECR on every run
+(logging in with your `toshi` AWS profile) so a newly published image is picked up
+automatically; `docker pull` only transfers changed layers, so it is a fast no-op when
+your copy is already current, and it falls back to the cached image if ECR is
+unreachable. It then mounts the config file's parent
 directory at `/INPUT_FILES`, mounts your `~/.aws` and `~/.toshi` credentials,
 forwards the allow-listed env vars, and runs the container as your host user ID.
 To run a different published image — the pre-release `:experimental` build or a

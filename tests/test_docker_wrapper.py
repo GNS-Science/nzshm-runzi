@@ -2,6 +2,7 @@
 
 import os
 import re
+import subprocess
 import sys
 
 import pytest
@@ -946,13 +947,46 @@ def test_maybe_pull_bare_tag_reconstructs_and_retags(mocker, monkeypatch):
     assert ['docker', 'tag', expected, 'runzi-build:latest'] in cmds
 
 
-def test_maybe_pull_skips_when_image_present_locally(mocker):
+def test_maybe_pull_pulls_even_when_image_present_locally(mocker, monkeypatch):
+    """Floating tags (:prod/:experimental) are pulled every run so a stale local copy
+    under the same tag is refreshed rather than reused indefinitely."""
+    for var in ('AWS_REGION', 'AWS_ACCOUNT_ID', 'ECR_REPO'):
+        monkeypatch.delenv(var, raising=False)
     mocker.patch('runzi.cli.docker_wrapper._image_exists_locally', return_value=True)
+    mocker.patch('runzi.cli.docker_wrapper._ecr_login')
     run = mocker.patch('runzi.cli.docker_wrapper.subprocess.run')
+    expected = '461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:prod'
 
-    docker_wrapper._maybe_pull('runzi-build:latest')
+    docker_wrapper._maybe_pull('runzi-build:prod')
 
-    run.assert_not_called()
+    cmds = [c.args[0] for c in run.call_args_list]
+    assert ['docker', 'pull', expected] in cmds
+
+
+def test_maybe_pull_falls_back_to_cached_on_pull_failure(mocker):
+    """An unreachable registry falls back to a locally cached image instead of failing."""
+    mocker.patch('runzi.cli.docker_wrapper._ecr_login')
+    mocker.patch('runzi.cli.docker_wrapper._image_exists_locally', return_value=True)
+    mocker.patch(
+        'runzi.cli.docker_wrapper.subprocess.run',
+        side_effect=subprocess.CalledProcessError(1, ['docker', 'pull']),
+    )
+
+    # Should not raise — the cached image is used.
+    docker_wrapper._maybe_pull('runzi-build:prod')
+
+
+def test_maybe_pull_raises_when_pull_fails_and_no_cached_image(mocker):
+    """With no cached image to fall back to, a failed pull propagates."""
+    mocker.patch('runzi.cli.docker_wrapper._ecr_login')
+    mocker.patch('runzi.cli.docker_wrapper._image_exists_locally', return_value=False)
+    mocker.patch(
+        'runzi.cli.docker_wrapper.subprocess.run',
+        side_effect=subprocess.CalledProcessError(1, ['docker', 'pull']),
+    )
+
+    with pytest.raises(subprocess.CalledProcessError):
+        docker_wrapper._maybe_pull('runzi-build:prod')
 
 
 def test_load_dotenv_fallback_when_dotenv_absent(tmp_path, monkeypatch):

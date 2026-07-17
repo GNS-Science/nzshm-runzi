@@ -110,11 +110,11 @@ _ENV_FORWARDED_NZSHM_VARS: frozenset[str] = frozenset(
 
 _TOSHI_HOME_CONTAINER = '/toshi-home'
 
-# Default local image alias. Its tag (``prod``) doubles as the ECR tag pulled when
-# the image is absent locally (via _resolve_pull_source): the deploy pipeline
-# publishes :prod, :experimental, and immutable version tags but never :latest, so
-# :prod is the only sensible no-override default. Run a different published image with
-# --docker-image (e.g. --docker-image <ecr-uri>/nzshm22/runzi:experimental).
+# Default local image alias. Its tag (``prod``) doubles as the ECR tag pulled on each run
+# (via _resolve_pull_source): the deploy pipeline publishes :prod, :experimental, and
+# immutable version tags but never :latest, so :prod is the only sensible no-override
+# default. Run a different published image with --docker-image (e.g.
+# --docker-image <ecr-uri>/nzshm22/runzi:experimental).
 _DEFAULT_IMAGE = 'runzi-build:prod'
 _DEFAULT_ECR_REPO = 'nzshm22/runzi'
 _DEFAULT_AWS_ACCOUNT = '461564345538'
@@ -339,13 +339,27 @@ def _resolve_pull_source(image: str) -> tuple[str, str | None, str | None]:
 
 
 def _maybe_pull(image: str) -> None:
-    if _image_exists_locally(image):
-        return
+    """Refresh ``image`` from its registry before each run.
+
+    ``:prod`` / ``:experimental`` are floating tags that a new deploy re-points to a new
+    digest, so we pull every time rather than only when the image is absent — otherwise a
+    stale local copy under the same tag would be used indefinitely.  ``docker pull`` only
+    transfers layers whose digest changed, so it is a cheap no-op (a registry manifest
+    check, no blob download) when the local image already matches the remote digest.
+
+    If the registry can't be reached (offline, expired creds) but a copy of ``image`` is
+    already cached locally, fall back to it with a warning instead of failing the run.
+    """
     source, region, account = _resolve_pull_source(image)
-    rich_print(f'[yellow]Image {image!r} not found locally — pulling {source}[/yellow]')
-    if region and account:
-        _ecr_login(region, account)
-    subprocess.run(['docker', 'pull', source], check=True)
+    try:
+        if region and account:
+            _ecr_login(region, account)
+        subprocess.run(['docker', 'pull', source], check=True)
+    except subprocess.CalledProcessError:
+        if _image_exists_locally(image):
+            rich_print(f'[yellow]Could not reach the registry to refresh {image!r}; using the cached image.[/yellow]')
+            return
+        raise
     if source != image:
         subprocess.run(['docker', 'tag', source, image], check=True)
 
