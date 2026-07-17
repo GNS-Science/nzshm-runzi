@@ -43,7 +43,6 @@ runzi --docker-shell
 | Flag | Purpose |
 |---|---|
 | `--docker` | Route the command through a local Docker container |
-| `--docker-dev` | Use the dev image with editable host source; implies `--docker` |
 | `--docker-image TEXT` | Override the image tag or full ECR URI; implies `--docker` |
 | `--docker-shell` | Drop into an interactive bash session; implies `--docker` |
 | `--docker-dry-run` | Print the docker command without running it; implies `--docker` |

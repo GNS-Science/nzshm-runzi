@@ -116,7 +116,6 @@ _TOSHI_HOME_CONTAINER = '/toshi-home'
 # :prod is the only sensible no-override default. Run a different published image with
 # --docker-image (e.g. --docker-image <ecr-uri>/nzshm22/runzi:experimental).
 _DEFAULT_IMAGE = 'runzi-build:prod'
-_DEFAULT_DEV_IMAGE = 'runzi-build:dev'
 _DEFAULT_ECR_REPO = 'nzshm22/runzi'
 _DEFAULT_AWS_ACCOUNT = '461564345538'
 _DEFAULT_AWS_REGION = 'us-east-1'
@@ -132,7 +131,7 @@ _WORK_PATH_CONTAINER = '/WORKING'
 # these for its Typer callback; the standalone __main__ below uses
 # _parse_meta_flags.
 
-_DOCKER_BOOL_FLAGS: frozenset[str] = frozenset(['--docker', '--docker-dev', '--docker-shell', '--docker-dry-run'])
+_DOCKER_BOOL_FLAGS: frozenset[str] = frozenset(['--docker', '--docker-shell', '--docker-dry-run'])
 _DOCKER_VALUE_FLAGS: frozenset[str] = frozenset(['--docker-image'])
 
 
@@ -155,24 +154,22 @@ def _strip_docker_flags(args: list[str]) -> list[str]:
     return result
 
 
-def _parse_meta_flags(argv: list[str]) -> tuple[list[str], bool, str | None, bool, bool]:
+def _parse_meta_flags(argv: list[str]) -> tuple[list[str], str | None, bool, bool]:
     """Parse the standalone launcher's docker meta-flags out of ``argv``.
 
-    Returns ``(inner_args, dev, image, shell, dry_run)``, mirroring the ``--docker*``
+    Returns ``(inner_args, image, shell, dry_run)``, mirroring the ``--docker*``
     options that ``runzi_cli.py`` exposes so the standalone script has parity with an
     installed ``runzi --docker...`` invocation.  A redundant ``--docker`` is a no-op
     here (we are already the docker launcher).
     """
     inner: list[str] = []
-    dev = shell = dry_run = False
+    shell = dry_run = False
     image: str | None = None
     i = 0
     while i < len(argv):
         arg = argv[i]
         if arg == '--docker':
             pass  # redundant — this script *is* the docker launcher
-        elif arg == '--docker-dev':
-            dev = True
         elif arg == '--docker-shell':
             shell = True
         elif arg == '--docker-dry-run':
@@ -186,7 +183,7 @@ def _parse_meta_flags(argv: list[str]) -> tuple[list[str], bool, str | None, boo
         else:
             inner.append(arg)
         i += 1
-    return inner, dev, image, shell, dry_run
+    return inner, image, shell, dry_run
 
 
 # ── Pure path helpers ─────────────────────────────────────────────────────────
@@ -229,14 +226,12 @@ def build_docker_cmd(
     *,
     inner_args: list[str],
     image: str,
-    dev: bool,
     shell: bool,
     aws_credentials: Path,
     ths_hazard: Path | None,
     ths_disagg: Path | None,
     env_vars: dict[str, str],
     input_dir: Path | None = None,
-    runzi_source: Path | None = None,
     interactive: bool = False,
     work_path: Path | None = None,
     toshi_home: Path | None = None,
@@ -247,7 +242,7 @@ def build_docker_cmd(
     if hasattr(os, 'getuid'):  # POSIX only — Docker Desktop on Windows handles UID mapping via WSL2
         cmd += ['--user', f'{os.getuid()}:{os.getgid()}']  # type: ignore
 
-    if interactive or shell or dev:
+    if interactive or shell:
         cmd += ['--interactive', '--tty']
 
     entrypoint = 'bash' if shell else 'runzi'
@@ -266,9 +261,6 @@ def build_docker_cmd(
 
     if ths_disagg is not None:
         cmd += ['-v', f'{ths_disagg}:/THS/DISAGG']
-
-    if dev and runzi_source is not None:
-        cmd += ['-v', f'{runzi_source}:/app/nzshm-runzi']
 
     if toshi_home is not None:
         # tmpfs gives a writable HOME: OQ can create HOME/oqdata on it.
@@ -313,10 +305,10 @@ def _ecr_login(region: str, aws_account_id: str) -> None:
     )
 
 
-def _resolve_image(dev: bool, image_override: str | None) -> str:
+def _resolve_image(image_override: str | None) -> str:
     if image_override:
         return image_override
-    return _DEFAULT_DEV_IMAGE if dev else _DEFAULT_IMAGE
+    return _DEFAULT_IMAGE
 
 
 # <account>.dkr.ecr.<region>.amazonaws.com — used to derive login account/region
@@ -417,7 +409,6 @@ def _resolve_work_path() -> Path | None:
 def run_in_docker(
     inner_args: list[str],
     *,
-    dev: bool = False,
     image: str | None = None,
     shell: bool = False,
     dry_run: bool = False,
@@ -426,18 +417,12 @@ def run_in_docker(
 
     Returns the container exit code (0 on success).
     """
-    image_tag = _resolve_image(dev, image)
+    image_tag = _resolve_image(image)
 
-    if not dev:
-        try:
-            _maybe_pull(image_tag)
-        except subprocess.CalledProcessError as exc:
-            rich_print(f'[red]Failed to pull image: {exc}[/red]')
-            return 1
-    elif not _image_exists_locally(image_tag):
-        rich_print(
-            f'[red]Dev image {image_tag!r} not found. Build it first with:[/red]\n  runzi utils docker-build --dev ...'
-        )
+    try:
+        _maybe_pull(image_tag)
+    except subprocess.CalledProcessError as exc:
+        rich_print(f'[red]Failed to pull image: {exc}[/red]')
         return 1
 
     ths_hazard, ths_hazard_extra = _resolve_ths('NZSHM22_THS_RLZ_DB')
@@ -462,12 +447,6 @@ def run_in_docker(
     if not aws_credentials.exists():
         rich_print(f'[yellow]Warning: AWS credentials not found at {aws_credentials}[/yellow]')
 
-    runzi_source: Path | None = None
-    if dev:
-        import runzi
-
-        runzi_source = Path(runzi.__file__).resolve().parents[1]
-
     input_dir: Path | None = None
     rewritten_args = inner_args
 
@@ -485,19 +464,17 @@ def run_in_docker(
     elif shell:
         input_dir = Path.cwd()
 
-    interactive = shell or dev
+    interactive = shell
 
     cmd = build_docker_cmd(
         inner_args=rewritten_args,
         image=image_tag,
-        dev=dev,
         shell=shell,
         aws_credentials=aws_credentials,
         ths_hazard=ths_hazard,
         ths_disagg=ths_disagg,
         env_vars=env_vars,
         input_dir=input_dir,
-        runzi_source=runzi_source,
         interactive=interactive,
         work_path=work_path,
         toshi_home=toshi_home,
@@ -513,11 +490,5 @@ def run_in_docker(
 
 
 if __name__ == '__main__':
-    _inner, _dev, _image, _shell, _dry_run = _parse_meta_flags(sys.argv[1:])
-    if _dev:
-        rich_print(
-            '[red]--docker-dev requires an installed runzi source tree and is not '
-            'available from the standalone launcher.[/red]'
-        )
-        sys.exit(2)
-    sys.exit(run_in_docker(_inner, dev=_dev, image=_image, shell=_shell, dry_run=_dry_run))
+    _inner, _image, _shell, _dry_run = _parse_meta_flags(sys.argv[1:])
+    sys.exit(run_in_docker(_inner, image=_image, shell=_shell, dry_run=_dry_run))

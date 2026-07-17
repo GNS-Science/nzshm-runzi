@@ -167,7 +167,6 @@ def test_build_docker_cmd_starts_with_docker_run(tmp_path, aws_creds):
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=[],
         image='runzi-build:latest',
-        dev=False,
         shell=True,
         aws_credentials=aws_creds,
         ths_hazard=None,
@@ -181,7 +180,6 @@ def test_build_docker_cmd_has_rm_flag(tmp_path, aws_creds):
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=[],
         image='runzi-build:latest',
-        dev=False,
         shell=True,
         aws_credentials=aws_creds,
         ths_hazard=None,
@@ -196,7 +194,6 @@ def test_build_docker_cmd_has_user_flag(aws_creds):
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=[],
         image='runzi-build:latest',
-        dev=False,
         shell=True,
         aws_credentials=aws_creds,
         ths_hazard=None,
@@ -211,7 +208,6 @@ def test_build_docker_cmd_mounts_aws_credentials(aws_creds):
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=[],
         image='runzi-build:latest',
-        dev=False,
         shell=True,
         aws_credentials=aws_creds,
         ths_hazard=None,
@@ -225,7 +221,6 @@ def test_build_docker_cmd_sets_aws_creds_env(aws_creds):
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=[],
         image='runzi-build:latest',
-        dev=False,
         shell=True,
         aws_credentials=aws_creds,
         ths_hazard=None,
@@ -239,7 +234,6 @@ def test_build_docker_cmd_shell_uses_bash_entrypoint(aws_creds):
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=[],
         image='runzi-build:latest',
-        dev=False,
         shell=True,
         aws_credentials=aws_creds,
         ths_hazard=None,
@@ -253,7 +247,6 @@ def test_build_docker_cmd_passthrough_uses_runzi_entrypoint(tmp_path, aws_creds)
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=['hazard', 'oq-hazard', '/INPUT_FILES/foo.json'],
         image='runzi-build:latest',
-        dev=False,
         shell=False,
         aws_credentials=aws_creds,
         ths_hazard=None,
@@ -269,7 +262,6 @@ def test_build_docker_cmd_passthrough_appends_runzi_args(tmp_path, aws_creds):
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=inner,
         image='runzi-build:latest',
-        dev=False,
         shell=False,
         aws_credentials=aws_creds,
         ths_hazard=None,
@@ -286,7 +278,6 @@ def test_build_docker_cmd_mounts_input_dir(tmp_path, aws_creds):
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=[],
         image='runzi-build:latest',
-        dev=False,
         shell=True,
         aws_credentials=aws_creds,
         ths_hazard=None,
@@ -301,7 +292,6 @@ def test_build_docker_cmd_no_input_dir_no_input_files_mount(aws_creds):
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=[],
         image='runzi-build:latest',
-        dev=False,
         shell=True,
         aws_credentials=aws_creds,
         ths_hazard=None,
@@ -318,7 +308,6 @@ def test_build_docker_cmd_mounts_ths_dirs(tmp_path, aws_creds):
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=[],
         image='runzi-build:latest',
-        dev=False,
         shell=True,
         aws_credentials=aws_creds,
         ths_hazard=ths_h,
@@ -333,7 +322,6 @@ def test_build_docker_cmd_skips_ths_mounts_when_none(aws_creds):
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=[],
         image='runzi-build:latest',
-        dev=False,
         shell=True,
         aws_credentials=aws_creds,
         ths_hazard=None,
@@ -344,44 +332,11 @@ def test_build_docker_cmd_skips_ths_mounts_when_none(aws_creds):
     assert '/THS/DISAGG' not in ' '.join(cmd)
 
 
-def test_build_docker_cmd_dev_mounts_runzi_source(tmp_path, aws_creds):
-    src = tmp_path / 'nzshm-runzi'
-    src.mkdir()
-    cmd = docker_wrapper.build_docker_cmd(
-        inner_args=[],
-        image='runzi-build:dev',
-        dev=True,
-        shell=True,
-        aws_credentials=aws_creds,
-        ths_hazard=None,
-        ths_disagg=None,
-        env_vars={},
-        runzi_source=src,
-    )
-    assert has_volume(cmd, f'{src}:/app/nzshm-runzi')
-
-
-def test_build_docker_cmd_non_dev_does_not_mount_source(aws_creds):
-    cmd = docker_wrapper.build_docker_cmd(
-        inner_args=[],
-        image='runzi-build:latest',
-        dev=False,
-        shell=True,
-        aws_credentials=aws_creds,
-        ths_hazard=None,
-        ths_disagg=None,
-        env_vars={},
-        runzi_source=None,
-    )
-    assert '/app/nzshm-runzi' not in ' '.join(cmd)
-
-
 def test_build_docker_cmd_forwards_env_vars(aws_creds):
     env = {'NZSHM22_TOSHI_API_URL': 'http://api', 'AWS_PROFILE': 'myprofile'}
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=[],
         image='runzi-build:latest',
-        dev=False,
         shell=True,
         aws_credentials=aws_creds,
         ths_hazard=None,
@@ -396,7 +351,6 @@ def test_build_docker_cmd_image_at_end_before_args(aws_creds):
     cmd = docker_wrapper.build_docker_cmd(
         inner_args=['hazard', 'oq-hazard'],
         image='runzi-build:latest',
-        dev=False,
         shell=False,
         aws_credentials=aws_creds,
         ths_hazard=None,
@@ -422,16 +376,6 @@ def test_cli_docker_flag_invokes_wrapper(mocker, tmp_path):
     result = runner.invoke(app, ['--docker', 'hazard', 'oq-hazard', str(config)])
     mock_run.assert_called_once()
     assert result.exit_code == 0
-
-
-def test_cli_docker_dev_implies_docker(mocker, tmp_path):
-    config = tmp_path / 'foo.json'
-    config.write_text('{}')
-    mock_run = mocker.patch('runzi.cli.docker_wrapper.run_in_docker', return_value=0)
-    runner.invoke(app, ['--docker-dev', 'hazard', 'oq-hazard', str(config)])
-    mock_run.assert_called_once()
-    call_kwargs = mock_run.call_args
-    assert call_kwargs.kwargs.get('dev') is True or (call_kwargs.args and call_kwargs.args[1] is True)
 
 
 def test_cli_docker_shell_implies_docker(mocker):
@@ -811,52 +755,47 @@ def test_cli_docker_forwards_subcommand_name_in_inner_args(mocker, tmp_path):
 
 
 def test_parse_meta_flags_empty():
-    assert docker_wrapper._parse_meta_flags([]) == ([], False, None, False, False)
+    assert docker_wrapper._parse_meta_flags([]) == ([], None, False, False)
 
 
 def test_parse_meta_flags_passes_inner_args_through():
-    inner, dev, image, shell, dry_run = docker_wrapper._parse_meta_flags(['hazard', 'oq-hazard', 'foo.json'])
+    inner, image, shell, dry_run = docker_wrapper._parse_meta_flags(['hazard', 'oq-hazard', 'foo.json'])
     assert inner == ['hazard', 'oq-hazard', 'foo.json']
-    assert (dev, image, shell, dry_run) == (False, None, False, False)
+    assert (image, shell, dry_run) == (None, False, False)
 
 
 def test_parse_meta_flags_shell():
-    inner, dev, image, shell, dry_run = docker_wrapper._parse_meta_flags(['--docker-shell'])
+    inner, image, shell, dry_run = docker_wrapper._parse_meta_flags(['--docker-shell'])
     assert inner == []
     assert shell is True
-    assert (dev, image, dry_run) == (False, None, False)
+    assert (image, dry_run) == (None, False)
 
 
 def test_parse_meta_flags_dry_run():
-    _, _, _, _, dry_run = docker_wrapper._parse_meta_flags(['--docker-dry-run', 'hazard'])
+    _, _, _, dry_run = docker_wrapper._parse_meta_flags(['--docker-dry-run', 'hazard'])
     assert dry_run is True
 
 
-def test_parse_meta_flags_dev():
-    _, dev, _, _, _ = docker_wrapper._parse_meta_flags(['--docker-dev', 'hazard'])
-    assert dev is True
-
-
 def test_parse_meta_flags_image_space_form():
-    inner, _, image, _, _ = docker_wrapper._parse_meta_flags(['--docker-image', 'ghcr.io/x:tag', 'hazard'])
+    inner, image, _, _ = docker_wrapper._parse_meta_flags(['--docker-image', 'ghcr.io/x:tag', 'hazard'])
     assert image == 'ghcr.io/x:tag'
     assert inner == ['hazard']
 
 
 def test_parse_meta_flags_image_equals_form():
-    inner, _, image, _, _ = docker_wrapper._parse_meta_flags(['--docker-image=ghcr.io/x:tag', 'hazard'])
+    inner, image, _, _ = docker_wrapper._parse_meta_flags(['--docker-image=ghcr.io/x:tag', 'hazard'])
     assert image == 'ghcr.io/x:tag'
     assert inner == ['hazard']
 
 
 def test_parse_meta_flags_bare_docker_is_noop():
-    inner, dev, image, shell, dry_run = docker_wrapper._parse_meta_flags(['--docker', 'hazard', 'oq-hazard'])
+    inner, image, shell, dry_run = docker_wrapper._parse_meta_flags(['--docker', 'hazard', 'oq-hazard'])
     assert inner == ['hazard', 'oq-hazard']
-    assert (dev, image, shell, dry_run) == (False, None, False, False)
+    assert (image, shell, dry_run) == (None, False, False)
 
 
 def test_parse_meta_flags_mixed_ordering():
-    inner, dev, image, shell, dry_run = docker_wrapper._parse_meta_flags(
+    inner, image, shell, dry_run = docker_wrapper._parse_meta_flags(
         ['--docker-dry-run', 'hazard', '--docker-image', 'img:1', 'oq-hazard', 'foo.json']
     )
     assert inner == ['hazard', 'oq-hazard', 'foo.json']
@@ -915,7 +854,7 @@ def test_default_image_pulls_prod_tag(monkeypatch):
     """
     for var in ('AWS_REGION', 'AWS_ACCOUNT_ID', 'ECR_REPO'):
         monkeypatch.delenv(var, raising=False)
-    default = docker_wrapper._resolve_image(dev=False, image_override=None)
+    default = docker_wrapper._resolve_image(image_override=None)
     assert default == 'runzi-build:prod'
     source, _, _ = docker_wrapper._resolve_pull_source(default)
     assert source == '461564345538.dkr.ecr.us-east-1.amazonaws.com/nzshm22/runzi:prod'

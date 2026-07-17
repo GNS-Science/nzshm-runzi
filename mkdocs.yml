@@ -33,7 +33,6 @@ nav:
       - Build and Deploy Container: usage/docker/build_and_deploy_container.md
       - Running the Container Locally: usage/docker/run_locally.md
       - Running without Installing runzi: usage/docker/run_without_install.md
-      - Developing runzi inside the Docker container: usage/docker/dev_locally.md
   - Process:
     - Building the SRM: process/build_srm_for_oq.md
   - Installation: installation.md
