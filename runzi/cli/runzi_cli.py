@@ -50,12 +50,6 @@ def main_callback(
         ClusterModeEnum, typer.Option(help="Execution target: LOCAL machine, HPC CLUSTER, or AWS cloud.")
     ] = local_config.DEFAULT_CLUSTER_MODE,
     docker: Annotated[bool, typer.Option('--docker', help="Run the command inside a local Docker container.")] = False,
-    docker_dev: Annotated[
-        bool,
-        typer.Option(
-            '--docker-dev', help="Run in Docker using the dev image with editable host source mount. Implies --docker."
-        ),
-    ] = False,
     docker_image: Annotated[
         str | None,
         typer.Option('--docker-image', help="Override the Docker image tag or full ECR URI. Implies --docker."),
@@ -82,13 +76,12 @@ def main_callback(
     if cluster_mode is ClusterModeEnum.AWS:
         local_config.USE_API = True
 
-    use_docker = docker or docker_dev or docker_shell or docker_dry_run or (docker_image is not None)
+    use_docker = docker or docker_shell or docker_dry_run or (docker_image is not None)
     if use_docker:
         raw_args = ctx.meta.get('_raw_args', [])
         inner_args = docker_wrapper._strip_docker_flags(raw_args)
         exit_code = docker_wrapper.run_in_docker(
             inner_args,
-            dev=docker_dev,
             image=docker_image,
             shell=docker_shell,
             dry_run=docker_dry_run,

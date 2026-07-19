@@ -57,7 +57,6 @@ The following arguments are required and must be provided either via command lin
 | `--aws-account-id` | AWS account ID | `461564345538` |
 | `--ecr-repo` | ECR repository name | `nzshm22/runzi` |
 | `--dockerfile` | Path to Dockerfile | `docker/Dockerfile` |
-| `--dev` | Build a local-only dev image (skips ECR push) | `false` |
 | `--skip-build` | Skip Docker build | `false` |
 | `--skip-push` | Skip ECR push | `false` |
 

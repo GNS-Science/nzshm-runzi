@@ -13,7 +13,7 @@ runzi --docker inversion crustal /path/to/config.json
 
 The wrapper automatically:
 
-- Pulls the image from ECR if it is not present locally.
+- Pulls the image from ECR on every run so floating tags (`:prod`/`:experimental`) pick up new pushes. `docker pull` only transfers changed layers, so this is a fast no-op when your local copy is already current; if the registry is unreachable it falls back to the cached image.
 - Mounts the config file's parent directory at `/INPUT_FILES` inside the container (all subdirectories are included, so configs that reference other files via relative paths work without extra flags).
 - Mounts your AWS credentials read-only.
 - Mounts your local THS dataset directories (from `$NZSHM22_THS_RLZ_DB` and `$NZSHM22_THS_DISAGG_RLZ_DB`) if they are local paths. If they are `s3://` URIs they are forwarded as environment variables instead.
@@ -43,7 +43,6 @@ runzi --docker-shell
 | Flag | Purpose |
 |---|---|
 | `--docker` | Route the command through a local Docker container |
-| `--docker-dev` | Use the dev image with editable host source; implies `--docker` |
 | `--docker-image TEXT` | Override the image tag or full ECR URI; implies `--docker` |
 | `--docker-shell` | Drop into an interactive bash session; implies `--docker` |
 | `--docker-dry-run` | Print the docker command without running it; implies `--docker` |

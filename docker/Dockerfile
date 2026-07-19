@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 ARG PYTHON_VERSION
 FROM python:${PYTHON_VERSION}-slim-bookworm AS build
 
@@ -12,59 +13,72 @@ RUN test -n "$FATJAR_TAG" || (echo "FATJAR_TAG is required" && exit 1)
 RUN test -n "$RUNZI_GITREF" || (echo "RUNZI_GITREF is required" && exit 1)
 RUN test -n "$OQ_VERSION" || (echo "OQ_VERSION is required" && exit 1)
 
-RUN pip install --upgrade pip
-RUN apt update
-RUN apt install -y git curl
-
-# Install fonts needed for OpenSHA reports (config/env are propagated to the runtime stage)
-RUN apt-get install -y fontconfig libfreetype6 fonts-dejavu-core && rm -rf /var/lib/apt/lists/*
-
+# Build-only tooling. Fonts are installed in the runtime stage directly, not dragged
+# across from here — see the runtime stage for why.
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends git curl
+RUN --mount=type=cache,target=/root/.cache/pip pip install --upgrade pip
 
 WORKDIR /app
 COPY ucerf* /app/ucerf
 
-# Install java
-RUN curl -sSL -o /tmp/jdk.tar.gz \
-    "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.25%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.25_9.tar.gz" \
-    && tar -xzf /tmp/jdk.tar.gz -C /opt/ \
-    && mv /opt/jdk-11.0.25+9 /opt/java \
-    && rm /tmp/jdk.tar.gz
+# Install java (JRE only — OpenSHA runs via the py4j gateway and we never compile, so the
+# ~180 MB of extra JDK tooling is dead weight). --strip-components makes the extract
+# independent of the archive's top-level directory name.
+RUN mkdir -p /opt/java \
+    && curl -sSL -o /tmp/jre.tar.gz \
+    "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.25%2B9/OpenJDK11U-jre_x64_linux_hotspot_11.0.25_9.tar.gz" \
+    && tar -xzf /tmp/jre.tar.gz -C /opt/java --strip-components=1 \
+    && rm /tmp/jre.tar.gz
 
 # Install OpenSHA
 WORKDIR /opt/nzshm-opensha/build/libs
 RUN curl -sSL -o nzshm-opensha-all-${FATJAR_TAG}.jar \
     https://nzshm-opensha-public-jars.s3.ap-southeast-2.amazonaws.com/nzshm-opensha-all-${FATJAR_TAG}.jar
 
-# oq-venv: OpenQuake (pinned requirements) — cached aggressively, rarely changes
+# oq-venv: OpenQuake (pinned requirements) — cached aggressively, rarely changes.
+# The pip cache mount keeps the heavy dependency stack (numpy/scipy/pandas/h5py…) off
+# the image layer while avoiding re-downloads on rebuilds.
 RUN python -m venv /opt/oq-venv
-RUN export PY_NO_DOT=$(echo $PYTHON_VERSION | tr -d '.') && \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    export PY_NO_DOT=$(echo $PYTHON_VERSION | tr -d '.') && \
     /opt/oq-venv/bin/pip install \
         -r https://raw.githubusercontent.com/gem/oq-engine/refs/tags/v${OQ_VERSION}/requirements-py${PY_NO_DOT}-linux64.txt \
         openquake.engine==${OQ_VERSION}
 
 # Optional UCERF converter into oq-venv (INSTALL_CONVERTER=Y to enable)
-RUN if [ "$INSTALL_CONVERTER" = "Y" ] ; then \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    if [ "$INSTALL_CONVERTER" = "Y" ] ; then \
     cd /app/ucerf && /opt/oq-venv/bin/pip install . ; \
     fi
 
-# runzi-venv: runzi only — changes frequently, so comes after oq-venv
+# runzi-venv: runzi only — changes frequently, so comes after oq-venv. Installed straight
+# from git: pip performs the clone/checkout (accepting a branch, tag, or the full commit SHA
+# the build CLI passes) and hatch-vcs derives the version from the tag history pip's clone
+# brings along — no separate working tree to manage or copy.
 WORKDIR /app
-RUN git clone https://github.com/GNS-Science/nzshm-runzi.git
-WORKDIR /app/nzshm-runzi
-RUN git fetch
-RUN git checkout ${RUNZI_GITREF}
 RUN python -m venv /opt/runzi-venv
-RUN /opt/runzi-venv/bin/pip install .
+RUN --mount=type=cache,target=/root/.cache/pip \
+    /opt/runzi-venv/bin/pip install "runzi @ git+https://github.com/GNS-Science/nzshm-runzi.git@${RUNZI_GITREF}"
 
-# RUN rm -r /app
 FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime
 ARG FATJAR_TAG
-COPY --from=build /usr /usr
-COPY --from=build /opt /opt
-# Fonts for OpenSHA report / matplotlib rendering: libs+faces arrive via /usr, but
-# fontconfig's config dir lives in /etc and ENV does not cross stages, so bring both across.
-COPY --from=build /etc/fonts /etc/fonts
+
+# Runtime system deps, installed directly rather than by copying the entire build-stage
+# /usr across: the venvs in /opt were built against this same base image's Python, so only
+# /opt is a real artifact — copying /usr would also drag in curl and a duplicate interpreter.
+#   - fonts: OpenSHA report / matplotlib rendering
+#   - git: several inversion/rupset tasks use GitPython (git.Repo) at runtime, which shells
+#     out to the git binary.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git fontconfig libfreetype6 fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
 ENV FONTCONFIG_PATH=/etc/fonts
+
+# venvs + java + fatjar — the only artifacts the runtime needs from the build stage.
+COPY --from=build /opt /opt
+
 COPY java_container_task.sh /usr/local/bin/java_container_task.sh
 COPY python_container_task.sh /usr/local/bin/python_container_task.sh
 RUN chmod +x /usr/local/bin/java_container_task.sh
@@ -97,10 +111,3 @@ ENV MPLCONFIGDIR=/tmp/matplotlib
 RUN mkdir -p /oqdata && chmod 777 /oqdata && mkdir -p /tmp/numba_cache && chmod 777 /tmp/numba_cache && mkdir -p /tmp/matplotlib && chmod 777 /tmp/matplotlib
 
 ENTRYPOINT ["/bin/bash", "-c"]
-
-FROM runtime AS dev
-COPY --from=build /app/nzshm-runzi /app/nzshm-runzi
-WORKDIR /app/nzshm-runzi
-RUN /opt/runzi-venv/bin/pip install -e .
-WORKDIR /WORKING
-ENV PYTHONDONTWRITEBYTECODE=1

@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- `runzi --docker` now pulls the image on every run instead of only when it is absent locally, so floating tags (`:prod`/`:experimental`) pick up newly published images automatically. `docker pull` only transfers changed layers (a fast no-op when current), and it falls back to the cached image if the registry is unreachable.
+- Docker image: smaller and faster to build. Runtime stage installs only its own system deps (git + fonts) instead of copying the entire build-stage `/usr`; Java is now a JRE rather than the full JDK; runzi is installed straight from git (`pip install "runzi @ git+..."`) instead of a working-tree clone; BuildKit pip cache mounts avoid re-downloading the OpenQuake stack on rebuilds; and the build CLI no longer forces `--no-cache` (it uses `--pull` so unchanged layers are reused).
+
+### Removed
+- Docker `dev` image/stage and its CLI plumbing (`docker-build --dev`, `runzi --docker-dev`, `dev_locally.md`). Venv isolation removed the need for the editable-install dev image.
+
 ## [0.13.0] 2026-07-17
 
 ### Changed
