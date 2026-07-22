@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.14.0] 2026-07-23
 
 ### Changed
 - `runzi --docker` now pulls the image on every run instead of only when it is absent locally, so floating tags (`:prod`/`:experimental`) pick up newly published images automatically. `docker pull` only transfers changed layers (a fast no-op when current), and it falls back to the cached image if the registry is unreachable.
