@@ -28,7 +28,7 @@ COPY ucerf* /app/ucerf
 # independent of the archive's top-level directory name.
 RUN mkdir -p /opt/java \
     && curl -sSL -o /tmp/jre.tar.gz \
-    "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.25%2B9/OpenJDK11U-jre_x64_linux_hotspot_11.0.25_9.tar.gz" \
+    "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.9%2B9/OpenJDK17U-jre_x64_linux_hotspot_17.0.9_9.tar.gz" \
     && tar -xzf /tmp/jre.tar.gz -C /opt/java --strip-components=1 \
     && rm /tmp/jre.tar.gz
 

@@ -97,6 +97,9 @@ class CoulombRuptureSetArgs(BaseModel):
     named_faults_file: FaultModelFile | None = None
     """If side-loading the fault model, you can provide the named faults to group them for reporting."""
 
+    min_slip_filter: float | None = None
+    domain_filter: str | None = None
+
     @model_validator(mode='after')
     def check_fault_model(self) -> Self:
         """Must specify either fault_model or fault_model_file"""
@@ -184,6 +187,12 @@ class CoulombRuptureSetBuilderTask:
         self.builder.setAdaptiveSectFract(self.user_args.thinning_factor)
         self.builder.setMinSubSectsPerParent(self.user_args.min_sub_sects_per_parent)
         self.builder.setMinSubSections(self.user_args.min_sub_sections)
+
+        breakpoint()
+        if self.user_args.min_slip_filter:
+            self.builder.setMinSlipFilter(self.user_args.min_slip_filter)
+        if self.user_args.domain_filter:
+            self.builder.setDomainFilter(self.user_args.domain_filter)
 
         fault_model = self.user_args.fault_model
         fault_model_file = self.user_args.fault_model_file
