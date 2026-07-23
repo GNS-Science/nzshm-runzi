@@ -53,11 +53,11 @@ default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.PYTHON,
     # 8 vCPU is the cost/latency sweet spot from the #344 benchmark (docs/benchmarks/ec2-sizing-oq-hazard.md):
     # the 4->8 step nearly halves wall time for ~+22% cost — the cheapest speedup on the curve — and the knee
-    # is at 32. Defaults to EC2 (not Fargate), which is safe now that java_threads caps OpenQuake's num_cores
-    # to the container's vCPU: without it, on EC2 the container sees the host's cores and OOMs (#344).
+    # is at 32. Defaults to EC2 (not Fargate), which is safe now that the num_cores arg caps OpenQuake's
+    # worker pool to the container's vCPU: without it, on EC2 the container sees the host's cores and OOMs (#344).
     ecs_job_definition=EC2_JOB_DEFINITION,
     ecs_vcpu=8,
-    java_threads=8,
+    num_cores=8,
     # 30720 MiB fits m6a.2xlarge (32 GiB) with ECS agent/OS headroom. Hazard is low-memory per site (the
     # benchmark's 1057-site job ran in <8 GB), but a full 0.1-deg production grid (~4000 sites) needs ~30 GB,
     # so we keep m-family headroom rather than the cheaper c-family. For small grids (<~1500 sites) drop to
@@ -285,7 +285,7 @@ class OQHazardTask:
             self.runtime_args.task_count,
             automation_task_id,
             HazardTaskType.HAZARD,
-            num_cores=self.runtime_args.java_threads,
+            num_cores=self.runtime_args.num_cores,
         )
 
         ######################

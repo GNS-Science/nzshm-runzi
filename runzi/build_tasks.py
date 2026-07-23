@@ -66,7 +66,7 @@ def build_tasks(
             general_task_id=general_task_id,
             use_api=local_config.USE_API,
             task_count=task_count,
-            java_threads=submission_args.java_threads,
+            num_cores=submission_args.num_cores,
         )
 
         if local_config.CLUSTER_MODE is ClusterModeEnum.AWS:

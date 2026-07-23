@@ -15,7 +15,7 @@ def get_task_config(
     Args:
         task_args: The user arguments for the task.
         task_runtime_args: The per-task runtime context the worker needs (general_task_id, task_count,
-            use_api, gateway port, java_threads). Submission-only config is NOT included.
+            use_api, gateway port, num_cores). Submission-only config is NOT included.
 
     returns:
         A dictionary with keys 'task_args', 'task_runtime_args', 'model_type'; the args values are the

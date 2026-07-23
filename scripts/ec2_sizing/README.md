@@ -100,8 +100,8 @@ parse** (no `--iteration-regex`).
 
 ## What it measures
 
-- **Cores.** vCPU `{4, 8, 16, 32}` with **`java_threads` pinned to `ecs_vcpu`** per cell (the builder
-  calls `setNumThreads(java_threads)`), so each cell actually uses the cores it pays for and the
+- **Cores.** vCPU `{4, 8, 16, 32}` with **`num_cores` pinned to `ecs_vcpu`** per cell (the builder
+  calls `setNumThreads(num_cores)`), so each cell actually uses the cores it pays for and the
   wall-time-vs-cores curve is meaningful. We do *not* know a priori whether the builder parallelizes —
   the curve answers it: falling wall time ⇒ it scales (pick the knee); flat ⇒ it doesn't (run smallest).
 - **Instance family.** `c6a` (compute-optimized) vs `m6a` (general purpose), both AMD (cheapest x86),
@@ -154,7 +154,7 @@ to the Batch job) — note the ~16 throwaway uploads for cleanup.
 ## Coulomb files
 
 - `coulomb_rupture_set.template.json` — base config (fault model `CFM_1_0A_DOM_SANSTVZ`, `max_sections`
-  2000); `submit_coulomb_matrix.py` injects per-cell `ecs_vcpu` / `java_threads` / `ecs_memory`.
+  2000); `submit_coulomb_matrix.py` injects per-cell `ecs_vcpu` / `num_cores` / `ecs_memory`.
 - `submit_coulomb_matrix.py` — renders + submits the family × vCPU matrix, writes `coulomb_manifest.json`.
 - `collect_coulomb_results.py` — joins the manifest to live Batch/EC2 data → CSV + summary (wall time +
   cost, no Toshi).
@@ -170,9 +170,9 @@ Same idea again — run-to-completion, **wall-clock metric** — for the OpenQua
 **Like coulomb, OQ needs its core budget pinned (#344).** OpenQuake sizes its processpool to the cores it
 *detects*; on EC2 the container sees the **host's** cores (Batch uses CPU shares, not cpuset), so without a
 cap OQ spawns a worker per host core and OOM-kills the memory-limited container (`oq engine --run` exits
-`-9`). So each cell ships **`java_threads = vcpu`** — the OQ task feeds it to `execute_openquake`, which
+`-9`). So each cell ships **`num_cores = vcpu`** — the OQ task feeds it to `execute_openquake`, which
 writes it to `openquake.cfg` `[distribution] num_cores`. The matrix is family × vCPU; `render_config`
-injects `ecs_vcpu` / `java_threads` (= vcpu) / `ecs_memory` / `ecs_job_definition` / `ecs_max_job_time_min`.
+injects `ecs_vcpu` / `num_cores` (= vcpu) / `ecs_memory` / `ecs_job_definition` / `ecs_max_job_time_min`.
 
 ## What it measures
 
@@ -225,7 +225,7 @@ but Batch picks the instance so you can't compare families.
 ## Workflow
 
 ```bash
-# 0. Dry run — confirm the 16 cells render valid EC2-targeted configs (no AWS calls, no java_threads).
+# 0. Dry run — confirm the 16 cells render valid EC2-targeted configs (no AWS calls, no num_cores).
 uv run python scripts/ec2_sizing/submit_oq_hazard_matrix.py --dry-run --queue-prefix ec2sizing
 
 # 1. PILOT (the key risk): ONE cell to confirm the wall-clock path end-to-end AND to time the workload
@@ -253,7 +253,7 @@ note the ~16 throwaway uploads for cleanup, plus one SRM logic-tree file per cel
 ## OQ hazard files
 
 - `oq_hazard.template.json` — base config (full 2022 GMCM × single SRM branch, ~250 sites);
-  `submit_oq_hazard_matrix.py` injects per-cell `ecs_vcpu` / `java_threads` (= vcpu, → OQ num_cores) / `ecs_memory`.
+  `submit_oq_hazard_matrix.py` injects per-cell `ecs_vcpu` / `num_cores` (= vcpu, → OQ num_cores) / `ecs_memory`.
 - `srm_single_branch_TEST.json` — the single-branch SRM, co-located so the template's relative path resolves.
 - `submit_oq_hazard_matrix.py` — renders + submits the family × vCPU matrix, writes `oq_hazard_manifest.json`.
 - `collect_oq_hazard_results.py` — joins the manifest to live Batch/EC2 data → CSV + summary (wall time +

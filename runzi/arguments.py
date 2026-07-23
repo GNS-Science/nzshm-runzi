@@ -81,8 +81,10 @@ class SubmissionArgs(BaseModel):
 
     task_language: TaskLanguage
 
-    # Declared per Java task module; the worker reads it, so build_tasks copies it into TaskRuntimeArgs.
-    java_threads: int | None = None
+    # Per-task parallelism budget (usually = ecs_vcpu). Not Java-only: Java tasks pass it to
+    # setNumThreads / PBS ppn, OpenQuake tasks to openquake.cfg num_cores. The worker reads it, so
+    # build_tasks copies it into TaskRuntimeArgs.
+    num_cores: int | None = None
     jvm_heap_max: int | None = None
 
     ecs_max_job_time_min: int
@@ -129,7 +131,8 @@ class TaskRuntimeArgs(BaseModel):
     general_task_id: str | None = None
     task_count: int = 0
     use_api: bool
-    java_threads: int | None = None
+    num_cores: int | None = None
+    """Parallelism budget the worker applies (Java setNumThreads / OpenQuake num_cores)."""
 
     @property
     def java_gateway_port(self) -> int:

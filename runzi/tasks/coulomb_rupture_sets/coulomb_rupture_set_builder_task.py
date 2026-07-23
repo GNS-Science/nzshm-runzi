@@ -57,7 +57,7 @@ def get_fault_model_file(fault_model_file_id) -> Path:
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
     ecs_job_definition=EC2_JOB_DEFINITION,
-    java_threads=4,
+    num_cores=4,
     jvm_heap_max=32,
     ecs_max_job_time_min=200,
     ecs_memory=7000,
@@ -150,8 +150,8 @@ class CoulombRuptureSetBuilderTask:
             # "gitref_opensha":self._repoheads['opensha'],
             # "gitref_nzshm-opensha":self._repoheads['nzshm-opensha'],
             # "gitref_nzshm-runzi":self._repoheads['nzshm-runzi'],
-            "java_threads": self.runtime_args.java_threads,
-            "proc_count": self.runtime_args.java_threads,
+            "num_cores": self.runtime_args.num_cores,
+            "proc_count": self.runtime_args.num_cores,
             # "jvm_heap_max": self.runtime_args.jvm_heap_max,
         }
 
@@ -238,7 +238,7 @@ class CoulombRuptureSetBuilderTask:
             outputfile = outputfile.with_suffix('.spoof')
             Path(outputfile).touch()
         else:
-            self.builder.setNumThreads(self.runtime_args.java_threads).buildRuptureSet()
+            self.builder.setNumThreads(self.runtime_args.num_cores).buildRuptureSet()
             metrics = self.ruptureSetMetrics()
             self.builder.writeRuptureSet(str(outputfile))
 

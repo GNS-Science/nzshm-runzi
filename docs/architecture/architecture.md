@@ -39,7 +39,7 @@ classDiagram
     class SubmissionArgs {
         note "submitter-only; NOT serialized to the worker"
         - task_language: TaskLanguage
-        - java_threads: int | None
+        - num_cores: int | None
         - jvm_heap_max: int | None
         - ecs_max_job_time_min: int
         - ecs_memory: int
@@ -58,7 +58,7 @@ classDiagram
         - task_count: int
         - use_api: bool
         - java_gateway_port: int | None
-        - java_threads: int | None
+        - num_cores: int | None
     }
     
     class ScaleSolutionArgs {

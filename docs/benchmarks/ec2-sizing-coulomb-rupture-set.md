@@ -11,8 +11,8 @@ finish, and where do extra cores stop paying?*
   `max_sections` 2000). Template: `scripts/ec2_sizing/coulomb_rupture_set.template.json`.
 - **Matrix:** instance family {`c6a`, `m6a`} × vCPU {4, 8, 16, 32, 64} × 2 replicates = 20 jobs. Families
   are **pinned** via per-family Batch queues (`terraform/ec2-sizing-benchmark/`), so the vCPU cost curve
-  isn't polluted by Batch's allocation strategy picking different families per cell. **`java_threads` is pinned to
-  `ecs_vcpu`** per cell (the builder calls `setNumThreads(java_threads)`), so each cell uses every core it
+  isn't polluted by Batch's allocation strategy picking different families per cell. **`num_cores` is pinned to
+  `ecs_vcpu`** per cell (the builder calls `setNumThreads(num_cores)`), so each cell uses every core it
   pays for and the wall-time-vs-cores curve is meaningful. Memory was sized to ~fill each family's per-vCPU
   RAM (c ≈ 1.8, m ≈ 3.8 GB/vCPU).
 - **Cost** is analytical fair-share, `(instance $/hr ÷ instance vCPU) × job vCPU × wall-hours` — the cost
@@ -85,7 +85,7 @@ The coulomb and subduction builder `default_submission_args` were re-sized accor
 | field | old | new | why |
 |-------|----:|----:|-----|
 | `ecs_vcpu` | 4 | 4 | cheapest $/build (unchanged) |
-| `java_threads` | 16 | 4 | track vCPU; 16-on-4 oversubscribed |
+| `num_cores` | 16 | 4 | track vCPU; 16-on-4 oversubscribed |
 | `ecs_memory` (MiB) | 30720 | 7000 | fits under the 8 GiB compute-optimized `c*.xlarge` ceiling (with ECS agent/OS headroom) so `BEST_FIT_PROGRESSIVE` places the job on cheap c-family, not the 16 GiB general-purpose `m*.xlarge`; heap ≈ 5 GB is ample |
 | `ecs_max_job_time_min` | 60 | 90 | the 4-vCPU build takes ~62 min — the old limit killed it |
 | `ecs_job_definition` | `runzi-fargate-JD` (default) | `runzi-ec2-JD` | these Java builds always run on the EC2 CE; 7000 MiB / 4 vCPU is below Fargate's 8192 MiB floor anyway, so the Fargate default would have failed validation |

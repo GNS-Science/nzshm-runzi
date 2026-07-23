@@ -105,7 +105,7 @@ ranking above. `"optimal"` resolves to current-gen families (it picked `r6i`/`m6
     container sees the **host's** cores; OQ sized its processpool to the whole instance and OOM-killed the
     memory-capped container (`oq engine --run` → `-9`). Fix: `execute_openquake` now caps OQ's
     `openquake.cfg` `[distribution] num_cores` to a shipped core budget (`_cap_oq_num_cores`), fed from the
-    `java_threads` runtime arg; `oq_hazard_task` / `oq_disagg_task` default `java_threads=8` (=vCPU). No-op
+    `num_cores` runtime arg; `oq_hazard_task` / `oq_disagg_task` default `num_cores=8` (=vCPU). No-op
     on Fargate (the microVM already exposes exactly the requested vCPU); required on EC2.
 - **Per-workload targets / Spot** — if OQ ever needs EC2 with a different profile, give it its own
   target rather than widening this list; Spot remains a separate cost lever (ADR-0008).

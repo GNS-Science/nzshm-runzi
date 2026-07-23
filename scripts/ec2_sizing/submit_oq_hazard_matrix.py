@@ -4,7 +4,7 @@
 Like the coulomb rupture-set builder (#343), OQ hazard runs *to completion*, so the metric is
 **wall-clock time** and the knobs that matter are **cores** and **instance family**. Unlike coulomb,
 there is **no thread arg to pin**: OpenQuake auto-parallelises across whatever vCPUs the container
-exposes, so a cell's core count is set purely by ``ecs_vcpu`` (no ``java_threads``). Memory follows the
+exposes, so a cell's core count is set purely by ``ecs_vcpu`` (no ``num_cores``). Memory follows the
 family's per-vCPU ratio, so a compute-optimized (c-family, ~2 GB/vCPU) cell that OOMs *reveals* that
 hazard needs more RAM than c-family provides. Each matrix cell is its own ``runzi hazard oq_hazard``
 submit with distinct ``submission_arg_overrides``:
@@ -116,16 +116,16 @@ def render_config(
     ``ecs_job_definition`` selects the target and the queue/compute-environment derive from it via
     ``JOB_DEFINITION_TARGETS`` (ADR-0008), unless a ``queue_prefix`` routes the cell to a pinned
     per-family benchmark queue (the JD is unchanged, so the compute-environment type stays EC2). No
-    ``java_threads`` override — OpenQuake parallelism follows ``ecs_vcpu``.
+    ``num_cores`` override — OpenQuake parallelism follows ``ecs_vcpu``.
     """
     config = copy.deepcopy(template)
     overrides: dict[str, Any] = {
         'ecs_vcpu': cell.vcpu,
         # Cap OpenQuake's processpool to the cell's vCPU. On AWS Batch EC2 the container sees the host's
         # cores (CPU shares, not cpuset), so without this OQ sizes its pool to the whole instance and OOMs
-        # a memory-capped container (#344). Shipped via the java_threads TaskRuntimeArg; the OQ task feeds
+        # a memory-capped container (#344). Shipped via the num_cores TaskRuntimeArg; the OQ task feeds
         # it to execute_openquake, which writes it to openquake.cfg [distribution] num_cores.
-        'java_threads': cell.vcpu,
+        'num_cores': cell.vcpu,
         'ecs_memory': cell.memory_mb,
         'ecs_job_definition': job_definition,
         'ecs_max_job_time_min': max_job_time_min,

@@ -13,11 +13,11 @@ if TYPE_CHECKING:
 
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
-    # java_threads is only used for pbs mode, which is not supported anymore.
+    # num_cores is only used for pbs mode, which is not supported anymore.
     # It should be set to selector_threads * averaging_threads, but this would need to be done task by task if they
     # are swept args. It would be possible to add some inversion specific code to the build_tasks function or find the
     # maximum number of threads before hand or find the maximum number of threads that would be needed before hand.
-    java_threads=16,
+    num_cores=16,
     # 8 vCPU / ~14 GB, mirroring the crustal #323 sizing (ADR-0011). Defaults to EC2, and 14000 MiB fits
     # compute-optimized c*.2xlarge (16 GiB) with ECS headroom, so it lands on cheap c-family rather than
     # general-purpose m*.2xlarge. Heap = memory/1000-2 ≈ 12 GB — safe because subduction rupture sets are

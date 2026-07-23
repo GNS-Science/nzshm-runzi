@@ -5,7 +5,7 @@ path. Only the side-effect-free grid/render/analysis logic is covered — submit
 
 OQ hazard runs *to completion*, so the matrix is family x vCPU and the metric is wall-clock time from the
 Batch job summary (no Toshi log to parse). On EC2 the container sees the host's cores, so each cell ships
-``java_threads = vcpu`` to cap OpenQuake's num_cores (#344); the collector reads back the worker count OQ
+``num_cores = vcpu`` to cap OpenQuake's num_cores (#344); the collector reads back the worker count OQ
 logged (``oq_cores``) to confirm the cap took.
 """
 
@@ -101,9 +101,9 @@ class TestRenderConfig:
         config = submit.render_config(self._template(), cell, 240, 'runzi-ec2-JD')
         overrides = config['submission_arg_overrides']
         assert overrides['ecs_vcpu'] == 16
-        # java_threads carries the OQ core budget -> openquake.cfg num_cores; must equal vCPU or OQ grabs
+        # num_cores carries the OQ core budget -> openquake.cfg num_cores; must equal vCPU or OQ grabs
         # all host cores on EC2 and OOMs the container (#344).
-        assert overrides['java_threads'] == 16
+        assert overrides['num_cores'] == 16
         assert overrides['ecs_memory'] == 28800
         assert overrides['ecs_job_definition'] == 'runzi-ec2-JD'
         assert overrides['ecs_max_job_time_min'] == 240

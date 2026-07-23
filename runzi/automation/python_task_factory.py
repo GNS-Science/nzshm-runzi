@@ -111,7 +111,7 @@ class PythonPBSTaskFactory(PythonTaskFactory):
         # if isinstance(task_args, InversionArgs):
         #     max_inversion_time = task_args.task.max_inversion_time[0]
         #     self._pbs_wall_hours = int(max_inversion_time / 60) + 1
-        #     self._pbs_ppn = task_args.general.java_threads
+        #     self._pbs_ppn = task_args.general.num_cores
 
         # task_config = get_task_config(task_args, task_runtime_args)
         # fname.write_text(json.dumps(task_config, indent=4), encoding='utf-8')

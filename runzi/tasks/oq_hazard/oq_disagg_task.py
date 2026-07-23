@@ -57,12 +57,12 @@ log = logging.getLogger(__name__)
 default_submission_args = SubmissionArgs(
     # Mirrors the hazard defaults (#344) as a starting point — disaggregation is not yet independently
     # benchmarked (it's expected to be more memory-hungry, so re-sizing may follow). EC2 is safe because
-    # java_threads caps OpenQuake's num_cores to the container's vCPU (else it grabs the host's cores and
-    # OOMs on EC2). See runzi/tasks/oq_hazard/oq_hazard_task.py and docs/benchmarks/ec2-sizing-oq-hazard.md.
+    # the num_cores arg caps OpenQuake's worker pool to the container's vCPU (else it grabs the host's cores
+    # and OOMs on EC2). See runzi/tasks/oq_hazard/oq_hazard_task.py and docs/benchmarks/ec2-sizing-oq-hazard.md.
     task_language=TaskLanguage.PYTHON,
     ecs_job_definition=EC2_JOB_DEFINITION,
     ecs_vcpu=8,
-    java_threads=8,
+    num_cores=8,
     ecs_memory=30720,
     ecs_max_job_time_min=240,
 )
@@ -290,7 +290,7 @@ class OQDisaggTask:
             self.runtime_args.task_count,
             automation_task_id,
             HazardTaskType.HAZARD,
-            num_cores=self.runtime_args.java_threads,
+            num_cores=self.runtime_args.num_cores,
         )
 
         ######################
