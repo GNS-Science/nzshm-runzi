@@ -137,7 +137,8 @@ grid (~4000 sites) needs ~30 GB; small-grid jobs can override `ecs_memory` down 
 
 The Fargate→EC2 move is made on the cost evidence plus the `num_cores` fix, **without an EC2-vs-Fargate
 throughput baseline** — the same posture ADR-0011 took for inversions (baseline still formally deferred).
-Disaggregation is unchanged (still Fargate; not benchmarked, expected more memory-hungry).
+Disaggregation gets the same defaults (EC2, 8 vCPU / 30720 MiB / 240 min) as a starting point — not
+independently benchmarked yet, and expected to be more memory-hungry, so it may be re-sized later.
 
 ## Out of scope
 

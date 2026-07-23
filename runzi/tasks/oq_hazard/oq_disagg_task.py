@@ -21,7 +21,7 @@ from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 from toshi_hazard_store.scripts.ths_disagg_import import store_disagg
 
-from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.local_config import (
     API_URL,
     ECR_DIGEST,
@@ -55,15 +55,16 @@ logging.getLogger("gql.transport").setLevel(logging.WARN)
 log = logging.getLogger(__name__)
 
 default_submission_args = SubmissionArgs(
+    # Mirrors the hazard defaults (#344) as a starting point — disaggregation is not yet independently
+    # benchmarked (it's expected to be more memory-hungry, so re-sizing may follow). EC2 is safe because
+    # java_threads caps OpenQuake's num_cores to the container's vCPU (else it grabs the host's cores and
+    # OOMs on EC2). See runzi/tasks/oq_hazard/oq_hazard_task.py and docs/benchmarks/ec2-sizing-oq-hazard.md.
     task_language=TaskLanguage.PYTHON,
-    ecs_max_job_time_min=30,
-    ecs_memory=32768,
+    ecs_job_definition=EC2_JOB_DEFINITION,
     ecs_vcpu=8,
-    # Core budget shipped to the worker; on AWS Batch it caps OpenQuake's openquake.cfg num_cores (#344).
-    # Harmless on Fargate (matches the microVM's cores); required on EC2, where the container sees the
-    # host's cores and OQ would otherwise OOM the memory-capped container. No effect on local runs (the cap
-    # is Batch-only — see execute_openquake._num_cores_cap).
     java_threads=8,
+    ecs_memory=30720,
+    ecs_max_job_time_min=240,
 )
 
 

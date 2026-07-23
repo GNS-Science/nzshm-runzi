@@ -66,10 +66,9 @@ ranking above. `"optimal"` resolves to current-gen families (it picked `r6i`/`m6
 
 - **Deployer apply required.** The `ec2_instance_types` change ships as Terraform code in
   `terraform/batch`; a deployer applies it (the federated `runzi-admin` session can't apply it itself).
-- **Shared CE.** The EC2 CE is shared by any job that opts into EC2. Inversions are the known EC2
-  users; OQ hazard/disagg run on **Fargate** by default (ADR-0003) and are unaffected unless a config
-  opts them onto EC2 — if one does and is memory-heavy, confirm it still fits the `c`/`m` list before
-  relying on this.
+- **Shared CE.** The EC2 CE is shared by every job that targets EC2. At authoring time only inversions did;
+  as of #344 OQ hazard **and** disagg also default to EC2 (see the OQ followup below), so the `c`/`m`
+  instance list must accommodate their memory too (hazard requests 30720 MiB → `m6a.2xlarge`).
 - **No Fargate baseline.** The benchmark compared EC2 families only; it did **not** measure EC2 vs
   Fargate throughput. This decision therefore does not claim EC2 is cheaper than Fargate, nor switch
   the Fargate default — only which EC2 family is used when EC2 is chosen.
@@ -99,7 +98,8 @@ ranking above. `"optimal"` resolves to current-gen families (it picked `r6i`/`m6
   30720 MiB / 240 min**. Findings: compute-bound; the 4→8 step is the cheapest speedup and the knee is at
   32; c6a is cheapest but production 0.1° grids (~4000 sites) need m-family memory (hence 30720). Like the
   inversion move above, the Fargate→EC2 switch rests on cost + the num_cores fix **without an EC2-vs-Fargate
-  baseline** (still deferred). Disagg stays on Fargate (not benchmarked).
+  baseline** (still deferred). Disagg gets the same defaults as a starting point (not yet independently
+  benchmarked — expected more memory-hungry, so re-sizing may follow).
   - **OQ core-detection fix (shipped with the tooling).** The first matrix run exposed a real
     **production** bug for *any* OpenQuake job on EC2: Batch limits CPU with shares, not cpuset, so the
     container sees the **host's** cores; OQ sized its processpool to the whole instance and OOM-killed the

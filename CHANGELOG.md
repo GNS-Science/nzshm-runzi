@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 ### Changed
-- OpenQuake **hazard** batch default moved to EC2 (`runzi-ec2-JD`) at **8 vCPU / 30720 MiB / 240 min** (was Fargate 8 vCPU / 32768 MiB / 30 min), from the #344 EC2 sizing benchmark (`docs/benchmarks/ec2-sizing-oq-hazard.md`, ADR-0011): the 4→8 vCPU step is the cheapest speedup on the curve and the knee is at 32; memory kept at ~30 GB (m-family) so a full 0.1° production grid fits, and the 30 min limit is raised because real 8-vCPU jobs exceed it. Disaggregation is unchanged (still Fargate).
+- OpenQuake **hazard** batch default moved to EC2 (`runzi-ec2-JD`) at **8 vCPU / 30720 MiB / 240 min** (was Fargate 8 vCPU / 32768 MiB / 30 min), from the #344 EC2 sizing benchmark (`docs/benchmarks/ec2-sizing-oq-hazard.md`, ADR-0011): the 4→8 vCPU step is the cheapest speedup on the curve and the knee is at 32; memory kept at ~30 GB (m-family) so a full 0.1° production grid fits, and the 30 min limit is raised because real 8-vCPU jobs exceed it. Disaggregation gets the same defaults as a starting point (not yet independently benchmarked; expected more memory-hungry, so re-sizing may follow).
 - `runzi --docker` now pulls the image on every run instead of only when it is absent locally, so floating tags (`:prod`/`:experimental`) pick up newly published images automatically. `docker pull` only transfers changed layers (a fast no-op when current), and it falls back to the cached image if the registry is unreachable.
 
 ### Fixed
