@@ -92,6 +92,19 @@ ranking above. `"optimal"` resolves to current-gen families (it picked `r6i`/`m6
 - **Durable instance-type capture** — have the container read its instance type from IMDS and log it to
   `java_app.<port>.log`, so provenance survives scale-down (parsed from Toshi like iterations/energy)
   and cost no longer needs the ECS/EC2 lookup or its IAM.
+- **OQ hazard sizing (#344)** — the same benchmark method is now wired for OpenQuake hazard
+  (`scripts/ec2_sizing/submit_oq_hazard_matrix.py` + `collect_oq_hazard_results.py`,
+  `docs/benchmarks/ec2-sizing-oq-hazard.md`), matrix = family × vCPU. **Tooling only so far;** once an
+  operator runs the matrix, re-size `default_submission_args` in `runzi/tasks/oq_hazard/oq_hazard_task.py`
+  (currently 8 vCPU / 32 GiB / 30 min on Fargate) and update this ADR (or add ADR-0012). Any Fargate→EC2
+  move for hazard would still want a Fargate baseline, as the inversion baseline above was left deferred.
+  - **OQ core-detection fix (shipped with the tooling).** The first matrix run exposed a real
+    **production** bug for *any* OpenQuake job on EC2: Batch limits CPU with shares, not cpuset, so the
+    container sees the **host's** cores; OQ sized its processpool to the whole instance and OOM-killed the
+    memory-capped container (`oq engine --run` → `-9`). Fix: `execute_openquake` now caps OQ's
+    `openquake.cfg` `[distribution] num_cores` to a shipped core budget (`_cap_oq_num_cores`), fed from the
+    `java_threads` runtime arg; `oq_hazard_task` / `oq_disagg_task` default `java_threads=8` (=vCPU). No-op
+    on Fargate (the microVM already exposes exactly the requested vCPU); required on EC2.
 - **Per-workload targets / Spot** — if OQ ever needs EC2 with a different profile, give it its own
   target rather than widening this list; Spot remains a separate cost lever (ADR-0008).
 - **Refresh `INSTANCE_SPECS` prices** (`# last verified:` marker) before publishing absolute costs.

@@ -54,6 +54,11 @@ default_submission_args = SubmissionArgs(
     ecs_max_job_time_min=30,
     ecs_memory=32768,
     ecs_vcpu=8,
+    # Core budget shipped to the worker; on AWS Batch it caps OpenQuake's openquake.cfg num_cores (#344).
+    # Harmless on Fargate (matches the microVM's cores); required on EC2, where the container sees the
+    # host's cores and OQ would otherwise OOM the memory-capped container. No effect on local runs (the cap
+    # is Batch-only — see execute_openquake._num_cores_cap).
+    java_threads=8,
 )
 
 
@@ -273,6 +278,7 @@ class OQHazardTask:
             self.runtime_args.task_count,
             automation_task_id,
             HazardTaskType.HAZARD,
+            num_cores=self.runtime_args.java_threads,
         )
 
         ######################

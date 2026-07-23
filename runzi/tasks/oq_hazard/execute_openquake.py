@@ -1,5 +1,6 @@
 """Execute the openquake pin an external process."""
 
+import configparser
 import io
 import logging
 import os
@@ -15,10 +16,81 @@ from runzi.utils import archive
 log = logging.getLogger(__name__)
 
 
+def _parse_winning_cfg_path(oq_info_cfg_output: str) -> Path | None:
+    """Return the config file OpenQuake reads last (and so wins) from ``oq info cfg`` output.
+
+    ``oq info cfg`` prints ``Looking at the following paths (the last wins)`` then one path per line
+    (a config dump may follow). We take the last line ending in ``openquake.cfg``; ``None`` if none.
+    """
+    paths = [line.strip() for line in oq_info_cfg_output.splitlines() if line.strip().endswith('openquake.cfg')]
+    return Path(paths[-1]) if paths else None
+
+
+def _set_oq_num_cores(cfg_path: Path, num_cores: int) -> None:
+    """Set ``[distribution] num_cores`` in ``cfg_path`` (merge-safe), creating the file/dir if needed.
+
+    OpenQuake merges its config search path last-wins, so writing ``num_cores`` into the winning file caps
+    the processpool regardless of the installed defaults. Existing sections/keys are preserved.
+    """
+    parser = configparser.ConfigParser()
+    if cfg_path.exists():
+        parser.read(cfg_path)
+    if not parser.has_section('distribution'):
+        parser.add_section('distribution')
+    parser.set('distribution', 'num_cores', str(num_cores))
+    cfg_path.parent.mkdir(parents=True, exist_ok=True)
+    with cfg_path.open('w') as handle:
+        parser.write(handle)
+
+
+def _num_cores_cap(num_cores: int | None) -> int | None:
+    """The core cap to actually apply, or ``None`` to leave OpenQuake to auto-detect.
+
+    Cap **only inside AWS Batch** (``AWS_BATCH_JOB_ID`` set): there the container can see the host's cores
+    (CPU shares, not cpuset) and its openquake.cfg is ephemeral, so pinning is both needed and safe. On a
+    local/dev host we must NOT cap — OQ already detects the machine's cores correctly, and writing
+    ``num_cores`` would throttle the user *and* persistently rewrite their real openquake.cfg.
+    """
+    if num_cores is None or not os.environ.get('AWS_BATCH_JOB_ID'):
+        return None
+    return num_cores
+
+
+def _cap_oq_num_cores(num_cores: int, oq_bin: str, env: dict[str, str]) -> None:
+    """Cap OpenQuake's processpool to ``num_cores`` in the config file it reads last.
+
+    On AWS Batch EC2 the container sees the host's cores (CPU shares, not cpuset), so OQ would otherwise
+    size its pool to the whole instance and OOM a memory-capped container (#344). We discover the winning
+    cfg path from ``oq info cfg`` (adapts to the container's HOME) and patch ``num_cores`` into it, falling
+    back to ``{OQ_VENV}/openquake.cfg`` (always in the search path) if the path can't be parsed.
+    """
+    cfg_path: Path | None = None
+    try:
+        out = subprocess.run([oq_bin, 'info', 'cfg'], env=env, capture_output=True, text=True, check=True).stdout
+        cfg_path = _parse_winning_cfg_path(out)
+    except (subprocess.SubprocessError, OSError) as err:
+        log.warning('could not run `oq info cfg` to find the config path: %s', err)
+    if cfg_path is None:
+        cfg_path = Path(f'{OQ_VENV}/openquake.cfg')
+    log.info('capping OpenQuake num_cores=%d in %s', num_cores, cfg_path)
+    _set_oq_num_cores(cfg_path, num_cores)
+
+
 def execute_openquake(
-    configfile: str | Path, task_no: int, toshi_task_id: str | None, hazard_task_type: HazardTaskType
+    configfile: str | Path,
+    task_no: int,
+    toshi_task_id: str | None,
+    hazard_task_type: HazardTaskType,
+    num_cores: int | None = None,
 ):
-    """Do the actusal openquake work."""
+    """Do the actusal openquake work.
+
+    Args:
+        num_cores: cap OpenQuake's processpool to this many cores, but **only inside AWS Batch** (see
+            ``_num_cores_cap``). Needed on Batch EC2, where the container sees the host's cores and would
+            otherwise OOM. Ignored on a local host, so a local run never has its cores throttled or its
+            openquake.cfg rewritten. ``None`` always leaves OQ to auto-detect.
+    """
     if not OQ_VENV:
         raise RuntimeError('NZSHM22_OQ_VENV must be set for OQ tasks')
     if not OQ_DATADIR:
@@ -50,6 +122,9 @@ def execute_openquake(
         # -L /WORKING/examples/18_SWRG_INIT/jobs/BG_unscaled.log
         #
         env = {**os.environ, 'OQ_DATADIR': str(OQ_DATADIR)}
+        cap = _num_cores_cap(num_cores)  # Batch-only; never touch a local host's cores or openquake.cfg
+        if cap is not None:
+            _cap_oq_num_cores(cap, oq_bin, env)
         cmd = [oq_bin, 'engine', '--run', f'{configfile}', '-L', f'{logfile}']
         log.info('executing with subprocess: %s', cmd)
         result = subprocess.run(cmd, env=env)
