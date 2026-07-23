@@ -1,8 +1,8 @@
 # EC2 job-sizing benchmark — OpenQuake hazard
 
-> **Status: matrix run complete (2026-07-23), defaults not yet applied.** Results/findings below are from a
-> 20-job run (10 cells × 2 replicates, 4–64 vCPU) on the pinned per-family EC2 queues. Applying the recommendation to
-> `default_submission_args` is a considered follow-up (see *Applied*).
+> **Status: matrix run complete (2026-07-23), recommendation applied.** Results/findings below are from a
+> 20-job run (10 cells × 2 replicates, 4–64 vCPU) on the pinned per-family EC2 queues. `default_submission_args`
+> was re-sized to 8 vCPU on EC2 — see *Applied*.
 
 Sibling of [the coulomb rupture-set benchmark](ec2-sizing-coulomb-rupture-set.md) (#343) and [the crustal
 inversion benchmark](ec2-sizing-crustal-inversion.md) (#323), for the OpenQuake **hazard** task
@@ -120,13 +120,24 @@ toward 32 only when a human is waiting; 64 buys a little more speed at ~5× the 
 
 ## Applied
 
-Not yet applied. Two reasons this is a considered follow-up, not an automatic bump of
-`default_submission_args` (`runzi/tasks/oq_hazard/oq_hazard_task.py`, currently 8 vCPU / 32 GiB / 30 min):
+`runzi/tasks/oq_hazard/oq_hazard_task.py` `default_submission_args`:
 
-1. **Target.** These numbers are EC2; hazard's default is **Fargate**. Adopting "c6a · 4 vCPU" means moving
-   hazard onto EC2, which still wants the EC2-vs-Fargate baseline ADR-0011 left deferred.
-2. **Memory floor.** ~7 GB held for 1 SRM branch × 1057 sites × 10 IMTs; a production run with more sites
-   or IMTs needs headroom before trusting a c-family (2 GB/vCPU) size.
+| field | old | new | why |
+|-------|----:|----:|-----|
+| `ecs_job_definition` | `runzi-fargate-JD` (default) | `runzi-ec2-JD` | move hazard to EC2 — cheaper per vCPU, and the `num_cores` cap now makes it safe |
+| `ecs_vcpu` | 8 | 8 | the cost/latency sweet spot (4→8 is the cheapest speedup; knee at 32) |
+| `java_threads` | 8 | 8 | caps OpenQuake `num_cores` = vCPU on Batch (unchanged; added with the #344 fix) |
+| `ecs_memory` (MiB) | 32768 | 30720 | fits `m6a.2xlarge` (32 GiB) with ECS headroom; keeps ~30 GB for a full 0.1° production grid |
+| `ecs_max_job_time_min` | 30 | 240 | an 8-vCPU run on the 1057-site benchmark took ~42 min; the old limit would kill real jobs |
+
+**Chose 8 vCPU, not the cheapest-per-job 4** — the 4→8 step nearly halves wall time for only ~+22% cost,
+the best value on the curve, so it's the better everyday default. **Kept m-family (30720 MiB), not the
+cheaper c-family (14000)** — hazard is low-memory for the 1057-site benchmark, but a full 0.1° production
+grid (~4000 sites) needs ~30 GB; small-grid jobs can override `ecs_memory` down to land on c6a.
+
+The Fargate→EC2 move is made on the cost evidence plus the `num_cores` fix, **without an EC2-vs-Fargate
+throughput baseline** — the same posture ADR-0011 took for inversions (baseline still formally deferred).
+Disaggregation is unchanged (still Fargate; not benchmarked, expected more memory-hungry).
 
 ## Out of scope
 

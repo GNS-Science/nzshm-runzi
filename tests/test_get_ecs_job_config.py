@@ -146,7 +146,7 @@ class TestValidateFargateResources:
             (2, 16384),
             (4, 30720),
             (8, 16384),
-            (8, 32768),  # the value OQ tasks move to
+            (8, 32768),
             (16, 122880),
             (32, 61440),  # 60 GB
             (32, 122880),  # 120 GB

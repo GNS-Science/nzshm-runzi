@@ -94,10 +94,12 @@ ranking above. `"optimal"` resolves to current-gen families (it picked `r6i`/`m6
   and cost no longer needs the ECS/EC2 lookup or its IAM.
 - **OQ hazard sizing (#344)** — the same benchmark method is now wired for OpenQuake hazard
   (`scripts/ec2_sizing/submit_oq_hazard_matrix.py` + `collect_oq_hazard_results.py`,
-  `docs/benchmarks/ec2-sizing-oq-hazard.md`), matrix = family × vCPU. **Tooling only so far;** once an
-  operator runs the matrix, re-size `default_submission_args` in `runzi/tasks/oq_hazard/oq_hazard_task.py`
-  (currently 8 vCPU / 32 GiB / 30 min on Fargate) and update this ADR (or add ADR-0012). Any Fargate→EC2
-  move for hazard would still want a Fargate baseline, as the inversion baseline above was left deferred.
+  `docs/benchmarks/ec2-sizing-oq-hazard.md`), matrix = family × vCPU. **Run complete (2026-07-23),
+  recommendation applied:** hazard `default_submission_args` moved to **EC2 (`runzi-ec2-JD`), 8 vCPU /
+  30720 MiB / 240 min**. Findings: compute-bound; the 4→8 step is the cheapest speedup and the knee is at
+  32; c6a is cheapest but production 0.1° grids (~4000 sites) need m-family memory (hence 30720). Like the
+  inversion move above, the Fargate→EC2 switch rests on cost + the num_cores fix **without an EC2-vs-Fargate
+  baseline** (still deferred). Disagg stays on Fargate (not benchmarked).
   - **OQ core-detection fix (shipped with the tooling).** The first matrix run exposed a real
     **production** bug for *any* OpenQuake job on EC2: Batch limits CPU with shares, not cpuset, so the
     container sees the **host's** cores; OQ sized its processpool to the whole instance and OOM-killed the

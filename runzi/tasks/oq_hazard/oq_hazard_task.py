@@ -20,7 +20,7 @@ from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 from toshi_hazard_store.scripts.ths_rlz_import import store_hazard
 
-from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.local_config import (
     API_URL,
     ECR_DIGEST,
@@ -51,14 +51,21 @@ log = logging.getLogger(__name__)
 
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.PYTHON,
-    ecs_max_job_time_min=30,
-    ecs_memory=32768,
+    # 8 vCPU is the cost/latency sweet spot from the #344 benchmark (docs/benchmarks/ec2-sizing-oq-hazard.md):
+    # the 4->8 step nearly halves wall time for ~+22% cost — the cheapest speedup on the curve — and the knee
+    # is at 32. Defaults to EC2 (not Fargate), which is safe now that java_threads caps OpenQuake's num_cores
+    # to the container's vCPU: without it, on EC2 the container sees the host's cores and OOMs (#344).
+    ecs_job_definition=EC2_JOB_DEFINITION,
     ecs_vcpu=8,
-    # Core budget shipped to the worker; on AWS Batch it caps OpenQuake's openquake.cfg num_cores (#344).
-    # Harmless on Fargate (matches the microVM's cores); required on EC2, where the container sees the
-    # host's cores and OQ would otherwise OOM the memory-capped container. No effect on local runs (the cap
-    # is Batch-only — see execute_openquake._num_cores_cap).
     java_threads=8,
+    # 30720 MiB fits m6a.2xlarge (32 GiB) with ECS agent/OS headroom. Hazard is low-memory per site (the
+    # benchmark's 1057-site job ran in <8 GB), but a full 0.1-deg production grid (~4000 sites) needs ~30 GB,
+    # so we keep m-family headroom rather than the cheaper c-family. For small grids (<~1500 sites) drop to
+    # ~14000 to land on c6a (cheapest per the benchmark).
+    ecs_memory=30720,
+    # 240 min: an 8-vCPU run on the ~1057-site benchmark took ~42 min, and a full production grid is several
+    # times larger — the old 30 min limit would kill real jobs.
+    ecs_max_job_time_min=240,
 )
 
 
