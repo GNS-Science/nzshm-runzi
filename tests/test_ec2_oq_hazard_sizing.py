@@ -35,9 +35,9 @@ collect = _load('collect_oq_hazard_results')
 
 
 class TestBuildCells:
-    def test_full_grid_size_is_families_x_vcpus_x_replicates(self):
+    def test_full_grid_size_is_families_x_default_vcpus_x_replicates(self):
         cells = submit.build_cells(replicates=2)
-        assert len(cells) == len(submit.DEFAULT_FAMILIES) * len(submit.VCPUS) * 2
+        assert len(cells) == len(submit.DEFAULT_FAMILIES) * len(submit.DEFAULT_VCPUS) * 2
 
     def test_cells_have_no_thread_field(self):
         # OpenQuake auto-parallelises across container vCPUs; there is no thread knob to pin.
@@ -55,7 +55,12 @@ class TestBuildCells:
     def test_families_filter_selects_only_given_families(self):
         cells = submit.build_cells(1, families=['c6a'])
         assert {c.family for c in cells} == {'c6a'}
-        assert len(cells) == len(submit.VCPUS)
+        assert len(cells) == len(submit.DEFAULT_VCPUS)
+
+    def test_64_vcpu_is_an_allowed_opt_in_but_not_in_the_default_grid(self):
+        assert 64 in submit.VCPUS and 64 not in submit.DEFAULT_VCPUS  # --vcpus 64 accepted; excluded by default
+        cells = submit.build_cells(1, families=['c6a'], vcpus=[64])
+        assert [c.vcpu for c in cells] == [64]
 
     def test_vcpus_filter_selects_only_given_vcpus(self):
         cells = submit.build_cells(1, families=['m6a'], vcpus=[8])

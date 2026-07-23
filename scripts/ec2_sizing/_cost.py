@@ -73,6 +73,8 @@ INSTANCE_SPECS: dict[str, tuple[int, float]] = {
     'c6a.8xlarge': (32, 1.224),
     'c6a.12xlarge': (48, 1.836),
     'c6a.16xlarge': (64, 2.448),
+    'c6a.24xlarge': (96, 3.672),
+    'c6a.32xlarge': (128, 4.896),  # Batch packed a 64-vCPU benchmark job here (#344); per-vCPU rate size-independent
     'm6a.large': (2, 0.0864),
     'm6a.xlarge': (4, 0.1728),
     'm6a.2xlarge': (8, 0.3456),
@@ -80,6 +82,8 @@ INSTANCE_SPECS: dict[str, tuple[int, float]] = {
     'm6a.8xlarge': (32, 1.3824),
     'm6a.12xlarge': (48, 2.0736),
     'm6a.16xlarge': (64, 2.7648),
+    'm6a.24xlarge': (96, 4.1472),
+    'm6a.32xlarge': (128, 5.5296),  # Batch may pack a 64-vCPU benchmark job here; per-vCPU rate matches the 16xlarge
     'r6a.large': (2, 0.1134),
     'r6a.xlarge': (4, 0.2268),
     'r6a.2xlarge': (8, 0.4536),

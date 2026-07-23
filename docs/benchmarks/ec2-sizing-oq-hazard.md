@@ -1,9 +1,8 @@
 # EC2 job-sizing benchmark — OpenQuake hazard
 
-> **Status: tooling landed, run pending.** This document defines the method and holds the results table;
-> the *Results / Findings / Recommendation / Applied* sections are filled in after an operator runs the
-> matrix (see `scripts/ec2_sizing/README.md`, "OQ hazard" section). Until then, treat the numbers below as
-> placeholders.
+> **Status: matrix run complete (2026-07-23), defaults not yet applied.** Results/findings below are from a
+> 20-job run (10 cells × 2 replicates, 4–64 vCPU) on the pinned per-family EC2 queues. Applying the recommendation to
+> `default_submission_args` is a considered follow-up (see *Applied*).
 
 Sibling of [the coulomb rupture-set benchmark](ec2-sizing-coulomb-rupture-set.md) (#343) and [the crustal
 inversion benchmark](ec2-sizing-crustal-inversion.md) (#323), for the OpenQuake **hazard** task
@@ -31,7 +30,8 @@ matrix run had every cell report `Using 64 processpool workers` and OOM-kill (`o
   cleanest parallel axis in classical PSHA (each is independent). ~1057 sites lands well under the 240-min
   job limit; it's still far short of the full 2022 model's ~24 h 3,741-site (`NZ_0_1`) full-LT grid. Tune
   from a `--limit 1` pilot if the job is too short/long or a low-memory (c-family) cell OOMs.
-- **Matrix:** instance family {`c6a`, `m6a`} × vCPU {4, 8, 16, 32} × 2 replicates = 16 jobs. Families are
+- **Matrix:** instance family {`c6a`, `m6a`} × vCPU {4, 8, 16, 32} × 2 replicates = 16 jobs, plus a follow-up
+  {`c6a`, `m6a`} × 64 vCPU × 2 = 4 jobs (`--vcpus 64`) to confirm the knee. Families are
   **pinned** via per-family Batch queues (`terraform/ec2-sizing-benchmark/`), so the vCPU cost curve isn't
   polluted by Batch's allocation strategy picking different families per cell. Memory is sized to ~fill each
   family's per-vCPU RAM (c ≈ 1.8, m ≈ 3.8 GB/vCPU), so a **c-family OOM is the finding** that hazard needs
@@ -48,32 +48,85 @@ matrix run had every cell report `Using 64 processpool workers` and OOM-kill (`o
 
 ## Results
 
-_(placeholder — fill from `collect_oq_hazard_results.py` output; mean of 2 replicates per cell)_
+Mean of 2 replicates per cell, over two runs (4–32 vCPU, then 64 via `--vcpus 64`). Every cell passed the
+worker-count check (`oq_cores == vcpu`) — the `num_cores` cap took on all 20 jobs, and none OOM'd. Cost is
+the fair-share per-vCPU rate, so it is exact even though Batch packed jobs onto larger shared instances
+(`instance` below is the exact-fit size the fair-share cost corresponds to; see the co-tenancy note under
+Findings).
 
 | family | vCPU | instance      | mean wall | mean $/job |
 |--------|-----:|---------------|----------:|-----------:|
-| c6a    |    4 | c6a.xlarge    |         — |          — |
-| c6a    |    8 | c6a.2xlarge   |         — |          — |
-| c6a    |   16 | c6a.4xlarge   |         — |          — |
-| c6a    |   32 | c6a.8xlarge   |         — |          — |
-| m6a    |    4 | m6a.xlarge    |         — |          — |
-| m6a    |    8 | m6a.2xlarge   |         — |          — |
-| m6a    |   16 | m6a.4xlarge   |         — |          — |
-| m6a    |   32 | m6a.8xlarge   |         — |          — |
+| c6a    |    4 | c6a.xlarge    |   4_081 s |    $0.1735 |
+| c6a    |    8 | c6a.2xlarge   |   2_496 s |    $0.2121 |
+| c6a    |   16 | c6a.4xlarge   |   1_781 s |    $0.3028 |
+| c6a    |   32 | c6a.8xlarge   |   1_083 s |    $0.3683 |
+| c6a    |   64 | c6a.16xlarge  |     761 s |    $0.5175 |
+| m6a    |    4 | m6a.xlarge    |   4_309 s |    $0.2069 |
+| m6a    |    8 | m6a.2xlarge   |   2_549 s |    $0.2447 |
+| m6a    |   16 | m6a.4xlarge   |   1_599 s |    $0.3070 |
+| m6a    |   32 | m6a.8xlarge   |   1_003 s |    $0.3851 |
+| m6a    |   64 | m6a.16xlarge  |     751 s |    $0.5771 |
 
 ## Findings
 
-_(to be written from the results — mirror the coulomb doc's structure: memory floor / OOM, parallel-scaling
-knee, family comparison.)_
+**1. Compute-bound and low-memory.** No cell OOM'd — including c-family at ~1.8 GB/vCPU (a 4-vCPU c6a job
+ran the full 1057-site, 21-gsim calc in ~7 GB). Hazard does not need the 32 GiB the current default hands
+it; the memory dimension the issue worried about is a non-issue for a single SRM branch at this site count.
+(The `num_cores` cap is what makes this true on EC2 — uncapped, OQ sized its pool to the host's cores and
+OOM'd every cell; see the Concurrency section above and #344.)
+
+**2. Scales sub-linearly; the knee is at 32 vCPU.** Speedup vs 4 vCPU (c6a): 8→1.64×, 16→2.29×, 32→3.77×,
+64→5.36× (16× the cores for ~5.4× the speed). Marginal cost of buying speed, per step:
+
+| step (c6a) | time saved | extra $ | $ per minute saved |
+|------------|-----------:|--------:|-------------------:|
+| 4 → 8      |   26.4 min |  +0.039 |             0.0015 |
+| 8 → 16     |   11.9 min |  +0.091 |             0.0076 |
+| 16 → 32    |   11.6 min |  +0.066 |             0.0056 |
+| **32 → 64**|  **5.4 min**| **+0.149** |         **0.0278** |
+
+The first doubling (4→8) nearly halves wall time for almost nothing (~0.15 ¢/min); speed stays cheap
+(~½–¾ ¢/min saved) up to 32. Then **32→64 is the cliff — ~5× worse value per minute** (2.8 ¢) for the least
+time back, the same diseconomic wall the coulomb builder hit at 64. So the knee is at **32 vCPU**; 64 buys a
+little more speed at a poor rate. Cost per job rises monotonically with cores (sub-linear speedup × constant
+per-vCPU price), so the cheapest job is always the smallest.
+
+**3. Family: c6a cheapest everywhere; m6a faster at the top.** c6a is cheaper at every size (compute-bound →
+cheaper AMD compute wins). m6a edges ahead on *speed* at ≥16 vCPU (1599 vs 1781 s at 16; 1003 vs 1083 s at
+32; 751 vs 761 s at 64) — more memory bandwidth helping once many cores contend — but only inside the
+pay-more-for-latency zone.
+
+**Co-tenancy note.** The pinned CE (`instance_types = ["c6a"]`, `BEST_FIT_PROGRESSIVE`, `max_vcpus = 64+`)
+packed jobs onto larger shared boxes rather than launching exact-fit instances — the c6a 4/8/16 cells onto
+one `c6a.16xlarge`, and the two 64-vCPU replicates onto a 128-vCPU `c6a.32xlarge` (exactly filling it, so no
+oversubscription). Fair-share cost is size-independent within a family, so **cost is unaffected**; the
+`num_cores` cap kept each job to its own vCPU. Wall times are treated as good here; a fully rigorous run
+would pin one job per instance (per-size CEs, or serial submission) to rule out cross-job cache/bandwidth
+contention.
 
 ## Recommendation
 
-_(to be written — the goal→pick→$/job→wall table, then the chosen default.)_
+| goal | pick | $/job | wall |
+|------|------|------:|-----:|
+| **cheapest** | c6a · 4 vCPU | $0.174 | 68 min |
+| the one cheap win (halve the time) | c6a · 8 vCPU | $0.212 | 42 min |
+| the knee (last economical step) | c6a · 32 vCPU | $0.368 | 18 min |
+| fastest (past the knee) | m6a · 64 vCPU | $0.577 | 13 min |
+
+**c6a is the family.** For batch throughput (a real hazard run fans out over many SRM branches → many
+jobs, so cheapest-per-job = cheapest total), the default should optimise $/job: **c6a · 4 vCPU**, memory
+sized to the ~7 GB the calc used. Take the 4→8 step when latency matters (halves wall time for ~4 ¢); push
+toward 32 only when a human is waiting; 64 buys a little more speed at ~5× the cost-per-minute, so skip it.
 
 ## Applied
 
-_(follow-up PR — re-size `default_submission_args` in `runzi/tasks/oq_hazard/oq_hazard_task.py` from the
-current 8 vCPU / 32 GiB / 30 min Fargate defaults, and update ADR-0011. Not part of the tooling PR.)_
+Not yet applied. Two reasons this is a considered follow-up, not an automatic bump of
+`default_submission_args` (`runzi/tasks/oq_hazard/oq_hazard_task.py`, currently 8 vCPU / 32 GiB / 30 min):
+
+1. **Target.** These numbers are EC2; hazard's default is **Fargate**. Adopting "c6a · 4 vCPU" means moving
+   hazard onto EC2, which still wants the EC2-vs-Fargate baseline ADR-0011 left deferred.
+2. **Memory floor.** ~7 GB held for 1 SRM branch × 1057 sites × 10 IMTs; a production run with more sites
+   or IMTs needs headroom before trusting a c-family (2 GB/vCPU) size.
 
 ## Out of scope
 

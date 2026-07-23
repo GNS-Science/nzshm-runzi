@@ -51,11 +51,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-# vCPU counts to test. Spans 8x to expose the parallel-scaling knee: where extra cores stop cutting wall
-# time enough to justify their cost. (No 64: OQ hazard for one SRM branch is unlikely to scale that far,
-# and the pinned families' .16xlarge is a big spend per cell — add it via --vcpus 64 if the curve is
-# still falling at 32.)
-VCPUS = (4, 8, 16, 32)
+# Allowed --vcpus values (argparse choices). Spans 16x to expose the parallel-scaling knee.
+VCPUS = (4, 8, 16, 32, 64)
+# Default grid. Excludes 64: the 2026-07 run put the knee at 32 (32->64 is a ~5x-worse-value cliff, like
+# coulomb's), so 64 is opt-in via `--vcpus 64` — worth adding only if a new workload is still scaling at 32.
+DEFAULT_VCPUS = (4, 8, 16, 32)
 
 # family -> MB per vCPU. Sized to ~fill each family's per-vCPU RAM (leaving agent headroom under the
 # instance ceiling: c/m/r ~= 2/4/8 GB per vCPU), so a c-family OOM is the signal that hazard needs more
@@ -89,7 +89,7 @@ class Cell:
 def build_cells(replicates: int, families: list[str] | None = None, vcpus: list[int] | None = None) -> list[Cell]:
     """Return the families x vcpus x replicates grid, in a stable order (all families/vCPUs unless given)."""
     families = families if families is not None else list(DEFAULT_FAMILIES)
-    vcpus = vcpus if vcpus is not None else list(VCPUS)
+    vcpus = vcpus if vcpus is not None else list(DEFAULT_VCPUS)
     cells: list[Cell] = []
     for family in families:
         mb_per_vcpu = FAMILY_MB_PER_VCPU[family]
@@ -193,7 +193,7 @@ def main(argv: list[str] | None = None) -> int:
         type=int,
         choices=list(VCPUS),
         default=None,
-        help='Which vCPU counts to include (default all). OpenQuake parallelism follows this.',
+        help=f'Which vCPU counts to include (default {list(DEFAULT_VCPUS)}; 64 is opt-in, past the knee).',
     )
     parser.add_argument(
         '--queue-prefix',
@@ -234,7 +234,7 @@ def main(argv: list[str] | None = None) -> int:
         cells = cells[: args.limit]
 
     families = args.families if args.families is not None else list(DEFAULT_FAMILIES)
-    vcpus = args.vcpus if args.vcpus is not None else list(VCPUS)
+    vcpus = args.vcpus if args.vcpus is not None else list(DEFAULT_VCPUS)
     target = f'{args.queue_prefix}-*-Q' if args.queue_prefix is not None else job_definition
     print(
         f'submitting {len(cells)} of {full_grid} cells to {target} '
