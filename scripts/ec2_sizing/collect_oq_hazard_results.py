@@ -2,9 +2,12 @@
 """Collect and analyse the EC2 job-sizing benchmark for the OpenQuake **hazard** task (#344).
 
 OQ hazard runs *to completion*, so the metric is **wall-clock time** (lower = better) and the efficiency
-figure is **cost per completed hazard job**. Both come straight from the AWS Batch job summary + the
-instance type Batch placed the job on — there is **no Toshi log to parse** (that's inversion-only), and
-no thread column (OpenQuake parallelism follows ``ecs_vcpu``).
+figure is **cost per completed hazard job**. Duration + instance type come straight from the AWS Batch job
+summary — there is **no Toshi log to parse** (that's inversion-only).
+
+As a guardrail, each row also carries ``oq_cores`` — the ``Using N processpool workers`` count OpenQuake
+logged to CloudWatch. It must equal the cell's vCPU; if it doesn't, the num_cores cap didn't take (OQ ran
+on the host's cores) and that cell's wall time is invalid (#344). Mismatches are flagged in the summary.
 
 Given the manifest written by ``submit_oq_hazard_matrix.py``, this builds one row per cell with: the EC2
 instance type, wall duration, and the fair-share cost. Emits a CSV and prints a per-cell summary ranked
@@ -25,16 +28,24 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import statistics
 import sys
 from collections import defaultdict
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
 from botocore.exceptions import ClientError
 
 from runzi.arguments import DEFAULT_JOB_QUEUE, EC2_JOB_QUEUE
-from runzi.aws.batch_query import instance_type_by_job_id, jobs_for_general_task
+from runzi.aws.batch_query import (
+    JobNotFound,
+    LogStreamNotAvailable,
+    instance_type_by_job_id,
+    job_log_events,
+    jobs_for_general_task,
+)
 
 # These scripts are loaded by file path (not as a package), so bootstrap the sibling module onto sys.path.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -42,6 +53,34 @@ from _cost import INSTANCE_SPECS, duration_seconds, job_cost_usd  # noqa: E402
 
 # Exact-fit instance size for a given vCPU (job vCPU = instance vCPU on a pinned, one-job-per-size run).
 VCPU_TO_SIZE = {2: 'large', 4: 'xlarge', 8: '2xlarge', 16: '4xlarge', 32: '8xlarge', 48: '12xlarge', 64: '16xlarge'}
+
+
+_OQ_WORKERS_RE = re.compile(r'Using (\d+) processpool workers')
+
+
+def parse_oq_worker_count(lines: Iterable[str]) -> int | None:
+    """The processpool worker count OpenQuake reported (``Using N processpool workers``), or ``None``.
+
+    Returns the first match and stops — that line prints early (right after the engine version), so on a
+    live CloudWatch stream we read a few KB, not the whole OQ log.
+    """
+    for line in lines:
+        match = _OQ_WORKERS_RE.search(line)
+        if match:
+            return int(match.group(1))
+    return None
+
+
+def _oq_worker_count(job_id: str) -> int | None:
+    """The worker count OpenQuake used for ``job_id`` from its CloudWatch log, or ``None`` if unavailable.
+
+    A missing/aged-out/permission-denied log must not break collection — it just leaves ``oq_cores`` blank.
+    """
+    try:
+        return parse_oq_worker_count(job_log_events(job_id))
+    except (JobNotFound, LogStreamNotAvailable, ClientError) as exc:
+        print(f'warning: no OpenQuake log for job {job_id}, oq_cores will be blank: {exc}', file=sys.stderr)
+        return None
 
 
 def expected_instance_type(family: str | None, vcpu: int | None) -> str | None:
@@ -98,11 +137,15 @@ def collect_rows(
         instance_type = instance_type_override or (instance_types.get(job_id) if job_id else None) or derived
         seconds = duration_seconds(summary)
         cost = job_cost_usd(instance_type, cell['vcpu'], seconds)
+        # Ground-truth check that the num_cores cap took (#344): OpenQuake logs the worker count it used.
+        # If it != the cell's vCPU, OQ ran on the host's cores and this cell's wall time is invalid.
+        oq_cores = _oq_worker_count(job_id) if job_id else None
         results.append(
             {
                 'cell_id': cell['cell_id'],
                 'family': cell['family'],
                 'vcpu': cell['vcpu'],
+                'oq_cores': oq_cores,
                 'memory_mb': cell['memory_mb'],
                 'replicate': cell['replicate'],
                 'general_task_id': gt_id,
@@ -120,6 +163,7 @@ FIELDNAMES = [
     'cell_id',
     'family',
     'vcpu',
+    'oq_cores',
     'memory_mb',
     'replicate',
     'general_task_id',
@@ -169,10 +213,17 @@ def print_summary(rows: list[dict[str, Any]]) -> None:
         costs = [r['cost_usd'] for r in cell_rows if r['cost_usd'] is not None]
         statuses = sorted({r['status'] for r in cell_rows if r['status']})
         instances = sorted({r['instance_type'] for r in cell_rows if r['instance_type']})
+        # Observed OpenQuake worker counts. Should all equal vCPU; a trailing '!' means the num_cores cap
+        # did not take on some replicate (OQ used the host's cores) and that cell's wall time is invalid.
+        cores_vals = sorted({r['oq_cores'] for r in cell_rows if r['oq_cores'] is not None})
+        cores_str = ','.join(str(c) for c in cores_vals) or '-'
+        if cores_vals and not all(c == vcpu for c in cores_vals):
+            cores_str += '!'
         summary.append(
             {
                 'family': family,
                 'vcpu': vcpu,
+                'cores': cores_str,
                 'n': len(cell_rows),
                 'instances': ','.join(instances) or '-',
                 'status': ','.join(statuses) or '-',
@@ -183,13 +234,16 @@ def print_summary(rows: list[dict[str, Any]]) -> None:
     # Cheapest first; unpriced cells (mean_cost None) sort to the bottom.
     summary.sort(key=lambda s: (s['mean_cost'] is None, s['mean_cost'] or 0.0))
 
-    header = f'{"family":>7} {"vCPU":>4} {"n":>3} {"instances":>16} {"status":>18} {"mean_secs":>10} {"mean_cost":>11}'
+    header = (
+        f'{"family":>7} {"vCPU":>4} {"cores":>6} {"n":>3} {"instances":>16} '
+        f'{"status":>18} {"mean_secs":>10} {"mean_cost":>11}'
+    )
     print(header)
     print('-' * len(header))
     for s in summary:
         print(
-            f'{s["family"]:>7} {s["vcpu"]:>4} {s["n"]:>3} {s["instances"]:>16} {s["status"]:>18} '
-            f'{_fmt(s["mean_duration"], "s"):>10} {_fmt_cost(s["mean_cost"]):>11}'
+            f'{s["family"]:>7} {s["vcpu"]:>4} {s["cores"]:>6} {s["n"]:>3} {s["instances"]:>16} '
+            f'{s["status"]:>18} {_fmt(s["mean_duration"], "s"):>10} {_fmt_cost(s["mean_cost"]):>11}'
         )
 
 
@@ -238,6 +292,18 @@ def main(argv: list[str] | None = None) -> int:
     )
     if unpriced:
         print(f'warning: no price for {", ".join(unpriced)} — add to _cost.py for their cost.\n', file=sys.stderr)
+
+    # OpenQuake must have used exactly the requested vCPU; anything else means the num_cores cap didn't take
+    # (OQ ran on the host's cores) and that cell's wall time is invalid — exclude it before reading the curve.
+    mismatched = [r for r in rows if r['oq_cores'] is not None and r['oq_cores'] != r['vcpu']]
+    if mismatched:
+        print(
+            'warning: cells where OpenQuake used a different core count than requested (INVALID wall time):',
+            file=sys.stderr,
+        )
+        for r in mismatched:
+            print(f"  {r['cell_id']}: used {r['oq_cores']} workers, expected {r['vcpu']}", file=sys.stderr)
+        print('', file=sys.stderr)
 
     print_summary(rows)
     return 0

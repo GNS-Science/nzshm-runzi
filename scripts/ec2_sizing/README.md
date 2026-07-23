@@ -257,4 +257,6 @@ note the ~16 throwaway uploads for cleanup, plus one SRM logic-tree file per cel
 - `srm_single_branch_TEST.json` — the single-branch SRM, co-located so the template's relative path resolves.
 - `submit_oq_hazard_matrix.py` — renders + submits the family × vCPU matrix, writes `oq_hazard_manifest.json`.
 - `collect_oq_hazard_results.py` — joins the manifest to live Batch/EC2 data → CSV + summary (wall time +
-  cost, no Toshi, no thread column). Self-contained, sharing only `_cost.py`.
+  cost, no Toshi). Self-contained, sharing only `_cost.py`. Also reads each job's CloudWatch log for the
+  `Using N processpool workers` line (`oq_cores` column) and flags any cell where it ≠ vCPU — proof the
+  num_cores cap took; a flagged cell's wall time is invalid.

@@ -3,9 +3,10 @@
 The scripts live under ``scripts/ec2_sizing/`` (not on the package path), so they're loaded by file
 path. Only the side-effect-free grid/render/analysis logic is covered — submit/collect I/O needs live AWS.
 
-OQ hazard runs *to completion* and OpenQuake auto-parallelises across the container's vCPUs (there is no
-thread arg to pin, unlike the coulomb builder), so the matrix is family x vCPU and the metric is
-wall-clock time from the Batch job summary — no Toshi log to parse.
+OQ hazard runs *to completion*, so the matrix is family x vCPU and the metric is wall-clock time from the
+Batch job summary (no Toshi log to parse). On EC2 the container sees the host's cores, so each cell ships
+``java_threads = vcpu`` to cap OpenQuake's num_cores (#344); the collector reads back the worker count OQ
+logged (``oq_cores``) to confirm the cap took.
 """
 
 import importlib.util
@@ -13,6 +14,8 @@ import json
 import sys
 from pathlib import Path
 from types import ModuleType
+
+import pytest
 
 _SCRIPTS = Path(__file__).resolve().parent.parent / 'scripts' / 'ec2_sizing'
 
@@ -129,7 +132,58 @@ class TestTemplate:
         assert template['imts'] and template['imtls'] and template['locations']
 
 
+class TestOqWorkerCount:
+    """OpenQuake logs ``Using N processpool workers`` — the ground truth that the num_cores cap took (#344)."""
+
+    def test_parses_the_worker_count_from_a_log_line(self):
+        lines = ['INFO:root:Using engine version 3.23.4', 'WARNING:root:Using 8 processpool workers', 'more']
+        assert collect.parse_oq_worker_count(lines) == 8
+
+    def test_returns_the_first_match_and_stops(self):
+        # A generator that would blow up if consumed past the match proves we stop early (cheap log read).
+        def _lines():
+            yield 'WARNING:root:Using 16 processpool workers'
+            raise AssertionError('must stop iterating at the first match')
+
+        assert collect.parse_oq_worker_count(_lines()) == 16
+
+    def test_none_when_absent(self):
+        assert collect.parse_oq_worker_count(['no worker line here', 'still none']) is None
+
+
 class TestCollectRows:
+    @pytest.fixture(autouse=True)
+    def _default_no_logs(self, monkeypatch):
+        # Default: no CloudWatch logs, so oq_cores is None and tests never touch AWS. Tests that care about
+        # the worker-count check override collect.job_log_events themselves.
+        monkeypatch.setattr(collect, 'job_log_events', lambda job_id: iter(()))
+
+    def test_captures_oq_worker_count_from_the_job_log(self, monkeypatch):
+        self._patch_batch(monkeypatch)
+        monkeypatch.setattr(
+            collect, 'job_log_events', lambda job_id: iter(['WARNING:root:Using 8 processpool workers'])
+        )
+        row = collect.collect_rows(self._manifest())[0]
+        assert row['oq_cores'] == 8  # matches the cell's 8 vCPU -> the cap took
+
+    def test_records_a_worker_count_mismatch(self, monkeypatch):
+        # The cap silently didn't take: OQ used the host's cores. The row must carry the observed count so
+        # the summary can flag the (now invalid) wall time.
+        self._patch_batch(monkeypatch)
+        monkeypatch.setattr(collect, 'job_log_events', lambda job_id: iter(['Using 64 processpool workers']))
+        row = collect.collect_rows(self._manifest())[0]  # cell is 8 vCPU
+        assert row['oq_cores'] == 64
+
+    def test_oq_cores_none_when_log_unavailable(self, monkeypatch):
+        self._patch_batch(monkeypatch)
+
+        def _no_stream(job_id):
+            raise collect.LogStreamNotAvailable(job_id)
+
+        monkeypatch.setattr(collect, 'job_log_events', _no_stream)
+        row = collect.collect_rows(self._manifest())[0]
+        assert row['oq_cores'] is None  # graceful: a missing/aged log doesn't break collection
+
     def _manifest(self, job_queue: str | None = 'ec2sizing-c6a-Q'):
         return {
             'rows': [

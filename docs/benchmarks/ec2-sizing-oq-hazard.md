@@ -40,6 +40,9 @@ matrix run had every cell report `Using 64 processpool workers` and OOM-kill (`o
 - **Cost** is analytical fair-share, `(instance $/hr ÷ instance vCPU) × job vCPU × wall-hours` — the cost a
   job would carry on a fully-packed production instance. Because $/hr scales linearly with size, the
   per-vCPU rate is constant within a family, so the cost is exact regardless of the size Batch launched.
+- **Validity check.** The collector reads each job's CloudWatch log for OpenQuake's `Using N processpool
+  workers` line (`oq_cores`) and flags any cell where it ≠ vCPU — i.e. where the `num_cores` cap silently
+  didn't take and the wall time is meaningless. Confirm the summary shows no `!` before trusting a curve.
 - Tooling: `scripts/ec2_sizing/submit_oq_hazard_matrix.py` + `collect_oq_hazard_results.py` (see the
   `scripts/ec2_sizing/README.md` OQ-hazard section to reproduce).
 
