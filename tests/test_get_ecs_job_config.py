@@ -405,7 +405,7 @@ class TestTaskRuntimeArgsSerialization:
 
     def test_round_trips_through_worker_serialization(self):
         """Reproduces the worker path: model_dump(mode='json') then TaskRuntimeArgs(**dumped)."""
-        args = TaskRuntimeArgs(general_task_id='GT-1', task_count=3, use_api=True, num_cores=16)
+        args = TaskRuntimeArgs(general_task_id='GT-1', task_count=3, use_api=True, java_threads=16, allocated_vcpu=8)
         rebuilt = TaskRuntimeArgs(**args.model_dump(mode='json'))
         assert rebuilt == args
 
@@ -413,4 +413,4 @@ class TestTaskRuntimeArgsSerialization:
         dumped = TaskRuntimeArgs(use_api=True).model_dump(mode='json')
         assert 'ecs_job_queue' not in dumped
         assert 'ecs_compute_environment' not in dumped
-        assert set(dumped) == {'general_task_id', 'task_count', 'use_api', 'num_cores'}
+        assert set(dumped) == {'general_task_id', 'task_count', 'use_api', 'java_threads', 'allocated_vcpu'}

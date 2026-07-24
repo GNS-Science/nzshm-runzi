@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
-    num_cores=16,
+    java_threads=16,
     jvm_heap_max=32,
     ecs_max_job_time_min=10,
     ecs_memory=30720,

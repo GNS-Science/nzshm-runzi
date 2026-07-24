@@ -97,16 +97,17 @@ ranking above. `"optimal"` resolves to current-gen families (it picked `r6i`/`m6
   recommendation applied:** hazard `default_submission_args` moved to **EC2 (`runzi-ec2-JD`), 8 vCPU /
   30720 MiB / 240 min**. Findings: compute-bound; the 4→8 step is the cheapest speedup and the knee is at
   32; c6a is cheapest but production 0.1° grids (~4000 sites) need m-family memory (hence 30720). Like the
-  inversion move above, the Fargate→EC2 switch rests on cost + the num_cores fix **without an EC2-vs-Fargate
+  inversion move above, the Fargate→EC2 switch rests on cost + the vCPU-cap fix **without an EC2-vs-Fargate
   baseline** (still deferred). Disagg gets the same defaults as a starting point (not yet independently
   benchmarked — expected more memory-hungry, so re-sizing may follow).
-  - **OQ core-detection fix (shipped with the tooling).** The first matrix run exposed a real
-    **production** bug for *any* OpenQuake job on EC2: Batch limits CPU with shares, not cpuset, so the
-    container sees the **host's** cores; OQ sized its processpool to the whole instance and OOM-killed the
-    memory-capped container (`oq engine --run` → `-9`). Fix: `execute_openquake` now caps OQ's
-    `openquake.cfg` `[distribution] num_cores` to a shipped core budget (`_cap_oq_num_cores`), fed from the
-    `num_cores` runtime arg; `oq_hazard_task` / `oq_disagg_task` default `num_cores=8` (=vCPU). No-op
-    on Fargate (the microVM already exposes exactly the requested vCPU); required on EC2.
+  - **OQ core-detection fix (shipped with the tooling; see [0012](0012-openquake-cores-from-ecs-vcpu.md)).**
+    The first matrix run exposed a real **production** bug for *any* OpenQuake job on EC2: Batch limits CPU
+    with shares, not cpuset, so the container sees the **host's** cores; OQ sized its processpool to the
+    whole instance and OOM-killed the memory-capped container (`oq engine --run` → `-9`). Fix:
+    `execute_openquake` now caps OQ's `openquake.cfg` `[distribution] num_cores` to the container's
+    requested vCPU (`_cap_oq_num_cores`), derived from `ecs_vcpu` and shipped to the worker as the
+    `allocated_vcpu` runtime arg (not a separate hand-set field). No-op on Fargate (the microVM already
+    exposes exactly the requested vCPU); required on EC2.
 - **Per-workload targets / Spot** — if OQ ever needs EC2 with a different profile, give it its own
   target rather than widening this list; Spot remains a separate cost lever (ADR-0008).
 - **Refresh `INSTANCE_SPECS` prices** (`# last verified:` marker) before publishing absolute costs.

@@ -11,10 +11,12 @@ Field partition (by where each field is actually read):
 
 | `TaskRuntimeArgs` (shipped → worker) | `SubmissionArgs` (submitter-only) |
 |---|---|
-| `general_task_id`, `task_count`, `use_api`, `java_gateway_port`, `num_cores` | `task_language`, `jvm_heap_max`, `ecs_max_job_time_min`, `ecs_memory`, `ecs_vcpu`, `ecs_job_definition`, `ecs_job_queue`, `ecs_compute_environment`, `ecs_extra_env` (+ the `resolved_*` derivation) |
+| `general_task_id`, `task_count`, `use_api`, `java_gateway_port`, `java_threads`, `allocated_vcpu` | `task_language`, `jvm_heap_max`, `ecs_max_job_time_min`, `ecs_memory`, `ecs_vcpu`, `ecs_job_definition`, `ecs_job_queue`, `ecs_compute_environment`, `ecs_extra_env` (+ the `resolved_*` derivation) |
 
-`num_cores` is declared per Java task module on `SubmissionArgs` and copied into `TaskRuntimeArgs`
+`java_threads` is declared per Java task module on `SubmissionArgs` and copied into `TaskRuntimeArgs`
 by `build_tasks` (it's the one worker-read field that originates from a module's default config).
+`allocated_vcpu` is `build_tasks`' derivation of `SubmissionArgs.ecs_vcpu`, shipped so OpenQuake can cap
+its processpool to the requested vCPU (see [0012](0012-openquake-cores-from-ecs-vcpu.md)).
 
 ## Two deciding inputs
 

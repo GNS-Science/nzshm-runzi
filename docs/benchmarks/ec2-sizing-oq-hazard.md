@@ -14,10 +14,11 @@ extra cores stop paying?*
 Fargate (OQ's default) that's exactly the container's vCPU. But on **EC2** — where this benchmark runs —
 AWS Batch limits CPU with shares, not cpuset pinning, so the container sees the **host's** cores; the first
 matrix run had every cell report `Using 64 processpool workers` and OOM-kill (`oq engine --run` exited
-`-9`) the memory-capped container. So OQ must be told its core budget explicitly, exactly like coulomb's
-`setNumThreads`: each cell ships `num_cores = vcpu`, and `execute_openquake` writes it to the
-`openquake.cfg` `[distribution] num_cores` that `oq` reads (`_cap_oq_num_cores`). With that, `num_cores`
-*is* the vCPU axis; the matrix stays family × vCPU.
+`-9`) the memory-capped container. So OQ must be told its core budget explicitly. That budget is exactly
+the vCPU the job requested (`ecs_vcpu`): the worker ships it as `allocated_vcpu` and `execute_openquake`
+writes it to the `openquake.cfg` `[distribution] num_cores` that `oq` reads (`_cap_oq_num_cores`), derived
+from `ecs_vcpu` rather than a separate hand-set field (ADR-0012). With that, `ecs_vcpu` *is* the vCPU axis;
+the matrix stays family × vCPU.
 
 ## Method
 
@@ -41,7 +42,7 @@ matrix run had every cell report `Using 64 processpool workers` and OOM-kill (`o
   job would carry on a fully-packed production instance. Because $/hr scales linearly with size, the
   per-vCPU rate is constant within a family, so the cost is exact regardless of the size Batch launched.
 - **Validity check.** The collector reads each job's CloudWatch log for OpenQuake's `Using N processpool
-  workers` line (`oq_cores`) and flags any cell where it ≠ vCPU — i.e. where the `num_cores` cap silently
+  workers` line (`oq_cores`) and flags any cell where it ≠ vCPU — i.e. where the vCPU cap silently
   didn't take and the wall time is meaningless. Confirm the summary shows no `!` before trusting a curve.
 - Tooling: `scripts/ec2_sizing/submit_oq_hazard_matrix.py` + `collect_oq_hazard_results.py` (see the
   `scripts/ec2_sizing/README.md` OQ-hazard section to reproduce).
@@ -49,7 +50,7 @@ matrix run had every cell report `Using 64 processpool workers` and OOM-kill (`o
 ## Results
 
 Mean of 2 replicates per cell, over two runs (4–32 vCPU, then 64 via `--vcpus 64`). Every cell passed the
-worker-count check (`oq_cores == vcpu`) — the `num_cores` cap took on all 20 jobs, and none OOM'd. Cost is
+worker-count check (`oq_cores == vcpu`) — the vCPU cap took on all 20 jobs, and none OOM'd. Cost is
 the fair-share per-vCPU rate, so it is exact even though Batch packed jobs onto larger shared instances
 (`instance` below is the exact-fit size the fair-share cost corresponds to; see the co-tenancy note under
 Findings).
@@ -72,7 +73,7 @@ Findings).
 **1. Compute-bound and low-memory.** No cell OOM'd — including c-family at ~1.8 GB/vCPU (a 4-vCPU c6a job
 ran the full 1057-site, 21-gsim calc in ~7 GB). Hazard does not need the 32 GiB the current default hands
 it; the memory dimension the issue worried about is a non-issue for a single SRM branch at this site count.
-(The `num_cores` cap is what makes this true on EC2 — uncapped, OQ sized its pool to the host's cores and
+(The vCPU cap is what makes this true on EC2 — uncapped, OQ sized its pool to the host's cores and
 OOM'd every cell; see the Concurrency section above and #344.)
 
 **2. Scales sub-linearly; the knee is at 32 vCPU.** Speedup vs 4 vCPU (c6a): 8→1.64×, 16→2.29×, 32→3.77×,
@@ -100,7 +101,7 @@ pay-more-for-latency zone.
 packed jobs onto larger shared boxes rather than launching exact-fit instances — the c6a 4/8/16 cells onto
 one `c6a.16xlarge`, and the two 64-vCPU replicates onto a 128-vCPU `c6a.32xlarge` (exactly filling it, so no
 oversubscription). Fair-share cost is size-independent within a family, so **cost is unaffected**; the
-`num_cores` cap kept each job to its own vCPU. Wall times are treated as good here; a fully rigorous run
+vCPU cap kept each job to its own vCPU. Wall times are treated as good here; a fully rigorous run
 would pin one job per instance (per-size CEs, or serial submission) to rule out cross-job cache/bandwidth
 contention.
 
@@ -124,9 +125,8 @@ toward 32 only when a human is waiting; 64 buys a little more speed at ~5× the 
 
 | field | old | new | why |
 |-------|----:|----:|-----|
-| `ecs_job_definition` | `runzi-fargate-JD` (default) | `runzi-ec2-JD` | move hazard to EC2 — cheaper per vCPU, and the `num_cores` cap now makes it safe |
-| `ecs_vcpu` | 8 | 8 | the cost/latency sweet spot (4→8 is the cheapest speedup; knee at 32) |
-| `num_cores` | 8 | 8 | caps OpenQuake `num_cores` = vCPU on Batch (unchanged; added with the #344 fix) |
+| `ecs_job_definition` | `runzi-fargate-JD` (default) | `runzi-ec2-JD` | move hazard to EC2 — cheaper per vCPU, and the vCPU cap now makes it safe |
+| `ecs_vcpu` | 8 | 8 | the cost/latency sweet spot (4→8 is the cheapest speedup; knee at 32); also the source of OpenQuake's processpool cap on Batch (ADR-0012) |
 | `ecs_memory` (MiB) | 32768 | 30720 | fits `m6a.2xlarge` (32 GiB) with ECS headroom; keeps ~30 GB for a full 0.1° production grid |
 | `ecs_max_job_time_min` | 30 | 240 | an 8-vCPU run on the 1057-site benchmark took ~42 min; the old limit would kill real jobs |
 
@@ -135,7 +135,7 @@ the best value on the curve, so it's the better everyday default. **Kept m-famil
 cheaper c-family (14000)** — hazard is low-memory for the 1057-site benchmark, but a full 0.1° production
 grid (~4000 sites) needs ~30 GB; small-grid jobs can override `ecs_memory` down to land on c6a.
 
-The Fargate→EC2 move is made on the cost evidence plus the `num_cores` fix, **without an EC2-vs-Fargate
+The Fargate→EC2 move is made on the cost evidence plus the vCPU-cap fix, **without an EC2-vs-Fargate
 throughput baseline** — the same posture ADR-0011 took for inversions (baseline still formally deferred).
 Disaggregation gets the same defaults (EC2, 8 vCPU / 30720 MiB / 240 min) as a starting point — not
 independently benchmarked yet, and expected to be more memory-hungry, so it may be re-sized later.

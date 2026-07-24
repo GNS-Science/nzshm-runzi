@@ -1,6 +1,6 @@
 {
     "title": "EC2 sizing benchmark - coulomb rupture set",
-    "description": "Coulomb rupture-set build used to benchmark EC2 vCPU/family cost vs wall-clock completion time. submit_coulomb_matrix.py injects submission_arg_overrides (ecs_vcpu, num_cores=vcpu, ecs_memory) per cell; the build runs to completion so wall time is the metric.",
+    "description": "Coulomb rupture-set build used to benchmark EC2 vCPU/family cost vs wall-clock completion time. submit_coulomb_matrix.py injects submission_arg_overrides (ecs_vcpu, java_threads=vcpu, ecs_memory) per cell; the build runs to completion so wall time is the metric.",
 
     "max_sections": 2000,
     "max_jump_distance": 15,

@@ -81,10 +81,11 @@ class SubmissionArgs(BaseModel):
 
     task_language: TaskLanguage
 
-    # Per-task parallelism budget (usually = ecs_vcpu). Not Java-only: Java tasks pass it to
-    # setNumThreads / PBS ppn, OpenQuake tasks to openquake.cfg num_cores. The worker reads it, so
-    # build_tasks copies it into TaskRuntimeArgs.
-    num_cores: int | None = None
+    # Java thread count for the task (setNumThreads / PBS ppn); a Java-only tuning knob, deliberately
+    # decoupled from ecs_vcpu (inversions set it higher). Declared per Java task module; the worker reads
+    # it, so build_tasks copies it into TaskRuntimeArgs. OpenQuake tasks do NOT use it — their processpool
+    # cap is derived from ecs_vcpu instead (shipped as TaskRuntimeArgs.allocated_vcpu, see ADR-0012).
+    java_threads: int | None = None
     jvm_heap_max: int | None = None
 
     ecs_max_job_time_min: int
@@ -131,8 +132,11 @@ class TaskRuntimeArgs(BaseModel):
     general_task_id: str | None = None
     task_count: int = 0
     use_api: bool
-    num_cores: int | None = None
-    """Parallelism budget the worker applies (Java setNumThreads / OpenQuake num_cores)."""
+    java_threads: int | None = None
+    """Java thread count the worker applies (setNumThreads / PBS ppn). Java tasks only."""
+    allocated_vcpu: int | None = None
+    """The container's requested vCPU (= SubmissionArgs.ecs_vcpu), derived by build_tasks. OpenQuake tasks
+    cap their processpool to this so they don't over-detect the host's cores and OOM on Batch EC2 (ADR-0012)."""
 
     @property
     def java_gateway_port(self) -> int:

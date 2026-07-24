@@ -34,7 +34,7 @@ logging.getLogger('git.cmd').setLevel(loglevel)
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
     ecs_job_definition=EC2_JOB_DEFINITION,
-    num_cores=4,
+    java_threads=4,
     jvm_heap_max=32,
     ecs_max_job_time_min=90,
     ecs_memory=7000,
@@ -103,8 +103,8 @@ class SubductionRuptureSetBuilderTask:
 
         environment = {
             "host": platform.node(),
-            "num_cores": self.runtime_args.num_cores,
-            "proc_count": self.runtime_args.num_cores,
+            "java_threads": self.runtime_args.java_threads,
+            "proc_count": self.runtime_args.java_threads,
         }
 
         if self.use_api:
@@ -151,7 +151,7 @@ class SubductionRuptureSetBuilderTask:
             outputfile = outputfile.with_suffix('.spoof')
             Path(outputfile).touch()
         else:
-            self.builder.setNumThreads(self.runtime_args.num_cores).buildRuptureSet()
+            self.builder.setNumThreads(self.runtime_args.java_threads).buildRuptureSet()
             metrics = self.ruptureSetMetrics()
             self.builder.writeRuptureSet(str(outputfile))
 

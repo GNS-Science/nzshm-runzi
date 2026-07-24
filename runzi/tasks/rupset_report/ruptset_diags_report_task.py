@@ -22,7 +22,7 @@ from runzi.tasks.get_config import get_config
 # instance vCPUs. Keep jvm_heap_max in step with the derived -Xmx so the two heaps don't disagree.
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
-    num_cores=4,
+    java_threads=4,
     jvm_heap_max=28,
     ecs_max_job_time_min=200,
     ecs_memory=30720,

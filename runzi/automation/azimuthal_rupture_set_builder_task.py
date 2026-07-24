@@ -110,7 +110,7 @@ class RuptureSetBuilderTask:
         outputfile = self._output_folder.joinpath(self._builder.getDescriptiveName() + ".zip")
         print(f'building {outputfile} started at {dt.datetime.utcnow().isoformat()}', end=' ')
 
-        self._builder.setNumThreads(int(job_arguments["num_cores"])).buildRuptureSet()
+        self._builder.setNumThreads(int(job_arguments["java_threads"])).buildRuptureSet()
 
         # capture task metrics
         duration = (dt.datetime.utcnow() - t0).total_seconds()

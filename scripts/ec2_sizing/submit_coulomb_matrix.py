@@ -7,7 +7,7 @@ family**. Each matrix cell is its own ``runzi rupset coulomb`` submit with disti
 ``submission_arg_overrides``:
 
   - ``ecs_vcpu`` = the cell's core count,
-  - ``num_cores`` = ``ecs_vcpu`` (the builder calls ``setNumThreads(num_cores)``, so each cell
+  - ``java_threads`` = ``ecs_vcpu`` (the builder calls ``setNumThreads(java_threads)``, so each cell
     actually uses all the cores it pays for — this is what makes the wall-time-vs-cores curve meaningful),
   - ``ecs_memory`` = sized to ~fill the family's per-vCPU RAM, so a compute-optimized (2 GB/vCPU) cell
     that OOMs *reveals* that the build needs more memory than c-family provides.
@@ -111,13 +111,13 @@ def render_config(
     ``ecs_job_definition`` selects the target and the queue/compute-environment derive from it via
     ``JOB_DEFINITION_TARGETS`` (ADR-0008), unless a ``queue_prefix`` routes the cell to a pinned
     per-family benchmark queue (the JD is unchanged, so the compute-environment type stays EC2). JVM heap
-    follows ``ecs_memory`` automatically in ``aws.py``; ``num_cores`` is shipped to the worker and used
+    follows ``ecs_memory`` automatically in ``aws.py``; ``java_threads`` is shipped to the worker and used
     as ``setNumThreads``.
     """
     config = copy.deepcopy(template)
     overrides: dict[str, Any] = {
         'ecs_vcpu': cell.vcpu,
-        'num_cores': cell.threads,
+        'java_threads': cell.threads,
         'ecs_memory': cell.memory_mb,
         'ecs_job_definition': job_definition,
         'ecs_max_job_time_min': max_job_time_min,

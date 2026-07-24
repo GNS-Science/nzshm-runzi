@@ -6,7 +6,7 @@ figure is **cost per completed hazard job**. Duration + instance type come strai
 summary — there is **no Toshi log to parse** (that's inversion-only).
 
 As a guardrail, each row also carries ``oq_cores`` — the ``Using N processpool workers`` count OpenQuake
-logged to CloudWatch. It must equal the cell's vCPU; if it doesn't, the num_cores cap didn't take (OQ ran
+logged to CloudWatch. It must equal the cell's vCPU; if it doesn't, the vCPU cap didn't take (OQ ran
 on the host's cores) and that cell's wall time is invalid (#344). Mismatches are flagged in the summary.
 
 Given the manifest written by ``submit_oq_hazard_matrix.py``, this builds one row per cell with: the EC2
@@ -137,7 +137,7 @@ def collect_rows(
         instance_type = instance_type_override or (instance_types.get(job_id) if job_id else None) or derived
         seconds = duration_seconds(summary)
         cost = job_cost_usd(instance_type, cell['vcpu'], seconds)
-        # Ground-truth check that the num_cores cap took (#344): OpenQuake logs the worker count it used.
+        # Ground-truth check that the vCPU cap took (#344): OpenQuake logs the worker count it used.
         # If it != the cell's vCPU, OQ ran on the host's cores and this cell's wall time is invalid.
         oq_cores = _oq_worker_count(job_id) if job_id else None
         results.append(

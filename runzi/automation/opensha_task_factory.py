@@ -193,7 +193,7 @@ class OpenshaPBSTaskFactory(OpenshaTaskFactory):
         fname = self._config_path / f"config.{self._next_task}.json"
         # PBS mode is unsupported; _pbs_wall_hours / _pbs_ppn keep their __init__ defaults (job timing
         # is submission-only and no longer on the per-task runtime args).
-        self._pbs_ppn = task_runtime_args.num_cores or self._pbs_ppn
+        self._pbs_ppn = task_runtime_args.java_threads or self._pbs_ppn
 
         task_config = get_task_config(task_args, task_runtime_args, model_type)
         fname.write_text(json.dumps(task_config, indent=4), encoding="utf-8")

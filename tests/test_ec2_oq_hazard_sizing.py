@@ -4,9 +4,9 @@ The scripts live under ``scripts/ec2_sizing/`` (not on the package path), so the
 path. Only the side-effect-free grid/render/analysis logic is covered — submit/collect I/O needs live AWS.
 
 OQ hazard runs *to completion*, so the matrix is family x vCPU and the metric is wall-clock time from the
-Batch job summary (no Toshi log to parse). On EC2 the container sees the host's cores, so each cell ships
-``num_cores = vcpu`` to cap OpenQuake's num_cores (#344); the collector reads back the worker count OQ
-logged (``oq_cores``) to confirm the cap took.
+Batch job summary (no Toshi log to parse). On EC2 the container sees the host's cores, so OpenQuake caps
+its processpool to the container's vCPU (``ecs_vcpu``, derived in the worker; #344, ADR-0012); the
+collector reads back the worker count OQ logged (``oq_cores``) to confirm the cap took.
 """
 
 import importlib.util
@@ -96,14 +96,14 @@ class TestRenderConfig:
     def _template(self):
         return {'nshm_model_version': 'NSHM_v1.0.4', 'srm_logic_tree': 'srm_single_branch_TEST.json'}
 
-    def test_injects_ec2_sizing_overrides_with_num_cores_pinned_to_vcpu(self):
+    def test_injects_ec2_sizing_overrides_without_a_core_cap(self):
         cell = submit.Cell(family='c6a', vcpu=16, memory_mb=28800, replicate=0)
         config = submit.render_config(self._template(), cell, 240, 'runzi-ec2-JD')
         overrides = config['submission_arg_overrides']
         assert overrides['ecs_vcpu'] == 16
-        # num_cores carries the OQ core budget -> openquake.cfg num_cores; must equal vCPU or OQ grabs
-        # all host cores on EC2 and OOMs the container (#344).
-        assert overrides['num_cores'] == 16
+        # No core-cap override: OpenQuake's processpool cap derives from ecs_vcpu in the worker
+        # (shipped as allocated_vcpu; ADR-0012), so there is nothing to inject here.
+        assert 'num_cores' not in overrides
         assert overrides['ecs_memory'] == 28800
         assert overrides['ecs_job_definition'] == 'runzi-ec2-JD'
         assert overrides['ecs_max_job_time_min'] == 240
@@ -138,7 +138,7 @@ class TestTemplate:
 
 
 class TestOqWorkerCount:
-    """OpenQuake logs ``Using N processpool workers`` — the ground truth that the num_cores cap took (#344)."""
+    """OpenQuake logs ``Using N processpool workers`` — the ground truth that the vCPU cap took (#344)."""
 
     def test_parses_the_worker_count_from_a_log_line(self):
         lines = ['INFO:root:Using engine version 3.23.4', 'WARNING:root:Using 8 processpool workers', 'more']

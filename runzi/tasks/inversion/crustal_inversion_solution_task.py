@@ -19,11 +19,11 @@ if TYPE_CHECKING:
 
 default_submission_args = SubmissionArgs(
     task_language=TaskLanguage.JAVA,
-    # num_cores is only used for pbs mode, which is not supported anymore.
+    # java_threads is only used for pbs mode, which is not supported anymore.
     # It should be set to selector_threads * averaging_threads, but this would need to be done task by task if they
     # are swept args. It would be possible to add some inversion specific code to the build_tasks function or find the
     # maximum number of threads before hand or find the maximum number of threads that would be needed before hand.
-    num_cores=16,
+    java_threads=16,
     # 8 vCPU / ~14 GB is the iterations-per-dollar sweet spot from the #323 benchmark (ADR-0011): the
     # fixed 16-thread anneal saturates ~8 cores. Defaults to EC2, and 14000 MiB sits just under the 16 GiB
     # of compute-optimized c*.2xlarge (leaving ECS agent/OS headroom), so BEST_FIT_PROGRESSIVE places it

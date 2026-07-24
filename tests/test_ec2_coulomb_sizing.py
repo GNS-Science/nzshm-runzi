@@ -87,7 +87,7 @@ class TestRenderConfig:
         config = submit.render_config(self._template(), cell, 90, 'runzi-ec2-JD')
         overrides = config['submission_arg_overrides']
         assert overrides['ecs_vcpu'] == 16
-        assert overrides['num_cores'] == 16  # pinned to vCPU
+        assert overrides['java_threads'] == 16  # pinned to vCPU
         assert overrides['ecs_memory'] == 28800
         assert overrides['ecs_job_definition'] == 'runzi-ec2-JD'
         assert overrides['ecs_max_job_time_min'] == 90
