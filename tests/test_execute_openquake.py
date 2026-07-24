@@ -20,12 +20,18 @@ Looking at the following paths (the last wins)
 
 
 class TestParseWinningCfgPath:
+    # Compare via as_posix(): the parsed cfg path is POSIX (it comes from `oq info cfg` in the Linux
+    # container), but str(Path(...)) renders with backslashes when the test runs on Windows.
     def test_returns_the_last_openquake_cfg_path(self):
-        assert str(_parse_winning_cfg_path(OQ_INFO_CFG)) == '/toshi-home/openquake.cfg'
+        result = _parse_winning_cfg_path(OQ_INFO_CFG)
+        assert result is not None
+        assert result.as_posix() == '/toshi-home/openquake.cfg'
 
     def test_ignores_a_trailing_config_dump_after_the_paths(self):
         noisy = OQ_INFO_CFG + '\n[distribution]\nnum_cores = 64\n[dbserver]\nport = 1907\n'
-        assert str(_parse_winning_cfg_path(noisy)) == '/toshi-home/openquake.cfg'
+        result = _parse_winning_cfg_path(noisy)
+        assert result is not None
+        assert result.as_posix() == '/toshi-home/openquake.cfg'
 
     def test_none_when_no_cfg_path_present(self):
         assert _parse_winning_cfg_path('some unrelated output\nno paths here') is None
