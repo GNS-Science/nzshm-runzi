@@ -66,10 +66,9 @@ ranking above. `"optimal"` resolves to current-gen families (it picked `r6i`/`m6
 
 - **Deployer apply required.** The `ec2_instance_types` change ships as Terraform code in
   `terraform/batch`; a deployer applies it (the federated `runzi-admin` session can't apply it itself).
-- **Shared CE.** The EC2 CE is shared by any job that opts into EC2. Inversions are the known EC2
-  users; OQ hazard/disagg run on **Fargate** by default (ADR-0003) and are unaffected unless a config
-  opts them onto EC2 — if one does and is memory-heavy, confirm it still fits the `c`/`m` list before
-  relying on this.
+- **Shared CE.** The EC2 CE is shared by every job that targets EC2. At authoring time only inversions did;
+  as of #344 OQ hazard **and** disagg also default to EC2 (see the OQ followup below), so the `c`/`m`
+  instance list must accommodate their memory too (hazard requests 30720 MiB → `m6a.2xlarge`).
 - **No Fargate baseline.** The benchmark compared EC2 families only; it did **not** measure EC2 vs
   Fargate throughput. This decision therefore does not claim EC2 is cheaper than Fargate, nor switch
   the Fargate default — only which EC2 family is used when EC2 is chosen.
@@ -92,6 +91,23 @@ ranking above. `"optimal"` resolves to current-gen families (it picked `r6i`/`m6
 - **Durable instance-type capture** — have the container read its instance type from IMDS and log it to
   `java_app.<port>.log`, so provenance survives scale-down (parsed from Toshi like iterations/energy)
   and cost no longer needs the ECS/EC2 lookup or its IAM.
+- **OQ hazard sizing (#344)** — the same benchmark method is now wired for OpenQuake hazard
+  (`scripts/ec2_sizing/submit_oq_hazard_matrix.py` + `collect_oq_hazard_results.py`,
+  `docs/benchmarks/ec2-sizing-oq-hazard.md`), matrix = family × vCPU. **Run complete (2026-07-23),
+  recommendation applied:** hazard `default_submission_args` moved to **EC2 (`runzi-ec2-JD`), 8 vCPU /
+  30720 MiB / 240 min**. Findings: compute-bound; the 4→8 step is the cheapest speedup and the knee is at
+  32; c6a is cheapest but production 0.1° grids (~4000 sites) need m-family memory (hence 30720). Like the
+  inversion move above, the Fargate→EC2 switch rests on cost + the vCPU-cap fix **without an EC2-vs-Fargate
+  baseline** (still deferred). Disagg gets the same defaults as a starting point (not yet independently
+  benchmarked — expected more memory-hungry, so re-sizing may follow).
+  - **OQ core-detection fix (shipped with the tooling; see [0012](0012-openquake-cores-from-ecs-vcpu.md)).**
+    The first matrix run exposed a real **production** bug for *any* OpenQuake job on EC2: Batch limits CPU
+    with shares, not cpuset, so the container sees the **host's** cores; OQ sized its processpool to the
+    whole instance and OOM-killed the memory-capped container (`oq engine --run` → `-9`). Fix:
+    `execute_openquake` now caps OQ's `openquake.cfg` `[distribution] num_cores` to the container's
+    requested vCPU (`_cap_oq_num_cores`), derived from `ecs_vcpu` and shipped to the worker as the
+    `allocated_vcpu` runtime arg (not a separate hand-set field). No-op on Fargate (the microVM already
+    exposes exactly the requested vCPU); required on EC2.
 - **Per-workload targets / Spot** — if OQ ever needs EC2 with a different profile, give it its own
   target rather than widening this list; Spot remains a separate cost lever (ADR-0008).
 - **Refresh `INSTANCE_SPECS` prices** (`# last verified:` marker) before publishing absolute costs.

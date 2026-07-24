@@ -1,0 +1,19 @@
+{
+    "title": "EC2 sizing benchmark - OpenQuake hazard",
+    "description": "OpenQuake classical hazard job used to benchmark EC2 vCPU/family cost vs wall-clock completion time (#344). Full 2022 GMCM logic tree (from NSHM_v1.0.4) x a single SRM branch (srm_single_branch_TEST.json) => one job, 21 gsims. submit_oq_hazard_matrix.py injects submission_arg_overrides (ecs_vcpu, ecs_memory) per cell; the job runs to completion so wall time is the metric. Sites are the NZ 0.2 deg grid (NZ_0_2_NB_1_1, ~1057) - a ~4x bump up from the original SRWG214+NZ (~250) so that fixed serial overhead (OQ startup, source-model build, export/store) stays a small fraction of wall time even in the high-vCPU cells and doesn't flatten the scaling curve. A 4-vCPU pilot at 250 sites ran ~1521s; ~1057 sites lands well under the 240-min job limit. Tune imts/locations from a --limit 1 pilot if the run is too short/long or a low-memory (c-family) cell OOMs.",
+
+    "compatible_calc_id": "NZSHM22",
+    "nshm_model_version": "NSHM_v1.0.4",
+    "srm_logic_tree": "srm_single_branch_TEST.json",
+
+    "imts": ["PGA", "SA(0.1)", "SA(0.2)", "SA(0.3)", "SA(0.5)", "SA(0.7)", "SA(1.0)", "SA(1.5)", "SA(2.0)", "SA(3.0)"],
+    "imtls": [
+        0.0001, 0.0002, 0.0004, 0.0006, 0.0008,
+        0.001, 0.002, 0.004, 0.006, 0.008,
+        0.01, 0.02, 0.04, 0.06, 0.08,
+        0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+        1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0
+    ],
+    "vs30": 400,
+    "locations": ["NZ_0_2_NB_1_1"]
+}

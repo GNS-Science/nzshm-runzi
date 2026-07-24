@@ -21,7 +21,7 @@ from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 from toshi_hazard_store.scripts.ths_disagg_import import store_disagg
 
-from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs
 from runzi.automation.local_config import (
     API_URL,
     ECR_DIGEST,
@@ -55,10 +55,16 @@ logging.getLogger("gql.transport").setLevel(logging.WARN)
 log = logging.getLogger(__name__)
 
 default_submission_args = SubmissionArgs(
+    # Mirrors the hazard defaults (#344) as a starting point — disaggregation is not yet independently
+    # benchmarked (it's expected to be more memory-hungry, so re-sizing may follow). EC2 is safe because
+    # OpenQuake caps its worker pool to the container's vCPU (ecs_vcpu, shipped as allocated_vcpu; else it
+    # grabs the host's cores and OOMs on EC2). See oq_hazard_task.py, docs/benchmarks/ec2-sizing-oq-hazard.md,
+    # and ADR-0012.
     task_language=TaskLanguage.PYTHON,
-    ecs_max_job_time_min=30,
-    ecs_memory=32768,
+    ecs_job_definition=EC2_JOB_DEFINITION,
     ecs_vcpu=8,
+    ecs_memory=30720,
+    ecs_max_job_time_min=240,
 )
 
 
@@ -284,6 +290,7 @@ class OQDisaggTask:
             self.runtime_args.task_count,
             automation_task_id,
             HazardTaskType.HAZARD,
+            num_cores=self.runtime_args.allocated_vcpu,
         )
 
         ######################

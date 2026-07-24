@@ -159,3 +159,105 @@ to the Batch job) — note the ~16 throwaway uploads for cleanup.
 - `collect_coulomb_results.py` — joins the manifest to live Batch/EC2 data → CSV + summary (wall time +
   cost, no Toshi).
 - `_cost.py` — the EC2 price table + fair-share cost formula, shared with the inversion collector.
+
+---
+
+# EC2 job-sizing benchmark for OpenQuake hazard (#344)
+
+Same idea again — run-to-completion, **wall-clock metric** — for the OpenQuake hazard task
+(`runzi hazard oq_hazard`). See [the findings doc](../../docs/benchmarks/ec2-sizing-oq-hazard.md).
+
+**OQ's core budget is capped to the requested vCPU (#344).** OpenQuake sizes its processpool to the cores
+it *detects*; on EC2 the container sees the **host's** cores (Batch uses CPU shares, not cpuset), so
+without a cap OQ spawns a worker per host core and OOM-kills the memory-limited container (`oq engine
+--run` exits `-9`). The OQ worker caps its processpool to the container's requested vCPU (`ecs_vcpu`,
+shipped as `allocated_vcpu` → `openquake.cfg` `[distribution] num_cores`; ADR-0012), so a cell's core count
+is set purely by `ecs_vcpu` — there is nothing extra to inject. The matrix is family × vCPU; `render_config`
+injects `ecs_vcpu` / `ecs_memory` / `ecs_job_definition` / `ecs_max_job_time_min`.
+
+## What it measures
+
+- **Cores.** vCPU `{4, 8, 16, 32}`; falling wall time ⇒ hazard scales (pick the knee), flat ⇒ it doesn't
+  (run smallest). (EC2 is also what unlocks > 16 vCPU — Fargate, hazard's current default, caps there.)
+- **Instance family.** `c6a` (compute-optimized) vs `m6a` (general purpose), both AMD, **pinned** via
+  per-family Batch queues. `ecs_memory` fills each family's per-vCPU RAM (c ≈ 1.8, m ≈ 3.8 GB/vCPU), so a
+  c-family **OOM is the finding** that hazard needs more than 2 GB/vCPU. Add `--families r6a` (7.6 GB/vCPU)
+  if the c/m cells OOM.
+
+## The test workload
+
+`oq_hazard.template.json` pairs the **full 2022 GMCM logic tree** (from `NSHM_v1.0.4`, ⇒ 21 gsims) with a
+**single SRM branch** — `srm_single_branch_TEST.json`, committed next to the template so its relative path
+resolves (`submit_oq_hazard_matrix.py` writes each cell's temp config into the template's directory for
+exactly this reason). A single-branch SRM is essential: the runner explodes the SRM logic tree into **one
+Batch job per branch**, and the collector assumes one submit → one job. Sites are the NZ 0.2° grid
+(`NZ_0_2_NB_1_1`, ~1057) — raised ~4× from the original `SRWG214`+`NZ` (~250) after a 4-vCPU pilot ran
+~1521 s, so fixed serial overhead (OQ startup, source-model build, export/store) stays a small fraction of
+wall time in the **high-vCPU** cells rather than flattening the scaling curve. Sites are the cleanest
+parallel axis in classical PSHA; tune IMTs/sites from the pilot if the low-vCPU cell nears the 240-min
+limit or a low-memory (c-family) cell OOMs.
+
+## Required first: stand up the pinned per-family queues
+
+The family axis only works if each cell is **pinned** to a compute environment locked to one instance
+family. You cannot get that from the shared `runzi-ec2-CE`: it runs `BEST_FIT_PROGRESSIVE` over
+`["c6a","m6a","c6i","m6i"]` (ADR-0011), so a mixed queue collapses every cell onto whichever type fits
+cheapest and the family column becomes meaningless (this is what happened to #341 — everything landed on
+`r6i`). So before the pilot, apply `terraform/ec2-sizing-benchmark/` to create one CE + one queue
+(`{name_prefix}-{family}-Q`) per family. The module is task-agnostic — **no module change** — but run it in
+a **separate Terraform workspace** so the OQ queues don't collide with a concurrent coulomb run that shares
+the same `name_prefix`:
+
+```bash
+cd terraform/ec2-sizing-benchmark
+terraform workspace new oq-hazard            # isolate this run's state
+terraform apply                              # with instance_types = ["c6a","m6a"]
+terraform output queues                      # prints {family -> queue}; name_prefix defaults to "ec2sizing"
+```
+
+(See that module's README re: whether AWS Batch accepts bare family names `["c6a","m6a"]` or needs
+enumerated sizes.) Tear it down after collecting: `terraform destroy` then `terraform workspace delete
+oq-hazard`; the shared `runzi-ec2-CE` is untouched throughout.
+
+The only run that skips this is an **unpinned smoke test**: omit `--queue-prefix` below and cells go to the
+JD-derived `runzi-ec2-Q` on the shared CE — fine to confirm a hazard job runs and the collect path works,
+but Batch picks the instance so you can't compare families.
+
+## Workflow
+
+```bash
+# 0. Dry run — confirm the 16 cells render valid EC2-targeted configs (no AWS calls).
+uv run python scripts/ec2_sizing/submit_oq_hazard_matrix.py --dry-run --queue-prefix ec2sizing
+
+# 1. PILOT (the key risk): ONE cell to confirm the wall-clock path end-to-end AND to time the workload
+#    (tune imts/locations in the template if it's too short/long before spending the full matrix).
+uv run python scripts/ec2_sizing/submit_oq_hazard_matrix.py \
+    --limit 1 --queue-prefix ec2sizing --manifest scratch/oq_hazard_pilot.json
+#    ...wait for the job to finish, then:
+uv run python scripts/ec2_sizing/collect_oq_hazard_results.py \
+    --manifest scratch/oq_hazard_pilot.json --csv scratch/oq_hazard_pilot.csv
+
+# 2. Full matrix — 16 submits (2 families × 4 vCPU × 2 replicates).
+uv run python scripts/ec2_sizing/submit_oq_hazard_matrix.py \
+    --queue-prefix ec2sizing --manifest scripts/ec2_sizing/oq_hazard_manifest.json
+
+# 3. Collect + analyse once the jobs finish (terminal Batch jobs age out ~24h — collect promptly).
+uv run python scripts/ec2_sizing/collect_oq_hazard_results.py \
+    --manifest scripts/ec2_sizing/oq_hazard_manifest.json --csv scripts/ec2_sizing/oq_hazard_results.csv
+#    As with coulomb, a pinned run needs no ECS read-back: the instance is derived from family + vCPU.
+```
+
+After collecting, tear down the benchmark queues (see above); the shared `runzi-ec2-CE` is
+untouched. Each submit uploads the single-branch SRM (and, per-cell, mints a `general_task_id`) to Toshi —
+note the ~16 throwaway uploads for cleanup, plus one SRM logic-tree file per cell.
+
+## OQ hazard files
+
+- `oq_hazard.template.json` — base config (full 2022 GMCM × single SRM branch, NZ 0.2° grid ~1057 sites);
+  `submit_oq_hazard_matrix.py` injects per-cell `ecs_vcpu` (drives OQ's cap) / `ecs_memory`.
+- `srm_single_branch_TEST.json` — the single-branch SRM, co-located so the template's relative path resolves.
+- `submit_oq_hazard_matrix.py` — renders + submits the family × vCPU matrix, writes `oq_hazard_manifest.json`.
+- `collect_oq_hazard_results.py` — joins the manifest to live Batch/EC2 data → CSV + summary (wall time +
+  cost, no Toshi). Self-contained, sharing only `_cost.py`. Also reads each job's CloudWatch log for the
+  `Using N processpool workers` line (`oq_cores` column) and flags any cell where it ≠ vCPU — proof the
+  vCPU cap took; a flagged cell's wall time is invalid.

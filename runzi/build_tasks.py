@@ -67,6 +67,9 @@ def build_tasks(
             use_api=local_config.USE_API,
             task_count=task_count,
             java_threads=submission_args.java_threads,
+            # The container's requested vCPU. OpenQuake caps its processpool to this so it doesn't
+            # over-detect the host's cores and OOM on Batch EC2 (ADR-0012); Java tasks ignore it.
+            allocated_vcpu=submission_args.ecs_vcpu,
         )
 
         if local_config.CLUSTER_MODE is ClusterModeEnum.AWS:

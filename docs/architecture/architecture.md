@@ -59,6 +59,7 @@ classDiagram
         - use_api: bool
         - java_gateway_port: int | None
         - java_threads: int | None
+        - allocated_vcpu: int | None
     }
     
     class ScaleSolutionArgs {
