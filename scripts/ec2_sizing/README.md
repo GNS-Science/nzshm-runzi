@@ -225,7 +225,7 @@ but Batch picks the instance so you can't compare families.
 ## Workflow
 
 ```bash
-# 0. Dry run — confirm the 16 cells render valid EC2-targeted configs (no AWS calls, no num_cores).
+# 0. Dry run — confirm the 16 cells render valid EC2-targeted configs (no AWS calls; num_cores = vcpu).
 uv run python scripts/ec2_sizing/submit_oq_hazard_matrix.py --dry-run --queue-prefix ec2sizing
 
 # 1. PILOT (the key risk): ONE cell to confirm the wall-clock path end-to-end AND to time the workload
@@ -252,7 +252,7 @@ note the ~16 throwaway uploads for cleanup, plus one SRM logic-tree file per cel
 
 ## OQ hazard files
 
-- `oq_hazard.template.json` — base config (full 2022 GMCM × single SRM branch, ~250 sites);
+- `oq_hazard.template.json` — base config (full 2022 GMCM × single SRM branch, NZ 0.2° grid ~1057 sites);
   `submit_oq_hazard_matrix.py` injects per-cell `ecs_vcpu` / `num_cores` (= vcpu, → OQ num_cores) / `ecs_memory`.
 - `srm_single_branch_TEST.json` — the single-branch SRM, co-located so the template's relative path resolves.
 - `submit_oq_hazard_matrix.py` — renders + submits the family × vCPU matrix, writes `oq_hazard_manifest.json`.

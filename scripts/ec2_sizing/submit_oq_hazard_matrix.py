@@ -2,14 +2,18 @@
 """Submit the EC2 job-sizing benchmark matrix for the OpenQuake **hazard** task (#344).
 
 Like the coulomb rupture-set builder (#343), OQ hazard runs *to completion*, so the metric is
-**wall-clock time** and the knobs that matter are **cores** and **instance family**. Unlike coulomb,
-there is **no thread arg to pin**: OpenQuake auto-parallelises across whatever vCPUs the container
-exposes, so a cell's core count is set purely by ``ecs_vcpu`` (no ``num_cores``). Memory follows the
-family's per-vCPU ratio, so a compute-optimized (c-family, ~2 GB/vCPU) cell that OOMs *reveals* that
-hazard needs more RAM than c-family provides. Each matrix cell is its own ``runzi hazard oq_hazard``
-submit with distinct ``submission_arg_overrides``:
+**wall-clock time** and the knobs that matter are **cores** and **instance family**. Like coulomb, the
+core budget must be **pinned** per cell: on AWS Batch EC2 the container sees the *host's* cores (CPU
+shares, not cpuset), so an uncapped OpenQuake sizes its processpool to the whole instance and OOM-kills
+a memory-capped container (#344). Each cell therefore ships ``num_cores = ecs_vcpu`` (fed through to
+``openquake.cfg [distribution] num_cores`` by ``execute_openquake``), so the vCPU axis is real. Memory
+follows the family's per-vCPU ratio, so a compute-optimized (c-family, ~2 GB/vCPU) cell that OOMs
+*reveals* that hazard needs more RAM than c-family provides. Each matrix cell is its own
+``runzi hazard oq_hazard`` submit with distinct ``submission_arg_overrides``:
 
-  - ``ecs_vcpu`` = the cell's core count (OpenQuake parallelism follows this),
+  - ``ecs_vcpu`` = the cell's core count,
+  - ``num_cores`` = ``ecs_vcpu`` (caps OpenQuake's processpool so each cell uses exactly the cores it
+    pays for and doesn't OOM on EC2 — see #344),
   - ``ecs_memory`` = sized to ~fill the family's per-vCPU RAM.
 
 ``swept_args`` can't sweep submission-side sizing fields, hence one submit per cell.
@@ -72,8 +76,9 @@ TEMPLATE = Path(__file__).with_name('oq_hazard.template.json')
 class Cell:
     """One matrix cell: an (instance family, vCPU) point plus its replicate index.
 
-    There is deliberately no thread field — OpenQuake parallelism is set by the container's vCPU count
-    (``ecs_vcpu``), not by any runzi thread arg.
+    There is deliberately no separate thread field: the OpenQuake core cap (``num_cores``) is always
+    pinned to ``vcpu`` in ``render_config``, so it isn't an independent axis (unlike coulomb's builder,
+    where threads could be swept apart from vCPU).
     """
 
     family: str
@@ -115,8 +120,9 @@ def render_config(
 
     ``ecs_job_definition`` selects the target and the queue/compute-environment derive from it via
     ``JOB_DEFINITION_TARGETS`` (ADR-0008), unless a ``queue_prefix`` routes the cell to a pinned
-    per-family benchmark queue (the JD is unchanged, so the compute-environment type stays EC2). No
-    ``num_cores`` override — OpenQuake parallelism follows ``ecs_vcpu``.
+    per-family benchmark queue (the JD is unchanged, so the compute-environment type stays EC2).
+    ``num_cores`` is pinned to ``ecs_vcpu`` to cap OpenQuake's processpool (else it grabs the host's
+    cores and OOMs on EC2 — #344).
     """
     config = copy.deepcopy(template)
     overrides: dict[str, Any] = {
