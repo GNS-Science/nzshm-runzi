@@ -4,10 +4,14 @@
 
 ### Changed
 - OpenQuake **hazard** batch default moved to EC2 (`runzi-ec2-JD`) at **8 vCPU / 30720 MiB / 240 min** (was Fargate 8 vCPU / 32768 MiB / 30 min), from the #344 EC2 sizing benchmark (`docs/benchmarks/ec2-sizing-oq-hazard.md`, ADR-0011): the 4→8 vCPU step is the cheapest speedup on the curve and the knee is at 32; memory kept at ~30 GB (m-family) so a full 0.1° production grid fits, and the 30 min limit is raised because real 8-vCPU jobs exceed it. Disaggregation gets the same defaults as a starting point (not yet independently benchmarked; expected more memory-hungry, so re-sizing may follow).
-- `runzi --docker` now pulls the image on every run instead of only when it is absent locally, so floating tags (`:prod`/`:experimental`) pick up newly published images automatically. `docker pull` only transfers changed layers (a fast no-op when current), and it falls back to the cached image if the registry is unreachable.
 
 ### Fixed
 - OpenQuake jobs on AWS Batch **EC2** no longer OOM-kill (`oq engine --run` exit `-9`): the container sees the host's cores (CPU shares, not cpuset), so OpenQuake sized its processpool to the whole instance. `execute_openquake` now caps `openquake.cfg` `[distribution] num_cores` to the container's requested vCPU — derived from `ecs_vcpu` and shipped to the worker as the `allocated_vcpu` runtime arg (ADR-0012), gated to AWS Batch so local runs are never throttled or have their `openquake.cfg` rewritten (#344).
+
+## [0.14.0] 2026-07-23
+
+### Changed
+- `runzi --docker` now pulls the image on every run instead of only when it is absent locally, so floating tags (`:prod`/`:experimental`) pick up newly published images automatically. `docker pull` only transfers changed layers (a fast no-op when current), and it falls back to the cached image if the registry is unreachable.
 - Docker image: smaller and faster to build. Runtime stage installs only its own system deps (git + fonts) instead of copying the entire build-stage `/usr`; Java is now a JRE rather than the full JDK; runzi is installed straight from git (`pip install "runzi @ git+..."`) instead of a working-tree clone; BuildKit pip cache mounts avoid re-downloading the OpenQuake stack on rebuilds; and the build CLI no longer forces `--no-cache` (it uses `--pull` so unchanged layers are reused).
 
 ### Removed
