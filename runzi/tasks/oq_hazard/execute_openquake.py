@@ -83,9 +83,13 @@ def execute_openquake(
     hazard_task_type: HazardTaskType,
     num_cores: int | None = None,
 ):
-    """Do the actusal openquake work.
+    """Do the actual openquake work.
 
     Args:
+        configfile: path to the OpenQuake job ini file
+        task_no: the task number
+        toshi_task_id: the Toshi API task ID
+        hazard_task_type: Classical or Disaggregation
         num_cores: cap OpenQuake's processpool to this many cores, but **only inside AWS Batch** (see
             ``_num_cores_cap``). Needed on Batch EC2, where the container sees the host's cores and would
             otherwise OOM. Ignored on a local host, so a local run never has its cores throttled or its
