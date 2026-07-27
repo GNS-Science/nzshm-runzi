@@ -5,6 +5,9 @@
 ### Added
 - Minimum slip and domain filtering for Coulomb rupture set builders.
 
+### Changed
+- Docker is built with JDK17 for newer OpenSHA compatibility.
+
 ## [0.14.0] 2026-07-23
 
 ### Changed
