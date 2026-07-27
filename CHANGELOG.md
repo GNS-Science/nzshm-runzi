@@ -3,7 +3,7 @@
 ## [0.15.0] 2026-07-27
 
 ### Added
-- Mimimum slip and domain filtering for Coulomb rupture set builders.
+- Minimum slip and domain filtering for Coulomb rupture set builders.
 
 ## [0.14.0] 2026-07-23
 
