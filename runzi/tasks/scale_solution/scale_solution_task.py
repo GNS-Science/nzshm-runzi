@@ -11,7 +11,7 @@ from nshm_toshi_client.task_relation import TaskRelation
 from pydantic import BaseModel
 from solvis import InversionSolution
 
-from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs, serialize_arguments
 from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import API_URL, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ModelType, SubtaskType, ToshiApi
@@ -73,7 +73,7 @@ class ScaleSolutionTask:
                     task_type=SubtaskType.SCALE_SOLUTION.name,
                     model_type=self.model_type.name.upper(),
                 ),
-                arguments=self.user_args.model_dump(mode='json'),
+                arguments=serialize_arguments(self.user_args),
                 environment={},
             )
 

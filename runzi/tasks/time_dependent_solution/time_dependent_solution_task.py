@@ -9,7 +9,7 @@ from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel
 
-from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import SubmissionArgs, TaskLanguage, TaskRuntimeArgs, serialize_arguments
 from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import API_URL, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ModelType, SubtaskType, ToshiApi
@@ -82,7 +82,7 @@ class TimeDependentSolutionTask:
                     task_type=SubtaskType.TIME_DEPENDENT_SOLUTION.name,
                     model_type=self.model_type.name,
                 ),
-                arguments=self.user_args.model_dump(mode='json'),
+                arguments=serialize_arguments(self.user_args),
                 environment={},
             )
 

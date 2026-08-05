@@ -12,7 +12,7 @@ from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel
 
-from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs, serialize_arguments
 from runzi.automation.local_config import API_URL, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.tasks.get_config import get_config
 
@@ -114,7 +114,7 @@ class SubductionRuptureSetBuilderTask:
                     task_type="RUPTURE_SET",
                     model_type="SUBDUCTION",
                 ),
-                arguments=self.user_args.model_dump(mode='json'),
+                arguments=serialize_arguments(self.user_args),
                 environment=environment,
             )
 

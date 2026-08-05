@@ -69,6 +69,31 @@ JOB_DEFINITION_TARGETS: dict[str, BatchTarget] = {
 DEFAULT_BATCH_TARGET = BatchTarget(DEFAULT_JOB_QUEUE, ComputeEnvironment.FARGATE)
 
 
+def serialize_arguments(args: BaseModel, exclude: set[str] | None = None) -> dict[str, str]:
+    """Render a task's user arguments as the strings recorded against the toshi API.
+
+    This is the single source of truth for that rendering. Both the general task
+    (JobRunner._build_argument_list) and every subtask (create_task(arguments=...)) go through
+    here, so a subtask's recorded arguments are identical to the general task values they came
+    from, and downstream consumers that match the two can do so exactly. Serializing anywhere
+    else silently reintroduces mismatches: raw config values carry the key order of the config
+    file rather than the model's field order, and a python-mode model_dump renders enums and
+    paths as reprs ("AggregationEnum.MEAN") instead of their JSON form ("mean").
+
+    Values are stringified with str() rather than json.dumps() because nshm_toshi_client's
+    kvl_to_graphql interpolates them into a GraphQL query without escaping, where the double
+    quotes of JSON would break the query.
+
+    Args:
+        args: The task's user argument model.
+        exclude: Field names to leave out of the result.
+
+    Returns:
+        Field name to serialized value.
+    """
+    return {key: str(value) for key, value in args.model_dump(mode='json', exclude=exclude).items()}
+
+
 class SubmissionArgs(BaseModel):
     """Config the local submitter uses to shape and submit the AWS Batch job.
 
