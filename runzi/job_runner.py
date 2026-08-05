@@ -4,6 +4,7 @@ import datetime as dt
 import getpass
 import logging
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from multiprocessing.dummy import Pool
 from subprocess import check_call
 
@@ -66,13 +67,14 @@ class JobRunner(ABC):
         into dict arguments (e.g. rupture_set), which no longer matches the field order a subtask
         reports after the value has been through the args model.
         """
-        all_args: dict[str, list[str]] = {}
+        # Collect the distinct values each argument takes across the tasks, in first-seen order.
+        # Every task carries a value for every argument, so unswept arguments repeat the same one.
+        all_args: defaultdict[str, list[str]] = defaultdict(list)
         for task_args in self.argument_sweeper.get_tasks():
-            for key, value in serialize_arguments(task_args).items():
-                values = all_args.setdefault(key, [])
-                if value not in values:
-                    values.append(value)
-        return [dict(k=key, v=value) for key, value in all_args.items()]
+            for name, value in serialize_arguments(task_args).items():
+                if value not in all_args[name]:
+                    all_args[name].append(value)
+        return [dict(k=name, v=values) for name, values in all_args.items()]
 
     def run_jobs(self) -> str | None:
         """Launch jobs.
