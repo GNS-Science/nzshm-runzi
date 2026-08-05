@@ -77,8 +77,8 @@ def serialize_arguments(args: BaseModel, exclude: set[str] | None = None) -> dic
     here, so a subtask's recorded arguments are identical to the general task values they came
     from, and downstream consumers that match the two can do so exactly. Serializing anywhere
     else silently reintroduces mismatches: raw config values carry the key order of the config
-    file rather than the model's field order, and a python-mode model_dump renders enums and
-    paths as reprs ("AggregationEnum.MEAN") instead of their JSON form ("mean").
+    file rather than the model's field order, and a python-mode model_dump renders enums as
+    reprs ("AggregationEnum.MEAN" rather than "mean") and datetimes without their ISO 'T'.
 
     Values are stringified with str() rather than json.dumps() because nshm_toshi_client's
     kvl_to_graphql interpolates them into a GraphQL query without escaping, where the double

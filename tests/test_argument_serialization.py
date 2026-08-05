@@ -4,6 +4,7 @@ Downstream consumers match a subtask's recorded arguments against the argument l
 general task that spawned it, so both sides must render the same value as the same string.
 """
 
+import datetime as dt
 import json
 from enum import Enum
 from pathlib import Path
@@ -35,7 +36,7 @@ class RuptureSet(BaseModel):
 class SampleArgs(BaseModel):
     rupture_set: RuptureSet
     agg: Aggregate
-    locations_file: Path
+    created: dt.datetime
     reweight: bool
 
 
@@ -50,7 +51,7 @@ def _sample_args(**overrides) -> SampleArgs:
     data = {
         "rupture_set": {"rupture_set_id": "RmlsZTox", "tag": "a tag"},
         "agg": "mean",
-        "locations_file": "/tmp/sites.csv",
+        "created": "2026-08-05T12:00:00",
         "reweight": True,
     }
     return SampleArgs.model_validate(data | overrides)
@@ -63,15 +64,20 @@ def test_serialize_arguments_normalizes_nested_key_order():
 
 
 def test_serialize_arguments_uses_json_form():
-    """Enums and paths render as their JSON value, not their python repr."""
+    """Enums and datetimes render as their JSON value.
+
+    A python-mode dump would give 'Aggregate.MEAN' and a space-separated datetime instead.
+    Paths are not covered here: str() of a Path is already the plain path, so both dump modes
+    agree and there is nothing to pin down.
+    """
     serialized = serialize_arguments(_sample_args())
     assert serialized["agg"] == "mean"
-    assert serialized["locations_file"] == "/tmp/sites.csv"
+    assert serialized["created"] == "2026-08-05T12:00:00"
     assert serialized["rupture_set"] == "{'rupture_set_id': 'RmlsZTox', 'tag': 'a tag'}"
 
 
 def test_serialize_arguments_excludes_named_fields():
-    serialized = serialize_arguments(_sample_args(), exclude={"agg", "locations_file"})
+    serialized = serialize_arguments(_sample_args(), exclude={"agg", "created"})
     assert set(serialized) == {"rupture_set", "reweight"}
 
 
