@@ -4,10 +4,11 @@ import datetime as dt
 import getpass
 import logging
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from multiprocessing.dummy import Pool
 from subprocess import check_call
 
-from runzi.arguments import ArgSweeper, SubmissionArgs
+from runzi.arguments import ArgSweeper, SubmissionArgs, serialize_arguments
 from runzi.automation import local_config
 from runzi.automation.local_config import WORKER_POOL_SIZE, ClusterModeEnum
 from runzi.automation.toshi_api import CreateGeneralTaskArgs, ModelType, SubtaskType
@@ -57,11 +58,23 @@ class JobRunner(ABC):
         pass
 
     def _build_argument_list(self) -> list[dict[str, str | list[str]]]:
-        """Build argument list for general task."""
-        unswepped_args = {k: [str(v)] for k, v in self.argument_sweeper.prototype_args.model_dump().items()}
-        swept_args = {k: [str(item) for item in v] for k, v in self.argument_sweeper.swept_args.items()}
-        all_args = unswepped_args | swept_args
-        return [dict(k=key, v=value) for key, value in all_args.items()]
+        """Build argument list for general task.
+
+        Built from the task objects themselves rather than from the raw config, and serialized
+        with serialize_arguments — the same call the subtasks use to record their own arguments.
+        That makes every general task value identical to the subtask value it produced. Reading
+        swept values straight off the ArgSweeper instead would leak the config file's key order
+        into dict arguments (e.g. rupture_set), which no longer matches the field order a subtask
+        reports after the value has been through the args model.
+        """
+        # Collect the distinct values each argument takes across the tasks, in first-seen order.
+        # Every task carries a value for every argument, so unswept arguments repeat the same one.
+        all_args: defaultdict[str, list[str]] = defaultdict(list)
+        for task_args in self.argument_sweeper.get_tasks():
+            for name, value in serialize_arguments(task_args).items():
+                if value not in all_args[name]:
+                    all_args[name].append(value)
+        return [dict(k=name, v=values) for name, values in all_args.items()]
 
     def run_jobs(self) -> str | None:
         """Launch jobs.

@@ -20,7 +20,7 @@ from nzshm_model.psha_adapter.openquake import OpenquakeModelPshaAdapter
 from nzshm_model.psha_adapter.openquake.hazard_config import OpenquakeConfig
 from toshi_hazard_store.scripts.ths_rlz_import import store_hazard
 
-from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs, serialize_arguments
 from runzi.automation.local_config import (
     API_URL,
     ECR_DIGEST,
@@ -126,8 +126,8 @@ class OQHazardTask:
                 gmcm_logic_tree=json.dumps(gmcm_logic_tree.to_dict()),
                 openquake_config=json.dumps(openquake_config.to_dict()),
             ),
-            arguments=self.user_args.model_dump(
-                mode='json', exclude={'hazard_model', 'srm_logic_tree', 'gmcm_logic_tree', 'hazard_config'}
+            arguments=serialize_arguments(
+                self.user_args, exclude={'hazard_model', 'srm_logic_tree', 'gmcm_logic_tree', 'hazard_config'}
             ),
             # arguments={"a": 1},
             environment=environment,

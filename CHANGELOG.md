@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+- General task and subtask arguments are now serialized identically, so downstream consumers that match the two get an exact match. Both sides go through a single `serialize_arguments()` helper. Previously the general task serialized swept arguments straight from the config file, so a dict argument (e.g. `rupture_set`) carried the config file's key order while the subtask reported the args model's field order; unswept arguments were also dumped in python mode, rendering enums as reprs (`AggregationEnum.MEAN` instead of `mean`).
+
 ## [0.15.0] 2026-07-27
 
 ### Added

@@ -14,7 +14,7 @@ from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway, JavaObject
 from pydantic import BaseModel, model_validator
 
-from runzi.arguments import TaskRuntimeArgs
+from runzi.arguments import TaskRuntimeArgs, serialize_arguments
 from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import API_URL, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ModelType, ToshiApi
@@ -329,7 +329,7 @@ class InversionSolutionBuilder(ABC):
                     model_type=self.model_type.name.upper(),
                     # general_task_id=general_task_id,
                 ),
-                arguments=self.user_args.model_dump(mode='json'),
+                arguments=serialize_arguments(self.user_args),
                 environment=environment,
             )
 

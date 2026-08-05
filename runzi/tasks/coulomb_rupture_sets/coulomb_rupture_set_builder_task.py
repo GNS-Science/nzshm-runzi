@@ -14,7 +14,7 @@ from nshm_toshi_client.task_relation import TaskRelation
 from py4j.java_gateway import GatewayParameters, JavaGateway
 from pydantic import BaseModel, model_validator
 
-from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs
+from runzi.arguments import EC2_JOB_DEFINITION, SubmissionArgs, TaskLanguage, TaskRuntimeArgs, serialize_arguments
 from runzi.automation.file_utils import download_files, get_output_file_id
 from runzi.automation.local_config import API_URL, S3_URL, SPOOF, WORK_PATH, get_auth_kwargs
 from runzi.automation.toshi_api import ToshiApi
@@ -166,7 +166,7 @@ class CoulombRuptureSetBuilderTask:
                     task_type="RUPTURE_SET",
                     model_type="CRUSTAL",
                 ),
-                arguments=self.user_args.model_dump(mode='json'),
+                arguments=serialize_arguments(self.user_args),
                 environment=environment,
             )
 
