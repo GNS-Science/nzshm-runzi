@@ -6,8 +6,9 @@ import uuid
 from abc import ABC, abstractmethod
 from collections.abc import Generator
 from itertools import product
-from pathlib import PurePath
-from typing import Literal, Self, cast
+from pathlib import Path
+from typing import Any, Literal, Self, cast
+from zipfile import ZIP_DEFLATED, ZipFile
 
 from dateutil.tz import tzutc
 from nshm_toshi_client.task_relation import TaskRelation
@@ -125,6 +126,9 @@ class InversionArgs(BaseModel):
 
     slip_uncertainty_scaling_factor: float | None = None
     """Penalize slip rate by uncerainty only."""
+
+    matrix_dump: bool = False
+    """Dump A and d matrices to working directory. Inversion does not run."""
 
     @model_validator(mode='after')
     def check_reweight(self) -> Self:
@@ -297,8 +301,143 @@ class InversionSolutionBuilder(ABC):
                 slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight
             )
 
-    def run(self):
+    def _write_matrices(self, task_id: str, output_filepath: Path, rupture_set_id: str):
         t0 = dt.datetime.now()
+        matrix_dump_path = WORK_PATH / f"{task_id}_matrices"
+        if not matrix_dump_path.exists():
+            matrix_dump_path.mkdir()
+        if SPOOF:
+            with open(output_filepath, 'w') as spoof:
+                spoof.write("this is a spoofed matrix")
+        else:
+            self.inversion_runner.setMatrixDumpPath(str(matrix_dump_path))
+            # self._run_matrix_dump(matrix_dump_path)
+            self.inversion_runner.runInversion()
+            with ZipFile(output_filepath, 'w', compression=ZIP_DEFLATED) as archive:
+                for file_path in sorted(matrix_dump_path.iterdir()):
+                    archive.write(file_path, arcname=file_path.name)
+        for fp in matrix_dump_path.iterdir():
+            fp.unlink()
+        matrix_dump_path.rmdir()
+
+        duration = (dt.datetime.now() - t0).total_seconds()
+
+        if self.runtime_args.use_api:
+            # record the completed task
+            done_args = {
+                'task_id': task_id,
+                'duration': duration,
+                'result': "SUCCESS",
+                'state': "DONE",
+            }
+            self.toshi_api.automation_task.complete_task(done_args)
+
+            # and the log files, why not
+            java_log_file = self.output_folder.joinpath(f"java_app.{self.runtime_args.java_gateway_port}.log")
+            # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
+            self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
+            # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
+
+            # upload the task output
+            inversion_id = self.toshi_api.automation_task.upload_task_file(
+                task_id,
+                output_filepath,
+                'WRITE',
+            )
+            log.info('created inversion matrices: %s', inversion_id)
+
+    def _run_inversion(self, task_id: str, output_filepath: Path, rupture_set_id: str):
+        t0 = dt.datetime.now()
+        if not SPOOF:
+            self.inversion_runner.runInversion()
+            self.inversion_runner.writeSolution(str(output_filepath))
+        else:
+            with open(output_filepath, 'w') as spoof:
+                spoof.write("this is spoofed solution")
+
+        t1 = dt.datetime.now()
+        log.info('Inversion took %s secs', (t1 - t0).total_seconds())
+
+        # capture task metrics
+        duration = (dt.datetime.now() - t0).total_seconds()
+
+        metrics = {"message": "getSolutionMetrics has been removed from OpenSHA"}
+
+        # TODO: put these back in when/if function is re-introduced to opensha
+        if self.model_type is ModelType.SUBDUCTION:
+            # table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF else []
+            table_rows_v1: list[Any] = []
+            mfd_table_rows = {"MFD_CURVES": table_rows_v1}
+        else:
+            # table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF else []
+            # table_rows_v2 = self.inversion_runner.getTabularSolutionMfdsV2() if not SPOOF else []
+            table_rows_v1 = []
+            table_rows_v2: list[Any] = []
+            mfd_table_rows = {"MFD_CURVES": table_rows_v1, "MFD_CURVES_V2": table_rows_v2}
+
+        if self.runtime_args.use_api:
+            # record the completed task
+            done_args = {
+                'task_id': task_id,
+                'duration': duration,
+                'result': "SUCCESS",
+                'state': "DONE",
+            }
+            self.toshi_api.automation_task.complete_task(done_args, metrics)
+
+            # and the log files, why not
+            java_log_file = self.output_folder.joinpath(f"java_app.{self.runtime_args.java_gateway_port}.log")
+            # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
+            self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
+            # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
+
+            # upload the task output
+            predecessors = [
+                dict(id=rupture_set_id, depth=-1),
+            ]
+
+            inversion_id = self.toshi_api.inversion_solution.upload_inversion_solution(
+                task_id,
+                filepath=output_filepath,
+                meta=self.user_args.model_dump(),
+                predecessors=predecessors,
+                metrics=metrics,
+            )
+            log.info('created inversion solution: %s', inversion_id)
+
+            # Get the MFD tables...
+            if not SPOOF:
+                for table_type, table_rows in mfd_table_rows.items():
+                    mfd_table_id = None
+
+                    mfd_table_data = []
+                    for row in table_rows:
+                        mfd_table_data.append([x for x in row])
+
+                    result = self.toshi_api.table.create_table(
+                        mfd_table_data,
+                        column_headers=["series", "series_name", "X", "Y"],
+                        column_types=["integer", "string", "double", "double"],
+                        object_id=inversion_id,
+                        table_name="Inversion Solution MFD table",
+                        table_type=table_type,
+                        dimensions=None,
+                    )
+                    mfd_table_id = result['id']
+                    result = self.toshi_api.inversion_solution.append_hazard_table(
+                        inversion_id,
+                        mfd_table_id,
+                        label="Inversion Solution MFD table",
+                        table_type=table_type,
+                        dimensions=None,
+                    )
+                    log.info('created & linked table: %s', mfd_table_id)
+
+        else:
+            log.info(metrics)
+        log.info('Inversion task took %s secs', (dt.datetime.now() - t0).total_seconds())
+
+    def run(self):
 
         # Wait for some more time, scaled by taskid to avoid S3 consistency issue
         time.sleep(self.runtime_args.task_count * 0.01)
@@ -360,100 +499,16 @@ class InversionSolutionBuilder(ABC):
         if initial_solution_id is not None:
             self.inversion_runner.setInitialSolution(initial_solution_info[initial_solution_id]['filepath'])
 
-        if not SPOOF:
+        if self.user_args.matrix_dump:
+            output_filepath = WORK_PATH / f"NZSHM22_Matrices-{task_id}.zip"
+        else:
+            output_filepath = WORK_PATH / f"NZSHM22_InversionSolution-{task_id}.zip"
+
+        if self.user_args.matrix_dump:
+            log.info('Building and dumping A and d matrices.')
+            log.info("======================================")
+            self._write_matrices(task_id, output_filepath, rupture_set_id)
+        else:
             log.info('Starting inversion of up to %s minutes', self.user_args.max_inversion_time)
             log.info("======================================")
-            self.inversion_runner.runInversion()
-
-        output_file = str(PurePath(WORK_PATH, f"NZSHM22_InversionSolution-{task_id}.zip"))
-        # name the output file
-        # outputfile = self._output_folder.joinpath(self.inversion_runner.getDescriptiveName()+ ".zip")
-        # log.info("building %s started at %s" % (outputfile, dt.datetime.utcnow().isoformat()), end=' ')
-
-        # output_file = str(PurePath(job_arguments['output_file']))
-        if not SPOOF:
-            self.inversion_runner.writeSolution(output_file)
-        else:
-            with open(output_file, 'w') as spoof:
-                spoof.write("this is spoofed solution")
-
-        t1 = dt.datetime.now()
-        log.info('Inversion took %s secs', (t1 - t0).total_seconds())
-
-        # capture task metrics
-        duration = (dt.datetime.now() - t0).total_seconds()
-
-        metrics = {"message": "getSolutionMetrics has been removed from OpenSHA"}
-
-        # TODO: put these back in when/if function is re-introduced to opensha
-        if self.model_type is ModelType.SUBDUCTION:
-            # table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF else []
-            table_rows_v1 = []
-            mfd_table_rows = {"MFD_CURVES": table_rows_v1}
-        else:
-            # table_rows_v1 = self.inversion_runner.getTabularSolutionMfds() if not SPOOF else []
-            # table_rows_v2 = self.inversion_runner.getTabularSolutionMfdsV2() if not SPOOF else []
-            table_rows_v1 = table_rows_v2 = []
-            mfd_table_rows = {"MFD_CURVES": table_rows_v1, "MFD_CURVES_V2": table_rows_v2}
-
-        if self.runtime_args.use_api:
-            # record the completed task
-            done_args = {
-                'task_id': task_id,
-                'duration': duration,
-                'result': "SUCCESS",
-                'state': "DONE",
-            }
-            self.toshi_api.automation_task.complete_task(done_args, metrics)
-
-            # and the log files, why not
-            java_log_file = self.output_folder.joinpath(f"java_app.{self.runtime_args.java_gateway_port}.log")
-            # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
-            self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
-            # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
-
-            # upload the task output
-            predecessors = [
-                dict(id=rupture_set_id, depth=-1),
-            ]
-
-            inversion_id = self.toshi_api.inversion_solution.upload_inversion_solution(
-                task_id,
-                filepath=output_file,
-                meta=self.user_args.model_dump(),
-                predecessors=predecessors,
-                metrics=metrics,
-            )
-            log.info('created inversion solution: %s', inversion_id)
-
-            # Get the MFD tables...
-            if not SPOOF:
-                for table_type, table_rows in mfd_table_rows.items():
-                    mfd_table_id = None
-
-                    mfd_table_data = []
-                    for row in table_rows:
-                        mfd_table_data.append([x for x in row])
-
-                    result = self.toshi_api.table.create_table(
-                        mfd_table_data,
-                        column_headers=["series", "series_name", "X", "Y"],
-                        column_types=["integer", "string", "double", "double"],
-                        object_id=inversion_id,
-                        table_name="Inversion Solution MFD table",
-                        table_type=table_type,
-                        dimensions=None,
-                    )
-                    mfd_table_id = result['id']
-                    result = self.toshi_api.inversion_solution.append_hazard_table(
-                        inversion_id,
-                        mfd_table_id,
-                        label="Inversion Solution MFD table",
-                        table_type=table_type,
-                        dimensions=None,
-                    )
-                    log.info('created & linked table: %s', mfd_table_id)
-
-        else:
-            log.info(metrics)
-        log.info('Inversion task took %s secs', (dt.datetime.now() - t0).total_seconds())
+            self._run_inversion(task_id, output_filepath, rupture_set_id)
