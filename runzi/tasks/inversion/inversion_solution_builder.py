@@ -302,6 +302,28 @@ class InversionSolutionBuilder(ABC):
                 slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight
             )
 
+    def _complete_task(self, task_id: str, t0: dt.datetime, metrics: dict[str, Any] | None = None) -> None:
+        """Mark the toshi task DONE and upload the java log.
+
+        Args:
+            task_id: the toshi automation task id.
+            t0: when the task started, for the reported duration.
+            metrics: optional task metrics to record alongside the completion.
+        """
+        done_args = {
+            'task_id': task_id,
+            'duration': (dt.datetime.now() - t0).total_seconds(),
+            'result': "SUCCESS",
+            'state': "DONE",
+        }
+        self.toshi_api.automation_task.complete_task(done_args, metrics)
+
+        # and the log files, why not
+        java_log_file = self.output_folder.joinpath(f"java_app.{self.runtime_args.java_gateway_port}.log")
+        # pyth_log_file = self.output_folder.joinpath(f"python_script.{self.runtime_args.java_gateway_port}.log")
+        self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
+        # self.toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
+
     def _write_matrices(self, task_id: str, output_filepath: Path, t0: dt.datetime):
         matrix_dump_path = WORK_PATH / f"{task_id}_matrices"
         if not matrix_dump_path.exists():
@@ -312,30 +334,14 @@ class InversionSolutionBuilder(ABC):
                     spoof.write("this is a spoofed matrix")
             else:
                 self.inversion_runner.setMatrixDumpPath(str(matrix_dump_path))
-                # self._run_matrix_dump(matrix_dump_path)
                 self.inversion_runner.runInversion()
                 with ZipFile(output_filepath, 'w', compression=ZIP_DEFLATED) as archive:
                     for file_path in sorted(matrix_dump_path.iterdir()):
                         archive.write(file_path, arcname=file_path.name)
 
-            duration = (dt.datetime.now() - t0).total_seconds()
-
             if self.runtime_args.use_api:
                 # record the completed task
-                done_args = {
-                    'task_id': task_id,
-                    'duration': duration,
-                    'result': "SUCCESS",
-                    'state': "DONE",
-                }
-                self.toshi_api.automation_task.complete_task(done_args)
-
-                # and the log files, why not
-                java_log_file = self.output_folder.joinpath(f"java_app.{self.runtime_args.java_gateway_port}.log")
-                # pyth_log_file = self._output_folder.joinpath(
-                #     f"python_script.{job_arguments['java_gateway_port']}.log")
-                self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
-                # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
+                self._complete_task(task_id, t0)
 
                 # upload the task output. NB a File has no predecessors field, so the rupture set
                 # lineage is carried by the meta (and by the task's own READ file relation).
@@ -360,8 +366,6 @@ class InversionSolutionBuilder(ABC):
         log.info('Inversion took %s secs', (t1 - t0).total_seconds())
 
         # capture task metrics
-        duration = (dt.datetime.now() - t0).total_seconds()
-
         metrics = {"message": "getSolutionMetrics has been removed from OpenSHA"}
 
         # TODO: put these back in when/if function is re-introduced to opensha
@@ -378,19 +382,7 @@ class InversionSolutionBuilder(ABC):
 
         if self.runtime_args.use_api:
             # record the completed task
-            done_args = {
-                'task_id': task_id,
-                'duration': duration,
-                'result': "SUCCESS",
-                'state': "DONE",
-            }
-            self.toshi_api.automation_task.complete_task(done_args, metrics)
-
-            # and the log files, why not
-            java_log_file = self.output_folder.joinpath(f"java_app.{self.runtime_args.java_gateway_port}.log")
-            # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
-            self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
-            # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
+            self._complete_task(task_id, t0, metrics)
 
             # upload the task output
             predecessors = [
