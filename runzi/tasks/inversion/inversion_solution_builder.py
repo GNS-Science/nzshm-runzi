@@ -1,6 +1,7 @@
 import datetime as dt
 import logging
 import platform
+import shutil
 import time
 import uuid
 from abc import ABC, abstractmethod
@@ -301,53 +302,53 @@ class InversionSolutionBuilder(ABC):
                 slip_rate_weighting_type, slip_rate_normalized_weight, slip_rate_unnormalized_weight
             )
 
-    def _write_matrices(self, task_id: str, output_filepath: Path, rupture_set_id: str):
-        t0 = dt.datetime.now()
+    def _write_matrices(self, task_id: str, output_filepath: Path, t0: dt.datetime):
         matrix_dump_path = WORK_PATH / f"{task_id}_matrices"
         if not matrix_dump_path.exists():
             matrix_dump_path.mkdir()
-        if SPOOF:
-            with open(output_filepath, 'w') as spoof:
-                spoof.write("this is a spoofed matrix")
-        else:
-            self.inversion_runner.setMatrixDumpPath(str(matrix_dump_path))
-            # self._run_matrix_dump(matrix_dump_path)
-            self.inversion_runner.runInversion()
-            with ZipFile(output_filepath, 'w', compression=ZIP_DEFLATED) as archive:
-                for file_path in sorted(matrix_dump_path.iterdir()):
-                    archive.write(file_path, arcname=file_path.name)
-        for fp in matrix_dump_path.iterdir():
-            fp.unlink()
-        matrix_dump_path.rmdir()
+        try:
+            if SPOOF:
+                with open(output_filepath, 'w') as spoof:
+                    spoof.write("this is a spoofed matrix")
+            else:
+                self.inversion_runner.setMatrixDumpPath(str(matrix_dump_path))
+                # self._run_matrix_dump(matrix_dump_path)
+                self.inversion_runner.runInversion()
+                with ZipFile(output_filepath, 'w', compression=ZIP_DEFLATED) as archive:
+                    for file_path in sorted(matrix_dump_path.iterdir()):
+                        archive.write(file_path, arcname=file_path.name)
 
-        duration = (dt.datetime.now() - t0).total_seconds()
+            duration = (dt.datetime.now() - t0).total_seconds()
 
-        if self.runtime_args.use_api:
-            # record the completed task
-            done_args = {
-                'task_id': task_id,
-                'duration': duration,
-                'result': "SUCCESS",
-                'state': "DONE",
-            }
-            self.toshi_api.automation_task.complete_task(done_args)
+            if self.runtime_args.use_api:
+                # record the completed task
+                done_args = {
+                    'task_id': task_id,
+                    'duration': duration,
+                    'result': "SUCCESS",
+                    'state': "DONE",
+                }
+                self.toshi_api.automation_task.complete_task(done_args)
 
-            # and the log files, why not
-            java_log_file = self.output_folder.joinpath(f"java_app.{self.runtime_args.java_gateway_port}.log")
-            # pyth_log_file = self._output_folder.joinpath(f"python_script.{job_arguments['java_gateway_port']}.log")
-            self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
-            # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
+                # and the log files, why not
+                java_log_file = self.output_folder.joinpath(f"java_app.{self.runtime_args.java_gateway_port}.log")
+                # pyth_log_file = self._output_folder.joinpath(
+                #     f"python_script.{job_arguments['java_gateway_port']}.log")
+                self.toshi_api.automation_task.upload_task_file(task_id, java_log_file, 'WRITE')
+                # self._toshi_api.automation_task.upload_task_file(task_id, pyth_log_file, 'WRITE')
 
-            # upload the task output
-            inversion_id = self.toshi_api.automation_task.upload_task_file(
-                task_id,
-                output_filepath,
-                'WRITE',
-            )
-            log.info('created inversion matrices: %s', inversion_id)
+                # upload the task output. NB a File has no predecessors field, so the rupture set
+                # lineage is carried by the meta (and by the task's own READ file relation).
+                matrices_id = self.toshi_api.automation_task.upload_file(
+                    output_filepath,
+                    meta=self.user_args.model_dump(),
+                )
+                self.toshi_api.automation_task.link_task_file(task_id, matrices_id, 'WRITE')
+                log.info('created inversion matrices: %s', matrices_id)
+        finally:
+            shutil.rmtree(matrix_dump_path, ignore_errors=True)
 
-    def _run_inversion(self, task_id: str, output_filepath: Path, rupture_set_id: str):
-        t0 = dt.datetime.now()
+    def _run_inversion(self, task_id: str, output_filepath: Path, rupture_set_id: str, t0: dt.datetime):
         if not SPOOF:
             self.inversion_runner.runInversion()
             self.inversion_runner.writeSolution(str(output_filepath))
@@ -438,6 +439,7 @@ class InversionSolutionBuilder(ABC):
         log.info('Inversion task took %s secs', (dt.datetime.now() - t0).total_seconds())
 
     def run(self):
+        t0 = dt.datetime.now()
 
         # Wait for some more time, scaled by taskid to avoid S3 consistency issue
         time.sleep(self.runtime_args.task_count * 0.01)
@@ -501,14 +503,11 @@ class InversionSolutionBuilder(ABC):
 
         if self.user_args.matrix_dump:
             output_filepath = WORK_PATH / f"NZSHM22_Matrices-{task_id}.zip"
-        else:
-            output_filepath = WORK_PATH / f"NZSHM22_InversionSolution-{task_id}.zip"
-
-        if self.user_args.matrix_dump:
             log.info('Building and dumping A and d matrices.')
             log.info("======================================")
-            self._write_matrices(task_id, output_filepath, rupture_set_id)
+            self._write_matrices(task_id, output_filepath, t0)
         else:
+            output_filepath = WORK_PATH / f"NZSHM22_InversionSolution-{task_id}.zip"
             log.info('Starting inversion of up to %s minutes', self.user_args.max_inversion_time)
             log.info("======================================")
-            self._run_inversion(task_id, output_filepath, rupture_set_id)
+            self._run_inversion(task_id, output_filepath, rupture_set_id, t0)
