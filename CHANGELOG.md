@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.16.0] 2026-08-10
 
 ### Added
 - Option to export inversion A and d matrices
