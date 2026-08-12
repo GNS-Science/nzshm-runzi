@@ -27,4 +27,3 @@ and leave the file in place.
 | [0010](0010-batch-toshi-stage-per-image-tag.md) | Couple toshi stage (prod/test) to the Batch image-tag axis |
 | [0011](0011-ec2-compute-optimized-for-inversions.md) | EC2 compute target: compute-optimized (AMD-preferred) families for inversions, not `"optimal"` |
 | [0012](0012-openquake-cores-from-ecs-vcpu.md) | OpenQuake core cap derived from `ecs_vcpu`, not the Java thread arg |
-| [0013](0013-opensha-provenance-from-jar-resources.md) | OpenSHA build provenance rides on jar resources, not a runtime git checkout |
