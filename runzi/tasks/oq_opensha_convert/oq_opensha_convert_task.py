@@ -98,11 +98,11 @@ class OQConvertTask:
         # Path(WORK_PATH, absolute) would discard WORK_PATH via Python path rules).
         output_zip = WORK_PATH / f'{source_id}_nrml.zip'
         print(f'output: {output_zip}')
-        with zipfile.ZipFile(output_zip, 'w') as zfile:
-            for filename in list(WORK_PATH.glob(f'{source_id}*')):
-                arcname = str(filename).replace(str(WORK_PATH), '')
-                zfile.write(filename, arcname)
-                print(f'archived {filename} as {arcname}')
+        output_files = list(WORK_PATH.glob(f'{source_id}*'))
+        with zipfile.ZipFile(output_zip, 'w', compression=zipfile.ZIP_DEFLATED) as zfile:
+            for filename in output_files:
+                zfile.write(filename, filename.name)
+                print(f'archived {filename} as {filename.name}')
 
         return output_zip
 
