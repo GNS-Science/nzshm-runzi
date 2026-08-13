@@ -11,12 +11,7 @@ Set these in your `.env` file. Defaults are given in brackets.
 - `NZSHM22_TOSHI_API_URL` [`http://127.0.0.1:5000/graphql`]
 - `NZSHM22_TOSHI_S3_URL` [`http://localhost:4569`]
 - `NZSHM22_TOSHI_COGNITO_DOMAIN`: Cognito domain used for Scientist (interactive) login and AWS credential federation.
-- `NZSHM22_TOSHI_COGNITO_SCIENTIST_CLIENT_ID`: Cognito app client ID for Scientist login.
-- `NZSHM22_TOSHI_COGNITO_USER_POOL_ID`: Cognito user pool ID.
-- `NZSHM22_TOSHI_COGNITO_IDENTITY_POOL_ID`: Cognito identity pool ID; used to federate AWS credentials via the identity pool.
-- `NZSHM22_TOSHI_COGNITO_REGION`: AWS region for Cognito (default `ap-southeast-2`).
 
-  These four Cognito vars can alternatively be stored in `~/.toshi/auth_config.json` (written by `toshi-auth configure`). Env vars take precedence over the file; any key absent from the environment is read from the file.
 - `NZSHM22_RUNZI_ECR_DIGEST`: used by `toshi-hazard-store` to record the Docker image digest used to generate hazard cruves.
 - `NZSHM22_THS_RLZ_DB`: path to location of parquet files where hazard realizations are stored by `toshi-hazard-store`. Can be local directory or s3 bucket (`s3://`)
 - `NZSHM22_THS_DISAGG_RLZ_DB`: path to location of parquet files where disaggregation realizations are stored by `toshi-hazard-store`. Can be local directory or s3 bucket (`s3://`)
@@ -34,6 +29,15 @@ Set these in your `.env` file. Defaults are given in brackets.
 - `THS_DATASET_AGGR_URI`: location of hazard aggregate datasets; can be local path or s3 URI. Used to lookup hazard curve to find target level at which to calculate disaggregations.
 - `NZSHM22_OQ_VENV`: path to the OpenQuake virtual environment root (e.g. `/opt/oq-venv`); required for OQ tasks.
 - `NZSHM22_OQ_DATADIR`: directory where `oq engine` writes HDF5 calc datastores (e.g. `/oqdata`); required for OQ tasks.
+
+
+The Cognito vars are used for toshi API authentication and AWS permissions. They can alternatively be stored in `~/.toshi/auth_config.json` (written by `toshi-auth configure`). Env vars take precedence over the file; any key absent from the environment is read from the file.
+
+- `NZSHM22_TOSHI_COGNITO_SCIENTIST_CLIENT_ID`: Cognito app client ID for Scientist login.
+- `NZSHM22_TOSHI_COGNITO_USER_POOL_ID`: Cognito user pool ID.
+- `NZSHM22_TOSHI_COGNITO_IDENTITY_POOL_ID`: Cognito identity pool ID; used to federate AWS credentials via the identity pool.
+- `NZSHM22_TOSHI_COGNITO_REGION`: AWS region for Cognito (default `ap-southeast-2`).
+
 
 # AWS Batch job definition env vars
 These must be configured in the AWS Batch **job definition** (infrastructure). They are not forwarded from the local machine — local job submission always uses Scientist (interactive) credentials instead.
