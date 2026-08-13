@@ -468,6 +468,18 @@ wheels = [
 ]
 
 [[package]]
+name = "click-plugins"
+version = "1.1.1.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c3/a4/34847b59150da33690a36da3681d6bbc2ec14ee9a846bc30a6746e5984e4/click_plugins-1.1.1.2.tar.gz", hash = "sha256:d7af3984a99d243c131aa1a828331e7630f4a88a9741fd05c927b204bcf92261", size = 8343, upload-time = "2025-06-25T00:47:37.555Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3d/9a/2abecb28ae875e39c8cad711eb1186d8d14eab564705325e77e4e6ab9ae5/click_plugins-1.1.1.2-py2.py3-none-any.whl", hash = "sha256:008d65743833ffc1f5417bf0e78e8d2c23aab04d9745ba817bd3e71b0feb6aa6", size = 11051, upload-time = "2025-06-25T00:47:36.731Z" },
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -3380,7 +3392,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "pytz" },
     { name = "solvis" },
-    { name = "toshi-hazard-store" },
+    { name = "toshi-hazard-store", extra = ["scripts"] },
     { name = "typer" },
 ]
 
@@ -3426,7 +3438,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.1.0" },
     { name = "pytz", specifier = ">=2025.1" },
     { name = "solvis", specifier = ">=1.2.0,<2.0.0" },
-    { name = "toshi-hazard-store", specifier = ">=2.1.0" },
+    { name = "toshi-hazard-store", extras = ["scripts"], specifier = ">=2.1.0" },
     { name = "typer", specifier = ">=0.17.4,<0.26.0" },
 ]
 
@@ -3791,6 +3803,13 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b6/1b/505cb4f7c7683a37624082143eda1d95505b777e86e3387a257c92b63273/toshi_hazard_store-2.1.1.tar.gz", hash = "sha256:a87092a3f5485875238199d11e516f01e9aa8ec84535270ae6e4b37ad1e8a02e", size = 62104288, upload-time = "2026-07-15T03:31:45.193Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ca/d5/bdf8c90d9dd8c0fb09592de649ee509ba7151245d64f0663a03aefc4b5b8/toshi_hazard_store-2.1.1-py3-none-any.whl", hash = "sha256:c11b0b22bc9ae77577db5a0ebe089787442b5b775e1e556e2368908c0bdff867", size = 130393, upload-time = "2026-07-15T03:31:43.175Z" },
+]
+
+[package.optional-dependencies]
+scripts = [
+    { name = "boto3" },
+    { name = "click" },
+    { name = "click-plugins" },
 ]
 
 [[package]]
