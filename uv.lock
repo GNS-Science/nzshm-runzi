@@ -3419,7 +3419,7 @@ requires-dist = [
     { name = "nshm-toshi-client", specifier = ">=1.3.0" },
     { name = "nzshm-common", extras = ["geometry"], specifier = ">=0.9.3" },
     { name = "nzshm-hazlab", specifier = ">=0.1.3,<0.2.0" },
-    { name = "nzshm-model", specifier = ">=0.15.3" },
+    { name = "nzshm-model", specifier = ">=0.15.5" },
     { name = "py4j", specifier = "==0.10.9.1" },
     { name = "pydantic", specifier = ">=2.12" },
     { name = "python-dateutil", specifier = ">=2.8.2" },
