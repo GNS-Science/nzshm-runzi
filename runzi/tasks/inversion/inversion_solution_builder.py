@@ -91,7 +91,7 @@ class InversionArgs(BaseModel):
     mfd: MFD
     """N and b value for both sans and tvz. Subduction only uses sans. tvz is deprecated."""
 
-    reweight: bool | None = None
+    reweight: bool = False
     """If True, must also have uncertainty weighting for mfd and slip rate."""
 
     mfd_uncertainty_weight: float | None = None
@@ -134,7 +134,7 @@ class InversionArgs(BaseModel):
     @model_validator(mode='after')
     def check_reweight(self) -> Self:
         """If re-weighting, must use uncertinaty weighted constraints"""
-        if self.reweight is not None:
+        if self.reweight:
             if (self.mfd_uncertainty_weight is None) and (self.slip_rate_uncertainty_weight is None):
                 # TODO: this isn't true, reweighting overrides the weight,
                 # but this test does make sure we have the other parameters, so maybe useful?
