@@ -258,7 +258,7 @@ class OQHazardTask:
         task_no = self.runtime_args.task_count
         config_folder = work_folder / f"config_{task_no}"
 
-        description = f"hazard model for task: {task_no}"
+        description = f"hazard model for task: {task_no}. automation task ID: {automation_task_id}."
         self.model = NshmModel(
             version="",
             title=description,
