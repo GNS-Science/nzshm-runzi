@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- Automation task ID to OpenQuake description for hazard and disaggregation. This makes OpenQuake artifacts more tracable.
+
 ### Changed
 - deps: patch (21 pkgs, incl. gitpython 3.1.50→3.1.58 fixing 18 CVEs), minor (20 pkgs), major: cryptography 49→50 (PYSEC-2026-3552), wcmatch 10→11, backrefs 7→8.
 
